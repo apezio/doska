@@ -79,7 +79,9 @@ const BOTTOM_MARGIN = 72
  * `field-sizing-content` so it never scrolls internally — the browser's native
  * caret-into-view does nothing, and on mobile the caret drifts behind the
  * keyboard. We scroll the nearest scrollable ancestor to follow the caret,
- * measuring the visible area from `visualViewport` so the keyboard is excluded.
+ * measuring against that scroller's own box — the app shell is sized to the
+ * visible area (`--app-height`), so the scroller ends where the keyboard
+ * begins and no viewport arithmetic is needed.
  *
  * Fires on typing (`input`), on caret moves and programmatic inserts
  * (`selectionchange` — e.g. picking a slash command splices text and sets the
@@ -98,18 +100,17 @@ export function useCaretScroll(
       if (!textarea || document.activeElement !== textarea) return
       // Leave text-selection drags alone; only chase a collapsed caret.
       if (textarea.selectionStart !== textarea.selectionEnd) return
+
       const scroller = findScrollParent(textarea)
       if (!scroller) return
 
-      const { top, bottom } = caretViewportRange(textarea)
-      const viewport = window.visualViewport
-      const viewTop = viewport ? viewport.offsetTop : 0
-      const viewBottom = viewTop + (viewport ? viewport.height : window.innerHeight)
+      const caret = caretViewportRange(textarea)
+      const view = scroller.getBoundingClientRect()
 
-      if (bottom + BOTTOM_MARGIN > viewBottom) {
-        scroller.scrollTop += bottom + BOTTOM_MARGIN - viewBottom
-      } else if (top - TOP_MARGIN < viewTop) {
-        scroller.scrollTop -= viewTop - (top - TOP_MARGIN)
+      if (caret.bottom + BOTTOM_MARGIN > view.bottom) {
+        scroller.scrollTop += caret.bottom + BOTTOM_MARGIN - view.bottom
+      } else if (caret.top - TOP_MARGIN < view.top) {
+        scroller.scrollTop += caret.top - TOP_MARGIN - view.top
       }
     }
 

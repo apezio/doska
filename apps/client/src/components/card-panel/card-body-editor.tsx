@@ -19,6 +19,8 @@ interface IProps {
   body: string
   isPreview: boolean
   onChangeBody: (value: string) => void
+  /** Non-scrolling pane element the mobile slash button anchors to. */
+  overlayContainer?: HTMLElement | null
 }
 
 /** Card body textarea wired to attachments. Must render inside `AttachmentUploadProvider`. */
@@ -27,6 +29,7 @@ export function CardBodyEditor({
   body,
   isPreview,
   onChangeBody,
+  overlayContainer,
 }: IProps) {
   const { data: card } = useCard(cardId)
   const { addFiles } = useUploads()
@@ -55,6 +58,7 @@ export function CardBodyEditor({
         onToggleTask={onChangeBody}
         slashMenu
         slashCommands={slashCommands}
+        overlayContainer={overlayContainer}
         wikilinks={cardRefs}
         onPasteFiles={handlePasteFiles}
         placeholder="Notes"

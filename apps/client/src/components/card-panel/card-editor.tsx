@@ -1,5 +1,6 @@
 import { CardContent, cn } from "@doska/ui-kit"
 import { MarkdownTextarea } from "@doska/markdown"
+import { useState } from "react"
 import { CardContentLayout } from "./card-content-layout"
 import { CardPanelHeader } from "./card-panel-header"
 import { CardBodyEditor } from "./card-body-editor"
@@ -45,6 +46,9 @@ export function CardEditor({
   onEdit,
   onClose,
 }: IProps) {
+  // State, not a ref: the slash button renders into this node once it mounts.
+  const [overlay, setOverlay] = useState<HTMLDivElement | null>(null)
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <AttachmentUploadProvider cardId={cardId}>
@@ -55,46 +59,53 @@ export function CardEditor({
           onTogglePreivew={onTogglePreview}
         />
         <AttachmentDropZone className="flex min-h-0 flex-1 flex-col">
-          <CardContentLayout>
-            <CardContent className="flex flex-wrap items-center gap-x-4 gap-y-2 py-2">
-              <CardMeta cardId={cardId} body={body} />
-              <CardColumnPicker cardId={cardId} />
-            </CardContent>
-            <CardAttachments
-              className="py-2"
-              cardId={cardId}
-              isReadonly={isPreview}
-            />
-            <CardContent
-              className="flex min-h-0 flex-1 flex-col px-4 pt-2"
-              onClick={
-                isPreview
-                  ? (e) => {
-                      if (isImageClick(e.target)) return
-                      if (!hasTextSelection()) onEdit()
-                    }
-                  : undefined
-              }
-            >
-              <MarkdownTextarea
-                autoFocus
-                value={title}
-                onChange={(e) => onChangeTitle(e.target.value)}
-                placeholder="Title"
-                isPreview={isPreview}
-                className={cn(
-                  "py-1.5 text-xl! font-semibold",
-                  !isPreview && "font-mono"
-                )}
-              />
-              <CardBodyEditor
+          {/* Anchors the mobile slash button: inside the pane, outside the scroller. */}
+          <div
+            ref={setOverlay}
+            className="relative flex min-h-0 flex-1 flex-col"
+          >
+            <CardContentLayout>
+              <CardContent className="flex flex-wrap items-center gap-x-4 gap-y-2 py-2">
+                <CardMeta cardId={cardId} body={body} />
+                <CardColumnPicker cardId={cardId} />
+              </CardContent>
+              <CardAttachments
+                className="py-2"
                 cardId={cardId}
-                body={body}
-                isPreview={isPreview}
-                onChangeBody={onChangeBody}
+                isReadonly={isPreview}
               />
-            </CardContent>
-          </CardContentLayout>
+              <CardContent
+                className="flex min-h-0 flex-1 flex-col px-4 pt-2"
+                onClick={
+                  isPreview
+                    ? (e) => {
+                        if (isImageClick(e.target)) return
+                        if (!hasTextSelection()) onEdit()
+                      }
+                    : undefined
+                }
+              >
+                <MarkdownTextarea
+                  autoFocus
+                  value={title}
+                  onChange={(e) => onChangeTitle(e.target.value)}
+                  placeholder="Title"
+                  isPreview={isPreview}
+                  className={cn(
+                    "py-1.5 text-xl! font-semibold",
+                    !isPreview && "font-mono"
+                  )}
+                />
+                <CardBodyEditor
+                  cardId={cardId}
+                  body={body}
+                  isPreview={isPreview}
+                  onChangeBody={onChangeBody}
+                  overlayContainer={overlay}
+                />
+              </CardContent>
+            </CardContentLayout>
+          </div>
         </AttachmentDropZone>
       </AttachmentUploadProvider>
     </div>

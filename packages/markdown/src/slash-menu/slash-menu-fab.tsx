@@ -7,50 +7,24 @@ import type { SlashCommand } from "./commands"
 interface IProps {
   commands: SlashCommand[]
   onSelect: (command: SlashCommand) => void
+  /** Non-scrolling, positioned ancestor to render into. */
+  container?: HTMLElement | null
 }
 
-// Space the FAB and its opened menu occupy below the menu's top edge: the
-// button, the gap above it, and a little breathing room from the viewport top.
-const MENU_CHROME = 96
-
-/**
- * Tracks the on-screen keyboard (via the visual viewport) so a fixed element
- * can stay above it: `inset` is the keyboard height, `menuMaxHeight` is how
- * tall the opened menu may be without running under the keyboard.
- */
-function useKeyboardViewport() {
-  const [inset, setInset] = useState(0)
-  const [visibleHeight, setVisibleHeight] = useState(0)
-
-  useEffect(() => {
-    const vv = window.visualViewport
-    if (!vv) return
-    // Keyboard height only — deliberately not offsetTop. Scrolling the content
-    // pans the visual viewport (offsetTop jitters, especially at rubber-band
-    // edges); tracking that would make the button drift while you scroll.
-    const onChange = () => {
-      setInset(Math.max(0, window.innerHeight - vv.height))
-      setVisibleHeight(vv.height)
-    }
-    onChange()
-    vv.addEventListener("resize", onChange)
-    return () => {
-      vv.removeEventListener("resize", onChange)
-    }
-  }, [])
-
-  // Cap at the design default; only shrink when the keyboard leaves less room.
-  const menuMaxHeight = Math.max(160, Math.min(256, visibleHeight - MENU_CHROME))
-  return { inset, menuMaxHeight }
-}
+// The menu's bottom offset plus breathing room from the container's top edge,
+// so the menu can never grow past either end.
+const MENU_CHROME = "5rem"
 
 /**
  * Mobile replacement for the `/` trigger: a floating slash button that opens a
  * dropdown of slash commands. Selecting one inserts at the textarea caret.
+ *
+ * Positioned against `container`, not the viewport: the app shell is already
+ * sized to the visible area (`--app-height`), so sitting at the container's
+ * bottom edge means sitting above the keyboard, with no measuring involved.
  */
-export function SlashMenuFab({ commands, onSelect }: IProps) {
+export function SlashMenuFab({ commands, onSelect, container }: IProps) {
   const [open, setOpen] = useState(false)
-  const { inset, menuMaxHeight } = useKeyboardViewport()
   const rootRef = useRef<HTMLDivElement>(null)
 
   // Close when tapping anywhere outside the button or its menu.
@@ -63,12 +37,11 @@ export function SlashMenuFab({ commands, onSelect }: IProps) {
     return () => document.removeEventListener("pointerdown", onDown)
   }, [open])
 
-  return createPortal(
-    <div
-      ref={rootRef}
-      className="fixed right-4 z-50"
-      style={{ bottom: inset + 16 }}
-    >
+  // Spans the container so the menu's `max-height` percentage measures against
+  // the visible pane; `pointer-events-none` keeps the overlay tappable-through,
+  // which is also what makes the outside-click check above work.
+  const fab = (
+    <div ref={rootRef} className="pointer-events-none absolute inset-0 z-50">
       {open && (
         <MenuList
           items={commands}
@@ -76,8 +49,8 @@ export function SlashMenuFab({ commands, onSelect }: IProps) {
             onSelect(cmd)
             setOpen(false)
           }}
-          className="absolute right-0 bottom-14"
-          style={{ maxHeight: menuMaxHeight }}
+          className="pointer-events-auto absolute right-4 bottom-18"
+          style={{ maxHeight: `min(16rem, calc(100% - ${MENU_CHROME}))` }}
         />
       )}
       <Button
@@ -86,11 +59,12 @@ export function SlashMenuFab({ commands, onSelect }: IProps) {
         aria-label="Insert command"
         onPointerDown={(e) => e.preventDefault()}
         onClick={() => setOpen((o) => !o)}
-        className="size-11 text-2xl font-semibold shadow-lg"
+        className="pointer-events-auto absolute right-4 bottom-4 size-11 text-2xl font-semibold shadow-lg"
       >
         /
       </Button>
-    </div>,
-    document.body
+    </div>
   )
+
+  return container ? createPortal(fab, container) : fab
 }

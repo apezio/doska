@@ -18,6 +18,8 @@ interface IProps {
   commands?: SlashCommand[]
   /** Disables the menu without unmounting (e.g. in preview). */
   enabled?: boolean
+  /** Non-scrolling element the mobile button anchors to; see `MarkdownTextarea`. */
+  overlayContainer?: HTMLElement | null
 }
 
 /**
@@ -29,6 +31,7 @@ export function SlashMenu({
   onChangeValue,
   commands,
   enabled = true,
+  overlayContainer,
 }: IProps) {
   const isMobile = useIsMobile()
   const { menu, activeIndex, select, setActiveIndex, insertCommand } =
@@ -44,6 +47,7 @@ export function SlashMenu({
       <SlashMenuFab
         commands={commands ?? DEFAULT_SLASH_COMMANDS}
         onSelect={insertCommand}
+        container={overlayContainer}
       />
     )
 

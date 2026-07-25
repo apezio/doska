@@ -17,7 +17,8 @@ export function AppShell({ deck, cardCloseHref, children }: IProps) {
 
   return (
     <DeckProvider value={deck}>
-      <SidebarProvider className="h-svh">
+      {/* `--app-height` tracks the keyboard on touch devices; `svh` elsewhere. */}
+      <SidebarProvider className="h-(--app-height,100svh)">
         <AppSidebar />
         <SidebarInset
           className={cn(

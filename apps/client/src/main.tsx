@@ -5,6 +5,7 @@ import { LoginPromptProvider } from "@/components/login/login-prompt"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { seed } from "@/lib/api/db/db.ts"
 import { keys } from "@/lib/data/keys"
+import { trackAppHeight } from "@/lib/app-height"
 import { blockEdgeSwipeNavigation } from "@/lib/edge-swipe"
 import { initZoom } from "@/lib/zoom"
 import { requestPersistentStorage } from "@/lib/persist"
@@ -22,6 +23,8 @@ window.addEventListener("auth:expired", () => {
 })
 
 startBackgroundSync()
+
+trackAppHeight()
 
 blockEdgeSwipeNavigation()
 

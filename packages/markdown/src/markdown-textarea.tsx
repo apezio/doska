@@ -28,6 +28,11 @@ interface IProps extends React.ComponentProps<"textarea"> {
   /** Persists pasted files; returns Markdown to splice at the caret, or null. */
   onPasteFiles?: (files: File[]) => Promise<string | null>
   containerClassName?: string
+  /**
+   * Where the mobile slash button renders. Must be a non-scrolling ancestor, or
+   * the button scrolls away with the text.
+   */
+  overlayContainer?: HTMLElement | null
 }
 
 const NO_MARKERS: Marker[] = []
@@ -43,6 +48,7 @@ export function MarkdownTextarea({
   wikilinks,
   onPasteFiles,
   containerClassName,
+  overlayContainer,
   ...props
 }: IProps) {
   const value = typeof props.value === "string" ? props.value : ""
@@ -112,6 +118,7 @@ export function MarkdownTextarea({
           value={value}
           onChangeValue={onChangeValue ?? NOOP}
           commands={slashCommands}
+          overlayContainer={overlayContainer}
         />
       )}
       {wikilinks && wikilinks.length > 0 && (

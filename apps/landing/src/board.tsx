@@ -135,7 +135,7 @@ export function Board() {
             </BoardCard>
           </Column>
 
-          <Column title="Run it" color="amber" count={3}>
+          <Column title="Run it" color="amber" count={4}>
             <BoardCard id="RUN-1" title="Self-host in one line">
               <InstallTerminal />
               <p>
@@ -161,13 +161,17 @@ export function Board() {
                 </a>
                 , installed as a PWA, or a Tauri macOS app that reuses the same
                 client and auto-updates.
-                <br />
-                No mobile app yet, but the PWA makes the mobile experience
-                closer to native.
               </p>
             </BoardCard>
 
-            <BoardCard id="RUN-3" title="Agents can edit it too">
+            <BoardCard id="RUN-3" title="Works on a phone">
+              <p>
+                Add it to your home screen and it runs fullscreen and offline,
+                like a real app.
+              </p>
+            </BoardCard>
+
+            <BoardCard id="RUN-4" title="Agents can edit it too">
               <p>
                 The server exposes your boards over MCP, so Claude or other
                 agents can read and edit them: create cards, tick task lists,

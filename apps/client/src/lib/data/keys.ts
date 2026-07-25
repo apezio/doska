@@ -5,7 +5,10 @@ export const keys = {
   /** The bare key is the invalidation prefix for every board. */
   boards: ["board"] as const,
   board: (deckId: string) => ["board", deckId] as const,
+  /** The bare key is the invalidation prefix for every card. */
+  cards: ["card"] as const,
   card: (id: string) => ["card", id] as const,
+  trash: ["trash"] as const,
   /** The bare key is the invalidation prefix for every filter's digest. */
   digest: ["digest"] as const,
   digestFilter: (filter: DigestFilter) => ["digest", filter] as const,

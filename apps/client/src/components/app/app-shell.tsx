@@ -4,6 +4,7 @@ import { useRoute } from "wouter"
 import { AppSidebar } from "@/components"
 import { CardPanel } from "@/components/card-panel/card-panel"
 import { DeckProvider } from "@/components/deck/deck-context"
+import { useUndoShortcut } from "@/lib/hooks"
 import { routes } from "@/lib/routes"
 
 interface IProps {
@@ -14,6 +15,9 @@ interface IProps {
 
 export function AppShell({ deck, cardCloseHref, children }: IProps) {
   const [isCardOpen] = useRoute(routes.card.pattern)
+
+  // ⌘Z takes back the last delete from anywhere in the app.
+  useUndoShortcut()
 
   return (
     <DeckProvider value={deck}>

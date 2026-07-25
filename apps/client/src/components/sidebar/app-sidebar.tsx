@@ -20,13 +20,14 @@ import { GitHubButton } from "./github-button"
 import { SettingsButton } from "@/components/settings/settings-button"
 
 export function AppSidebar() {
-  const [, navigate] = useLocation()
+  const [location, navigate] = useLocation()
   const { data: dashboards = [] } = useDashboards()
   const { selectDashboard, createAndOpenDashboard } = useDashboardNav()
 
   const { base } = useRouter()
   const activeDashboardId = useParams().id ?? ""
   const isDigestActive = base === routes.digest()
+  const isTrashActive = location === routes.trash()
 
   return (
     <Sidebar>
@@ -46,6 +47,15 @@ export function AppSidebar() {
                 onClick={() => navigate(`~${routes.digest()}`)}
               >
                 <span>Upcoming</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={isTrashActive}
+                tooltip="Trash"
+                onClick={() => navigate(`~${routes.trash()}`)}
+              >
+                <span>Trash</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

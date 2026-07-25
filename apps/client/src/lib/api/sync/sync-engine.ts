@@ -142,26 +142,44 @@ class DeckSync {
   getState = (): SyncState => this.state
 
   markDirty(store: StoreName, key: string) {
-    const engine = store === DASHBOARDS ? this.list : this.board
-    engine.mark(`${store}/${key}`)
+    this.engineFor(store).mark(`${store}/${key}`)
+  }
+
+  /** Whether a record still owes the server a push — see `purgeExpired`. */
+  isDirty(store: StoreName, key: string): boolean {
+    return this.engineFor(store).dirty.has(`${store}/${key}`)
+  }
+
+  private engineFor(store: StoreName) {
+    return store === DASHBOARDS ? this.list : this.board
+  }
+
+  /**
+   * The dashboard list always goes first. A board's tombstone cascades onto
+   * anything pushed for it (see `applyPush`), so a restore whose card push
+   * overtook its board push would come straight back dead. Serialising costs a
+   * round-trip on a background poll; the ordering is a correctness property.
+   */
+  private async listFirst(run: () => Promise<void>): Promise<void> {
+    await this.list.reconcile()
+    await run()
   }
 
   setActiveBoard(boardId: string | null) {
     this.currentBoard = boardId
-    this.board.setActiveScope(boardId)
-    void this.list.reconcile()
+    void this.listFirst(async () => this.board.setActiveScope(boardId))
   }
 
   /**
    * Pulls every listed board once, leaving the active board as it is.
    */
   reconcileBoards(boardIds: string[]): Promise<void> {
-    return this.board.reconcileScopes(boardIds)
+    return this.listFirst(() => this.board.reconcileScopes(boardIds))
   }
 
   /** Reconciles both channels once. Each engine no-ops while not configured. */
-  async reconcile(): Promise<void> {
-    await Promise.all([this.board.reconcile(), this.list.reconcile()])
+  reconcile(): Promise<void> {
+    return this.listFirst(() => this.board.reconcile())
   }
 }
 

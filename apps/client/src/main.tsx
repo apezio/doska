@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { LoginPromptProvider } from "@/components/login/login-prompt"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { seed } from "@/lib/api/db/db.ts"
+import { purgeExpired } from "@/lib/api/operations"
 import { keys } from "@/lib/data/keys"
 import { trackAppHeight } from "@/lib/app-height"
 import { blockEdgeSwipeNavigation } from "@/lib/edge-swipe"
@@ -38,6 +39,10 @@ await seedClock()
 
 // Seed the local DB from fixtures on first run
 await seed()
+
+// Empty the trash of anything past its 30 days. Not awaited: nothing rendered
+// reads tombstones, and the trash view sweeps again when it opens.
+void purgeExpired()
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

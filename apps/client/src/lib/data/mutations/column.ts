@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import * as api from "@/lib/api/operations"
 import type { Board, Column } from "@/lib/types"
+import { pushUndo } from "@/lib/undo"
 import { keys } from "../keys"
 import { flushSyncUpdate } from "./flush-sync"
 
@@ -93,9 +94,11 @@ export function useDeleteColumn(deckId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => api.deleteColumn(deckId, id),
+    onSuccess: (_data, id) => pushUndo("columns", id),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: keys.board(deckId) })
       qc.invalidateQueries({ queryKey: keys.digest })
+      qc.invalidateQueries({ queryKey: keys.trash })
     },
   })
 }

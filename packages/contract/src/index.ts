@@ -10,6 +10,7 @@ import type {
 
 export * from "./schemas"
 export * from "./prefix"
+export * from "./retention"
 export { contract } from "./contract"
 
 export type Attachment = z.infer<typeof AttachmentSchema>

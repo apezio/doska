@@ -81,7 +81,7 @@ export function DeckHeader({
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="Delete board?"
-        description={`"${title}" and all of its columns and cards will be permanently deleted.`}
+        description={`"${title}" and all of its columns and cards move to the trash, where they stay restorable for 30 days.`}
         confirmLabel="Delete board"
         onConfirm={onDelete}
       />

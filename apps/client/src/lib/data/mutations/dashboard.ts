@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import * as api from "@/lib/api/operations"
+import { pushUndo } from "@/lib/undo"
 import { keys } from "../keys"
 
 export function useCreateDashboard() {
@@ -32,9 +33,11 @@ export function useDeleteDashboard() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => api.deleteDashboard(id),
+    onSuccess: (_data, id) => pushUndo("dashboards", id),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: keys.dashboards })
       qc.invalidateQueries({ queryKey: keys.digest })
+      qc.invalidateQueries({ queryKey: keys.trash })
     },
   })
 }

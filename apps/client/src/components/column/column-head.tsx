@@ -85,7 +85,7 @@ export function ColumnHead({
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="Delete column?"
-        description={`"${title}" and all of its cards will be permanently deleted.`}
+        description={`"${title}" and all of its cards move to the trash, where they stay restorable for 30 days.`}
         confirmLabel="Delete column"
         onConfirm={onDelete}
       />

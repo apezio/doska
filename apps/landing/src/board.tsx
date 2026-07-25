@@ -106,7 +106,7 @@ export function Board() {
             </BoardCard>
           </Column>
 
-          <Column title="Where it lives" color="green" count={2}>
+          <Column title="Where it lives" color="green" count={3}>
             <BoardCard id="DATA-1" title="Local-first">
               <p>
                 Boards live in the browser. Reads and writes hit your device,
@@ -121,9 +121,21 @@ export function Board() {
                 or on <code>⌘</code>+<code>S</code>.
               </p>
             </BoardCard>
+
+            <BoardCard id="DATA-3" title="Deleting is reversible">
+              <p>
+                <code>⌘</code>+<code>Z</code> takes back the last delete.
+                Everything else waits in the trash, where one click puts it
+                back: a column returns with its cards, a board with its columns.
+              </p>
+              <p>
+                After 30 days it's permanently deleted, on your device and on
+                your server.
+              </p>
+            </BoardCard>
           </Column>
 
-          <Column title="Run it" color="amber" count={3}>
+          <Column title="Run it" color="amber" count={4}>
             <BoardCard id="RUN-1" title="Self-host in one line">
               <InstallTerminal />
               <p>
@@ -149,13 +161,17 @@ export function Board() {
                 </a>
                 , installed as a PWA, or a Tauri macOS app that reuses the same
                 client and auto-updates.
-                <br />
-                No mobile app yet, but the PWA makes the mobile experience
-                closer to native.
               </p>
             </BoardCard>
 
-            <BoardCard id="RUN-3" title="Agents can edit it too">
+            <BoardCard id="RUN-3" title="Works on a phone">
+              <p>
+                Add it to your home screen and it runs fullscreen and offline,
+                like a real app.
+              </p>
+            </BoardCard>
+
+            <BoardCard id="RUN-4" title="Agents can edit it too">
               <p>
                 The server exposes your boards over MCP, so Claude or other
                 agents can read and edit them: create cards, tick task lists,

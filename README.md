@@ -14,21 +14,39 @@ Runs in the browser, installs as a PWA, or ships as a native macOS app.
 
 ## Features
 
+### Cards
+
 - Multiple boards, each with draggable columns. Drag cards to reorder or move
   them between columns.
-- Cards are GitHub-flavored Markdown, edited in place, with a slash menu for
-  formatting and task lists that show a progress count.
-- Drop images or files onto a card to attach them; images preview inline.
-- Set a deadline on a card. It shows a chip that changes color as the date nears
-  and turns red once it's overdue.
-- Every card gets a short `ROAD-12`-style id from its column prefix. Click it to
-  copy.
+- Cards are GitHub-flavored Markdown, edited in place: bold, code, links,
+  highlights, and task lists that carry a live count in the card header. A slash
+  menu and inline suggestions for formatting.
+- Attach files by dropping them on a card or pasting from the clipboard; images
+  preview inline (requires S3 compatible bucket).
+- Bracketed words become colored tag pills.
+- Cards link to cards (wikilink): type `[[` and pick one. 
+- Set a deadline and the card shows a chip that shifts color as the date nears,
+  turning red once it's overdue.
+- An **Upcoming** view gathers cards from every board by deadline: overdue ones
+  first, then grouped by day. 
+
+### Where it lives
+
 - Local-first storage (IndexedDB): reads and writes hit the browser, not the
-  network.
+  network, so the UI is instant and works offline.
 - Opt-in sync: give it a server you control and boards replicate across your
-  devices in the background.
-- Tauri macOS app that reuses the same client and auto-updates.
-- One-line self-host installer that generates the secrets and brings the stack up.
+  devices in the background, every couple of seconds or on `⌘`+`S`.
+- Deleting is reversible. `⌘`+`Z` takes back the last delete; everything else
+  waits in the trash.
+
+### Run it
+
+- Runs in the browser, installs as a PWA (fullscreen and offline from your
+  phone's home screen), or ships as a Tauri macOS app that reuses the same
+  client and auto-updates.
+- One-line self-host installer that generates the secrets and brings the stack
+  up.
+- Boards are exposed over [MCP](#mcp), so an agent can read and edit them.
 - Dark and light themes.
 
 ## Self-hosting

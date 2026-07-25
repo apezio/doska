@@ -106,7 +106,7 @@ export function Board() {
             </BoardCard>
           </Column>
 
-          <Column title="Where it lives" color="green" count={2}>
+          <Column title="Where it lives" color="green" count={3}>
             <BoardCard id="DATA-1" title="Local-first">
               <p>
                 Boards live in the browser. Reads and writes hit your device,
@@ -119,6 +119,18 @@ export function Board() {
                 Point it at a server you run and boards replicate to every
                 device in the background. Sync happens every couple of seconds,
                 or on <code>⌘</code>+<code>S</code>.
+              </p>
+            </BoardCard>
+
+            <BoardCard id="DATA-3" title="Deleting is reversible">
+              <p>
+                <code>⌘</code>+<code>Z</code> takes back the last delete.
+                Everything else waits in the trash, where one click puts it
+                back: a column returns with its cards, a board with its columns.
+              </p>
+              <p>
+                After 30 days it's permanently deleted, on your device and on
+                your server.
               </p>
             </BoardCard>
           </Column>

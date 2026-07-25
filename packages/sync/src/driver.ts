@@ -40,6 +40,6 @@ export interface SyncDriver<Scope, Change> {
   applyRemote(scope: Scope, changes: Change[]): Promise<void>
   /** The dirty ref a pulled change would occupy, used to build compaction candidates. */
   refOf(change: Change): string
-  /** Hard-deletes local tombstones that have already reached the server. */
+  /** Hard-deletes local tombstones that have reached the server and aged out. */
   compact(dirty: DirtyStore, refs: string[]): Promise<void>
 }

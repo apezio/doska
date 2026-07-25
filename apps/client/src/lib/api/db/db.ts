@@ -5,7 +5,7 @@ import {
   seedDashboards,
 } from "../../seed"
 import type { Card, Column, Dashboard } from "../../types"
-import { CARDS, COLUMNS, DASHBOARDS } from "../constants"
+import { CARDS, COLUMNS, DASHBOARDS, type StoreName } from "../constants"
 import { stamp } from "../sync/hlc"
 
 /**
@@ -25,13 +25,21 @@ export async function seed(): Promise<void> {
  * Tombstones a record instead of removing it: sets `deletedAt` and bumps
  * `updatedAt` (the last-writer-wins version). We never hard-delete, because a
  * removed row can't push its own deletion and would be re-created on the next
- * pull — see sync.ts. `live()` is what hides tombstones from the UI.
+ * pull — see sync.ts. `live()` is what hides tombstones from the UI. The
+ * tombstone stays put until it ages out of the trash (see `purgeExpired`).
  */
 function tombstone<T extends { deletedAt: number | null; updatedAt: number }>(
   record: T
 ): T {
   const now = stamp()
   return { ...record, deletedAt: now, updatedAt: now }
+}
+
+/** Clears a tombstone and bumps `updatedAt`, so the revival wins LWW. */
+function revive<T extends { deletedAt: number | null; updatedAt: number }>(
+  record: T
+): T {
+  return { ...record, deletedAt: null, updatedAt: stamp() }
 }
 
 export const db = {
@@ -60,6 +68,9 @@ export const db = {
   softDeleteCard(card: Card): Promise<void> {
     return idb.set(CARDS, card.id, tombstone(card))
   },
+  restoreCard(card: Card): Promise<void> {
+    return idb.set(CARDS, card.id, revive(card))
+  },
   getColumns(): Promise<Column[]> {
     return idb.getAll<Column>(COLUMNS)
   },
@@ -69,6 +80,9 @@ export const db = {
   softDeleteColumn(column: Column): Promise<void> {
     return idb.set(COLUMNS, column.id, tombstone(column))
   },
+  restoreColumn(column: Column): Promise<void> {
+    return idb.set(COLUMNS, column.id, revive(column))
+  },
   getDashboards(): Promise<Dashboard[]> {
     return idb.getAll<Dashboard>(DASHBOARDS)
   },
@@ -77,5 +91,12 @@ export const db = {
   },
   softDeleteDashboard(dashboard: Dashboard): Promise<void> {
     return idb.set(DASHBOARDS, dashboard.id, tombstone(dashboard))
+  },
+  restoreDashboard(dashboard: Dashboard): Promise<void> {
+    return idb.set(DASHBOARDS, dashboard.id, revive(dashboard))
+  },
+  /** Removes a record outright. Only for tombstones past retention. */
+  hardDelete(store: StoreName, id: string): Promise<void> {
+    return idb.delete(store, id)
   },
 }

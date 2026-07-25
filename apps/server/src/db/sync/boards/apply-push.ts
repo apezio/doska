@@ -15,6 +15,9 @@ import { boardCounter } from "../constants"
  * must never gain live contents from a peer that hasn't yet pulled the deletion.
  * The state is read inside the transaction and memoized — a board can't change
  * deletion status within one push.
+ *
+ * A restore therefore depends on its board reaching the list channel first;
+ * the client sequences the two channels for exactly this reason.
  */
 export function applyPush(boardId: string, changes: Change[]): Promise<void> {
   let boardDeletedAt: number | null | undefined

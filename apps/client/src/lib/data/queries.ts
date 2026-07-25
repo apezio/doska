@@ -29,6 +29,15 @@ export function useBoard(deckId: string) {
   })
 }
 
+/** Everything deleted and still restorable — see {@link api.getTrash}. */
+export function useTrash() {
+  return useQuery({
+    queryKey: keys.trash,
+    queryFn: () => api.getTrash(),
+    networkMode: "always",
+  })
+}
+
 /** Deadlined cards across every board, for the digest. */
 export function useDigest(filter: DigestFilter) {
   return useQuery({

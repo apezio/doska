@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import * as api from "@/lib/api/operations"
 import type { Board, Card } from "@/lib/types"
+import { pushUndo } from "@/lib/undo"
 import { keys } from "../keys"
 import { flushSyncUpdate } from "./flush-sync"
 
@@ -16,10 +17,12 @@ export function useDeleteCard(deckId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => api.deleteCard(deckId, id),
+    onSuccess: (_data, id) => pushUndo("cards", id),
     onSettled: (_data, _error, id) => {
       qc.invalidateQueries({ queryKey: keys.board(deckId) })
       qc.invalidateQueries({ queryKey: keys.card(id) })
       qc.invalidateQueries({ queryKey: keys.digest })
+      qc.invalidateQueries({ queryKey: keys.trash })
     },
   })
 }

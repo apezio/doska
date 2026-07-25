@@ -1,6 +1,6 @@
 # Doska
 
-![A Doska board, split diagonally between the dark and light themes](docs/hero.png)
+<img width="1496" height="847" alt="image" src="https://github.com/user-attachments/assets/3ae8bde7-b546-45e3-87a4-060f02007c34" />
 
 A Kanban board where the cards are Markdown. It's local-first: your boards live
 in the browser (IndexedDB), so it's fast and works without an account. Sync is

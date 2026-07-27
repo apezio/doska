@@ -1,8 +1,9 @@
 import { useState } from "react"
 import { Button, cn, InvisibleInput } from "@doska/ui-kit"
-import { CircleCheck, Eye, EyeOff, Trash2 } from "lucide-react"
+import { CircleCheck, Eye, EyeOff } from "lucide-react"
 import { ConfirmDialog } from "../confirm-dialog"
-import { ColumnColorMenu } from "./column-color-menu"
+import { ColumnSwatch } from "./column-swatch"
+import { ColumnMenu } from "./column-menu"
 
 interface IProps {
   title: string
@@ -32,13 +33,13 @@ export function ColumnHead({
   return (
     <div
       className={cn(
-        "sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 py-3",
+        "sticky top-0 z-10 flex h-15 shrink-0 items-center justify-between gap-2 py-3",
         "bg-background/80 backdrop-blur-xs",
         "text-muted-foreground"
       )}
     >
-      <div className="flex min-w-0 items-center gap-0.5">
-        <ColumnColorMenu color={color} onChange={onChangeColor} />
+      <div className="flex min-w-0 items-center gap-1.5">
+        <ColumnSwatch color={color} labelled className="ml-1" />
         <InvisibleInput
           value={title}
           onCommit={onRename}
@@ -46,20 +47,15 @@ export function ColumnHead({
           className="uppercase"
           title="Click to rename"
         />
+        {/* The only place the flag shows — its toggle lives in the menu. */}
+        {done && (
+          <CircleCheck
+            aria-label={`${title} is the done column`}
+            className="size-4 shrink-0 text-emerald-600/50 dark:text-emerald-500/50"
+          />
+        )}
       </div>
       <div className="flex items-center">
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          aria-pressed={done}
-          aria-label={
-            done ? `Unmark ${title} as done` : `Mark ${title} as done`
-          }
-          onClick={() => onChangeDone(!done)}
-          className={cn(done && "text-emerald-600 dark:text-emerald-500")}
-        >
-          <CircleCheck />
-        </Button>
         <Button
           variant="ghost"
           size="icon-lg"
@@ -71,21 +67,20 @@ export function ColumnHead({
         >
           {showBody ? <EyeOff /> : <Eye />}
         </Button>
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          onClick={() => setConfirmOpen(true)}
-          aria-label={`Delete ${title}`}
-          className="hover:text-destructive"
-        >
-          <Trash2 />
-        </Button>
+        <ColumnMenu
+          title={title}
+          color={color}
+          onChangeColor={onChangeColor}
+          done={done}
+          onChangeDone={onChangeDone}
+          onDelete={() => setConfirmOpen(true)}
+        />
       </div>
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="Delete column?"
-        description={`"${title}" and all of its cards move to the trash, where they stay restorable for 30 days.`}
+        description={`"${title}" and all of its cards move to the trash, where they stay restorable for 14 days.`}
         confirmLabel="Delete column"
         onConfirm={onDelete}
       />

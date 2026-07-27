@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test"
+import { openBoardMenu } from "./board"
 
 /* -------------------------------------------------------------------------- */
 /*  Column helpers. Columns are addressed by their visible heading (their      */
@@ -26,9 +27,9 @@ export function columnCardTitles(page: Page, name: string): Promise<string[]> {
 }
 
 /**
- * Adds a column via the deck header's "Add column" action. New columns land with
- * the "New column" fallback title, appended after the existing ones; this waits
- * for it to render. Pair with `renameColumn` to give it a distinct name.
+ * Adds a column via the "+" standing after the last column. New columns land
+ * with the "New column" fallback title, appended after the existing ones; this
+ * waits for it to render. Pair with `renameColumn` to give it a distinct name.
  */
 export async function addColumn(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Add column" }).click()
@@ -52,58 +53,63 @@ export async function renameColumn(
   await expect(column(page, toTitle)).toBeVisible()
 }
 
-/**
- * A column's color swatch in its header. Its accessible name carries the color
- * currently set ("Column color: Violet", or "…: none"), so a test can read the
- * state off the same control a user clicks.
- */
-export function columnColorMenu(page: Page, name: string) {
-  return column(page, name).getByRole("button", { name: /^Column color:/ })
+/** Opens the named column's "⋯" menu — its color, done flag and delete live there. */
+export async function openColumnMenu(page: Page, name: string): Promise<void> {
+  await column(page, name).getByRole("button", { name: `${name} actions` }).click()
+  await expect(page.getByRole("menu")).toBeVisible()
 }
 
-/** Sets the named column's color by picking `colorLabel` from its header menu. */
+/**
+ * A column's color dot in its header. Its accessible name carries the color set
+ * ("Column color: Violet", or "…: No color"), the same thing a user sees.
+ */
+export function columnColorSwatch(page: Page, name: string) {
+  return column(page, name).getByRole("img", { name: /^Column color:/ })
+}
+
+/** Sets the named column's color by picking `colorLabel` from its "⋯" menu. */
 export async function setColumnColor(
   page: Page,
   name: string,
   colorLabel: string
 ): Promise<void> {
-  await columnColorMenu(page, name).click()
+  await openColumnMenu(page, name)
+  await page.getByRole("menuitem", { name: "Color" }).click()
   await page.getByRole("menuitem", { name: colorLabel, exact: true }).click()
-  await expect(columnColorMenu(page, name)).toHaveAccessibleName(
+  await expect(columnColorSwatch(page, name)).toHaveAccessibleName(
     `Column color: ${colorLabel}`
   )
 }
 
-/**
- * A column's "done" toggle in its header. Its accessible name flips with the
- * state — "Mark {title} as done" when off, "Unmark {title} as done" when on —
- * and it carries `aria-pressed`, so a test reads the flag off the same control
- * a user clicks.
- */
-export function columnDoneToggle(page: Page, name: string) {
-  return column(page, name).getByRole("button", {
-    name: new RegExp(`(Mark|Unmark) ${name} as done`),
-  })
+/** The badge marking the board's done column. It renders only while the flag is on. */
+export function columnDoneBadge(page: Page, name: string) {
+  return column(page, name).getByLabel(`${name} is the done column`)
 }
 
-/** Toggles the named column's "done" flag and waits for the pressed state to settle. */
+/** Toggles the named column's "done" flag from its "⋯" menu and waits for the badge to follow. */
 export async function setColumnDone(
   page: Page,
   name: string,
   done: boolean
 ): Promise<void> {
-  const toggle = columnDoneToggle(page, name)
-  await toggle.click()
-  await expect(toggle).toHaveAttribute("aria-pressed", String(done))
+  await openColumnMenu(page, name)
+  await page
+    .getByRole("menuitem", { name: done ? "Mark as done" : "Unmark as done" })
+    .click()
+  await expect(columnDoneBadge(page, name)).toHaveCount(done ? 1 : 0)
 }
 
 /**
- * Deletes the column titled `title` via its header trash action, then confirms
- * the "are you sure?" dialog, and waits for the column to disappear.
+ * Deletes the column titled `title` from its "⋯" menu, confirming the "are you
+ * sure?" dialog. The confirm click is scoped: the menu item shares its name.
  */
 export async function deleteColumn(page: Page, title: string): Promise<void> {
-  await page.getByRole("button", { name: `Delete ${title}` }).click()
-  await page.getByRole("button", { name: "Delete column" }).click()
+  await openColumnMenu(page, title)
+  await page.getByRole("menuitem", { name: "Delete column" }).click()
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Delete column" })
+    .click()
   await expect(column(page, title)).toHaveCount(0)
 }
 
@@ -118,7 +124,8 @@ export async function reorderColumn(
   title: string,
   moves: string[]
 ): Promise<void> {
-  await page.getByRole("button", { name: "Reorder columns" }).click()
+  await openBoardMenu(page)
+  await page.getByRole("menuitem", { name: "Reorder columns" }).click()
   const block = page
     .getByRole("dialog")
     .locator("[data-rfd-drag-handle-draggable-id]", { hasText: title })

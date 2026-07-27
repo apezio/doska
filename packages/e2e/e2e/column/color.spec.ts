@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 import {
-  columnColorMenu,
+  columnColorSwatch,
   createBoard,
   setColumnColor,
   signIn,
@@ -13,14 +13,14 @@ test.describe("column color", () => {
     await signIn(page)
     await createBoard(page)
 
-    await expect(columnColorMenu(page, "To Do")).toHaveAccessibleName(
+    await expect(columnColorSwatch(page, "To Do")).toHaveAccessibleName(
       "Column color: No color"
     )
 
     await setColumnColor(page, "To Do", "Violet")
 
     await page.reload()
-    await expect(columnColorMenu(page, "To Do")).toHaveAccessibleName(
+    await expect(columnColorSwatch(page, "To Do")).toHaveAccessibleName(
       "Column color: Violet"
     )
   })
@@ -31,7 +31,7 @@ test.describe("column color", () => {
 
     await setColumnColor(page, "To Do", "Violet")
 
-    await expect(columnColorMenu(page, "In Progress")).toHaveAccessibleName(
+    await expect(columnColorSwatch(page, "In Progress")).toHaveAccessibleName(
       "Column color: No color"
     )
   })
@@ -43,7 +43,7 @@ test.describe("column color", () => {
     await setColumnColor(page, "To Do", "Violet")
     await setColumnColor(page, "To Do", "No color")
 
-    await expect(columnColorMenu(page, "To Do")).toHaveAccessibleName(
+    await expect(columnColorSwatch(page, "To Do")).toHaveAccessibleName(
       "Column color: No color"
     )
   })

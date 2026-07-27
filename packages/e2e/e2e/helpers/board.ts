@@ -20,15 +20,26 @@ export async function createBoard(page: Page): Promise<string> {
   return new URL(page.url()).pathname.split("/d/")[1]
 }
 
+/** The deck header, told apart from every other header by its "⋯" menu. */
+function deckHeader(page: Page) {
+  return page.locator("header", {
+    has: page.getByRole("button", { name: "Board actions" }),
+  })
+}
+
 /**
  * The open board's title in the deck header — an inline-editable span (it flips
- * to an input on click), not a heading. Scoped to the header carrying the "Add
- * column" control so it isn't confused with the same board name in the sidebar.
+ * to an input on click), not a heading. Scoped to the deck header so it isn't
+ * confused with the same board name in the sidebar.
  */
 export function boardTitle(page: Page, name: string) {
-  return page
-    .locator("header", { has: page.getByRole("button", { name: "Add column" }) })
-    .getByText(name, { exact: true })
+  return deckHeader(page).getByText(name, { exact: true })
+}
+
+/** Opens the deck header's "⋯" menu — the prefix, reorder and delete live there. */
+export async function openBoardMenu(page: Page): Promise<void> {
+  await deckHeader(page).getByRole("button", { name: "Board actions" }).click()
+  await expect(page.getByRole("menu")).toBeVisible()
 }
 
 /**
@@ -48,23 +59,33 @@ export async function renameBoard(
 }
 
 /**
- * Deletes the open board via its header trash action, then confirms the "are you
- * sure?" dialog. The dialog's confirm button shares the "Delete board" name with
- * the header trigger, so the confirm click is scoped to the dialog.
+ * Deletes the open board from its "⋯" menu, confirming the "are you sure?"
+ * dialog. The confirm click is scoped: the menu item shares its name.
  */
 export async function deleteBoard(page: Page): Promise<void> {
-  await page.getByRole("button", { name: "Delete board" }).click()
+  await openBoardMenu(page)
+  await page.getByRole("menuitem", { name: "Delete board" }).click()
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Delete board" })
     .click()
 }
 
-/** The board's card-id prefix chip in the header; its accessible name is the prefix text. */
-export function prefixChip(page: Page, prefix: string) {
-  return page
-    .locator("header", { has: page.getByRole("button", { name: "Add column" }) })
-    .getByRole("button", { name: prefix, exact: true })
+/**
+ * The "Card prefix" entry in the board's "⋯" menu, which shows the prefix
+ * currently set. The menu has to be open already.
+ */
+export function prefixMenuItem(page: Page, prefix: string) {
+  return page.getByRole("menuitem", { name: `Card prefix ${prefix}` })
+}
+
+/** Opens the card-prefix modal from the board's "⋯" menu and returns its input. */
+export async function openPrefixEditor(page: Page, prefix: string) {
+  await openBoardMenu(page)
+  await prefixMenuItem(page, prefix).click()
+  const input = page.getByRole("textbox", { name: "Board prefix" })
+  await expect(input).toBeVisible()
+  return input
 }
 
 /** Opens the board named `name` from the sidebar's dashboards list. */

@@ -129,7 +129,7 @@ export function Board() {
                 back: a column returns with its cards, a board with its columns.
               </p>
               <p>
-                After 30 days it's permanently deleted, on your device and on
+                After 14 days it's permanently deleted, on your device and on
                 your server.
               </p>
             </BoardCard>

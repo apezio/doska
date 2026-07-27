@@ -108,7 +108,7 @@ Like this one, which has been overdue for a while.`,
     title: "Deleting is reversible",
     body: `\`⌘\`+\`Z\` takes back the last delete. Everything else waits in the trash, where one click puts it back: a column returns with its cards, a board with its columns.
 
-After 30 days it's permanently deleted, on your device and on your server.`,
+After 14 days it's permanently deleted, on your device and on your server.`,
   },
   {
     id: "seed-run-1",

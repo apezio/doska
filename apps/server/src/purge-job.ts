@@ -2,7 +2,7 @@ import { s3StorageFromEnv } from "@doska/file-storage/server"
 import type { FastifyBaseLogger } from "fastify"
 import { purgeExpired } from "./db/sync/purge"
 
-/** How often the retention sweep runs. The window is 30 days; hourly is plenty
+/** How often the retention sweep runs. The window is 14 days; hourly is plenty
  * of resolution, and keeps each sweep small. */
 const INTERVAL_MS = 60 * 60 * 1000
 

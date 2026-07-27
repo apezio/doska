@@ -40,7 +40,7 @@ await seedClock()
 // Seed the local DB from fixtures on first run
 await seed()
 
-// Empty the trash of anything past its 30 days. Not awaited: nothing rendered
+// Empty the trash of anything past its 14 days. Not awaited: nothing rendered
 // reads tombstones, and the trash view sweeps again when it opens.
 void purgeExpired()
 

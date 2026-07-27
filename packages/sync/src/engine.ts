@@ -66,6 +66,9 @@ export class SyncEngine<Scope, Change> {
    * {@link reconcileScopes}. */
   private readonly extraScopes = new Set<Scope>()
 
+  /** Pulled on every pass alongside the active scope. */
+  private watchedScopes: Scope[] = []
+
   private readonly driver: SyncDriver<Scope, Change>
 
   // Gate consulted before every reconcile.
@@ -165,6 +168,15 @@ export class SyncEngine<Scope, Change> {
     return this.reconcile()
   }
 
+  /**
+   * Pulls these scopes on every pass without making any of them active.
+   * {@link reconcileScopes} pulls once, which leaves a cross-scope view stale
+   * the moment it has loaded. Pass `[]` to stop watching.
+   */
+  watchScopes(scopes: Scope[]) {
+    this.watchedScopes = [...scopes]
+  }
+
   private async cycle(): Promise<void> {
     do {
       this.rerun = false
@@ -238,6 +250,7 @@ export class SyncEngine<Scope, Change> {
     }
 
     add(this.activeScope)
+    for (const scope of this.watchedScopes) add(scope)
     for (const scope of [...this.extraScopes]) add(scope)
     if (this.driver.pendingScopes)
       for (const scope of await this.driver.pendingScopes(this.dirty))

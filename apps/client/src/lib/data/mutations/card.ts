@@ -62,6 +62,24 @@ export function useSaveCard() {
 }
 
 /**
+ * Moves one card to the top of a column, for callers outside a board. Every
+ * board's cache is refreshed because the digest holds no deck id of its own.
+ */
+export function useMoveCardToColumn() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, columnId }: { id: string; columnId: string }) =>
+      api.moveCardToColumn(id, columnId),
+    onSettled: (_data, _err, { id }) => {
+      qc.invalidateQueries({ queryKey: keys.boards })
+      qc.invalidateQueries({ queryKey: keys.digest })
+      qc.invalidateQueries({ queryKey: keys.card(id) })
+      qc.invalidateQueries({ queryKey: keys.cardCol(id) })
+    },
+  })
+}
+
+/**
  * Persists a reordered board (computed by the drag handler). Unlike the other
  * mutations, this *does* update the cache up front — not for latency (the write
  * is instant) but for timing: @hello-pangea/dnd needs the new order committed

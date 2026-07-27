@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test"
 import {
   addCard,
-  columnDoneToggle,
+  columnDoneBadge,
   createBoard,
   retitleCard,
   setColumnDone,
@@ -22,21 +22,15 @@ function todayIso(): string {
 }
 
 test.describe("marking a column done", () => {
-  test("toggles the header control and persists across reload", async ({
-    page,
-  }) => {
+  test("badges the column and persists across reload", async ({ page }) => {
     await createBoard(page)
 
-    const toggle = columnDoneToggle(page, "Done")
-    await expect(toggle).toHaveAttribute("aria-pressed", "false")
+    await expect(columnDoneBadge(page, "Done")).toHaveCount(0)
 
     await setColumnDone(page, "Done", true)
 
     await page.reload()
-    await expect(columnDoneToggle(page, "Done")).toHaveAttribute(
-      "aria-pressed",
-      "true"
-    )
+    await expect(columnDoneBadge(page, "Done")).toBeVisible()
   })
 
   test("un-marking a done column clears the flag", async ({ page }) => {
@@ -45,10 +39,19 @@ test.describe("marking a column done", () => {
     await setColumnDone(page, "Done", false)
 
     await page.reload()
-    await expect(columnDoneToggle(page, "Done")).toHaveAttribute(
-      "aria-pressed",
-      "false"
-    )
+    await expect(columnDoneBadge(page, "Done")).toHaveCount(0)
+  })
+
+  test("marking a second column done clears the first", async ({ page }) => {
+    await createBoard(page)
+    await setColumnDone(page, "Done", true)
+    await setColumnDone(page, "In Progress", true)
+
+    await expect(columnDoneBadge(page, "Done")).toHaveCount(0)
+
+    await page.reload()
+    await expect(columnDoneBadge(page, "In Progress")).toBeVisible()
+    await expect(columnDoneBadge(page, "Done")).toHaveCount(0)
   })
 
   test("a card in a done column reads as done in the digest", async ({

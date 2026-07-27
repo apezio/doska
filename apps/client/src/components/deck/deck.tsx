@@ -3,6 +3,7 @@ import { DragDropContext, type DropResult } from "@hello-pangea/dnd"
 import type { Board, Dashboard } from "@/lib/types"
 import { byPosition } from "@/lib/utils"
 import { Column } from "../column/column"
+import { AddColumn } from "../column/add-column"
 import { DraggableCard } from "../card/draggable-card"
 import { DeckHeader } from "./deck-header"
 import { SyncIndicator } from "./sync-indicator"
@@ -65,7 +66,6 @@ export function Deck({
         onRename={onRenameDashboard}
         onRenamePrefix={onRenameDashboardPrefix}
         onDelete={onDeleteDashboard}
-        onAddColumn={onAddColumn}
         columns={columns}
         onReorderColumns={onReorderColumns}
       />
@@ -113,6 +113,7 @@ export function Deck({
               </Column>
             )
           })}
+          <AddColumn onAdd={onAddColumn} />
         </div>
       </DragDropContext>
       <div className="absolute right-4 bottom-4 z-50">

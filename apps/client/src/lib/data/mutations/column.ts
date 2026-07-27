@@ -25,13 +25,11 @@ export function useRenameColumn(deckId: string) {
 /**
  * Optimistic single-column patch: writes `patch` into the board cache up front
  * so the change is instant, rolls back on error, then reconciles on settle.
- * `alsoInvalidate` refreshes dependent queries (e.g. the digest).
  */
 function useColumnPatch<V extends { id: string }>(
   deckId: string,
   mutationFn: (vars: V) => Promise<unknown>,
-  toPatch: (vars: V) => Partial<Column>,
-  alsoInvalidate: readonly (readonly unknown[])[] = []
+  toPatch: (vars: V) => Partial<Column>
 ) {
   const qc = useQueryClient()
   return useMutation({
@@ -52,10 +50,7 @@ function useColumnPatch<V extends { id: string }>(
     onError: (_err, _vars, ctx) => {
       if (ctx?.previous) qc.setQueryData(keys.board(deckId), ctx.previous)
     },
-    onSettled: () => {
-      qc.invalidateQueries({ queryKey: keys.board(deckId) })
-      for (const queryKey of alsoInvalidate) qc.invalidateQueries({ queryKey })
-    },
+    onSettled: () => qc.invalidateQueries({ queryKey: keys.board(deckId) }),
   })
 }
 
@@ -79,15 +74,35 @@ export function useSetColumnColor(deckId: string) {
   )
 }
 
-/** Marks a done column. Any number of columns on a board can hold the flag. */
+/**
+ * Marks the board's done column. Marking one clears the others optimistically
+ * too, or the board flickers two done columns until the refetch lands.
+ */
 export function useSetColumnDone(deckId: string) {
-  return useColumnPatch(
-    deckId,
-    ({ id, done }: { id: string; done: boolean }) =>
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, done }: { id: string; done: boolean }) =>
       api.setColumnDone(id, done),
-    ({ done }) => ({ done }),
-    [keys.digest]
-  )
+    onMutate: ({ id, done }) => {
+      const previous = qc.getQueryData<Board>(keys.board(deckId))
+      if (previous) {
+        qc.setQueryData<Board>(keys.board(deckId), {
+          ...previous,
+          columns: previous.columns.map((c) =>
+            c.id === id ? { ...c, done } : { ...c, done: done ? false : c.done }
+          ),
+        })
+      }
+      return { previous }
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(keys.board(deckId), ctx.previous)
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: keys.board(deckId) })
+      qc.invalidateQueries({ queryKey: keys.digest })
+    },
+  })
 }
 
 export function useDeleteColumn(deckId: string) {

@@ -76,7 +76,7 @@ function Body({
   return (
     <>
       <p className="mb-4 text-sm text-muted-foreground">
-        Items here are permanently deleted after 30 days.
+        Items here are permanently deleted after 14 days.
       </p>
       <ul aria-label="Deleted items" className="flex flex-col gap-2">
         {entries.map((entry) => (

@@ -1,6 +1,6 @@
-import { Card as CardBase, cn } from "@doska/ui-kit"
-import { CircleCheckBig } from "lucide-react"
+import { Card as CardBase, Checkbox, cn } from "@doska/ui-kit"
 import type { DigestCard } from "@/lib/api/operations"
+import { useMoveCardToColumn } from "@/lib/data/mutations"
 import { useDashboardNav } from "@/lib/hooks"
 import { ColumnTag } from "../column/column-tag"
 
@@ -14,8 +14,23 @@ interface IProps {
  * One card in the digest
  */
 export function DigestRow({ entry, isActive, onOpen }: IProps) {
-  const { card, boardId, boardTitle, columnTitle, columnColor, isDone } = entry
+  const {
+    card,
+    boardId,
+    boardTitle,
+    columnTitle,
+    columnColor,
+    isDone,
+    doneColumnId,
+    undoneColumnId,
+  } = entry
   const { selectDashboard } = useDashboardNav()
+  const { mutate: moveCardToColumn } = useMoveCardToColumn()
+
+  const title = card.title || "Untitled card"
+
+  // Null when the board has no done column, and then there is nowhere to send it.
+  const target = isDone ? undoneColumnId : doneColumnId
 
   return (
     <li>
@@ -36,9 +51,16 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
           isDone && "opacity-40"
         )}
       >
-        {isDone && (
-          <CircleCheckBig className="size-4 shrink-0 text-emerald-600 dark:text-emerald-500" />
-        )}
+        <span onClick={(e) => e.stopPropagation()} className="inline-flex">
+          <Checkbox
+            checked={isDone}
+            disabled={!target}
+            aria-label={isDone ? `Reopen ${title}` : `Mark ${title} done`}
+            onCheckedChange={() => {
+              if (target) moveCardToColumn({ id: card.id, columnId: target })
+            }}
+          />
+        </span>
         <span className="flex min-w-0 flex-1 flex-col">
           <span
             className={cn(
@@ -46,7 +68,7 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
               isDone && "line-through"
             )}
           >
-            {card.title || "Untitled card"}
+            {title}
           </span>
           <button
             type="button"

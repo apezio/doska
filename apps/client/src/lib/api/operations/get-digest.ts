@@ -1,5 +1,6 @@
 import { addDays, todayIso } from "@doska/ui-kit"
-import type { Card } from "@/lib/types"
+import type { Card, Column } from "@/lib/types"
+import { byPosition } from "@/lib/utils"
 import { db } from "../db/db"
 import { live } from "./live"
 
@@ -13,6 +14,30 @@ export interface DigestCard {
   columnTitle: string
   columnColor: string
   isDone: boolean
+  /** Where ticking the row's checkbox sends the card; null if the board has no done column. */
+  doneColumnId: string | null
+  /** Where un-ticking sends it: the board's leftmost non-done column. */
+  undoneColumnId: string | null
+}
+
+type Targets = { doneColumnId: string | null; undoneColumnId: string | null }
+
+/**
+ * Each board's tick and un-tick destinations. One sort across all boards is
+ * enough: positions only order columns within a board, so interleaving is fine.
+ */
+function targetsByBoard(columns: Column[]) {
+  const targets = new Map<string, Targets>()
+  for (const column of [...columns].sort(byPosition)) {
+    let board = targets.get(column.dashboardId)
+    if (!board) {
+      board = { doneColumnId: null, undoneColumnId: null }
+      targets.set(column.dashboardId, board)
+    }
+    if (column.done) board.doneColumnId ??= column.id
+    else board.undoneColumnId ??= column.id
+  }
+  return targets
 }
 
 /** Sorts below every real `YYYY-MM-DD`, so it opens an overdue range. */
@@ -47,8 +72,10 @@ export async function getDigest(filter: DigestFilter): Promise<DigestCard[]> {
     db.getDashboards(),
   ])
 
-  const columnById = new Map(columns.filter(live).map((c) => [c.id, c]))
+  const liveColumns = columns.filter(live)
+  const columnById = new Map(liveColumns.map((c) => [c.id, c]))
   const boardById = new Map(dashboards.filter(live).map((d) => [d.id, d]))
+  const targets = targetsByBoard(liveColumns)
 
   return cards.filter(live).flatMap((card) => {
     // A card whose column or board is tombstoned is gone from the UI's point of
@@ -65,6 +92,8 @@ export async function getDigest(filter: DigestFilter): Promise<DigestCard[]> {
         columnTitle: column.title,
         columnColor: column.color,
         isDone: column.done,
+        doneColumnId: targets.get(board.id)?.doneColumnId ?? null,
+        undoneColumnId: targets.get(board.id)?.undoneColumnId ?? null,
       },
     ]
   })

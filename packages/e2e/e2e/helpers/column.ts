@@ -94,7 +94,9 @@ export async function setColumnDone(
 ): Promise<void> {
   await openColumnMenu(page, name)
   await page
-    .getByRole("menuitem", { name: done ? "Mark as done" : "Unmark as done" })
+    .getByRole("menuitem", {
+      name: done ? "Mark cards as done" : "Unmark cards as done",
+    })
     .click()
   await expect(columnDoneBadge(page, name)).toHaveCount(done ? 1 : 0)
 }

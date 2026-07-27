@@ -23,12 +23,12 @@ export function ConnectionBanner() {
   if (!dropped || dismissed) return null
 
   return (
-    <div className="fixed top-4 z-50 flex w-full justify-center px-2">
+    <div className="pointer-events-none fixed top-4 z-50 flex w-full justify-center px-2">
       <div
         role="status"
         aria-live="polite"
         className={cn(
-          "flex max-w-md items-center gap-3 shadow-2xl",
+          "pointer-events-auto flex max-w-md items-center gap-3 shadow-2xl",
           "rounded-lg border bg-popover px-4 py-2 text-sm text-popover-foreground"
         )}
       >

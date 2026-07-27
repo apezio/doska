@@ -103,8 +103,11 @@ export async function applyBoardRemote(
   }
   void persistClock()
 
-  if (touchedBoard)
+  if (touchedBoard) {
     queryClient.invalidateQueries({ queryKey: keys.board(boardId) })
+    // The digest reads its own query, so the board's invalidation misses it.
+    queryClient.invalidateQueries({ queryKey: keys.digest })
+  }
   for (const id of touchedCards)
     queryClient.invalidateQueries({ queryKey: keys.card(id) })
 }

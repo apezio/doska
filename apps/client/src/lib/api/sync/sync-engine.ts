@@ -69,6 +69,9 @@ class DeckSync {
   /** The open board, remembered so a rebuild can re-point the new engine. */
   private currentBoard: string | null = null
 
+  /** Watched boards, remembered for the same reason. */
+  private watchedBoards: string[] = []
+
   private state: SyncState = {
     status: "idle",
     pending: 0,
@@ -103,6 +106,7 @@ class DeckSync {
     this.board.subscribe(() => this.recompute())
     this.list.subscribe(() => this.recompute())
     this.list.setActiveScope(DASHBOARDS_SCOPE)
+    this.board.watchScopes(this.watchedBoards)
     this.board.setActiveScope(this.currentBoard)
 
     this.recompute()
@@ -175,6 +179,16 @@ class DeckSync {
    */
   reconcileBoards(boardIds: string[]): Promise<void> {
     return this.listFirst(() => this.board.reconcileScopes(boardIds))
+  }
+
+  /**
+   * Polls these boards while a cross-board view is open. The digest sets no
+   * active board, so without this nothing pulls. Pass `[]` on the way out.
+   */
+  watchBoards(boardIds: string[]): Promise<void> {
+    this.watchedBoards = boardIds
+    this.board.watchScopes(boardIds)
+    return this.reconcile()
   }
 
   /** Reconciles both channels once. Each engine no-ops while not configured. */

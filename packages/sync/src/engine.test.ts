@@ -148,4 +148,20 @@ describe("SyncEngine", () => {
 
     expect(driver.pushedScopes).toEqual(["b1"])
   })
+
+  it("pulls watched scopes on every pass until they are cleared", async () => {
+    const driver = new FakeDriver()
+    const engine = new SyncEngine(driver, { storageKey: freshKey() })
+
+    engine.watchScopes(["b1", "b2"])
+    await engine.reconcile()
+    await engine.reconcile()
+
+    expect(driver.pushedScopes).toEqual(["b1", "b2", "b1", "b2"])
+
+    engine.watchScopes([])
+    await engine.reconcile()
+
+    expect(driver.pushedScopes).toEqual(["b1", "b2", "b1", "b2"])
+  })
 })

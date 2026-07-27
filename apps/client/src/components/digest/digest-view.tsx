@@ -21,7 +21,8 @@ export function DigestView() {
   const boardIds = dashboards.map((d) => d.id).join(",")
   useEffect(() => {
     if (!boardIds) return
-    void sync.reconcileBoards(boardIds.split(","))
+    void sync.watchBoards(boardIds.split(","))
+    return () => void sync.watchBoards([])
   }, [boardIds])
 
   return (

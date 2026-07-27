@@ -65,5 +65,9 @@ export async function applyDashboardRemote(
   }
   void persistClock()
 
-  if (touched) queryClient.invalidateQueries({ queryKey: keys.dashboards })
+  if (touched) {
+    queryClient.invalidateQueries({ queryKey: keys.dashboards })
+    // Digest rows carry their board's title, and a tombstoned board drops out.
+    queryClient.invalidateQueries({ queryKey: keys.digest })
+  }
 }

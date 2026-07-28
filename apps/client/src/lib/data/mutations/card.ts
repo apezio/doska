@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import * as api from "@/lib/api/operations"
-import type { Board, Card } from "@/lib/types"
+import type { Card } from "@/lib/types"
 import { pushUndo } from "@/lib/undo"
-import { keys } from "../keys"
-import { flushSyncUpdate } from "./flush-sync"
+import { cardWriteKeys, keys } from "../keys"
+import { replaceById, useBoardPatch } from "./board-patch"
 
 export function useCreateCard(deckId: string) {
   const qc = useQueryClient()
@@ -31,16 +31,25 @@ export type CardPatch = Partial<
   Pick<Card, "title" | "body" | "deadline" | "attachments">
 >
 
-export function useUpdateCard(id: string) {
+function useCardWrite<V>(
+  mutationFn: (vars: V) => Promise<unknown>,
+  idOf: (vars: V) => string
+) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (patch: CardPatch) => api.updateCard(id, patch),
-    onSettled: () => {
-      qc.invalidateQueries({ queryKey: keys.card(id) })
-      qc.invalidateQueries({ queryKey: keys.digest })
-      qc.invalidateQueries({ queryKey: keys.boards })
+    mutationFn,
+    onSettled: (_data, _err, vars) => {
+      for (const key of cardWriteKeys(idOf(vars)))
+        qc.invalidateQueries({ queryKey: key })
     },
   })
+}
+
+export function useUpdateCard(id: string) {
+  return useCardWrite(
+    (patch: CardPatch) => api.updateCard(id, patch),
+    () => id
+  )
 }
 
 /**
@@ -49,16 +58,11 @@ export function useUpdateCard(id: string) {
  * card panel debounces its writes, so the id has to travel with the patch.
  */
 export function useSaveCard() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: CardPatch }) =>
+  return useCardWrite(
+    ({ id, patch }: { id: string; patch: CardPatch }) =>
       api.updateCard(id, patch),
-    onSettled: (_data, _err, { id }) => {
-      qc.invalidateQueries({ queryKey: keys.card(id) })
-      qc.invalidateQueries({ queryKey: keys.digest })
-      qc.invalidateQueries({ queryKey: keys.boards })
-    },
-  })
+    ({ id }) => id
+  )
 }
 
 /**
@@ -71,50 +75,36 @@ export function useMoveCardToColumn() {
     mutationFn: ({ id, columnId }: { id: string; columnId: string }) =>
       api.moveCardToColumn(id, columnId),
     onSettled: (_data, _err, { id }) => {
-      qc.invalidateQueries({ queryKey: keys.boards })
-      qc.invalidateQueries({ queryKey: keys.digest })
-      qc.invalidateQueries({ queryKey: keys.card(id) })
+      for (const key of cardWriteKeys(id))
+        qc.invalidateQueries({ queryKey: key })
       qc.invalidateQueries({ queryKey: keys.cardCol(id) })
     },
   })
 }
 
 /**
- * Persists a reordered board (computed by the drag handler). Unlike the other
- * mutations, this *does* update the cache up front — not for latency (the write
- * is instant) but for timing: @hello-pangea/dnd needs the new order committed
- * within the drop event, which `flushSyncUpdate` forces.
+ * Persists a reordered board (computed by the drag handler). The cache is
+ * written up front not for latency (the write is instant) but for timing:
+ * @hello-pangea/dnd needs the new order committed within the drop event.
+ *
+ * A move can land the card in another column, changing its digest tag — and the
+ * open card panel reads its column off the per-card query, so those refresh too
+ * or the panel's column picker keeps showing the old column.
  */
 export function useMoveCard(deckId: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (changed: Card[]) => api.moveCard(deckId, changed),
-    // Synchronous on purpose (no awaited `cancelQueries`) and flushed eagerly, so
-    // the reorder is committed inside the drop event — see `flushSyncUpdate`.
-    onMutate: (changed) => {
-      const previous = qc.getQueryData<Board>(keys.board(deckId))
-      if (previous) {
-        const updates = new Map(changed.map((c) => [c.id, c]))
-        const next: Board = {
-          ...previous,
-          cards: previous.cards.map((c) => updates.get(c.id) ?? c),
-        }
-        flushSyncUpdate(() => qc.setQueryData(keys.board(deckId), next))
-      }
-      return { previous }
-    },
-    onError: (_err, _changed, ctx) => {
-      if (ctx?.previous) qc.setQueryData(keys.board(deckId), ctx.previous)
-    },
-    // A move can land the card in another column, changing its digest tag — and
-    // the open card panel reads its column off the per-card query, so refresh
-    // that too or the panel's column picker keeps showing the old column.
-    onSettled: (_data, _err, changed) => {
-      qc.invalidateQueries({ queryKey: keys.board(deckId) })
-      qc.invalidateQueries({ queryKey: keys.digest })
-      for (const card of changed) {
-        qc.invalidateQueries({ queryKey: keys.card(card.id) })
-      }
-    },
-  })
+  return useBoardPatch(
+    deckId,
+    (changed: Card[]) => api.moveCard(deckId, changed),
+    {
+      apply: (board, changed) => ({
+        ...board,
+        cards: replaceById(board.cards, changed),
+      }),
+      flush: true,
+      also: (changed) => [
+        keys.digest,
+        ...changed.map((card) => keys.card(card.id)),
+      ],
+    }
+  )
 }

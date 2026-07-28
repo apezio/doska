@@ -15,6 +15,13 @@ async function delegateToAuth(
 
 /** better-auth owns /api/auth/* — these are the public, pre-session routes. */
 export function registerAuthRoutes(app: FastifyInstance): void {
+  // The deploy has one account, seeded from AUTH_LOGIN/AUTH_PASSWORD for now
+  for (const url of ["/api/auth/sign-up", "/api/auth/sign-up/*"]) {
+    app.all(url, async (_req, reply) =>
+      reply.code(403).send({ error: "Sign-up is disabled" })
+    )
+  }
+
   app.all("/api/auth/*", delegateToAuth)
 
   // OAuth clients look for discovery at the well-known root, but better-auth

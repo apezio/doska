@@ -3,7 +3,7 @@ import * as api from "@/lib/api/operations"
 import type { Board, Column } from "@/lib/types"
 import { pushUndo } from "@/lib/undo"
 import { keys } from "../keys"
-import { flushSyncUpdate } from "./flush-sync"
+import { replaceById, useBoardPatch } from "./board-patch"
 
 export function useCreateColumn(deckId: string) {
   const qc = useQueryClient()
@@ -22,87 +22,56 @@ export function useRenameColumn(deckId: string) {
   })
 }
 
-/**
- * Optimistic single-column patch: writes `patch` into the board cache up front
- * so the change is instant, rolls back on error, then reconciles on settle.
- */
-function useColumnPatch<V extends { id: string }>(
-  deckId: string,
-  mutationFn: (vars: V) => Promise<unknown>,
-  toPatch: (vars: V) => Partial<Column>
-) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn,
-    onMutate: (vars: V) => {
-      const previous = qc.getQueryData<Board>(keys.board(deckId))
-      if (previous) {
-        const patch = toPatch(vars)
-        qc.setQueryData<Board>(keys.board(deckId), {
-          ...previous,
-          columns: previous.columns.map((c) =>
-            c.id === vars.id ? { ...c, ...patch } : c
-          ),
-        })
-      }
-      return { previous }
-    },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.previous) qc.setQueryData(keys.board(deckId), ctx.previous)
-    },
-    onSettled: () => qc.invalidateQueries({ queryKey: keys.board(deckId) }),
-  })
-}
+const patchColumn = (
+  board: Board,
+  id: string,
+  patch: Partial<Column>
+): Board => ({
+  ...board,
+  columns: board.columns.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+})
 
 /** Toggles a column's collapse state (card bodies hidden down to titles). */
 export function useSetColumnCollapsed(deckId: string) {
-  return useColumnPatch(
+  return useBoardPatch(
     deckId,
     ({ id, collapsed }: { id: string; collapsed: boolean }) =>
       api.setColumnCollapsed(id, collapsed),
-    ({ collapsed }) => ({ collapsed })
+    {
+      apply: (board, { id, collapsed }) =>
+        patchColumn(board, id, { collapsed }),
+    }
   )
 }
 
 /** Sets a column's color; the swatch and every pill re-tint immediately. */
 export function useSetColumnColor(deckId: string) {
-  return useColumnPatch(
+  return useBoardPatch(
     deckId,
     ({ id, color }: { id: string; color: string }) =>
       api.setColumnColor(id, color),
-    ({ color }) => ({ color })
+    { apply: (board, { id, color }) => patchColumn(board, id, { color }) }
   )
 }
 
-/**
- * Marks the board's done column. Marking one clears the others optimistically
- * too, or the board flickers two done columns until the refetch lands.
- */
+/** Marks the board's done column. */
 export function useSetColumnDone(deckId: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, done }: { id: string; done: boolean }) =>
+  return useBoardPatch(
+    deckId,
+    ({ id, done }: { id: string; done: boolean }) =>
       api.setColumnDone(id, done),
-    onMutate: ({ id, done }) => {
-      const previous = qc.getQueryData<Board>(keys.board(deckId))
-      if (previous) {
-        qc.setQueryData<Board>(keys.board(deckId), {
-          ...previous,
-          columns: previous.columns.map((c) =>
-            c.id === id ? { ...c, done } : { ...c, done: done ? false : c.done }
-          ),
-        })
-      }
-      return { previous }
-    },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.previous) qc.setQueryData(keys.board(deckId), ctx.previous)
-    },
-    onSettled: () => {
-      qc.invalidateQueries({ queryKey: keys.board(deckId) })
-      qc.invalidateQueries({ queryKey: keys.digest })
-    },
-  })
+    {
+      // Marking one clears the others here too, or the board flickers two done
+      // columns until the refetch lands.
+      apply: (board, { id, done }) => ({
+        ...board,
+        columns: board.columns.map((c) =>
+          c.id === id ? { ...c, done } : { ...c, done: done ? false : c.done }
+        ),
+      }),
+      also: () => [keys.digest],
+    }
+  )
 }
 
 export function useDeleteColumn(deckId: string) {
@@ -119,30 +88,17 @@ export function useDeleteColumn(deckId: string) {
 }
 
 /**
- * Persists a reordered column (computed by the reorder modal). Like
- * {@link useMoveCard}, the board cache is updated up front and flushed eagerly
- * so the new order is committed inside the drop event — the modal renders its
- * blocks straight from `keys.board`, sorted by position.
+ * Persists a reordered column (computed by the reorder modal). Flushed for the
+ * same reason as {@link useMoveCard}: the modal renders its blocks straight from
+ * `keys.board`, sorted by position, so the new order has to be committed inside
+ * the drop event.
  */
 export function useMoveColumn(deckId: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (changed: Column[]) => api.moveColumn(changed),
-    onMutate: (changed) => {
-      const previous = qc.getQueryData<Board>(keys.board(deckId))
-      if (previous) {
-        const updates = new Map(changed.map((c) => [c.id, c]))
-        const next: Board = {
-          ...previous,
-          columns: previous.columns.map((c) => updates.get(c.id) ?? c),
-        }
-        flushSyncUpdate(() => qc.setQueryData(keys.board(deckId), next))
-      }
-      return { previous }
-    },
-    onError: (_err, _changed, ctx) => {
-      if (ctx?.previous) qc.setQueryData(keys.board(deckId), ctx.previous)
-    },
-    onSettled: () => qc.invalidateQueries({ queryKey: keys.board(deckId) }),
+  return useBoardPatch(deckId, (changed: Column[]) => api.moveColumn(changed), {
+    apply: (board, changed) => ({
+      ...board,
+      columns: replaceById(board.columns, changed),
+    }),
+    flush: true,
   })
 }

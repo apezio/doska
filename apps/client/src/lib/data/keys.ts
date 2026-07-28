@@ -16,3 +16,9 @@ export const keys = {
   cardCol: (id: string) => ["card-col", id] as const,
   session: ["session"] as const,
 }
+
+/**
+ * What a write to one card's content goes stale in
+ */
+export const cardWriteKeys = (id: string) =>
+  [keys.card(id), keys.digest, keys.boards] as const

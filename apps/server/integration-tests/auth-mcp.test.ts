@@ -14,6 +14,22 @@ describe("session guard", () => {
   })
 })
 
+describe("sign-up", () => {
+  test("registering a second account is refused", async () => {
+    const res = await h.app.inject({
+      method: "POST",
+      url: "/api/auth/sign-up/email",
+      headers: { "content-type": "application/json" },
+      payload: JSON.stringify({
+        name: "intruder",
+        email: "intruder@deck.invalid",
+        password: "intruder-password",
+      }),
+    })
+    expect(res.statusCode).toBe(403)
+  })
+})
+
 describe("auth discovery", () => {
   test("serves OAuth metadata at the well-known root", async () => {
     const res = await h.app.inject({

@@ -94,9 +94,11 @@ test.describe("marking a column done", () => {
     // seeded Welcome board has none either, hence the scoping to this row.
     await page.goto("/digest")
     const row = page.getByRole("button", { name: /Needs a done column/ })
-    await row
-      .getByRole("checkbox", { name: "How marking cards done works" })
-      .click()
+    const help = row.getByRole("checkbox", {
+      name: "How marking cards done works",
+    })
+    await help.click()
+    await expect(help).not.toBeChecked()
     await page
       .getByRole("dialog")
       .getByRole("button", { name: "Done", exact: true })

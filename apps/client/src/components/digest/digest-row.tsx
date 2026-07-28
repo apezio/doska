@@ -58,12 +58,15 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
           <Checkbox
             variant={target ? "default" : "dashed"}
             checked={isDone}
+            readOnly={!target}
             aria-label={
               !target ? "How marking cards done works" : "Toggle done"
             }
+            onClick={() => {
+              if (!target) setHelpOpen(true)
+            }}
             onCheckedChange={() => {
               if (target) moveCardToColumn({ id: card.id, columnId: target })
-              else setHelpOpen(true)
             }}
           />
         </span>

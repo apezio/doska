@@ -78,8 +78,8 @@ export function Deck({
       >
         <div
           className={cn(
-            "flex min-h-0 w-full flex-1 items-stretch gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain px-6",
-            !isDragging && "snap-x snap-mandatory scroll-px-6 md:snap-none",
+            "flex min-h-0 w-full flex-1 items-stretch gap-0 overflow-x-auto overflow-y-hidden overscroll-x-contain px-0 md:gap-6 md:px-6",
+            !isDragging && "snap-x snap-mandatory scroll-px-0 md:scroll-px-6 md:snap-none",
             "transition-opacity duration-1000",
             isLoading ? "opacity-0" : "opacity-100"
           )}

@@ -8,7 +8,7 @@ interface IProps {
 /** The trailing "+", standing where the next column would go. */
 export function AddColumn({ onAdd }: IProps) {
   return (
-    <div className="flex w-full max-w-sm shrink-0 snap-center flex-col pb-6">
+    <div className="flex w-full max-w-none shrink-0 snap-center flex-col pb-6 md:max-w-sm">
       {/* Clears the column headers, so the button starts level with the card lists. */}
       <div className="h-15 shrink-0" />
       <Button

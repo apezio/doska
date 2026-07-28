@@ -4,7 +4,7 @@ import type { Attachment } from "@/lib/types"
 import { useCard } from "@/lib/data/queries"
 import { useUpdateCard } from "@/lib/data/mutations"
 import { activeStorage } from "@/lib/api/attachments"
-import { downloadUrl, revealInDownloads } from "@/lib/download"
+import { downloadBlob, revealInDownloads } from "@/lib/download"
 import { isDesktop } from "@/lib/platform"
 import { AttachmentTile } from "./attachment-tile"
 import { AttachmentViewer } from "./attachment-viewer"
@@ -65,7 +65,7 @@ export function CardAttachments({ cardId, isReadonly, className }: IProps) {
         setViewing(att)
         return
       }
-      downloadUrl(await storage.url(cardId, att.key), att.name)
+      await downloadBlob(await storage.get(cardId, att.key), att.name)
     } catch {
       setError("Could not open file")
     }

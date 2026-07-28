@@ -1,7 +1,8 @@
 import { Modal, ModalContent, ModalTitle } from "@doska/ui-kit"
 import { Download, X } from "lucide-react"
 import type { Attachment } from "@/lib/types"
-import { downloadUrl } from "@/lib/download"
+import { activeStorage } from "@/lib/api/attachments"
+import { downloadBlob } from "@/lib/download"
 import { useAttachmentUrl } from "@/lib/hooks/use-attachment-url"
 
 interface IProps {
@@ -45,7 +46,11 @@ function Viewer({
           type="button"
           aria-label="Download"
           disabled={!url}
-          onClick={() => url && downloadUrl(url, attachment.name)}
+          onClick={() =>
+            void activeStorage()
+              .get(cardId, attachment.key)
+              .then((blob) => downloadBlob(blob, attachment.name))
+          }
           className="rounded p-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
         >
           <Download className="size-4" />

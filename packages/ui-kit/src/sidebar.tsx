@@ -1,5 +1,10 @@
 import { PanelLeftIcon } from "lucide-react"
 import { useIsMobile } from "./lib/use-mobile"
+import {
+  SidebarContext,
+  useSidebar,
+  type SidebarContextProps,
+} from "./lib/use-sidebar"
 import { useEdgeSwipe } from "./lib/use-edge-swipe"
 import { cn } from "./lib/cn"
 import { Button } from "./button"
@@ -12,9 +17,7 @@ import {
 } from "./sheet"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip"
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -27,26 +30,6 @@ const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
-
-type SidebarContextProps = {
-  state: "expanded" | "collapsed"
-  open: boolean
-  setOpen: (open: boolean) => void
-  openMobile: boolean
-  setOpenMobile: (open: boolean) => void
-  isMobile: boolean
-  toggleSidebar: () => void
-}
-
-const SidebarContext = createContext<SidebarContextProps | null>(null)
-
-function useSidebar() {
-  const context = useContext(SidebarContext)
-  if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider.")
-  }
-  return context
-}
 
 function SidebarProvider({
   defaultOpen = true,

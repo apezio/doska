@@ -1,6 +1,7 @@
-import { Button } from "@doska/ui-kit"
+import { Button, cn, useIsMobile } from "@doska/ui-kit"
 import { Eye, PencilLine, X } from "lucide-react"
 import { AddAttachmentButton } from "../card/attachments/add-attachment-button"
+import { hasOverlayTitleBar } from "@/lib/platform"
 
 interface IProps {
   onClose: () => void
@@ -15,8 +16,16 @@ export function CardPanelHeader({
   onSave,
   onTogglePreivew,
 }: IProps) {
+  const isMobile = useIsMobile()
+  const windowControlsInset = isMobile && hasOverlayTitleBar()
+
   return (
-    <div className="flex shrink-0 items-center justify-between gap-2 px-3 pt-[max(0.625rem,env(safe-area-inset-top))] pb-2">
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-between gap-2 px-3 pt-[max(0.625rem,env(safe-area-inset-top))] pb-2",
+        windowControlsInset && "pl-24"
+      )}
+    >
       <div className="flex w-20 justify-start">
         <Button variant="ghost" size="icon-sm" onClick={onClose}>
           <X />

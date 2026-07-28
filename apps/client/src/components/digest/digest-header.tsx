@@ -1,5 +1,6 @@
-import { Button, SidebarTrigger, cn } from "@doska/ui-kit"
+import { Button, cn } from "@doska/ui-kit"
 import type { DigestFilter } from "@/lib/api/operations"
+import { PageHeader } from "../app/page-header"
 
 // const FILTERS: { id: DigestFilter; label: string }[] = [
 //   // { id: "today", label: "Today" },
@@ -20,8 +21,7 @@ export function DigestHeader({
   onToggleHideDone,
 }: IProps) {
   return (
-    <header className="flex h-11.5 shrink-0 items-center gap-2 border-b px-4">
-      <SidebarTrigger />
+    <PageHeader>
       <h1 className="text-base font-semibold">Upcoming</h1>
       <div className="ml-auto flex items-center gap-1">
         <Button
@@ -46,6 +46,6 @@ export function DigestHeader({
           </Button>
         ))}*/}
       </div>
-    </header>
+    </PageHeader>
   )
 }

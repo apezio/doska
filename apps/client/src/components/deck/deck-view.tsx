@@ -68,7 +68,9 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
       onChangeColumnDone={(columnId, done) =>
         setColumnDone({ id: columnId, done })
       }
-      onRenameColumn={(columnId, title) => renameColumn({ id: columnId, title })}
+      onRenameColumn={(columnId, title) =>
+        renameColumn({ id: columnId, title })
+      }
       onDeleteColumn={deleteColumn}
       onRenameDashboard={(name) => renameDashboard({ id, name })}
       onRenameDashboardPrefix={(prefix) =>

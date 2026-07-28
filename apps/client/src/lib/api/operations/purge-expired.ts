@@ -27,7 +27,8 @@ export async function purgeExpired(now = Date.now()): Promise<number> {
     if (c.deletedAt !== null && c.deletedAt < cutoff)
       expired.push([COLUMNS, c.id])
   for (const c of cards)
-    if (c.deletedAt !== null && c.deletedAt < cutoff) expired.push([CARDS, c.id])
+    if (c.deletedAt !== null && c.deletedAt < cutoff)
+      expired.push([CARDS, c.id])
 
   let purged = 0
   for (const [store, id] of expired) {

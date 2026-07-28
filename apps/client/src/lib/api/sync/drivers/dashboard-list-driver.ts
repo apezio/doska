@@ -1,10 +1,5 @@
 import type { DashboardChange } from "@doska/contract"
-import type {
-  DirtyStore,
-  PushInput,
-  PushResult,
-  SyncDriver,
-} from "@doska/sync"
+import type { DirtyStore, PushInput, PushResult, SyncDriver } from "@doska/sync"
 import { orpc } from "../orpc"
 import * as dashboards from "./dashboard-channel"
 import * as generic from "./channel-shared"
@@ -15,9 +10,10 @@ export const DASHBOARDS_SCOPE = "dashboards"
 const CURSOR_KEY = "cursor:dashboards-list"
 
 /** Syncs the dashboard list against the server via oRPC's `dashboards.sync`. */
-export class DashboardListDriver
-  implements SyncDriver<string, DashboardChange>
-{
+export class DashboardListDriver implements SyncDriver<
+  string,
+  DashboardChange
+> {
   push(
     input: PushInput<string, DashboardChange>
   ): Promise<PushResult<DashboardChange>> {

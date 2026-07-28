@@ -71,7 +71,13 @@ export async function getTrash(): Promise<TrashEntry[]> {
     const deletedAt = card.deletedAt
     const column = columnById.get(card.columnId)
     const board = column && boardById.get(column.dashboardId)
-    if (deletedAt === null || !column || !live(column) || !board || !live(board))
+    if (
+      deletedAt === null ||
+      !column ||
+      !live(column) ||
+      !board ||
+      !live(board)
+    )
       continue
     entries.push({
       kind: "cards",

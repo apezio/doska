@@ -428,6 +428,12 @@ importers:
       '@doska/contract':
         specifier: workspace:*
         version: link:../contract
+      '@doska/markdown':
+        specifier: workspace:*
+        version: link:../markdown
+      '@doska/ui-kit':
+        specifier: workspace:*
+        version: link:../ui-kit
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.0
         version: 1.30.0(supports-color@10.2.2)(zod@4.4.3)

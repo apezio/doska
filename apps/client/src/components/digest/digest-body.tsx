@@ -27,7 +27,9 @@ export function DigestBody({
 }) {
   if (error)
     return (
-      <CenteredState icon={<TriangleAlert className="size-8 text-destructive" />}>
+      <CenteredState
+        icon={<TriangleAlert className="size-8 text-destructive" />}
+      >
         <p className="max-w-sm text-sm text-muted-foreground">
           Couldn't read your deadlines. If the app is open in another tab, close
           it and reload — the local database has to upgrade before the digest

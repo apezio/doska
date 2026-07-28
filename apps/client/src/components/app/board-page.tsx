@@ -18,10 +18,7 @@ export function BoardPage({ deckId }: IProps) {
   )
 
   return (
-    <AppShell
-      deck={deck}
-      cardCloseHref={`~${routes.deck.to(dashboard.id)}`}
-    >
+    <AppShell deck={deck} cardCloseHref={`~${routes.deck.to(dashboard.id)}`}>
       <DeckView dashboard={dashboard} />
     </AppShell>
   )

@@ -17,9 +17,8 @@ function read(): number {
 
 async function apply(level: number): Promise<void> {
   localStorage.setItem(STORAGE_KEY, String(level))
-  const { getCurrentWebviewWindow } = await import(
-    "@tauri-apps/api/webviewWindow"
-  )
+  const { getCurrentWebviewWindow } =
+    await import("@tauri-apps/api/webviewWindow")
   await getCurrentWebviewWindow().setZoom(level)
 }
 

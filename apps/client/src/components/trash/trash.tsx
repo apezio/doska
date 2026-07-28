@@ -1,6 +1,6 @@
-import { SidebarTrigger } from "@doska/ui-kit"
 import { Trash2, TriangleAlert } from "lucide-react"
 import type { TrashEntry } from "@/lib/api/operations"
+import { PageHeader } from "../app/page-header"
 import { CenteredState } from "../digest/centered-state"
 import { TrashRow } from "./trash-row"
 
@@ -22,10 +22,9 @@ export function Trash({
 }: IProps) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="flex h-11.5 shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger />
+      <PageHeader>
         <h1 className="text-base font-semibold">Trash</h1>
-      </header>
+      </PageHeader>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-10">
         <div className="mx-auto max-w-lg">

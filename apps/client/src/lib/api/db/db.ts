@@ -1,9 +1,5 @@
 import { CARDS_BY_COLUMN, CARDS_BY_DEADLINE, idb } from "./idb"
-import {
-  cards as seedCards,
-  seedColumns,
-  seedDashboards,
-} from "../../seed"
+import { cards as seedCards, seedColumns, seedDashboards } from "../../seed"
 import type { Card, Column, Dashboard } from "../../types"
 import { CARDS, COLUMNS, DASHBOARDS, type StoreName } from "../constants"
 import { stamp } from "../sync/hlc"

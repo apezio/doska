@@ -47,7 +47,12 @@ export async function checkForUpdates(): Promise<DesktopUpdateState> {
       return NONE
     }
 
-    return { status: "available", kind: "desktop", version: update.version, install }
+    return {
+      status: "available",
+      kind: "desktop",
+      version: update.version,
+      install,
+    }
   } catch (err) {
     // Never let a failed update check break app startup.
     console.error("update check failed", err)

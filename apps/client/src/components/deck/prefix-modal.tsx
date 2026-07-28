@@ -32,6 +32,15 @@ export function PrefixModal({
 }: IProps) {
   const [draft, setDraft] = useState(prefix)
   const [error, setError] = useState<string | null>(null)
+  const [wasOpen, setWasOpen] = useState(open)
+
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setDraft(prefix)
+      setError(null)
+    }
+  }
 
   const takenUpper = new Set(taken.filter(Boolean).map((p) => p.toUpperCase()))
 
@@ -50,16 +59,7 @@ export function PrefixModal({
   }
 
   return (
-    <Modal
-      open={open}
-      onOpenChange={(next) => {
-        if (next) {
-          setDraft(prefix)
-          setError(null)
-        }
-        onOpenChange(next)
-      }}
-    >
+    <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent className="md:max-w-sm md:p-6">
         <ModalContentCentered>
           <ModalTitle>Card prefix</ModalTitle>

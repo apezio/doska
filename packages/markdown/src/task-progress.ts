@@ -1,3 +1,6 @@
+// Pure string helpers, no React — also imported by the MCP tools through the
+// `@doska/markdown/task-progress` subpath.
+
 // Matches a GFM task-list marker at the start of a list item, e.g. "- [ ] ".
 const TASK_RE = /^(\s*[-*+]\s+)\[([ xX])\]/gm
 

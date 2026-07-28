@@ -31,6 +31,27 @@ export function positionAt(
     : generateKeyBetween(sorted[sorted.length - 1]?.position ?? null, null)
 }
 
+/**
+ * A fractional index placing a record next to a named sibling. `siblings` must
+ * not include the record being moved, so a move within a column doesn't try to
+ * key against its own old position.
+ */
+export function positionNextTo<T extends Ordered & { id: string }>(
+  siblings: T[],
+  anchorId: string,
+  side: "before" | "after"
+): string {
+  const sorted = [...siblings].sort(byPosition)
+  const at = sorted.findIndex((s) => s.id === anchorId)
+  if (at === -1) throw new Error(`No sibling ${anchorId} to place next to`)
+
+  const [lower, upper] =
+    side === "before"
+      ? [sorted[at - 1]?.position ?? null, sorted[at].position]
+      : [sorted[at].position, sorted[at + 1]?.position ?? null]
+  return generateKeyBetween(lower, upper)
+}
+
 /** Stamps a record as written now. Its `updatedAt` is what settles a conflict. */
 export const touch = <T extends Record_>(record: T): T => ({
   ...record,
@@ -43,6 +64,14 @@ export const tombstone = <T extends Record_>(record: T): T => ({
   updatedAt: Date.now(),
   deletedAt: Date.now(),
 })
+
+/** The column whose cards count as finished, if the board has one. */
+export const doneColumn = (columns: Column[]): Column | undefined =>
+  columns.find((c) => c.done)
+
+/** Where un-marking a card sends it: the board's leftmost unfinished column. */
+export const openColumn = (columns: Column[]): Column | undefined =>
+  columns.find((c) => !c.done)
 
 export type Board = ReturnType<typeof createBoard>
 

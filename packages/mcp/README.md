@@ -21,17 +21,36 @@ an access token from there on. Same URL works for Claude Desktop and claude.ai.
 
 ## Tools
 
-| Tool                                              | What it does                                                                  |
-| ------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `list_boards`                                     | Every board with its id and title                                             |
-| `get_board`                                       | One board in full: columns in order, each with its cards and Markdown bodies  |
-| `create_board`                                    | New board with the default To Do / In Progress / Done columns                 |
-| `rename_board`, `delete_board`                    | Rename; delete along with its columns and cards                               |
-| `create_column`, `rename_column`, `delete_column` | Delete takes the column's cards with it                                       |
-| `create_card`                                     | Add a card to a column — title, Markdown body, optional `YYYY-MM-DD` deadline |
-| `update_card`                                     | Edit title, body, or deadline; omitted fields are left alone                  |
-| `move_card`                                       | To another column, or to the other end of its own                             |
-| `delete_card`                                     | Delete a card                                                                 |
+| Tool                             | What it does                                                                           |
+| -------------------------------- | -------------------------------------------------------------------------------------- |
+| `list_boards`                    | Every board with its id, title and card-id prefix                                      |
+| `get_board`                      | One board in full: columns with color and done flag, each with its cards               |
+| `get_card`                       | One card, without pulling the whole board                                              |
+| `create_board`                   | New board with the default To Do / In Progress / Done columns                          |
+| `rename_board`, `delete_board`   | Rename; delete along with its columns and cards                                        |
+| `create_column`, `delete_column` | Delete takes the column's cards with it                                                |
+| `update_column`                  | Title, color, collapsed, or which column counts as done                                |
+| `move_column`                    | Reorder: to either end, or next to another column                                      |
+| `create_card`                    | Add a card to a column — title, Markdown body, optional `YYYY-MM-DD` deadline          |
+| `update_card`                    | Edit title, body, or deadline; or `append` to the body without rewriting it            |
+| `move_card`                      | To another column, to an end of one, or directly above a named card                    |
+| `set_card_done`                  | Into the board's done column, or back out to the leftmost open one                     |
+| `check_task`                     | Tick or untick one task-list checkbox by index, leaving the rest of the body untouched |
+| `delete_card`                    | Delete a card                                                                          |
+| `search_cards`                   | Across every board, by text, deadline range, or column                                 |
+| `list_upcoming`                  | The app's upcoming view: overdue first, then today, then out to 60 days                |
+
+Every tool addresses records by their opaque id. Display ids like `ROAD-12` come
+back on reads and are what people say out loud, but they don't work as input: the
+number is only allocated on the card's first sync, and the prefix is editable in
+board settings. `search_cards` matches them, so that's the way from a `ROAD-12`
+to an id you can write against.
+
+The server also ships `instructions` (see `guide.ts`): the board's own concepts —
+the done column, deadlines — and the Markdown dialect card bodies are written in,
+which is `[tag]` pills, `[[card]]` links, `==highlight==` and the `-cut-` line on
+top of GFM. None of that is inferable from a tool schema, and a client that
+doesn't read it will write bodies that render wrong.
 
 Deletes are tombstones, the same as in the app: they propagate to your other
 devices rather than letting a peer resurrect the record on its next sync.

@@ -7,9 +7,9 @@ import {
   MenuItem,
   MenuSeparator,
   MenuTrigger,
-  SidebarTrigger,
 } from "@doska/ui-kit"
 import { ArrowRightLeft, Hash, MoreHorizontal, Trash2 } from "lucide-react"
+import { PageHeader } from "../app/page-header"
 import { ConfirmDialog } from "../confirm-dialog"
 import { ReorderColumnsModal } from "./reorder-columns/reorder-columns-modal"
 import { PrefixModal } from "./prefix-modal"
@@ -41,8 +41,7 @@ export function DeckHeader({
   const [prefixOpen, setPrefixOpen] = useState(false)
 
   return (
-    <header className="flex h-11.5 shrink-0 items-center gap-2 border-b px-4">
-      <SidebarTrigger />
+    <PageHeader>
       <InvisibleInput
         value={title}
         onCommit={onRename}
@@ -113,6 +112,6 @@ export function DeckHeader({
         taken={takenPrefixes}
         onCommit={onRenamePrefix}
       />
-    </header>
+    </PageHeader>
   )
 }

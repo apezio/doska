@@ -74,7 +74,7 @@ export function AttachmentDropZone({
       )}
       {!dragging && error && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center p-2">
-          <div className="flex items-center gap-1.5 rounded-md bg-destructive px-2.5 py-1 text-sm text-destructive-foreground shadow">
+          <div className="text-destructive-foreground flex items-center gap-1.5 rounded-md bg-destructive px-2.5 py-1 text-sm shadow">
             <TriangleAlert className="size-4" />
             {error}
           </div>

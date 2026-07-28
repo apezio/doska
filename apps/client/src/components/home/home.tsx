@@ -1,6 +1,7 @@
 import { Anchor, ArrowRight, Plus } from "lucide-react"
-import { Button, SidebarTrigger } from "@doska/ui-kit"
+import { Button } from "@doska/ui-kit"
 import type { Dashboard } from "@/lib/types"
+import { PageHeader } from "../app/page-header"
 
 interface IProps {
   hasBoards: boolean
@@ -18,9 +19,7 @@ export function Home({
 }: IProps) {
   return (
     <div className="flex h-full flex-1 flex-col">
-      <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger />
-      </header>
+      <PageHeader className="h-14" />
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <Anchor className="size-8" />
         <div className="space-y-1">

@@ -1,14 +1,33 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Card } from "@doska/contract"
-import { cardDisplayId } from "@doska/contract"
+import { taskProgress, toggleTaskByIndex } from "@doska/markdown/task-progress"
 import { z } from "zod"
-import { type Board, newId, positionAt, tombstone, touch } from "../board"
+import {
+  type Board,
+  doneColumn,
+  newId,
+  openColumn,
+  positionAt,
+  positionNextTo,
+  tombstone,
+  touch,
+} from "../board"
 import { reply } from "./reply"
+import { shapeCard } from "./shape"
 
 const deadline = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Use an ISO date, e.g. 2026-07-31")
   .nullable()
+  .describe("Calendar date, no time — this is what the upcoming view lists")
+
+const cardId = z
+  .string()
+  .describe(
+    "The card's own id. Display ids like ROAD-12 don't work here: " +
+      "the number is only allocated on first sync and the prefix is editable. " +
+      "Get the id from get_board or search_cards."
+  )
 
 const place = z
   .enum(["top", "bottom"])
@@ -20,7 +39,9 @@ export function registerCardTools(server: McpServer, board: Board): void {
     {
       title: "Create card",
       description:
-        "Add a card to a column. The body is GitHub-flavored Markdown and may include task lists.",
+        "Add a card to a column. The body is Markdown in the board's " +
+        "dialect — task lists, [tag] pills, [[ROAD-12]] card links, " +
+        "==highlight==, and a -cut- line ending the board preview.",
       inputSchema: {
         boardId: z.string(),
         columnId: z.string(),
@@ -53,8 +74,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
 
       // The server stamps the number on write; re-read to surface the id.
       const { prefix } = await board.dashboard(boardId)
-      const stored = await board.card(boardId, card.id)
-      return reply({ ...stored, cardId: cardDisplayId(prefix, stored.number) })
+      return reply(shapeCard(await board.card(boardId, card.id), prefix))
     }
   )
 
@@ -63,25 +83,42 @@ export function registerCardTools(server: McpServer, board: Board): void {
     {
       title: "Update card",
       description:
-        "Edit a card's title, body, or deadline. Omitted fields are left alone; pass a null deadline to clear it.",
+        "Edit a card's title, body, or deadline. Omitted fields are left " +
+        "alone; pass a null deadline to clear it. `append` adds to the end " +
+        "of the body instead of replacing it, which is the safe way to add " +
+        "a note to a card you haven't read.",
       inputSchema: {
         boardId: z.string(),
-        cardId: z.string(),
+        cardId,
         title: z.string().optional(),
         body: z.string().optional(),
+        append: z
+          .string()
+          .optional()
+          .describe(
+            "Markdown appended as a new block. Ignored if `body` is set"
+          ),
         deadline: deadline.optional(),
       },
     },
-    async ({ boardId, cardId, title, body, deadline }) => {
+    async ({ boardId, cardId, title, body, append, deadline }) => {
+      const { prefix } = await board.dashboard(boardId)
       const existing = await board.card(boardId, cardId)
+
+      let nextBody = body ?? existing.body
+      if (body === undefined && append)
+        nextBody = existing.body
+          ? `${existing.body.trimEnd()}\n\n${append}`
+          : append
+
       const card = touch({
         ...existing,
         title: title ?? existing.title,
-        body: body ?? existing.body,
+        body: nextBody,
         deadline: deadline === undefined ? existing.deadline : deadline,
       })
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
-      return reply(card)
+      return reply(shapeCard(card, prefix))
     }
   )
 
@@ -90,32 +127,123 @@ export function registerCardTools(server: McpServer, board: Board): void {
     {
       title: "Move card",
       description:
-        "Move a card to another column, or to the other end of the one it is in.",
+        "Move a card to another column, or reorder it within its own. To " +
+        "mark work finished use set_card_done instead — it knows which " +
+        "column the board treats as done.",
       inputSchema: {
         boardId: z.string(),
-        cardId: z.string(),
-        columnId: z.string().optional(),
+        cardId,
+        columnId: z
+          .string()
+          .optional()
+          .describe("Target column. Defaults to the one the card is in"),
         place: place.default("top"),
+        anchorCardId: cardId
+          .optional()
+          .describe(
+            "Sit directly above this card instead of at an end of the column"
+          ),
       },
     },
-    async ({ boardId, cardId, columnId, place }) => {
-      const { cards } = await board.board(boardId)
-      const existing = cards.find((c) => c.id === cardId)
-      if (!existing) throw new Error(`No card ${cardId} on board ${boardId}`)
-
+    async ({ boardId, cardId, columnId, place, anchorCardId }) => {
+      const { prefix } = await board.dashboard(boardId)
+      const existing = await board.card(boardId, cardId)
       const target = columnId ?? existing.columnId
       if (columnId) await board.column(boardId, columnId)
 
       const card = touch({
         ...existing,
         columnId: target,
+        position: await positionInColumn(board, boardId, {
+          columnId: target,
+          movingId: existing.id,
+          place,
+          anchorId: anchorCardId,
+        }),
+      })
+      await board.pushBoard(boardId, [{ store: "cards", record: card }])
+      return reply(shapeCard(card, prefix))
+    }
+  )
+
+  server.registerTool(
+    "set_card_done",
+    {
+      title: "Mark card done",
+      description:
+        "Move a card into the board's done column, or back out of it — " +
+        "what ticking a card off means on this board. Fails if no column " +
+        "is marked done; set one with update_column.",
+      inputSchema: {
+        boardId: z.string(),
+        cardId,
+        done: z.boolean().default(true),
+      },
+    },
+    async ({ boardId, cardId, done }) => {
+      const { prefix } = await board.dashboard(boardId)
+      const { columns, cards } = await board.board(boardId)
+      const existing = await board.card(boardId, cardId)
+
+      // Un-marking sends the card to the leftmost unfinished column, the same
+      // destination the app's upcoming view uses.
+      const target = done ? doneColumn(columns) : openColumn(columns)
+      if (!target)
+        throw new Error(
+          done
+            ? `Board ${boardId} has no done column. Mark one with update_column.`
+            : `Board ${boardId} has no column outside done to move this back to.`
+        )
+      if (existing.columnId === target.id)
+        return reply({ ...shapeCard(existing, prefix), column: target.title })
+
+      const card = touch({
+        ...existing,
+        columnId: target.id,
         position: positionAt(
-          cards.filter((c) => c.columnId === target && c.id !== cardId),
-          place
+          cards.filter((c) => c.columnId === target.id),
+          "top"
         ),
       })
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
-      return reply(card)
+      return reply({ ...shapeCard(card, prefix), column: target.title })
+    }
+  )
+
+  server.registerTool(
+    "check_task",
+    {
+      title: "Check task",
+      description:
+        "Tick or untick one task-list checkbox in a card's body, by its " +
+        "0-based position in document order — the order get_card lists " +
+        "them in. Use this rather than rewriting the body, so nothing else " +
+        "on the card is disturbed.",
+      inputSchema: {
+        boardId: z.string(),
+        cardId,
+        index: z.number().int().min(0),
+        checked: z.boolean().default(true),
+      },
+    },
+    async ({ boardId, cardId, index, checked }) => {
+      const { prefix } = await board.dashboard(boardId)
+      const existing = await board.card(boardId, cardId)
+      const before = taskProgress(existing.body)
+      if (index >= before.total)
+        throw new Error(
+          `Card ${cardId} has ${before.total} task${before.total === 1 ? "" : "s"}, so there is no task ${index}`
+        )
+
+      // The helper only toggles, so check where a toggle would land: if it
+      // wouldn't reach the requested state, the box is already there.
+      const toggled = toggleTaskByIndex(existing.body, index)
+      const toggledTo = taskProgress(toggled).done > before.done
+      if (toggledTo !== checked) return reply(shapeCard(existing, prefix))
+
+      const card = touch({ ...existing, body: toggled })
+      await board.pushBoard(boardId, [{ store: "cards", record: card }])
+      return reply(shapeCard(card, prefix))
     }
   )
 
@@ -123,8 +251,9 @@ export function registerCardTools(server: McpServer, board: Board): void {
     "delete_card",
     {
       title: "Delete card",
-      description: "Delete a card. This syncs to every device.",
-      inputSchema: { boardId: z.string(), cardId: z.string() },
+      description:
+        "Delete a card. This syncs to every device and cannot be undone.",
+      inputSchema: { boardId: z.string(), cardId },
     },
     async ({ boardId, cardId }) => {
       const card = tombstone(await board.card(boardId, cardId))
@@ -132,4 +261,28 @@ export function registerCardTools(server: McpServer, board: Board): void {
       return reply({ deleted: card.id })
     }
   )
+}
+
+/** Where a card lands in a column: next to an anchor card if one is named, else
+ * at the requested end. The moving card is never its own neighbour. */
+async function positionInColumn(
+  board: Board,
+  boardId: string,
+  opts: {
+    columnId: string
+    movingId: string
+    place: "top" | "bottom"
+    anchorId?: string
+  }
+): Promise<string> {
+  const { cards } = await board.board(boardId)
+  const siblings = cards.filter(
+    (c) => c.columnId === opts.columnId && c.id !== opts.movingId
+  )
+  if (!opts.anchorId) return positionAt(siblings, opts.place)
+
+  const anchor = await board.card(boardId, opts.anchorId)
+  if (anchor.columnId !== opts.columnId)
+    throw new Error(`Card ${opts.anchorId} is not in the target column`)
+  return positionNextTo(siblings, anchor.id, "before")
 }

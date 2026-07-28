@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@doska/contract": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "fractional-indexing": "^3.2.0",
     "zod": "^4.4.3"
   },

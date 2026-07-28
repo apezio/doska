@@ -1,8 +1,10 @@
 import { Card as CardBase, Checkbox, cn } from "@doska/ui-kit"
+import { useState } from "react"
 import type { DigestCard } from "@/lib/api/operations"
 import { useMoveCardToColumn } from "@/lib/data/mutations"
 import { useDashboardNav } from "@/lib/hooks"
 import { ColumnTag } from "../column/column-tag"
+import { DoneColumnHelp } from "./done-column-help"
 
 interface IProps {
   entry: DigestCard
@@ -26,6 +28,7 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
   } = entry
   const { selectDashboard } = useDashboardNav()
   const { mutate: moveCardToColumn } = useMoveCardToColumn()
+  const [helpOpen, setHelpOpen] = useState(false)
 
   const title = card.title || "Untitled card"
 
@@ -53,11 +56,14 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
       >
         <span onClick={(e) => e.stopPropagation()} className="inline-flex">
           <Checkbox
+            variant={target ? "default" : "dashed"}
             checked={isDone}
-            disabled={!target}
-            aria-label={isDone ? `Reopen ${title}` : `Mark ${title} done`}
+            aria-label={
+              !target ? "How marking cards done works" : "Toggle done"
+            }
             onCheckedChange={() => {
               if (target) moveCardToColumn({ id: card.id, columnId: target })
+              else setHelpOpen(true)
             }}
           />
         </span>
@@ -85,6 +91,14 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
           {columnTitle && <ColumnTag title={columnTitle} color={columnColor} />}
         </span>
       </CardBase>
+      {!target && (
+        <DoneColumnHelp
+          open={helpOpen}
+          onOpenChange={setHelpOpen}
+          boardId={boardId}
+          onOpenBoard={() => selectDashboard(boardId)}
+        />
+      )}
     </li>
   )
 }

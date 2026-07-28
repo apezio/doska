@@ -79,4 +79,37 @@ test.describe("marking a column done", () => {
     row = page.getByRole("button", { name: /Wrapped up/ })
     await expect(row.locator(".line-through")).toHaveText("Wrapped up")
   })
+
+  test("the digest names a done column when the board has none", async ({
+    page,
+  }) => {
+    const deckId = await createBoard(page)
+    await addCard(page, "In Progress")
+    await retitleCard(page, "Untitled card", "Needs a done column")
+
+    await page.setViewportSize({ width: 500, height: 900 })
+    await deadlineInput(page, "Needs a done column").fill(todayIso())
+
+    // No done column yet, so the row's tick box explains itself instead. The
+    // seeded Welcome board has none either, hence the scoping to this row.
+    await page.goto("/digest")
+    const row = page.getByRole("button", { name: /Needs a done column/ })
+    await row
+      .getByRole("checkbox", { name: "How marking cards done works" })
+      .click()
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Done", exact: true })
+      .click()
+
+    // Picking one turns the same box into a working checkbox.
+    const checkbox = row.getByRole("checkbox", { name: "Toggle done" })
+    await expect(checkbox).toBeVisible()
+    await checkbox.click()
+    await expect(row.locator(".line-through")).toHaveText("Needs a done column")
+
+    // The flag is the board's, not the digest's: it shows up on the column too.
+    await page.goto(`/d/${deckId}`)
+    await expect(columnDoneBadge(page, "Done")).toBeVisible()
+  })
 })

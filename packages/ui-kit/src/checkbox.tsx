@@ -2,10 +2,11 @@ import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
 import { Check } from "lucide-react"
 import { cn } from "./lib/cn"
 
-export function Checkbox({
-  className,
-  ...props
-}: CheckboxPrimitive.Root.Props) {
+interface IProps extends CheckboxPrimitive.Root.Props {
+  variant?: "default" | "dashed"
+}
+
+export function Checkbox({ className, variant, ...props }: IProps) {
   return (
     <CheckboxPrimitive.Root
       data-slot="checkbox"
@@ -15,6 +16,7 @@ export function Checkbox({
         "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
         "data-checked:border-primary data-checked:bg-primary",
         "disabled:cursor-not-allowed disabled:opacity-50",
+        variant === "dashed" && "border-dashed hover:border-foreground/40",
         className
       )}
       {...props}

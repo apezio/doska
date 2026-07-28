@@ -1,4 +1,8 @@
-import { RETENTION_MS, type Change, type DashboardChange } from "@doska/contract"
+import {
+  RETENTION_MS,
+  type Change,
+  type DashboardChange,
+} from "@doska/contract"
 import type { DirtyStore } from "@doska/sync"
 import { idb, META_STORE } from "../../db/idb"
 

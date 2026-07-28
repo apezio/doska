@@ -75,7 +75,9 @@ export function useAttachmentUpload(cardId: string) {
         setError(err instanceof Error ? err.message : "Upload failed")
         return []
       } finally {
-        setPending((prev) => prev.filter((p) => !queued.some((q) => q.id === p.id)))
+        setPending((prev) =>
+          prev.filter((p) => !queued.some((q) => q.id === p.id))
+        )
       }
     },
     [cardId, enabled, disabledReason, existing, save]

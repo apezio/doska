@@ -53,7 +53,9 @@ export function CardRefLink({ displayId }: { displayId: string }) {
             hue !== null && "wikilink-badge-tinted"
           )}
           style={
-            hue === null ? undefined : ({ "--wikilink-h": hue } as CSSProperties)
+            hue === null
+              ? undefined
+              : ({ "--wikilink-h": hue } as CSSProperties)
           }
         >
           {columnTitle}

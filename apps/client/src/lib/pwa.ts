@@ -1,5 +1,7 @@
 import { isDesktop } from "./platform"
 
+let registration: ServiceWorkerRegistration | undefined
+
 /**
  * Registers the service worker that precaches the app shell, so the web client
  * loads with no network — matching the local-first IndexedDB store behind it.
@@ -19,11 +21,40 @@ export function registerServiceWorker(
   void import("virtual:pwa-register").then(({ registerSW }) => {
     const updateSW = registerSW({
       immediate: true,
+      onRegisteredSW: (_url, reg) => {
+        registration = reg
+      },
       onNeedRefresh: () =>
         onUpdate(async () => {
           void updateSW(true)
           setTimeout(() => location.reload(), 1500)
         }),
     })
+  })
+}
+
+/**
+ * Asks the browser to re-fetch the service worker, for the manual "check for
+ * updates" action.
+ */
+export async function checkServiceWorkerUpdate(): Promise<void> {
+  if (!registration) return
+  try {
+    await registration.update()
+    await waitForInstall(registration.installing)
+  } catch (err) {
+    console.error("service worker update check failed", err)
+  }
+}
+
+function waitForInstall(worker: ServiceWorker | null): Promise<void> {
+  if (!worker) return Promise.resolve()
+  return new Promise((resolve) => {
+    const onStateChange = () => {
+      if (worker.state === "installing") return
+      worker.removeEventListener("statechange", onStateChange)
+      resolve()
+    }
+    worker.addEventListener("statechange", onStateChange)
   })
 }

@@ -20,8 +20,7 @@ export function SidebarAccount() {
   // placeholder until then so neither the wrong identity nor a control flashes.
   const name =
     authed === null ? "…" : authed ? (login ?? "Signed in") : "Not signed in"
-  const subtitle =
-    authed === null ? "" : authed ? "Syncing" : "Sign in to sync"
+  const subtitle = authed === null ? "" : authed ? "Syncing" : "Sign in to sync"
 
   return (
     <SidebarMenu>

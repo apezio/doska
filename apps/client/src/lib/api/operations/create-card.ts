@@ -11,9 +11,10 @@ export async function createCard(columnId: string): Promise<string> {
   const cards = await db.getCards(columnId)
   const first = cards
     .filter(live)
-    .reduce<
-      string | null
-    >((min, c) => (min === null || c.position < min ? c.position : min), null)
+    .reduce<string | null>(
+      (min, c) => (min === null || c.position < min ? c.position : min),
+      null
+    )
   const position = generateKeyBetween(null, first)
   await db.setCard({
     ...fallbackCard,

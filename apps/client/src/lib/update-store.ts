@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react"
-import { registerServiceWorker } from "./pwa"
+import { isDesktop } from "./platform"
+import { checkServiceWorkerUpdate, registerServiceWorker } from "./pwa"
 import { checkForUpdates, type UpdateState } from "./updates"
 
 // Shared result of the startup update check, so multiple parts of the UI (the
@@ -31,6 +32,20 @@ export function startUpdateCheck(): void {
   registerServiceWorker((install) =>
     set({ status: "available", kind: "web", install })
   )
+}
+
+/**
+ * Re-runs the platform's update check on demand and publishes the result, so
+ * the settings action and the startup check share one state.
+ */
+export async function runUpdateCheck(): Promise<void> {
+  if (isDesktop()) {
+    set(await checkForUpdates())
+    return
+  }
+  // A waiting worker announces itself through the registerServiceWorker
+  // callback above, which publishes the state — nothing to set here.
+  await checkServiceWorkerUpdate()
 }
 
 function subscribe(listener: () => void): () => void {

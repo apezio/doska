@@ -1,5 +1,5 @@
 import { CardContent, Modal, ModalContent, ModalHeader } from "@doska/ui-kit"
-import { DesktopUpdatesSection } from "./sections/desktop-updates"
+import { UpdatesSection } from "./sections/updates"
 
 interface IProps {
   open: boolean
@@ -12,7 +12,7 @@ export function SettingsModal({ open, onOpenChange }: IProps) {
       <ModalContent className="md:max-w-sm">
         <ModalHeader onClose={() => onOpenChange(false)}>Settings</ModalHeader>
         <CardContent className="py-4">
-          <DesktopUpdatesSection />
+          <UpdatesSection />
         </CardContent>
       </ModalContent>
     </Modal>

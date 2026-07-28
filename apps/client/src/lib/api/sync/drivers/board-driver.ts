@@ -1,10 +1,5 @@
 import type { Change } from "@doska/contract"
-import type {
-  DirtyStore,
-  PushInput,
-  PushResult,
-  SyncDriver,
-} from "@doska/sync"
+import type { DirtyStore, PushInput, PushResult, SyncDriver } from "@doska/sync"
 import { orpc } from "../orpc"
 import * as board from "./board-channel"
 import * as generic from "./channel-shared"

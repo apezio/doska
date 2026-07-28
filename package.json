@@ -7,7 +7,7 @@
     "node": ">=22",
     "pnpm": ">=11"
   },
-  "packageManager": "pnpm@11.8.0",
+  "packageManager": "pnpm@11.17.0",
   "scripts": {
     "dev": "turbo run dev --filter=!desktop",
     "build": "turbo run build --filter=!desktop",
@@ -20,7 +20,7 @@
     "upd": "pnpm dlx npm-check-updates --workspaces --root -i"
   },
   "devDependencies": {
-    "prettier": "^3.8.4",
+    "prettier": "^3.9.6",
     "turbo": "^2"
   }
 }

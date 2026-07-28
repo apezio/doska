@@ -18,13 +18,15 @@
     "remark-mark-highlight": "0.1.1"
   },
   "peerDependencies": {
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react": "^19",
+    "react-dom": "^19"
   },
   "devDependencies": {
     "@doska/configs": "workspace:*",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "eslint": "^10",
     "typescript": "~6"
   }

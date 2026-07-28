@@ -1,9 +1,14 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import type { Change, Column, Dashboard } from "@doska/contract"
-import { cardDisplayId, derivePrefix } from "@doska/contract"
+import {
+  derivePrefix,
+  type Change,
+  type Column,
+  type Dashboard,
+} from "@doska/contract"
 import { z } from "zod"
 import { type Board, newId, positionAt, tombstone, touch } from "../board"
 import { reply } from "./reply"
+import { shapeCard } from "./shape"
 
 /** What a new board starts with, matching the app's own default columns. */
 const DEFAULT_COLUMNS = ["To Do", "In Progress", "Done"]
@@ -24,34 +29,58 @@ export function registerBoardTools(server: McpServer, board: Board): void {
     {
       title: "Get board",
       description:
-        "Read a board in full: its columns in order, each with its cards in order, including card bodies (Markdown).",
-      inputSchema: { boardId: z.string() },
+        "Read a board in full: its columns left to right — with their " +
+        "color, and which one is the done column — each holding its cards " +
+        "top to bottom with Markdown bodies, deadlines and task-list " +
+        "progress. Pass bodies: false for an outline of a large board.",
+      inputSchema: {
+        boardId: z.string(),
+        bodies: z
+          .boolean()
+          .default(true)
+          .describe("Include card bodies. Titles only when false."),
+      },
     },
-    async ({ boardId }) => {
-      const { prefix } = await board.dashboard(boardId)
+    async ({ boardId, bodies }) => {
+      const { prefix, title } = await board.dashboard(boardId)
       const { columns, cards } = await board.board(boardId)
       return reply({
         boardId,
+        title,
+        prefix,
         columns: columns.map((column) => ({
           id: column.id,
           title: column.title,
+          done: column.done,
+          color: column.color || null,
+          collapsed: column.collapsed,
           cards: cards
             .filter((card) => card.columnId === column.id)
-            .map(({ id, title, body, number, deadline, attachments }) => ({
-              id,
-              // The human-readable id automations reference, e.g. ROAD-12.
-              cardId: cardDisplayId(prefix, number),
-              title,
-              body,
-              deadline,
-              // Names and types only — the bytes live behind the file endpoints.
-              attachments: attachments.map(({ name, mime, size }) => ({
-                name,
-                mime,
-                size,
-              })),
-            })),
+            .map((card) => {
+              const shaped = shapeCard(card, prefix)
+              return bodies ? shaped : { ...shaped, body: undefined }
+            }),
         })),
+      })
+    }
+  )
+
+  server.registerTool(
+    "get_card",
+    {
+      title: "Get card",
+      description:
+        "Read one card without pulling the whole board. Takes the card's " +
+        "own id — search_cards finds it from a ROAD-12 or a few words.",
+      inputSchema: { boardId: z.string(), cardId: z.string() },
+    },
+    async ({ boardId, cardId }) => {
+      const { prefix } = await board.dashboard(boardId)
+      const card = await board.card(boardId, cardId)
+      const column = await board.column(boardId, card.columnId)
+      return reply({
+        ...shapeCard(card, prefix),
+        column: { id: column.id, title: column.title, done: column.done },
       })
     }
   )
@@ -61,7 +90,10 @@ export function registerBoardTools(server: McpServer, board: Board): void {
     {
       title: "Create board",
       description:
-        "Create a board with the default To Do / In Progress / Done columns.",
+        "Create a board with the default To Do / In Progress / Done " +
+        "columns. As in the app, none of them is flagged as the done " +
+        "column yet — mark one with update_column if the board should " +
+        "support set_card_done.",
       inputSchema: { title: z.string() },
     },
     async ({ title }) => {
@@ -122,7 +154,8 @@ export function registerBoardTools(server: McpServer, board: Board): void {
     {
       title: "Delete board",
       description:
-        "Delete a board along with all of its columns and cards. This syncs to every device.",
+        "Delete a board along with all of its columns and cards. This " +
+        "syncs to every device and cannot be undone.",
       inputSchema: { boardId: z.string() },
     },
     async ({ boardId }) => {
@@ -130,12 +163,14 @@ export function registerBoardTools(server: McpServer, board: Board): void {
       const { columns, cards } = await board.board(boardId)
 
       const changes: Change[] = [
-        ...columns.map(
-          (record): Change => ({ store: "columns", record: tombstone(record) })
-        ),
-        ...cards.map(
-          (record): Change => ({ store: "cards", record: tombstone(record) })
-        ),
+        ...columns.map((record): Change => ({
+          store: "columns",
+          record: tombstone(record),
+        })),
+        ...cards.map((record): Change => ({
+          store: "cards",
+          record: tombstone(record),
+        })),
       ]
       await board.pushBoard(boardId, changes)
       await board.pushDashboards([

@@ -52,17 +52,20 @@ export function positionNextTo<T extends Ordered & { id: string }>(
   return generateKeyBetween(lower, upper)
 }
 
-/** Stamps a record as written now. Its `updatedAt` is what settles a conflict. */
-export const touch = <T extends Record_>(record: T): T => ({
+/**
+ * Stamps a record as written at `now`. Its `updatedAt` is what settles a
+ * conflict, so the timestamp comes from the store's clock — see
+ */
+export const touch = <T extends Record_>(record: T, now: number): T => ({
   ...record,
-  updatedAt: Date.now(),
+  updatedAt: now,
 })
 
 /** Stamps a record as deleted. The tombstone syncs, so no peer resurrects it. */
-export const tombstone = <T extends Record_>(record: T): T => ({
+export const tombstone = <T extends Record_>(record: T, now: number): T => ({
   ...record,
-  updatedAt: Date.now(),
-  deletedAt: Date.now(),
+  updatedAt: now,
+  deletedAt: now,
 })
 
 /** The column whose cards count as finished, if the board has one. */
@@ -123,6 +126,11 @@ export function createBoard(store: BoardStore) {
       )
       if (!found) throw new Error(`No card ${cardId} on board ${boardId}`)
       return found
+    },
+
+    /** The clock every write on this board is stamped from. */
+    now(): number {
+      return store.now()
     },
 
     pushDashboards(changes: DashboardChange[]): Promise<void> {

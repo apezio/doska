@@ -16,4 +16,11 @@ export type BoardStore = {
   readBoard(boardId: string): Promise<Change[]>
   pushDashboards(changes: DashboardChange[]): Promise<void>
   pushBoard(boardId: string, changes: Change[]): Promise<void>
+  /**
+   * The timestamp to stamp a write with. A peer's own clock, not wall time:
+   * `updatedAt` settles last-writer-wins, and a plain `Date.now()` here loses
+   * every conflict against a record written by a device whose clock runs ahead
+   * — silently, since a rejected write never reaches the tool that made it.
+   */
+  now(): number
 }

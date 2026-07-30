@@ -253,6 +253,9 @@ importers:
       '@doska/mcp':
         specifier: workspace:*
         version: link:../../packages/mcp
+      '@doska/sync':
+        specifier: workspace:*
+        version: link:../../packages/sync
       '@electric-sql/pglite':
         specifier: ^0.5.4
         version: 0.5.4

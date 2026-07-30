@@ -18,6 +18,7 @@
     "@doska/contract": "workspace:*",
     "@doska/file-storage": "workspace:*",
     "@doska/mcp": "workspace:*",
+    "@doska/sync": "workspace:*",
     "@electric-sql/pglite": "^0.5.4",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@orpc/server": "^1.14.12",

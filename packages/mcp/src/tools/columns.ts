@@ -45,11 +45,11 @@ export function registerColumnTools(server: McpServer, board: Board): void {
         collapsed: false,
         done,
         color: color ?? "",
-        updatedAt: Date.now(),
+        updatedAt: board.now(),
         deletedAt: null,
       }
       const changes: Change[] = [{ store: "columns", record: column }]
-      if (done) changes.push(...clearOtherDone(columns, column.id))
+      if (done) changes.push(...clearOtherDone(columns, column.id, board.now()))
 
       await board.pushBoard(boardId, changes)
       return reply(column)
@@ -81,15 +81,19 @@ export function registerColumnTools(server: McpServer, board: Board): void {
       const { columns } = await board.board(boardId)
       const existing = await board.column(boardId, columnId)
 
-      const column = touch({
-        ...existing,
-        title: title ?? existing.title,
-        color: color === undefined ? existing.color : (color ?? ""),
-        collapsed: collapsed ?? existing.collapsed,
-        done: done ?? existing.done,
-      })
+      const column = touch(
+        {
+          ...existing,
+          title: title ?? existing.title,
+          color: color === undefined ? existing.color : (color ?? ""),
+          collapsed: collapsed ?? existing.collapsed,
+          done: done ?? existing.done,
+        },
+        board.now()
+      )
       const changes: Change[] = [{ store: "columns", record: column }]
-      if (column.done) changes.push(...clearOtherDone(columns, column.id))
+      if (column.done)
+        changes.push(...clearOtherDone(columns, column.id, board.now()))
 
       await board.pushBoard(boardId, changes)
       return reply(column)
@@ -128,7 +132,7 @@ export function registerColumnTools(server: McpServer, board: Board): void {
         position = positionNextTo(siblings, anchorColumnId, place)
       }
 
-      const column = touch({ ...existing, position })
+      const column = touch({ ...existing, position }, board.now())
       await board.pushBoard(boardId, [{ store: "columns", record: column }])
       return reply(column)
     }
@@ -148,11 +152,12 @@ export function registerColumnTools(server: McpServer, board: Board): void {
       const { cards } = await board.board(boardId)
       const inColumn = cards.filter((card) => card.columnId === columnId)
 
+      const now = board.now()
       const changes: Change[] = [
-        { store: "columns", record: tombstone(column) },
+        { store: "columns", record: tombstone(column, now) },
         ...inColumn.map((record): Change => ({
           store: "cards",
-          record: tombstone(record),
+          record: tombstone(record, now),
         })),
       ]
       await board.pushBoard(boardId, changes)
@@ -164,8 +169,15 @@ export function registerColumnTools(server: McpServer, board: Board): void {
 
 /** "Move this card to done" needs a single answer, so a board has at most one
  * done column: marking one clears the flag from every other. */
-function clearOtherDone(columns: Column[], keepId: string): Change[] {
+function clearOtherDone(
+  columns: Column[],
+  keepId: string,
+  now: number
+): Change[] {
   return columns
     .filter((c) => c.done && c.id !== keepId)
-    .map((c) => ({ store: "columns", record: touch({ ...c, done: false }) }))
+    .map((c) => ({
+      store: "columns",
+      record: touch({ ...c, done: false }, now),
+    }))
 }

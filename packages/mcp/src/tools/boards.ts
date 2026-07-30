@@ -106,7 +106,7 @@ export function registerBoardTools(server: McpServer, board: Board): void {
           title,
           existing.map((d) => d.prefix)
         ),
-        updatedAt: Date.now(),
+        updatedAt: board.now(),
         deletedAt: null,
       }
       await board.pushDashboards([{ store: "dashboards", record: dashboard }])
@@ -122,7 +122,7 @@ export function registerBoardTools(server: McpServer, board: Board): void {
           collapsed: false,
           done: false,
           color: "",
-          updatedAt: Date.now(),
+          updatedAt: board.now(),
           deletedAt: null,
         })
       }
@@ -143,7 +143,10 @@ export function registerBoardTools(server: McpServer, board: Board): void {
       inputSchema: { boardId: z.string(), title: z.string() },
     },
     async ({ boardId, title }) => {
-      const dashboard = touch({ ...(await board.dashboard(boardId)), title })
+      const dashboard = touch(
+        { ...(await board.dashboard(boardId)), title },
+        board.now()
+      )
       await board.pushDashboards([{ store: "dashboards", record: dashboard }])
       return reply(dashboard)
     }
@@ -162,19 +165,20 @@ export function registerBoardTools(server: McpServer, board: Board): void {
       const dashboard = await board.dashboard(boardId)
       const { columns, cards } = await board.board(boardId)
 
+      const now = board.now()
       const changes: Change[] = [
         ...columns.map((record): Change => ({
           store: "columns",
-          record: tombstone(record),
+          record: tombstone(record, now),
         })),
         ...cards.map((record): Change => ({
           store: "cards",
-          record: tombstone(record),
+          record: tombstone(record, now),
         })),
       ]
       await board.pushBoard(boardId, changes)
       await board.pushDashboards([
-        { store: "dashboards", record: tombstone(dashboard) },
+        { store: "dashboards", record: tombstone(dashboard, now) },
       ])
 
       return reply({

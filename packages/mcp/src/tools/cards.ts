@@ -67,7 +67,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
         number: null,
         deadline: deadline ?? null,
         attachments: [],
-        updatedAt: Date.now(),
+        updatedAt: board.now(),
         deletedAt: null,
       }
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
@@ -111,12 +111,15 @@ export function registerCardTools(server: McpServer, board: Board): void {
           ? `${existing.body.trimEnd()}\n\n${append}`
           : append
 
-      const card = touch({
-        ...existing,
-        title: title ?? existing.title,
-        body: nextBody,
-        deadline: deadline === undefined ? existing.deadline : deadline,
-      })
+      const card = touch(
+        {
+          ...existing,
+          title: title ?? existing.title,
+          body: nextBody,
+          deadline: deadline === undefined ? existing.deadline : deadline,
+        },
+        board.now()
+      )
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
       return reply(shapeCard(card, prefix))
     }
@@ -151,16 +154,19 @@ export function registerCardTools(server: McpServer, board: Board): void {
       const target = columnId ?? existing.columnId
       if (columnId) await board.column(boardId, columnId)
 
-      const card = touch({
-        ...existing,
-        columnId: target,
-        position: await positionInColumn(board, boardId, {
+      const card = touch(
+        {
+          ...existing,
           columnId: target,
-          movingId: existing.id,
-          place,
-          anchorId: anchorCardId,
-        }),
-      })
+          position: await positionInColumn(board, boardId, {
+            columnId: target,
+            movingId: existing.id,
+            place,
+            anchorId: anchorCardId,
+          }),
+        },
+        board.now()
+      )
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
       return reply(shapeCard(card, prefix))
     }
@@ -197,14 +203,17 @@ export function registerCardTools(server: McpServer, board: Board): void {
       if (existing.columnId === target.id)
         return reply({ ...shapeCard(existing, prefix), column: target.title })
 
-      const card = touch({
-        ...existing,
-        columnId: target.id,
-        position: positionAt(
-          cards.filter((c) => c.columnId === target.id),
-          "top"
-        ),
-      })
+      const card = touch(
+        {
+          ...existing,
+          columnId: target.id,
+          position: positionAt(
+            cards.filter((c) => c.columnId === target.id),
+            "top"
+          ),
+        },
+        board.now()
+      )
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
       return reply({ ...shapeCard(card, prefix), column: target.title })
     }
@@ -241,7 +250,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
       const toggledTo = taskProgress(toggled).done > before.done
       if (toggledTo !== checked) return reply(shapeCard(existing, prefix))
 
-      const card = touch({ ...existing, body: toggled })
+      const card = touch({ ...existing, body: toggled }, board.now())
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
       return reply(shapeCard(card, prefix))
     }
@@ -256,7 +265,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
       inputSchema: { boardId: z.string(), cardId },
     },
     async ({ boardId, cardId }) => {
-      const card = tombstone(await board.card(boardId, cardId))
+      const card = tombstone(await board.card(boardId, cardId), board.now())
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
       return reply({ deleted: card.id })
     }

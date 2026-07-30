@@ -54,7 +54,7 @@ export function positionNextTo<T extends Ordered & { id: string }>(
 
 /**
  * Stamps a record as written at `now`. Its `updatedAt` is what settles a
- * conflict, so the timestamp comes from the store's clock — see
+ * conflict, so the timestamp comes from the store's clock
  */
 export const touch = <T extends Record_>(record: T, now: number): T => ({
   ...record,

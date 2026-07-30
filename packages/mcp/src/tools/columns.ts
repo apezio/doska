@@ -37,6 +37,7 @@ export function registerColumnTools(server: McpServer, board: Board): void {
     },
     async ({ boardId, title, color, done }) => {
       const { columns } = await board.board(boardId)
+      const now = board.now()
       const column: Column = {
         id: newId("col"),
         title,
@@ -45,11 +46,11 @@ export function registerColumnTools(server: McpServer, board: Board): void {
         collapsed: false,
         done,
         color: color ?? "",
-        updatedAt: board.now(),
+        updatedAt: now,
         deletedAt: null,
       }
       const changes: Change[] = [{ store: "columns", record: column }]
-      if (done) changes.push(...clearOtherDone(columns, column.id, board.now()))
+      if (done) changes.push(...clearOtherDone(columns, column.id, now))
 
       await board.pushBoard(boardId, changes)
       return reply(column)
@@ -81,6 +82,7 @@ export function registerColumnTools(server: McpServer, board: Board): void {
       const { columns } = await board.board(boardId)
       const existing = await board.column(boardId, columnId)
 
+      const now = board.now()
       const column = touch(
         {
           ...existing,
@@ -89,11 +91,10 @@ export function registerColumnTools(server: McpServer, board: Board): void {
           collapsed: collapsed ?? existing.collapsed,
           done: done ?? existing.done,
         },
-        board.now()
+        now
       )
       const changes: Change[] = [{ store: "columns", record: column }]
-      if (column.done)
-        changes.push(...clearOtherDone(columns, column.id, board.now()))
+      if (column.done) changes.push(...clearOtherDone(columns, column.id, now))
 
       await board.pushBoard(boardId, changes)
       return reply(column)

@@ -17,7 +17,9 @@ export async function sync(
   request: APIRequestContext,
   body: { boardId: string; since: number; changes: Change[] }
 ): Promise<{ cursor: number; changes: Change[] }> {
-  const res = await request.post("/api/rpc/board/sync", { data: { json: body } })
+  const res = await request.post("/api/rpc/board/sync", {
+    data: { json: body },
+  })
   if (!res.ok())
     throw new Error(`sync failed (${res.status()}): ${await res.text()}`)
   const payload = (await res.json()) as {
@@ -38,12 +40,23 @@ export async function dashboardSync(
     data: { json: body },
   })
   if (!res.ok())
-    throw new Error(`dashboard sync failed (${res.status()}): ${await res.text()}`)
+    throw new Error(
+      `dashboard sync failed (${res.status()}): ${await res.text()}`
+    )
   const payload = (await res.json()) as {
     json: { cursor: number; changes: DashboardChange[] }
   }
   return payload.json
 }
+
+/**
+ * A stamp that beats `record`'s in last-writer-wins. The page's clock is
+ * hybrid-logical — it advances past every timestamp it has seen — so once a
+ * remote write has pushed it into the future, wall-clock time no longer wins.
+ * Build every remote overwrite on the record it is overwriting.
+ */
+export const newerThan = (record: { updatedAt: number }): number =>
+  Math.max(Date.now(), record.updatedAt) + 10_000
 
 /**
  * Polls the server until a change the open page pushed shows up, then returns

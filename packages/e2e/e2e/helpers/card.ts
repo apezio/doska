@@ -1,6 +1,6 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test"
 import type { Change } from "@doska/contract"
-import { sync, waitForChange } from "./rpc"
+import { newerThan, sync, waitForChange } from "./rpc"
 import { column } from "./column"
 
 /* -------------------------------------------------------------------------- */
@@ -27,7 +27,9 @@ export function card(page: Page, title: string) {
 export function cardTitled(page: Page, title: string) {
   return page
     .locator("[data-rfd-draggable-id]")
-    .filter({ has: page.locator('[data-slot="card-title"]', { hasText: title }) })
+    .filter({
+      has: page.locator('[data-slot="card-title"]', { hasText: title }),
+    })
 }
 
 /** A card's copy-to-clipboard id chip. Only renders once the server stamps a number (needs a synced board). */
@@ -39,7 +41,10 @@ export function cardIdButton(page: Page) {
  * The display id ("ROAD-12") shown on the card titled `title`. Only exists once
  * the server has stamped the card a number, so the board must be signed in.
  */
-export async function cardDisplayId(page: Page, title: string): Promise<string> {
+export async function cardDisplayId(
+  page: Page,
+  title: string
+): Promise<string> {
   const chip = card(page, title).getByRole("button", { name: /^Copy card id / })
   // The number arrives on a sync round-trip, which the default expect timeout
   // can lose to under a loaded parallel run.
@@ -202,11 +207,14 @@ export async function remoteEditCard(
   await sync(request, {
     boardId,
     since: 0,
-    // A strictly newer clock so the edit wins last-writer-wins.
     changes: [
       {
         store: "cards",
-        record: { ...target.record, title: toTitle, updatedAt: Date.now() + 10_000 },
+        record: {
+          ...target.record,
+          title: toTitle,
+          updatedAt: newerThan(target.record),
+        },
       },
     ],
   })
@@ -219,17 +227,14 @@ export async function remoteDeleteCard(
   title: string
 ): Promise<void> {
   const target = await waitForChange(request, boardId, "cards", title)
+  const at = newerThan(target.record)
   await sync(request, {
     boardId,
     since: 0,
     changes: [
       {
         store: "cards",
-        record: {
-          ...target.record,
-          deletedAt: Date.now(),
-          updatedAt: Date.now() + 10_000,
-        },
+        record: { ...target.record, deletedAt: at, updatedAt: at },
       },
     ],
   })

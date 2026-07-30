@@ -32,12 +32,9 @@ Card bodies: GitHub-flavored Markdown, plus these
 - Task lists (- [ ] / - [x]) are first class: the card shows a done/total count
   and the boxes are clickable. Use check_task to tick one instead of rewriting
   the body.
-- [text] renders as a colored pill — a tag. This means a bare bracketed word in
-  prose becomes a tag whether you meant it or not; write literal brackets only
-  when you want the pill.
+- [text] renders as a colored pill — a tag.
 - [[ROAD-12]] links to another card, Obsidian style, and picks up that card's
   column color. Ordinary [label](url) links work as normal.
-- ==text== renders highlighted.
 - A line containing only -cut- ends the card's preview: the board card shows
   what is above it, the full body opens in the card view. Put the summary above
   the cut and the detail below it on long cards.

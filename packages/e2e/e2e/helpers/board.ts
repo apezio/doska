@@ -1,6 +1,6 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test"
-import { derivePrefix } from "@doska/contract"
-import { dashboardSync } from "./rpc"
+import { derivePrefix, type Dashboard } from "@doska/contract"
+import { dashboardSync, newerThan } from "./rpc"
 
 /* -------------------------------------------------------------------------- */
 /*  Board (dashboard) helpers. Everything tests touch is what a user sees:    */
@@ -142,25 +142,34 @@ export async function remoteCreateDashboard(
   return id
 }
 
+/** Reads board `id` off the server — the record a remote write has to build on. */
+async function readDashboard(
+  request: APIRequestContext,
+  id: string
+): Promise<Dashboard> {
+  const { changes } = await dashboardSync(request, { since: 0, changes: [] })
+  const hit = changes.find((c) => c.record.id === id)
+  if (!hit) throw new Error(`board ${id} not found on the server`)
+  return hit.record
+}
+
 /** Another client renames the board titled `fromTitle`. */
 export async function remoteRenameDashboard(
   request: APIRequestContext,
   id: string,
   toTitle: string
 ): Promise<void> {
+  const existing = await readDashboard(request, id)
   await dashboardSync(request, {
     since: 0,
     changes: [
       {
         store: "dashboards",
         record: {
-          id,
+          ...existing,
           title: toTitle,
-          position: "a5",
           prefix: derivePrefix(toTitle),
-          // A strictly newer clock so the rename wins last-writer-wins.
-          updatedAt: Date.now() + 10_000,
-          deletedAt: null,
+          updatedAt: newerThan(existing),
         },
       },
     ],
@@ -172,20 +181,14 @@ export async function remoteDeleteDashboard(
   request: APIRequestContext,
   id: string
 ): Promise<void> {
+  const existing = await readDashboard(request, id)
+  const at = newerThan(existing)
   await dashboardSync(request, {
     since: 0,
     changes: [
       {
         store: "dashboards",
-        record: {
-          id,
-          title: "",
-          position: "a5",
-          prefix: "",
-          deletedAt: Date.now(),
-          // A strictly newer clock so the delete wins last-writer-wins.
-          updatedAt: Date.now() + 10_000,
-        },
+        record: { ...existing, deletedAt: at, updatedAt: at },
       },
     ],
   })
@@ -203,7 +206,9 @@ export async function waitForDashboardDeleted(
     const hit = changes.find((c) => c.record.id === id)
     if (hit && hit.record.deletedAt != null) return
     if (Date.now() > deadline)
-      throw new Error(`timed out waiting for board ${id} to be deleted on the server`)
+      throw new Error(
+        `timed out waiting for board ${id} to be deleted on the server`
+      )
     await new Promise((r) => setTimeout(r, 150))
   }
 }

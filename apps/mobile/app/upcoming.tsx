@@ -1,6 +1,8 @@
 import type { DigestCard } from "@doska/core/operations"
-import { useDigest } from "@doska/core/queries"
+import { useDashboards, useDigest } from "@doska/core/queries"
+import { sync } from "@doska/core/sync"
 import { todayIso } from "@doska/core/utils"
+import { useEffect } from "react"
 import { ActivityIndicator, SectionList, Text, View } from "react-native"
 
 /** The same three buckets the web digest shows, and the shape a deadline
@@ -28,6 +30,16 @@ function sections(cards: DigestCard[]) {
 
 export default function UpcomingScreen() {
   const { data } = useDigest("week")
+  const { data: dashboards = [] } = useDashboards()
+
+  // This view spans every board, so it has to pull every board — otherwise it
+  // reads a partial picture. Waits on the list, which is what defines "every".
+  const boardIds = dashboards.map((dashboard) => dashboard.id).join(",")
+  useEffect(() => {
+    if (!boardIds) return
+    void sync.watchBoards(boardIds.split(","))
+    return () => void sync.watchBoards([])
+  }, [boardIds])
 
   if (!data) {
     return (

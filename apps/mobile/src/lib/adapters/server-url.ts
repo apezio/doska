@@ -1,6 +1,6 @@
 // Where the sync server lives, as the user configured it. There is no origin to
 // fall back on in a native app, so until this is set the app runs purely local.
-// The screen that sets it arrives with sync, in DSK-76.
+// The sign-in screen is what sets it.
 
 import { mobileKeyValue } from "./mobile-kv"
 

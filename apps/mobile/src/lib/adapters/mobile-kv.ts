@@ -13,7 +13,9 @@ import { openDatabaseSync } from "expo-sqlite"
  * the sync push path and must not queue behind a record transaction.
  */
 const db = openDatabaseSync("kv.db")
-db.execSync("CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+db.execSync(
+  "CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL)"
+)
 
 export const mobileKeyValue: KeyValue = {
   get: (key) => {

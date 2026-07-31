@@ -1,14 +1,16 @@
 import { seed } from "@doska/core/db"
 import { purgeExpired } from "@doska/core/operations"
-// The hlc subpath rather than `@doska/core/sync`: the clock is needed to stamp
-// local edits, the sync engine it sits next to isn't wired until DSK-76.
-import { seedClock } from "@doska/core/sync/hlc"
+import { seedClock, startBackgroundSync } from "@doska/core/sync"
 
 /** What has to have happened before anything reads or writes a record. */
 export async function bootstrap(): Promise<void> {
   // Restore the high-water mark before any stamp is issued, or a local edit can
   // be timestamped below one already handed out and lose LWW silently.
   await seedClock()
+
+  // Below `seedClock` and not above it: this reconciles once before it returns,
+  // which is already too late to restore the clock.
+  startBackgroundSync()
 
   await seed()
 

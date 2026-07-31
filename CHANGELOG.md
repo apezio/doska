@@ -1,0 +1,384 @@
+# Changelog
+
+## [Unreleased]
+
+### Fixed
+
+- Flaky end-to-end specs.
+
+## [0.15.0] - 2026-07-30
+
+### Fixed
+
+- Hybrid logical clock timestamps on writes made through the MCP server, which
+  could order agent edits incorrectly against client edits.
+
+## [0.15.0-beta.4] - 2026-07-29
+
+### Added
+
+- Help modal explaining how to mark a card done from the upcoming view when the
+  board has no done column.
+- Service worker update prompt for the installed PWA.
+- Attachment opening from the installed PWA.
+
+### Changed
+
+- MCP server tools cover trash, done columns and card references.
+
+### Fixed
+
+- Checkbox state in the upcoming view.
+- Board prefix state after renaming a board.
+- Column styles on mobile.
+- macOS traffic lights overlapping the desktop app header.
+
+### Security
+
+- Overrode vulnerable transitive dependencies flagged by Dependabot.
+
+## [0.15.0-beta.3] - 2026-07-28
+
+### Added
+
+- Ticking a row in the upcoming view moves the card to its board's done column.
+- Board and column actions collapsed into overflow menus.
+
+### Changed
+
+- At most one done column per board; marking a column done clears the flag from
+  the others.
+- Trash retention cut from 30 to 14 days.
+
+### Fixed
+
+- Upcoming view refreshes when changes arrive from another device.
+- `typecheck` now covers the client and landing apps instead of silently passing.
+
+## [0.15.0-beta.2] - 2026-07-25
+
+### Added
+
+- Trash: deleted boards, columns and cards are recoverable until retention
+  expires.
+
+### Changed
+
+- Landing page content and seed data.
+
+### Fixed
+
+- PWA manifest served from the landing app.
+
+## [0.15.0-beta.1] - 2026-07-25
+
+Re-tag of [0.14.0] to open the 0.15 beta channel. No functional changes.
+
+## [0.14.0] - 2026-07-25
+
+### Fixed
+
+- Column width on narrow viewports.
+- Caret and selection handling while editing cards on mobile.
+
+## [0.14.0-beta.6] - 2026-07-24
+
+### Fixed
+
+- List and quote continuation when pressing Enter in the editor.
+- Slash menu placement near the viewport edge.
+- Board prefix input sizing.
+- Sync regression that dropped concurrent updates.
+
+## [0.14.0-beta.5] - 2026-07-24
+
+### Added
+
+- Upcoming view: cards from every board ordered by deadline, overdue first.
+- Zoom controls in the desktop app.
+- Additional column colors.
+- GitHub link in the app header.
+
+### Changed
+
+- Digest filters simplified.
+- Mutation layer reorganized around per-entity hooks.
+
+### Fixed
+
+- Clearing a deadline from the mobile date picker.
+- Stale IndexedDB version after a schema bump.
+- PWA update prompt firing on every load.
+- Browser zoom breaking board layout.
+
+## [0.14.0-beta.4] - 2026-07-23
+
+### Added
+
+- Digest and upcoming board prototypes.
+
+## [0.14.0-beta.3] - 2026-07-22
+
+### Added
+
+- Public landing page with SEO metadata and its own deployment.
+
+### Fixed
+
+- Card font color in dark theme.
+
+## [0.14.0-beta.2] - 2026-07-21
+
+### Added
+
+- Single click opens a card for editing.
+
+### Changed
+
+- Reduced card re-renders on board updates.
+
+### Fixed
+
+- Offline banner can be dismissed.
+- Clicking an inline image opens the full-size attachment.
+
+## [0.14.0-beta.1] - 2026-07-20
+
+### Added
+
+- Beta release channel, published separately from stable.
+
+## [0.13.0] - 2026-07-20
+
+### Added
+
+- Card references: `[[CARD-12]]` in a card body links to another card and picks
+  up its column color.
+
+### Fixed
+
+- Race allocating card numbers when two cards synced at once.
+
+## [0.12.1] - 2026-07-19
+
+### Fixed
+
+- Inline images not resolving in the desktop app.
+- Server healthcheck endpoint.
+
+## [0.12.0] - 2026-07-19
+
+### Added
+
+- Inline images: attachments referenced from card markdown render in place.
+- Integration test suite for the server.
+
+### Changed
+
+- Server restructured: environment variable handling, MCP auth guard, module
+  layout.
+
+### Security
+
+- Uploads rejected for unauthenticated requests.
+
+## [0.11.0] - 2026-07-18
+
+### Added
+
+- Install scripts for self-hosting.
+
+### Changed
+
+- Repository made public.
+
+## [0.10.1] - 2026-07-17
+
+### Fixed
+
+- Deleting a card closes the card panel.
+- Preview cut rendering, card spacing, board height consistency.
+
+## [0.10.0] - 2026-07-17
+
+### Changed
+
+- Cards open in a side panel instead of a modal.
+
+## [0.9.0] - 2026-07-16
+
+### Added
+
+- Human-readable card ids (`BOARD-12`), allocated on first sync, with copy
+  support.
+
+### Changed
+
+- Clock synchronization between clients tightened to reduce ordering conflicts.
+- Mutation hooks colocated with their callers; runtime utilities split out.
+
+## [0.8.1] - 2026-07-14
+
+### Fixed
+
+- MCP route proxying behind nginx.
+
+## [0.8.0] - 2026-07-14
+
+### Added
+
+- MCP server exposing boards, columns and cards to AI agents, with OAuth.
+
+### Changed
+
+- Authentication reworked to share sessions between the app and MCP.
+
+### Removed
+
+- First-generation MCP implementation.
+
+## [0.7.2] - 2026-07-10
+
+### Fixed
+
+- Column scrolling and attachment handling on mobile.
+- IndexedDB storage persistence request.
+
+## [0.7.1] - 2026-07-10
+
+### Fixed
+
+- Editor layout regressions.
+
+## [0.7.0] - 2026-07-10
+
+### Added
+
+- PWA support: installable, works offline.
+
+## [0.6.0] - 2026-07-09
+
+### Added
+
+- Attachments: upload, storage and card UI.
+
+### Removed
+
+- Filesystem sync backend, superseded by attachments.
+
+## [0.5.0] - 2026-06-30
+
+### Added
+
+- Horizontal snap scrolling between columns on mobile.
+- Slash menu as a floating button on mobile.
+- Redesigned desktop date picker and checkboxes.
+
+### Changed
+
+- Desktop window is frameless with native drag regions.
+
+### Removed
+
+- Card locked state.
+
+### Fixed
+
+- Rubber-band overscroll on macOS.
+- New cards open directly in edit mode.
+
+## [0.4.4] - 2026-06-28
+
+### Fixed
+
+- Docker Compose image versions and always-pull policy.
+- App version propagated to the web build environment.
+
+## [0.4.3] - 2026-06-28
+
+### Added
+
+- Published Docker images for the client and server.
+
+## [0.4.2] - 2026-06-28
+
+### Fixed
+
+- Updater modal styles.
+
+## [0.4.1] - 2026-06-28
+
+### Fixed
+
+- Server version reporting and the release workflow.
+
+## [0.4.0] - 2026-06-28
+
+### Added
+
+- Opt-in automatic updates for the desktop app.
+- Column collapse persisted per board.
+- `Cmd+X` cuts the current line when there is no selection, as in an IDE.
+
+### Fixed
+
+- Deadline placement in the card editor; button variant naming.
+
+## [0.3.2] - 2026-06-27
+
+### Added
+
+- Deadline entry from the card context menu.
+
+### Fixed
+
+- Last opened board restored on launch.
+- Empty cards get a default title instead of rendering blank.
+
+## [0.3.1] - 2026-06-27
+
+### Added
+
+- Sync server can be self-hosted on its own, without the rest of the stack.
+
+### Changed
+
+- Project renamed to Doska.
+
+## [0.3.0] - 2026-06-27
+
+### Added
+
+- Desktop app with auto-updater and version display.
+- Card deadlines.
+- Card context menu, including moving a card to another column.
+
+### Changed
+
+- Card title is a textarea, treated as the body's `h1` and hidden from the
+  markdown editor.
+
+## [0.2.0] - 2026-06-20
+
+### Added
+
+- Column CRUD, column reorder, delete confirmation.
+- Interactive checkboxes, tag pills, `-cut-` preview marker.
+- Sync indicator and a dedicated sync engine package.
+- Authentication prototype and Docker deployment.
+
+### Changed
+
+- UI, IndexedDB access, e2e tests and shared configs split into packages.
+- Server sync reworked; deleting a board cascades to its cards.
+
+## [0.1.0] - 2026-06-18
+
+Initial release. First commit 2026-06-17.
+
+### Added
+
+- Kanban boards with columns and cards, drag and drop ordered by fractional
+  indexing.
+- Local-first storage with dirty-ref tracking and a pull/push sync server.
+- Monorepo tooling (pnpm workspaces, Turborepo), CI and end-to-end tests.

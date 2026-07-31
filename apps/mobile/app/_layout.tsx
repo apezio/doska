@@ -61,6 +61,10 @@ export default function RootLayout() {
         />
         <Stack.Screen name="upcoming" options={{ title: "Upcoming" }} />
         <Stack.Screen
+          name="card/[id]"
+          options={{ title: "Card", presentation: "modal" }}
+        />
+        <Stack.Screen
           name="sign-in"
           options={{ title: "Sync", presentation: "modal" }}
         />

@@ -1,6 +1,7 @@
 import { useCallback } from "react"
-import { useTriggerMenu, type Insertion } from "../menu"
+import { useTriggerMenu } from "../menu"
 import {
+  applyInsert,
   DEFAULT_SLASH_COMMANDS,
   filterSlashCommands,
   type SlashCommand,
@@ -15,13 +16,6 @@ interface Options {
   onChangeValue: (value: string) => void
   commands?: SlashCommand[]
   enabled?: boolean
-}
-
-/** Splits an `insert` template on the `$` caret sentinel. */
-function applyInsert(insert: string): Insertion {
-  const i = insert.indexOf("$")
-  if (i === -1) return { text: insert, caretOffset: insert.length }
-  return { text: insert.slice(0, i) + insert.slice(i + 1), caretOffset: i }
 }
 
 /**

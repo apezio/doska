@@ -71,6 +71,16 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
   },
 ]
 
+/** Splits an `insert` template on the `$` caret sentinel. */
+export function applyInsert(insert: string): {
+  text: string
+  caretOffset: number
+} {
+  const i = insert.indexOf("$")
+  if (i === -1) return { text: insert, caretOffset: insert.length }
+  return { text: insert.slice(0, i) + insert.slice(i + 1), caretOffset: i }
+}
+
 /**
  * Filters commands by a query
  */

@@ -5,4 +5,5 @@
 export * from "./attachment-src"
 export * from "./task-progress"
 export * from "./markers/cut"
+export * from "./slash-menu/commands"
 export type { Marker, MarkerResult, MarkerVariant } from "./markers/types"

@@ -1,7 +1,10 @@
 import type { Card, Column, Dashboard } from "@doska/core/types"
+import { useUpdateCard } from "@doska/core/mutations"
 import { useBoard } from "@doska/core/queries"
 import { sync } from "@doska/core/sync"
 import { byPosition } from "@doska/core/utils"
+import { cut, toggleTaskByIndex } from "@doska/markdown/core"
+import { router } from "expo-router"
 import { useEffect } from "react"
 import {
   ActivityIndicator,
@@ -10,26 +13,38 @@ import {
   Text,
   View,
 } from "react-native"
+import { MarkdownView } from "@/components/markdown/markdown-view"
 import { useActiveBoard } from "@/lib/use-active-board"
 
 function CardRow({ card }: { card: Card }) {
+  const { mutate: updateCard } = useUpdateCard(card.id)
+  // `hasMore` is the cut marker having fired: the rest opens in the card view.
+  const { body: preview, applied: hasMore } = cut.cardRender(card.body)
+
   return (
-    <View className="gap-1 rounded-xl border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
+    <Pressable
+      onPress={() => router.push(`/card/${card.id}`)}
+      className="gap-1 rounded-xl border border-neutral-200 bg-white p-3 active:opacity-70 dark:border-neutral-800 dark:bg-neutral-900"
+    >
       <Text className="text-[15px] font-medium text-neutral-900 dark:text-neutral-100">
         {card.title}
       </Text>
-      {card.body ? (
-        <Text
-          className="text-[13px] leading-[18px] text-neutral-500 dark:text-neutral-400"
-          numberOfLines={3}
+      {preview ? (
+        <MarkdownView
+          onToggleTask={(index) =>
+            updateCard({ body: toggleTaskByIndex(card.body, index) })
+          }
         >
-          {card.body}
-        </Text>
+          {preview}
+        </MarkdownView>
+      ) : null}
+      {hasMore ? (
+        <Text className="text-[13px] text-neutral-400">Open to see more</Text>
       ) : null}
       {card.deadline ? (
         <Text className="text-xs text-neutral-400">{card.deadline}</Text>
       ) : null}
-    </View>
+    </Pressable>
   )
 }
 

@@ -14,6 +14,7 @@
   "dependencies": {
     "@doska/contract": "workspace:*",
     "@doska/core": "workspace:*",
+    "@doska/markdown": "workspace:*",
     "@doska/ports": "workspace:*",
     "@react-native-community/netinfo": "12.0.1",
     "@tanstack/react-query": "5.101.4",

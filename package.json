@@ -9,9 +9,11 @@
   },
   "packageManager": "pnpm@11.17.0",
   "scripts": {
-    "dev": "turbo run dev --filter=!desktop",
-    "build": "turbo run build --filter=!desktop",
+    "dev": "turbo run dev --filter=!desktop --filter=!mobile",
+    "build": "turbo run build --filter=!desktop --filter=!mobile",
     "desktop": "pnpm --filter desktop dev",
+    "mobile": "pnpm --filter mobile dev",
+    "mobile-device": "pnpm --filter mobile exec expo run:ios --device",
     "lint": "turbo run lint",
     "type-check": "turbo run typecheck",
     "test": "turbo run test --filter=!desktop",

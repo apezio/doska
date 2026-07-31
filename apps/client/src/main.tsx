@@ -5,27 +5,27 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { LoginPromptProvider } from "@/components/login/login-prompt"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { isDesktop } from "@/lib/platform"
-import { seed } from "@/lib/api/db/db.ts"
-import { purgeExpired } from "@/lib/api/operations"
-import { keys } from "@/lib/data/keys"
+import { onSessionExpired } from "@doska/core/auth"
+import { seed } from "@doska/core/db"
+import { purgeExpired } from "@doska/core/operations"
+import { keys } from "@doska/core/keys"
 import { trackAppHeight } from "@/lib/app-height"
 import { blockEdgeSwipeNavigation } from "@/lib/edge-swipe"
 import { initZoom } from "@/lib/zoom"
 import { requestPersistentStorage } from "@/lib/persist"
-import { queryClient } from "@/lib/query-client"
+import { queryClient } from "@doska/core/query-client"
 import { Router } from "./router.tsx"
-import { seedClock, startBackgroundSync } from "./lib/api/sync"
+import { seedClock, startBackgroundSync } from "@doska/core/sync"
 import { UpdateBanner } from "@/components/updates/update-banner"
 import { ConnectionBanner } from "@/components/sync/connection-banner"
 import { WindowDragRegion } from "@/components/window-drag-region"
 import "./index.css"
 
-// Dispatched by the oRPC fetch wrapper.
-window.addEventListener("auth:expired", () => {
+onSessionExpired(() => {
   queryClient.setQueryData(keys.session, { authed: false, login: null })
 })
 
-startBackgroundSync()
+startBackgroundSync(Number(import.meta.env.VITE_SYNC_INTERVAL_MS))
 
 trackAppHeight()
 

@@ -1,4 +1,4 @@
 {
-  "extends": "@doska/configs/tsconfig/dom.json",
-  "include": ["src"],
+  "extends": "@doska/configs/tsconfig/neutral.json",
+  "include": ["src"]
 }

@@ -1,4 +1,4 @@
-import type { DigestCard } from "@/lib/api/operations"
+import type { DigestCard } from "@doska/core/operations"
 
 export interface Group {
   date: string

@@ -1,5 +1,5 @@
 import { Button, cn } from "@doska/ui-kit"
-import type { DigestFilter } from "@/lib/api/operations"
+import type { DigestFilter } from "@doska/core/operations"
 import { PageHeader } from "../app/page-header"
 
 // const FILTERS: { id: DigestFilter; label: string }[] = [

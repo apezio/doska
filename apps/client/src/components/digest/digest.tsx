@@ -1,6 +1,6 @@
 import { todayIso } from "@doska/ui-kit"
 import { useState } from "react"
-import { type DigestCard, type DigestFilter } from "@/lib/api/operations"
+import { type DigestCard, type DigestFilter } from "@doska/core/operations"
 import { DigestBody } from "./digest-body"
 import { DigestHeader } from "./digest-header"
 import { group } from "./group"

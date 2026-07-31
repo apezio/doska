@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { sync } from "@/lib/api/sync"
+import { sync } from "@doska/core/sync"
 
 /**
  * Maps ⌘S / Ctrl+S to an immediate reconcile. Mutations already persist locally

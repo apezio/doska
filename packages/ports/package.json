@@ -11,6 +11,10 @@
     "@doska/file-storage": "workspace:*"
   },
   "devDependencies": {
-    "@doska/configs": "workspace:*"
+    "@doska/configs": "workspace:*",
+    "@types/node": "^22"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
   }
 }

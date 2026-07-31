@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd"
-import type { Board, Dashboard } from "@/lib/types"
-import { byPosition } from "@/lib/utils"
+import type { Board, Dashboard } from "@doska/core/types"
+import { byPosition } from "@doska/core/utils"
 import { Column } from "../column/column"
 import { AddColumn } from "../column/add-column"
 import { DraggableCard } from "../card/draggable-card"
@@ -79,7 +79,8 @@ export function Deck({
         <div
           className={cn(
             "flex min-h-0 w-full flex-1 items-stretch gap-0 overflow-x-auto overflow-y-hidden overscroll-x-contain px-0 md:gap-6 md:px-6",
-            !isDragging && "snap-x snap-mandatory scroll-px-0 md:scroll-px-6 md:snap-none",
+            !isDragging &&
+              "snap-x snap-mandatory scroll-px-0 md:snap-none md:scroll-px-6",
             "transition-opacity duration-1000",
             isLoading ? "opacity-0" : "opacity-100"
           )}

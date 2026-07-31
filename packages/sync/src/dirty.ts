@@ -1,8 +1,10 @@
-/** Reads the persisted dirty refs, tolerating missing/corrupt storage. */
-function load(storageKey: string): Set<string> {
+import type { KeyValue } from "@doska/ports"
+
+/** Reads the persisted dirty refs, tolerating a missing or corrupt entry. */
+function load(kv: KeyValue, storageKey: string): Set<string> {
+  const raw = kv.get(storageKey)
+  if (!raw) return new Set()
   try {
-    const raw = localStorage.getItem(storageKey)
-    if (!raw) return new Set()
     const parsed = JSON.parse(raw)
     return new Set(Array.isArray(parsed) ? (parsed as string[]) : [])
   } catch {
@@ -13,7 +15,7 @@ function load(storageKey: string): Set<string> {
 /**
  * Tracks records changed locally but not yet pushed, as opaque string refs.
  * The ref format (e.g. `store/key`) is the caller's concern; the store treats
- * them as plain keys and persists them to `localStorage` under `storageKey`.
+ * them as plain keys and persists them under `storageKey`.
  */
 export class DirtyStore {
   /**
@@ -26,23 +28,18 @@ export class DirtyStore {
    * them, which is the comparison that matters.
    */
   private readonly refs = new Map<string, number>()
+  private readonly kv: KeyValue
   private readonly storageKey: string
   private seq = 0
 
-  constructor(storageKey: string) {
+  constructor(kv: KeyValue, storageKey: string) {
+    this.kv = kv
     this.storageKey = storageKey
-    for (const ref of load(storageKey)) this.refs.set(ref, 0)
+    for (const ref of load(kv, storageKey)) this.refs.set(ref, 0)
   }
 
   private save() {
-    try {
-      localStorage.setItem(
-        this.storageKey,
-        JSON.stringify([...this.refs.keys()])
-      )
-    } catch {
-      // Storage unavailable (private mode, quota); fall back to in-memory only.
-    }
+    this.kv.set(this.storageKey, JSON.stringify([...this.refs.keys()]))
   }
 
   /** Flags a ref as changed locally and awaiting sync. */

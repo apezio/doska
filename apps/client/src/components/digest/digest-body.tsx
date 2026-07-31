@@ -1,5 +1,5 @@
 import { CalendarClock, TriangleAlert } from "lucide-react"
-import type { DigestCard, DigestFilter } from "@/lib/api/operations"
+import type { DigestCard, DigestFilter } from "@doska/core/operations"
 import { CenteredState } from "./centered-state"
 import { DigestGroup } from "./digest-group"
 import type { Group } from "./group"

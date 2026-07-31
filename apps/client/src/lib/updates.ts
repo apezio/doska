@@ -1,5 +1,5 @@
 import { getServerUrl } from "./adapters"
-import { getServerVersion } from "./api/server"
+import { getServerVersion } from "@doska/core/server"
 import { getAutoUpdate } from "./auto-update"
 import { isDesktop } from "./platform"
 

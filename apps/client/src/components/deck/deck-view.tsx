@@ -11,10 +11,10 @@ import {
   useSetColumnColor,
   useSetColumnDone,
   useUpdateDashboardPrefix,
-} from "@/lib/data/mutations"
-import { useBoard, useDashboards } from "@/lib/data/queries"
+} from "@doska/core/mutations"
+import { useBoard, useDashboards } from "@doska/core/queries"
 import { useDragEnd, useSyncShortcut } from "@/lib/hooks"
-import type { Dashboard } from "@/lib/types"
+import type { Dashboard } from "@doska/core/types"
 import { Deck } from "./deck"
 
 /**

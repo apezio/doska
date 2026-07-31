@@ -1,0 +1,57 @@
+{
+  "name": "@doska/core",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./attachments": "./src/api/attachments/index.ts",
+    "./auth": "./src/api/auth.ts",
+    "./auth-client": "./src/api/auth-client.ts",
+    "./constants": "./src/api/constants.ts",
+    "./db": "./src/api/db/db.ts",
+    "./fetch": "./src/api/fetch.ts",
+    "./keys": "./src/data/keys.ts",
+    "./mutations": "./src/data/mutations/index.ts",
+    "./operations": "./src/api/operations/index.ts",
+    "./queries": "./src/data/queries.ts",
+    "./query-client": "./src/query-client.ts",
+    "./seed": "./src/seed.ts",
+    "./server": "./src/api/server.ts",
+    "./sync": "./src/api/sync/index.ts",
+    "./sync/hlc": "./src/api/sync/hlc.ts",
+    "./types": "./src/types.ts",
+    "./undo": "./src/undo.ts",
+    "./utils": "./src/utils/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@doska/client-db": "workspace:*",
+    "@doska/contract": "workspace:*",
+    "@doska/file-storage": "workspace:*",
+    "@doska/ports": "workspace:*",
+    "@doska/sync": "workspace:*",
+    "@orpc/client": "^1.14.12",
+    "@orpc/contract": "^1.14.12",
+    "@tanstack/react-query": "5.101.4",
+    "better-auth": "^1.6.25",
+    "fractional-indexing": "^3.2.0"
+  },
+  "peerDependencies": {
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@doska/configs": "workspace:*",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "eslint": "^10",
+    "react": "^19.2.8",
+    "typescript": "~6",
+    "vitest": "^4.1.10"
+  }
+}

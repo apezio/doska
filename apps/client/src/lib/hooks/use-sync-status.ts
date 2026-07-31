@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react"
 import type { SyncState } from "@doska/sync"
-import { sync } from "@/lib/api/sync"
+import { sync } from "@doska/core/sync"
 
 /**
  * Subscribes a component to the sync engine's live state (in-flight status and

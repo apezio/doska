@@ -1,6 +1,6 @@
 import { useEffect } from "react"
-import { useRestore } from "@/lib/data/mutations"
-import { popUndo } from "@/lib/undo"
+import { useRestore } from "@doska/core/mutations"
+import { popUndo } from "@doska/core/undo"
 
 /** Text fields own their own undo history; ⌘Z there must not reach the board. */
 function isEditing(target: EventTarget | null): boolean {

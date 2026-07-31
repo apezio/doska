@@ -1,7 +1,7 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import { generateKeyBetween } from "fractional-indexing"
-import type { Board, Card } from "@/lib/types"
-import { byPosition } from "@/lib/utils"
+import type { Board, Card } from "@doska/core/types"
+import { byPosition } from "@doska/core/utils"
 
 /**
  * Builds the drop handler for the board: translates a drag result into the

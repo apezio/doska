@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { CardEditor } from "./card-editor"
-import type { Card } from "@/lib/types"
+import type { Card } from "@doska/core/types"
 
 /** Backs the textareas only: round-tripping each keystroke would lag the caret. */
 export type Draft = Partial<Pick<Card, "title" | "body">>

@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react"
-import type { Attachment } from "@/lib/types"
-import { useCard } from "@/lib/data/queries"
-import { useUpdateCard } from "@/lib/data/mutations"
-import { activeStorage } from "@/lib/api/attachments"
-import { isSyncConfigured } from "@/lib/api/server"
+import type { Attachment } from "@doska/core/types"
+import { useCard } from "@doska/core/queries"
+import { useUpdateCard } from "@doska/core/mutations"
+import { activeStorage } from "@doska/core/attachments"
+import { isSyncConfigured } from "@doska/core/server"
 import { useAuth } from "@/lib/hooks"
 
 /**

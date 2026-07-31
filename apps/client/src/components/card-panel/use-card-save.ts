@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react"
-import { useSaveCard, type CardPatch } from "@/lib/data/mutations"
+import { useSaveCard, type CardPatch } from "@doska/core/mutations"
 
 /** Long enough to coalesce a burst of typing, short enough to read as live. */
 const SAVE_DELAY = 500

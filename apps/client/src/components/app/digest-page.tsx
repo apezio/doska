@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from "react"
 import { useRoute } from "wouter"
 import { DigestView } from "@/components/digest/digest-view"
-import { sync } from "@/lib/api/sync"
-import { useCardDeck } from "@/lib/data/queries"
+import { sync } from "@doska/core/sync"
+import { useCardDeck } from "@doska/core/queries"
 import { routes } from "@/lib/routes"
 import { AppShell } from "./app-shell"
 

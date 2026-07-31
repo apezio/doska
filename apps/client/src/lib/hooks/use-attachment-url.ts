@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import type { Attachment } from "@/lib/types"
-import { activeStorage } from "@/lib/api/attachments"
+import type { Attachment } from "@doska/core/types"
+import { activeStorage } from "@doska/core/attachments"
 import { isDesktop } from "@/lib/platform"
 
 const urlCache = new Map<string, string>()

@@ -9,7 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@doska/ui-kit"
-import { useDashboards } from "@/lib/data/queries"
+import { useDashboards } from "@doska/core/queries"
 import { useDashboardNav } from "@/lib/hooks"
 import { routes } from "@/lib/routes"
 import { AppSidebarHeader } from "./app-sidebar-header"

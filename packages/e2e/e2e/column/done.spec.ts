@@ -97,12 +97,14 @@ test.describe("marking a column done", () => {
     const help = row.getByRole("checkbox", {
       name: "How marking cards done works",
     })
-    await help.click()
     await expect(help).not.toBeChecked()
-    await page
-      .getByRole("dialog")
-      .getByRole("button", { name: "Done", exact: true })
-      .click()
+    await help.click()
+
+    // The modal hides the rest of the page from the a11y tree, so the row is
+    // only reachable again once a column is picked and the dialog closes.
+    const dialog = page.getByRole("dialog")
+    await expect(dialog).toBeVisible()
+    await dialog.getByRole("button", { name: "Done", exact: true }).click()
 
     // Picking one turns the same box into a working checkbox.
     const checkbox = row.getByRole("checkbox", { name: "Toggle done" })

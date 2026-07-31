@@ -2,9 +2,19 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Domain and data layers moved into `@doska/core`, reached through ports the host
+  app installs at startup. `apps/client` is now views plus browser adapters, so a
+  second platform imports the shared code instead of forking it.
+- Platform-agnostic packages compile without DOM types, so a browser API can no
+  longer reach shared code unnoticed.
+
 ### Fixed
 
 - Flaky end-to-end specs.
+- End-to-end job ran against a Playwright container older than the pinned
+  package, so no browser launched.
 
 ## [0.15.0] - 2026-07-30
 

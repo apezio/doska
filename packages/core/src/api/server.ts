@@ -4,13 +4,9 @@
 import { runtime } from "../runtime"
 import { appFetch } from "./fetch"
 
-export function subscribeServerUrl(listener: () => void): () => void {
+export function subscribeSyncConfig(listener: () => void): () => void {
   return runtime().http.subscribe(listener)
 }
-
-// Alias: the sync-config setter emits on this same signal, and the sync facade
-// rebuilds its engines when it fires.
-export const subscribeSyncConfig = subscribeServerUrl
 
 export function isSyncConfigured(): boolean {
   return runtime().http.isConfigured()

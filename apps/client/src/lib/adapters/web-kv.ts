@@ -2,9 +2,8 @@ import type { KeyValue } from "@doska/ports"
 
 /**
  * `localStorage` throws rather than no-ops when it is unavailable — Safari's
- * private mode, a full quota, a blocked third-party context — and every caller
- * here has a fallback for a missing value but none for an exception, so the
- * failure is swallowed at the boundary.
+ * private mode, a full quota, a blocked third-party context — so the port's
+ * "no method throws" contract is met by catching here.
  */
 export const webKeyValue: KeyValue = {
   get: (key) => {

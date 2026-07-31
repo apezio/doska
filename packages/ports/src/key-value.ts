@@ -6,6 +6,9 @@
  * can answer that way.
  *
  * Not for records: boards, columns and cards live in {@link ClientDB}.
+ *
+ * No method throws: a write that can't land is lost, not raised. Callers sit on
+ * the sync push path and in render, where nothing above them catches.
  */
 export interface KeyValue {
   /** The stored string, or null when the key was never set. */

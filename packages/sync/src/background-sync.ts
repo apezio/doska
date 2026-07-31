@@ -4,12 +4,9 @@ import type { Foreground, Net } from "@doska/ports"
  * Starts a periodic background sync, polling only while the app is in front of
  * the user.
  *
- * {@link Foreground.subscribe} is expected to fire on more than the strict
- * transitions — the web adapter reports both `visibilitychange` and window
- * `focus`, because alt-tabbing back from another app leaves the tab "visible"
- * throughout and would otherwise not reconcile until the next poll. `reconcile`
- * is idempotent (the engine guards overlapping runs), so the double-fire that
- * costs is harmless.
+ * {@link Foreground.subscribe} may fire without a transition; `reconcile` is
+ * idempotent (the engine guards overlapping runs), so adapters are free to be
+ * generous about what counts as coming back.
  */
 export function startBackgroundSync(
   reconcile: () => void,

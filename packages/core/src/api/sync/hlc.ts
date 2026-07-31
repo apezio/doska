@@ -7,12 +7,10 @@ const LAST_KEY = "hlc:last"
 export const clock = new HybridClock()
 
 /**
- * The mark is mirrored in the key-value store as well as the DB because DB
- * writes are async: a mobile browser can evict the app before one lands, and a
- * clock that comes back regressed hands out timestamps below ones it already
- * issued. Those edits then lose LWW to older ones and vanish with no error
- * anywhere. That is why `KeyValue` is a synchronous port — an async mirror is no
- * mirror. The DB stays as the backstop for when the KV is the one cleared.
+ * Mirrored in the KV store as well as the DB because DB writes are async: a
+ * mobile browser can evict the app before one lands, and a clock that comes
+ * back regressed issues timestamps below ones it already handed out, which lose
+ * LWW and vanish silently. The DB is the backstop for when the KV is cleared.
  */
 function readLocal(): number {
   const raw = Number(runtime().kv.get(LAST_KEY))
@@ -42,7 +40,6 @@ export async function persistClock(): Promise<void> {
 /** Timestamp for a local mutation; the high-water mark is durable before it returns. */
 export function stamp(): number {
   const ts = clock.now()
-  writeLocal(ts)
   void persistClock()
   return ts
 }

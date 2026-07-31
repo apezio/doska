@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query"
 
 /**
  * The app's single QueryClient. Lives here (rather than inline in `main.tsx`) so
- * non-React code — namely the background sync in `lib/api/sync.ts` — can
+ * non-React code — namely the background sync in `api/sync` — can
  * invalidate queries after applying changes pulled from the server.
  *
  * Writes hit IndexedDB, not the network (the server is reached only by the

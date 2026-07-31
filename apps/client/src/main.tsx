@@ -25,6 +25,10 @@ onSessionExpired(() => {
   queryClient.setQueryData(keys.session, { authed: false, login: null })
 })
 
+// Restore the HLC high-water mark first: `startBackgroundSync` reconciles once
+// before it returns, so anything below it is already too late.
+await seedClock()
+
 startBackgroundSync(Number(import.meta.env.VITE_SYNC_INTERVAL_MS))
 
 trackAppHeight()
@@ -33,10 +37,8 @@ blockEdgeSwipeNavigation()
 
 initZoom()
 
+// Not awaited: the answer only affects eviction policy, never this render.
 if (!isDesktop()) void requestPersistentStorage()
-
-// Restore the HLC high-water mark before any mutation can stamp updatedAt
-await seedClock()
 
 // Seed the local DB from fixtures on first run
 await seed()

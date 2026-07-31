@@ -4,16 +4,6 @@
  * implementation per platform, injected at startup rather than picked by a
  * sniff at the call site.
  *
- * | Port          | Backed on web by                     |
- * | ------------- | ------------------------------------ |
- * | `ClientDB`    | IndexedDB                            |
- * | `KeyValue`    | localStorage                         |
- * | `Http`        | `fetch` against the page's origin    |
- * | `Auth`        | the session cookie                   |
- * | `Files`       | the S3 storage adapter               |
- * | `Net`         | `navigator.onLine`                   |
- * | `Foreground`  | `document.visibilityState`           |
- *
  * Two of them predate this package and keep their definitions where their
  * adapters live; they are re-exported so callers have one place to import from.
  */

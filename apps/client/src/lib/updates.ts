@@ -1,4 +1,4 @@
-import { getServerUrl } from "./adapters"
+import { getServerUrl } from "./adapters/server-url"
 import { getServerVersion } from "@doska/core/server"
 import { getAutoUpdate } from "./auto-update"
 import { isDesktop } from "./platform"

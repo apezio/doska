@@ -1,0 +1,16 @@
+{
+  "name": "@doska/ports",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@doska/client-db": "workspace:*",
+    "@doska/file-storage": "workspace:*"
+  },
+  "devDependencies": {
+    "@doska/configs": "workspace:*"
+  }
+}

@@ -1,5 +1,5 @@
 import { generateKeyBetween } from "fractional-indexing"
-import { derivePrefix } from "@doska/contract"
+import { derivePrefix } from "@doska/contract/prefix"
 import { BOARD_COLUMNS } from "@/lib/seed"
 import type { Dashboard } from "@/lib/types"
 import { db } from "../db/db"

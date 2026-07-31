@@ -5,8 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./markdown.css": "./src/markdown.css",
-    "./task-progress": "./src/task-progress.ts"
+    "./core": "./src/core.ts",
+    "./markdown.css": "./src/markdown.css"
   },
   "scripts": {
     "lint": "eslint .",

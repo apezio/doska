@@ -1,8 +1,10 @@
+import "@/lib/adapters/install" // must stay first
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { LoginPromptProvider } from "@/components/login/login-prompt"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
+import { isDesktop } from "@/lib/platform"
 import { seed } from "@/lib/api/db/db.ts"
 import { purgeExpired } from "@/lib/api/operations"
 import { keys } from "@/lib/data/keys"
@@ -31,8 +33,7 @@ blockEdgeSwipeNavigation()
 
 initZoom()
 
-// Not awaited: the answer only affects eviction policy, never this render.
-void requestPersistentStorage()
+if (!isDesktop()) void requestPersistentStorage()
 
 // Restore the HLC high-water mark before any mutation can stamp updatedAt
 await seedClock()

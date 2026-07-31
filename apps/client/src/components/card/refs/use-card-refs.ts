@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { cardDisplayId, type Card } from "@doska/contract"
+import type { Card } from "@doska/contract"
+import { cardDisplayId } from "@doska/contract/prefix"
 import type { WikilinkOption } from "@doska/markdown"
 import type { Board } from "@/lib/types"
 import { keys } from "@/lib/data/keys"

@@ -1,35 +1,27 @@
 /**
  * The better-auth client the app signs in with.
- *
- *  - **Web.** The server is same-origin, so the session rides in the cookie
- *    better-auth sets on sign-in and nothing else is needed.
- *  - **Desktop.** A native app against a server on some other origin, with no
- *    usable cookie jar in the webview. The server's `bearer` plugin echoes the
- *    session token back on the `set-auth-token` response header; we keep it and
- *    send it as `Authorization: Bearer` from then on.
  */
 
 import { createAuthClient } from "better-auth/react"
 import { usernameClient } from "better-auth/client/plugins"
-import { isDesktop } from "../platform"
+import { runtime } from "@/lib/runtime"
 import { rawFetch } from "./fetch"
 import { apiUrl } from "./server"
-import { getSessionToken, setSessionToken } from "./session-token"
 
 function create(baseURL: string) {
   return createAuthClient({
     baseURL,
     plugins: [usernameClient()],
     fetchOptions: {
-      // On desktop this routes through Tauri's HTTP plugin, so the request runs
-      // in Rust and bypasses the webview's CORS.
       customFetchImpl: rawFetch,
       credentials: "include",
-      auth: { type: "Bearer", token: () => getSessionToken() ?? undefined },
+      auth: {
+        type: "Bearer",
+        token: () => runtime().auth.token() ?? undefined,
+      },
       onSuccess: ({ response }) => {
-        if (!isDesktop()) return
         const token = response.headers.get("set-auth-token")
-        if (token) setSessionToken(token)
+        if (token) runtime().auth.capture(token)
       },
     },
   })

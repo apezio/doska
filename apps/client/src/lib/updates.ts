@@ -1,4 +1,5 @@
-import { getServerUrl, getServerVersion } from "./api/server"
+import { getServerUrl } from "./adapters"
+import { getServerVersion } from "./api/server"
 import { getAutoUpdate } from "./auto-update"
 import { isDesktop } from "./platform"
 

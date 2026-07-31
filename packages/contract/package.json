@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./prefix": "./src/prefix.ts",
+    "./retention": "./src/retention.ts"
   },
   "dependencies": {
     "@orpc/contract": "^1.14.12",

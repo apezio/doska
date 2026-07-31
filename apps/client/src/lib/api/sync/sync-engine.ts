@@ -13,6 +13,7 @@ import {
   DASHBOARDS_SCOPE,
 } from "./drivers/dashboard-list-driver"
 import { isAuthed, subscribeAuthed } from "@/lib/utils"
+import { runtime } from "@/lib/runtime"
 import { isSyncConfigured, subscribeSyncConfig } from "../server"
 
 /**
@@ -25,7 +26,7 @@ const canSync = () => isSyncConfigured() && isAuthed()
  * Reads the reason for a failed reconcile out of the transport.
  */
 const classify = (err: unknown): SyncFailure => {
-  if (!navigator.onLine) return "offline"
+  if (!runtime().net.online()) return "offline"
   if (err instanceof ORPCError)
     return err.status === 401 || err.status === 403 ? "auth" : "server"
   if (err instanceof TypeError) return "offline"

@@ -1,5 +1,5 @@
 import { CardId, TaskIndicator, cn } from "@doska/ui-kit"
-import { cardDisplayId } from "@doska/contract"
+import { cardDisplayId } from "@doska/contract/prefix"
 import { taskProgress } from "@doska/markdown"
 import { fallbackCard } from "@/lib/seed"
 import { useCard, useCardCol } from "@/lib/data/queries"

@@ -1,8 +1,9 @@
 import type { Marker } from "./types"
-import { CUT_TOKEN } from "../plugins/remark-cut"
 
 // Matches a line containing only the cut marker (optionally surrounded by whitespace).
 const CUT_RE = /^[ \t]*-cut-[ \t]*$/m
+
+export const CUT_TOKEN = "-cut-visible-"
 
 /**
  * Marker that ends the visible area of a card body in board view.

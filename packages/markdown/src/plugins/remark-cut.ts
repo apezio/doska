@@ -1,6 +1,4 @@
-// Sentinel emitted by the cut marker's previewRender. Rendered as a full-width
-// dashed divider, wherever it appears in the body.
-export const CUT_TOKEN = "-cut-visible-"
+import { CUT_TOKEN } from "../markers/cut"
 
 interface MdastNode {
   type: string

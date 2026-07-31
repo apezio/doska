@@ -1,6 +1,6 @@
+import { runtime } from "@/lib/runtime"
 import { authClient } from "./auth-client"
 import { isSyncConfigured } from "./server"
-import { clearSessionToken } from "./session-token"
 
 export type Session = { authed: boolean; login: string | null }
 
@@ -25,8 +25,8 @@ export async function login(login: string, password: string): Promise<void> {
   if (error) throw new Error(error.message ?? "Invalid credentials")
 }
 
-/** Drops this client's session: the cookie on web, the stored token on desktop. */
+/** Drops this client's session: the cookie, and any token that was stored. */
 export async function logout(): Promise<void> {
   await authClient().signOut()
-  clearSessionToken()
+  runtime().auth.clear()
 }

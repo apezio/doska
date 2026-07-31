@@ -8,7 +8,7 @@ import {
 } from "@doska/ui-kit"
 import { useState } from "react"
 import { useLogin } from "@/lib/data/mutations"
-import { getServerUrl, setServerUrl } from "@/lib/api/server"
+import { getServerUrl, setServerUrl } from "@/lib/adapters"
 import { isDesktop } from "@/lib/platform"
 
 interface IProps {

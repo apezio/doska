@@ -1,10 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import {
-  derivePrefix,
-  type Change,
-  type Column,
-  type Dashboard,
-} from "@doska/contract"
+import type { Change, Column, Dashboard } from "@doska/contract"
+import { derivePrefix } from "@doska/contract/prefix"
 import { z } from "zod"
 import { type Board, newId, positionAt, tombstone, touch } from "../board"
 import { reply } from "./reply"

@@ -41,7 +41,7 @@ async function purgeBoard(boardId: string): Promise<void> {
     if (column.dashboardId !== boardId) continue
     const cards = await idb.getAll<Card>(CARDS, {
       index: CARDS_BY_COLUMN,
-      range: IDBKeyRange.only(column.id),
+      range: { lower: column.id, upper: column.id },
     })
     for (const card of cards) await idb.delete(CARDS, card.id)
     await idb.delete(COLUMNS, column.id)

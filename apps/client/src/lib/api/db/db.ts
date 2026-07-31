@@ -46,7 +46,7 @@ export const db = {
     return idb.getAll<Card>(
       CARDS,
       columnId
-        ? { index: CARDS_BY_COLUMN, range: IDBKeyRange.only(columnId) }
+        ? { index: CARDS_BY_COLUMN, range: { lower: columnId, upper: columnId } }
         : undefined
     )
   },
@@ -55,7 +55,7 @@ export const db = {
   getCardsByDeadline(from: string, to: string): Promise<Card[]> {
     return idb.getAll<Card>(CARDS, {
       index: CARDS_BY_DEADLINE,
-      range: IDBKeyRange.bound(from, to),
+      range: { lower: from, upper: to },
     })
   },
   setCard(card: Card): Promise<void> {

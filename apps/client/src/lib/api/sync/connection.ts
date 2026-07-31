@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react"
 import type { SyncFailure } from "@doska/sync"
+import { runtime } from "@/lib/runtime"
 import { isSyncConfigured, subscribeSyncConfig } from "../server"
 import { sync } from "./sync-engine"
 
@@ -25,7 +26,7 @@ function derive(): Connection {
   // session looks different — the 401 lands as an `auth` failure first.
   if (status === "paused" && failure === null) return LOCAL
 
-  const offline = !navigator.onLine
+  const offline = !runtime().net.online()
   // An expired session never recovers on its own, so it needs no grace period.
   const dropped = offline || failure === "auth" || failures >= FAILURE_GRACE
   if (!dropped) return OK
@@ -55,8 +56,7 @@ function start() {
   started = true
   sync.subscribe(recompute)
   subscribeSyncConfig(recompute)
-  window.addEventListener("online", recompute)
-  window.addEventListener("offline", recompute)
+  runtime().net.subscribe(recompute)
   recompute()
 }
 

@@ -1,8 +1,8 @@
 import { useEffect } from "react"
-import { purgeExpired } from "@/lib/api/operations"
-import { sync } from "@/lib/api/sync"
-import { useRestore } from "@/lib/data/mutations"
-import { useDashboards, useTrash } from "@/lib/data/queries"
+import { purgeExpired } from "@doska/core/operations"
+import { sync } from "@doska/core/sync"
+import { useRestore } from "@doska/core/mutations"
+import { useDashboards, useTrash } from "@doska/core/queries"
 import { Trash } from "./trash"
 
 /**

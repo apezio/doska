@@ -5,7 +5,7 @@ import {
   cut,
 } from "@doska/markdown"
 import { useMemo } from "react"
-import { useCard } from "@/lib/data/queries"
+import { useCard } from "@doska/core/queries"
 import { imageSlashCommands } from "../card/attachments/image-slash-commands"
 import { isRenderableImage } from "../card/attachments/renderable-image"
 import { useUploads } from "../card/attachments/context/attachment-upload-context"

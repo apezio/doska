@@ -13,7 +13,7 @@ import { PageHeader } from "../app/page-header"
 import { ConfirmDialog } from "../confirm-dialog"
 import { ReorderColumnsModal } from "./reorder-columns/reorder-columns-modal"
 import { PrefixModal } from "./prefix-modal"
-import type { Column } from "@/lib/types"
+import type { Column } from "@doska/core/types"
 
 interface IProps {
   title: string

@@ -7,13 +7,17 @@
     ".": "./src/index.ts",
     "./hlc": "./src/hlc.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@doska/ports": "workspace:*"
+  },
   "devDependencies": {
     "@doska/configs": "workspace:*",
+    "@types/node": "^22",
     "vitest": "^4.1.10"
   },
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
   }
 }

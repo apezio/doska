@@ -8,7 +8,7 @@ import {
   ModalTitle,
   cn,
 } from "@doska/ui-kit"
-import { normalizePrefix } from "@/lib/api/operations"
+import { normalizePrefix } from "@doska/core/operations"
 
 interface IProps {
   open: boolean

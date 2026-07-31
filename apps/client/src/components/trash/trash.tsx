@@ -1,5 +1,5 @@
 import { Trash2, TriangleAlert } from "lucide-react"
-import type { TrashEntry } from "@/lib/api/operations"
+import type { TrashEntry } from "@doska/core/operations"
 import { PageHeader } from "../app/page-header"
 import { CenteredState } from "../digest/centered-state"
 import { TrashRow } from "./trash-row"

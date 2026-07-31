@@ -1,6 +1,6 @@
 import { cn, deadlineLabel } from "@doska/ui-kit"
-import type { DigestCard } from "@/lib/api/operations"
-import { longDate, weekday } from "@/lib/utils"
+import type { DigestCard } from "@doska/core/operations"
+import { longDate, weekday } from "@doska/core/utils"
 import { DigestRow } from "./digest-row"
 import type { Group } from "./group"
 

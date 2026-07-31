@@ -2,8 +2,48 @@ import { execSync } from "child_process"
 import path from "path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import { defineConfig, type Plugin } from "vite"
 import { VitePWA } from "vite-plugin-pwa"
+
+/**
+ * Preloads the font subsets every page needs. They live behind an `@import` in
+ * index.css, so without this the browser only discovers the woff2 after the CSS
+ * has parsed — html → css → font, three serial round trips before any text
+ * paints in the real face. Covers `latin` and `cyrillic` only — the `-ext` and
+ * per-language subsets stay lazy. Preloading defeats unicode-range, so a board
+ * with no Cyrillic on it still pays for the Cyrillic subsets; that is the price
+ * of a Cyrillic board not paying the three round trips.
+ *
+ * `crossorigin` is required even same-origin: it has to match the anonymous-CORS
+ * mode a CSS-driven font fetch uses, or the preload is discarded and refetched.
+ */
+function preloadFonts(): Plugin {
+  let base = "/"
+  return {
+    name: "preload-fonts",
+    configResolved(config) {
+      base = config.base
+    },
+    transformIndexHtml: {
+      order: "post",
+      handler(_html, ctx) {
+        return Object.keys(ctx.bundle ?? {})
+          .filter((file) => /-(latin|cyrillic)-wght-normal-[^/]+\.woff2$/.test(file))
+          .map((file) => ({
+            tag: "link",
+            attrs: {
+              rel: "preload",
+              as: "font",
+              type: "font/woff2",
+              href: base + file,
+              crossorigin: "anonymous",
+            },
+            injectTo: "head-prepend" as const,
+          }))
+      },
+    },
+  }
+}
 
 function appVersion(): string {
   if (process.env.APP_VERSION) return process.env.APP_VERSION
@@ -48,6 +88,7 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    preloadFonts(),
     VitePWA({
       // The desktop build reuses this bundle inside a Tauri webview, where a
       // service worker is unwanted — so registration is opt-in from `lib/pwa`
@@ -78,6 +119,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
+        // Precaching every subset ships Vietnamese glyphs to everyone. The
+        // excluded ones still load from the network when a body actually
+        // contains those characters — they just aren't available offline.
+        globIgnores: ["**/*-vietnamese-*.woff2"],
         // `/api` (sync, auth, updater), `/mcp` and `/.well-known` (OAuth
         // discovery) are the backend; they must never resolve to the precached
         // app shell. Mirrors the nginx split.
@@ -101,6 +146,11 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (!id.includes("node_modules")) return
+          // Reachable only through the lazily-imported calendar. Naming any
+          // chunk for these pulls them in eagerly — a manual assignment
+          // overrides Rollup's dynamic-import split — so they fall through to
+          // keep the deferral `date-input-calendar` is written to get.
+          if (/[\\/](date-fns|react-day-picker)[\\/]/.test(id)) return
           // The markdown rendering stack (react-markdown + the unified/
           // remark/micromark/mdast/hast ecosystem) is the heaviest dep.
           if (

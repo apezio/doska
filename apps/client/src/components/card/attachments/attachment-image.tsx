@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useCard } from "@/lib/data/queries"
+import { useCard } from "@doska/core/queries"
 import { useAttachmentUrlByKey } from "@/lib/hooks/use-attachment-url"
 import { AttachmentViewer } from "./attachment-viewer"
 

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import type { KeyValue } from "@doska/ports"
 import { DirtyStore } from "./dirty"
 import type { PushInput, PushResult, SyncDriver } from "./driver"
 import { SyncEngine } from "./engine"
@@ -50,12 +51,21 @@ const forever = <T>(): Promise<T> => new Promise<T>(() => {})
 let keySeq = 0
 const freshKey = () => `test:dirty:${keySeq++}`
 
-beforeEach(() => localStorage.clear())
+/** The persistence a reload survives, without a browser under it. */
+const stored = new Map<string, string>()
+
+const kv: KeyValue = {
+  get: (key) => stored.get(key) ?? null,
+  set: (key, value) => void stored.set(key, value),
+  remove: (key) => void stored.delete(key),
+}
+
+beforeEach(() => stored.clear())
 
 describe("SyncEngine", () => {
   it("pushes an active scope's dirty refs and clears them on success", async () => {
     const driver = new FakeDriver()
-    const engine = new SyncEngine(driver, { storageKey: freshKey() })
+    const engine = new SyncEngine(driver, { kv, storageKey: freshKey() })
 
     engine.setActiveScope("b1")
     engine.mark("b1/c1")
@@ -70,7 +80,7 @@ describe("SyncEngine", () => {
   it("restores dirty refs when the push rejects", async () => {
     const driver = new FakeDriver()
     const key = freshKey()
-    const engine = new SyncEngine(driver, { storageKey: key })
+    const engine = new SyncEngine(driver, { kv, storageKey: key })
     driver.push = () => Promise.reject(new Error("boom"))
 
     engine.setActiveScope("b1")
@@ -78,13 +88,13 @@ describe("SyncEngine", () => {
     await engine.reconcile()
 
     expect(engine.getState().status).toBe("error")
-    expect([...new DirtyStore(key).all()]).toEqual(["b1/c1"])
+    expect([...new DirtyStore(kv, key).all()]).toEqual(["b1/c1"])
   })
 
   it("keeps dirty refs recoverable when the push never settles", async () => {
     const driver = new FakeDriver()
     const key = freshKey()
-    const engine = new SyncEngine(driver, { storageKey: key })
+    const engine = new SyncEngine(driver, { kv, storageKey: key })
     driver.push = (input) => {
       driver.record(input)
       return forever()
@@ -96,12 +106,12 @@ describe("SyncEngine", () => {
     await vi.waitUntil(() => driver.pushes.length > 0)
 
     // The process dies here. What a relaunch would read back:
-    expect([...new DirtyStore(key).all()]).toEqual(["b1/c1"])
+    expect([...new DirtyStore(kv, key).all()]).toEqual(["b1/c1"])
   })
 
   it("keeps a ref marked again while its push was in flight", async () => {
     const driver = new FakeDriver()
-    const engine = new SyncEngine(driver, { storageKey: freshKey() })
+    const engine = new SyncEngine(driver, { kv, storageKey: freshKey() })
     let release: (result: PushResult<Change>) => void = () => {}
     driver.push = (input) => {
       driver.record(input)
@@ -125,6 +135,7 @@ describe("SyncEngine", () => {
     const driver = new FakeDriver()
     let allowed = false
     const engine = new SyncEngine(driver, {
+      kv,
       storageKey: freshKey(),
       canSync: () => allowed,
     })
@@ -141,7 +152,7 @@ describe("SyncEngine", () => {
 
   it("consumes one-shot scopes once they have actually been pulled", async () => {
     const driver = new FakeDriver()
-    const engine = new SyncEngine(driver, { storageKey: freshKey() })
+    const engine = new SyncEngine(driver, { kv, storageKey: freshKey() })
 
     await engine.reconcileScopes(["b1"])
     await engine.reconcile()
@@ -151,7 +162,7 @@ describe("SyncEngine", () => {
 
   it("pulls watched scopes on every pass until they are cleared", async () => {
     const driver = new FakeDriver()
-    const engine = new SyncEngine(driver, { storageKey: freshKey() })
+    const engine = new SyncEngine(driver, { kv, storageKey: freshKey() })
 
     engine.watchScopes(["b1", "b2"])
     await engine.reconcile()

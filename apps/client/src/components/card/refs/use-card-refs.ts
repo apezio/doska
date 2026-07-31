@@ -1,10 +1,11 @@
 import { useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { cardDisplayId, type Card } from "@doska/contract"
+import type { Card } from "@doska/contract"
+import { cardDisplayId } from "@doska/contract/prefix"
 import type { WikilinkOption } from "@doska/markdown"
-import type { Board } from "@/lib/types"
-import { keys } from "@/lib/data/keys"
-import { useBoard } from "@/lib/data/queries"
+import type { Board } from "@doska/core/types"
+import { keys } from "@doska/core/keys"
+import { useBoard } from "@doska/core/queries"
 import { useDeck } from "../../deck/deck-context"
 
 const NO_CARDS: Card[] = []

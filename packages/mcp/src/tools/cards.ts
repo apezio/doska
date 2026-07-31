@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Card } from "@doska/contract"
-import { taskProgress, toggleTaskByIndex } from "@doska/markdown/task-progress"
+import { taskProgress, toggleTaskByIndex } from "@doska/markdown/core"
 import { z } from "zod"
 import {
   type Board,

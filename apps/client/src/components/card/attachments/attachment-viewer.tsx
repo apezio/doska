@@ -1,7 +1,7 @@
 import { Modal, ModalContent, ModalTitle } from "@doska/ui-kit"
 import { Download, X } from "lucide-react"
-import type { Attachment } from "@/lib/types"
-import { activeStorage } from "@/lib/api/attachments"
+import type { Attachment } from "@doska/core/types"
+import { activeStorage } from "@doska/core/attachments"
 import { downloadBlob } from "@/lib/download"
 import { useAttachmentUrl } from "@/lib/hooks/use-attachment-url"
 

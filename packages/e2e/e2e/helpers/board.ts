@@ -1,5 +1,6 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test"
-import { derivePrefix, type Dashboard } from "@doska/contract"
+import type { Dashboard } from "@doska/contract"
+import { derivePrefix } from "@doska/contract/prefix"
 import { dashboardSync, newerThan } from "./rpc"
 
 /* -------------------------------------------------------------------------- */

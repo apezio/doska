@@ -1,4 +1,4 @@
-import { initials } from "@/lib/utils"
+import { initials } from "@doska/core/utils"
 import {
   Avatar,
   AvatarFallback,
@@ -8,7 +8,7 @@ import {
 } from "@doska/ui-kit"
 import { LogIn, LogOut, UserRound } from "lucide-react"
 import { useLoginPrompt } from "@/components/login/login-prompt-context"
-import { useLogout } from "@/lib/data/mutations"
+import { useLogout } from "@doska/core/mutations"
 import { useAuth } from "@/lib/hooks"
 
 export function SidebarAccount() {

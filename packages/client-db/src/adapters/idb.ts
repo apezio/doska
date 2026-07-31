@@ -1,4 +1,15 @@
-import type { ClientDB, Query } from "../client-db"
+import type { ClientDB, KeyRange, Query } from "../client-db"
+
+function toIDBRange(range: KeyRange | undefined): IDBKeyRange | null {
+  if (!range) return null
+  const { lower, upper, exclusive } = range
+  if (lower !== undefined && upper !== undefined) {
+    return IDBKeyRange.bound(lower, upper, exclusive?.lower, exclusive?.upper)
+  }
+  if (lower !== undefined) return IDBKeyRange.lowerBound(lower, exclusive?.lower)
+  if (upper !== undefined) return IDBKeyRange.upperBound(upper, exclusive?.upper)
+  return null
+}
 
 /**
  * A tiny promise-based wrapper over IndexedDB
@@ -75,7 +86,7 @@ export class IDB implements ClientDB {
   }
 
   async getAll<T>(store: string, query?: Query<T>): Promise<T[]> {
-    const range = query?.range ?? null
+    const range = toIDBRange(query?.range)
     const rows = await this.run<T[]>(store, "readonly", (s) => {
       const source = query?.index ? s.index(query.index) : s
       return source.getAll(range, query?.filter ? undefined : query?.count)

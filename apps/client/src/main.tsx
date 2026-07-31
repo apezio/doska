@@ -1,29 +1,35 @@
+import "@/lib/adapters/install" // must stay first
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { LoginPromptProvider } from "@/components/login/login-prompt"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
-import { seed } from "@/lib/api/db/db.ts"
-import { purgeExpired } from "@/lib/api/operations"
-import { keys } from "@/lib/data/keys"
+import { isDesktop } from "@/lib/platform"
+import { onSessionExpired } from "@doska/core/auth"
+import { seed } from "@doska/core/db"
+import { purgeExpired } from "@doska/core/operations"
+import { keys } from "@doska/core/keys"
 import { trackAppHeight } from "@/lib/app-height"
 import { blockEdgeSwipeNavigation } from "@/lib/edge-swipe"
 import { initZoom } from "@/lib/zoom"
 import { requestPersistentStorage } from "@/lib/persist"
-import { queryClient } from "@/lib/query-client"
+import { queryClient } from "@doska/core/query-client"
 import { Router } from "./router.tsx"
-import { seedClock, startBackgroundSync } from "./lib/api/sync"
+import { seedClock, startBackgroundSync } from "@doska/core/sync"
 import { UpdateBanner } from "@/components/updates/update-banner"
 import { ConnectionBanner } from "@/components/sync/connection-banner"
 import { WindowDragRegion } from "@/components/window-drag-region"
 import "./index.css"
 
-// Dispatched by the oRPC fetch wrapper.
-window.addEventListener("auth:expired", () => {
+onSessionExpired(() => {
   queryClient.setQueryData(keys.session, { authed: false, login: null })
 })
 
-startBackgroundSync()
+// Restore the HLC high-water mark first: `startBackgroundSync` reconciles once
+// before it returns, so anything below it is already too late.
+await seedClock()
+
+startBackgroundSync(Number(import.meta.env.VITE_SYNC_INTERVAL_MS))
 
 trackAppHeight()
 
@@ -32,10 +38,7 @@ blockEdgeSwipeNavigation()
 initZoom()
 
 // Not awaited: the answer only affects eviction policy, never this render.
-void requestPersistentStorage()
-
-// Restore the HLC high-water mark before any mutation can stamp updatedAt
-await seedClock()
+if (!isDesktop()) void requestPersistentStorage()
 
 // Seed the local DB from fixtures on first run
 await seed()

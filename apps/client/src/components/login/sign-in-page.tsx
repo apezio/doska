@@ -1,8 +1,8 @@
 import { Button, Input } from "@doska/ui-kit"
 import { useState } from "react"
 import { useSearch } from "wouter"
-import { authClient } from "@/lib/api/auth-client"
-import { apiUrl } from "@/lib/api/server"
+import { authClient } from "@doska/core/auth-client"
+import { apiUrl } from "@doska/core/server"
 
 /**
  * The standalone sign-in page, and the server's `mcp({ loginPage: "/sign-in" })`.

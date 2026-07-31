@@ -1,9 +1,9 @@
 import { generateKeyBetween } from "fractional-indexing"
 import { Check, ChevronDown } from "lucide-react"
 import { Menu, MenuContent, MenuItem, MenuTrigger, cn } from "@doska/ui-kit"
-import { useMoveCard } from "@/lib/data/mutations"
-import { useBoard, useCard } from "@/lib/data/queries"
-import { byPosition } from "@/lib/utils"
+import { useMoveCard } from "@doska/core/mutations"
+import { useBoard, useCard } from "@doska/core/queries"
+import { byPosition } from "@doska/core/utils"
 import { useDeck } from "../deck/deck-context"
 import { ColumnTag } from "../column/column-tag"
 

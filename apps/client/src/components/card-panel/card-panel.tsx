@@ -6,7 +6,7 @@ import { CardPane } from "./card-pane"
 import { PanelResizeHandle } from "./panel-resize-handle"
 import { useCardSave } from "./use-card-save"
 import { usePanelResize } from "./use-panel-resize"
-import { useCard } from "@/lib/data/queries"
+import { useCard } from "@doska/core/queries"
 
 interface IProps {
   /** Where to navigate when the panel closes (its deck root). */

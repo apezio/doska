@@ -1,6 +1,6 @@
 import { Anchor, ArrowRight, Plus } from "lucide-react"
 import { Button } from "@doska/ui-kit"
-import type { Dashboard } from "@/lib/types"
+import type { Dashboard } from "@doska/core/types"
 import { PageHeader } from "../app/page-header"
 
 interface IProps {

@@ -7,8 +7,8 @@ import {
   ModalTitle,
 } from "@doska/ui-kit"
 import { useState } from "react"
-import { useLogin } from "@/lib/data/mutations"
-import { getServerUrl, setServerUrl } from "@/lib/api/server"
+import { useLogin } from "@doska/core/mutations"
+import { getServerUrl, setServerUrl } from "@/lib/adapters/server-url"
 import { isDesktop } from "@/lib/platform"
 
 interface IProps {

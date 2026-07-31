@@ -5,7 +5,7 @@ import {
   ModalDescription,
   ModalHeader,
 } from "@doska/ui-kit"
-import type { Column } from "@/lib/types"
+import type { Column } from "@doska/core/types"
 import { ReorderColumnsDNDContainer } from "./reorder-cols-dnd"
 
 interface IProps {

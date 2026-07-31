@@ -1,2 +1,2 @@
-export type { ClientDB, Query } from "./client-db"
+export type { ClientDB, KeyRange, Query } from "./client-db"
 export { IDB } from "./adapters/idb"

@@ -1,7 +1,7 @@
 import { cn } from "@doska/ui-kit"
 import { FileText } from "lucide-react"
 import { useState } from "react"
-import type { Attachment } from "@/lib/types"
+import type { Attachment } from "@doska/core/types"
 import { useAttachmentUrl } from "@/lib/hooks/use-attachment-url"
 import { isRenderableImage } from "./renderable-image"
 

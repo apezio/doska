@@ -6,7 +6,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@doska/ui-kit"
-import { type Dashboard } from "@/lib/types"
+import { type Dashboard } from "@doska/core/types"
 
 interface IProps {
   dashboards: Dashboard[]

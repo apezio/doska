@@ -1,3 +1,4 @@
+import type { KeyValue } from "@doska/ports"
 import { DirtyStore } from "./dirty"
 import type { PushResult, SyncDriver } from "./driver"
 
@@ -23,10 +24,9 @@ interface Attempt {
   failure: SyncFailure | null
 }
 
-const defaultClassify = (): SyncFailure =>
-  typeof navigator !== "undefined" && navigator.onLine === false
-    ? "offline"
-    : "server"
+/** Without a `classify` there is nothing to tell a dead network from a broken
+ * server, and "server" is the one that keeps retrying. */
+const defaultClassify = (): SyncFailure => "server"
 
 /**
  * Drives reconciliation between a local store and a server: push the dirty refs
@@ -62,13 +62,14 @@ export class SyncEngine<Scope, Change> {
   constructor(
     driver: SyncDriver<Scope, Change>,
     options: {
+      kv: KeyValue
       storageKey: string
       canSync?: () => boolean
       classify?: (err: unknown) => SyncFailure
     }
   ) {
     this.driver = driver
-    this.dirty = new DirtyStore(options.storageKey)
+    this.dirty = new DirtyStore(options.kv, options.storageKey)
     this.state = {
       status: "idle",
       pending: this.dirty.size,

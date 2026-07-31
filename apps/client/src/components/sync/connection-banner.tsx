@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Button, cn } from "@doska/ui-kit"
 import { X } from "lucide-react"
-import { sync, useConnection } from "@/lib/api/sync"
+import { sync, useConnection } from "@doska/core/sync"
 
 /**
  * The persistent "sync is down" notice, mounted app-wide — the board's sync pill

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
 import { generateKeyBetween } from "fractional-indexing"
 import { useLocation } from "wouter"
-import { sync } from "@/lib/api/sync"
-import { useDashboards } from "@/lib/data/queries"
+import { sync } from "@doska/core/sync"
+import { useDashboards } from "@doska/core/queries"
 import { useDashboardNav } from "@/lib/hooks/use-dashboard-nav"
-import type { Dashboard } from "@/lib/types"
+import type { Dashboard } from "@doska/core/types"
 
 /** localStorage key holding the id of the board that was open most recently. */
 const LAST_BOARD_KEY = "doska:last-board"

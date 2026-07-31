@@ -8,10 +8,10 @@ import {
 import { generateKeyBetween } from "fractional-indexing"
 import { ArrowRightLeft, Pencil, Trash2 } from "lucide-react"
 import { useParams } from "wouter"
-import { useDeleteCard, useMoveCard } from "@/lib/data/mutations"
-import { useBoard } from "@/lib/data/queries"
+import { useDeleteCard, useMoveCard } from "@doska/core/mutations"
+import { useBoard } from "@doska/core/queries"
 import { routes } from "@/lib/routes"
-import { byPosition } from "@/lib/utils"
+import { byPosition } from "@doska/core/utils"
 
 interface IProps {
   cardId: string

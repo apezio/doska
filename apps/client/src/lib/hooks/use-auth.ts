@@ -1,4 +1,4 @@
-import { useSession } from "@/lib/data/queries"
+import { useSession } from "@doska/core/queries"
 
 export function useAuth(): { authed: boolean | null; login: string | null } {
   const { data } = useSession()

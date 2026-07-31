@@ -6,7 +6,8 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
-    "./column-colors": "./src/lib/column-colors.ts"
+    "./column-colors": "./src/lib/column-colors.ts",
+    "./deadline": "./src/lib/deadline.ts"
   },
   "scripts": {
     "lint": "eslint .",

@@ -9,7 +9,7 @@ export default function CardScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { data: card } = useCard(id ?? null)
   // Flushes its queued write on unmount, which covers every way this route closes.
-  const { queue } = useCardSave()
+  const { queue, flush } = useCardSave()
 
   const deleted = Boolean(card?.deletedAt)
   useEffect(() => {
@@ -18,11 +18,22 @@ export default function CardScreen() {
 
   if (!id || !card) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
+      <View className="flex-1 items-center justify-center bg-card">
         <ActivityIndicator />
       </View>
     )
   }
 
-  return <CardPane key={id} cardId={id} content={card} onQueue={queue} />
+  return (
+    <CardPane
+      key={id}
+      cardId={id}
+      content={card}
+      onQueue={queue}
+      onClose={() => {
+        flush()
+        router.back()
+      }}
+    />
+  )
 }

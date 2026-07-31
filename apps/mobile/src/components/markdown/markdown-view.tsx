@@ -1,10 +1,17 @@
 import { markdownExtra, parseMarkdown } from "@doska/markdown/ast"
 import { attachmentKeyFromSrc } from "@doska/markdown/core"
+import * as Haptics from "expo-haptics"
 import { Fragment, useMemo, type ReactNode } from "react"
-import { Linking, Pressable, ScrollView, Text, View } from "react-native"
+import {
+  Linking,
+  Pressable,
+  ScrollView,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native"
 import { useMarkdownRenderers, type MarkdownRenderers } from "./renderers"
 import { tagColor } from "./tag-palette"
-import { useMarkdownTheme, type MarkdownTheme } from "./theme"
 
 /**
  * Permissive mdast shape, matching how the shared remark plugins type the tree.
@@ -27,9 +34,11 @@ interface MdNode {
 }
 
 interface Ctx {
-  theme: MarkdownTheme
+  dark: boolean
   renderers: MarkdownRenderers
   onToggleTask?: (index: number) => void
+  /** Inside a ticked task, whose text the web dims. */
+  muted?: boolean
   /**
    * Running count of task checkboxes in document order, so an index handed to
    * `onToggleTask` lines up with `taskProgress` / `toggleTaskByIndex`. Mutated
@@ -38,40 +47,22 @@ interface Ctx {
   tasks: { seen: number }
 }
 
-const HEADING_SIZE = [24, 20, 17, 16, 15, 15]
+// Body copy: 1rem at the web's 16px root, line-height 1.6.
+const BODY = "font-sans text-base leading-6 text-card-foreground"
 
 function isBlank(node: MdNode): boolean {
   return node.type === "text" && !node.value?.trim()
 }
 
-// ---------------------------------------------------------------- inline
-
-function Chip({
-  label,
-  bg,
-  fg,
-}: {
-  label: string
-  bg: string
-  fg: string
-}) {
-  return (
-    <Text
-      style={{
-        backgroundColor: bg,
-        color: fg,
-        fontSize: 13,
-        fontWeight: "500",
-      }}
-    >
-      {` ${label} `}
-    </Text>
-  )
+/** The plain text of a subtree, for nodes rendered as a single flat label. */
+function flatten(node: MdNode): string {
+  if (node.value) return node.value
+  return (node.children ?? []).map(flatten).join("")
 }
 
-function renderInline(node: MdNode, ctx: Ctx, key: string): ReactNode {
-  const { theme } = ctx
+// ---------------------------------------------------------------- inline
 
+function renderInline(node: MdNode, ctx: Ctx, key: string): ReactNode {
   switch (node.type) {
     case "text":
       return node.value
@@ -80,39 +71,28 @@ function renderInline(node: MdNode, ctx: Ctx, key: string): ReactNode {
 
     case "strong":
       return (
-        <Text key={key} style={{ fontWeight: "700" }}>
+        <Text key={key} className="font-sans-bold">
           {renderInlines(node.children, ctx)}
         </Text>
       )
 
     case "delete":
       return (
-        <Text key={key} style={{ textDecorationLine: "line-through" }}>
+        <Text key={key} className="line-through">
           {renderInlines(node.children, ctx)}
         </Text>
       )
 
     case "mark":
       return (
-        <Text
-          key={key}
-          style={{ backgroundColor: theme.markBg, color: theme.markFg }}
-        >
+        <Text key={key} className="bg-mark">
           {renderInlines(node.children, ctx)}
         </Text>
       )
 
     case "inlineCode":
       return (
-        <Text
-          key={key}
-          style={{
-            fontFamily: "Menlo",
-            fontSize: 13,
-            backgroundColor: theme.codeBg,
-            color: theme.text,
-          }}
-        >
+        <Text key={key} className="bg-muted font-mono text-[13px]">
           {` ${node.value ?? ""} `}
         </Text>
       )
@@ -121,7 +101,7 @@ function renderInline(node: MdNode, ctx: Ctx, key: string): ReactNode {
       return (
         <Text
           key={key}
-          style={{ color: theme.linkFg }}
+          className="text-primary underline"
           onPress={() => {
             if (node.url) void Linking.openURL(node.url)
           }}
@@ -142,36 +122,40 @@ function renderInline(node: MdNode, ctx: Ctx, key: string): ReactNode {
         const custom = ctx.renderers.renderWikilink?.(extra.target)
         if (custom) return <Fragment key={key}>{custom}</Fragment>
         return (
-          <Chip
+          <Text
             key={key}
-            label={extra.target}
-            bg={theme.chipBg}
-            fg={theme.chipFg}
-          />
+            className="bg-muted font-sans-medium text-[13px] text-muted-foreground"
+          >
+            {` ${extra.target} `}
+          </Text>
         )
       }
 
       if (extra?.kind === "tag") {
         const color = tagColor(extra.color)
         return (
-          <Chip
+          <Text
             key={key}
-            label={flatten(node)}
-            bg={theme.dark ? color.darkBg : color.lightBg}
-            fg={theme.dark ? color.darkFg : color.lightFg}
-          />
+            className="font-sans-medium text-[13px]"
+            style={{
+              backgroundColor: ctx.dark ? color.darkBg : color.lightBg,
+              color: ctx.dark ? color.darkFg : color.lightFg,
+            }}
+          >
+            {` ${flatten(node)} `}
+          </Text>
         )
       }
 
       if (extra?.kind === "cut")
         return (
-          <Text key={key} style={{ color: theme.muted, fontSize: 12 }}>
+          <Text key={key} className="font-sans text-xs text-muted-foreground">
             {"— end of preview —"}
           </Text>
         )
 
       return (
-        <Text key={key} style={{ fontStyle: "italic" }}>
+        <Text key={key} className="italic">
           {renderInlines(node.children, ctx)}
         </Text>
       )
@@ -190,12 +174,6 @@ function renderInlines(children: MdNode[] | undefined, ctx: Ctx): ReactNode[] {
   return (children ?? []).map((child, i) => renderInline(child, ctx, String(i)))
 }
 
-/** The plain text of a subtree, for nodes rendered as a single flat label. */
-function flatten(node: MdNode): string {
-  if (node.value) return node.value
-  return (node.children ?? []).map(flatten).join("")
-}
-
 // ---------------------------------------------------------------- blocks
 
 function BlockImage({ node, ctx }: { node: MdNode; ctx: Ctx }) {
@@ -207,11 +185,8 @@ function BlockImage({ node, ctx }: { node: MdNode; ctx: Ctx }) {
   if (custom) return <View className="my-1">{custom}</View>
 
   return (
-    <View
-      className="my-1 rounded-lg px-3 py-4"
-      style={{ backgroundColor: ctx.theme.codeBg }}
-    >
-      <Text style={{ color: ctx.theme.muted, fontSize: 13 }}>
+    <View className="my-1 rounded-md border border-border bg-muted px-3 py-4">
+      <Text className="font-sans text-[13px] text-muted-foreground">
         {alt || "Image"}
       </Text>
     </View>
@@ -234,7 +209,7 @@ function renderParagraph(node: MdNode, ctx: Ctx, key: string): ReactNode {
     parts.push(
       <Text
         key={`t${parts.length}`}
-        style={{ color: ctx.theme.text, fontSize: 15, lineHeight: 22 }}
+        className={ctx.muted ? `${BODY} text-muted-foreground` : BODY}
       >
         {renderInlines(run, ctx)}
       </Text>
@@ -263,22 +238,22 @@ function renderParagraph(node: MdNode, ctx: Ctx, key: string): ReactNode {
 function Checkbox({
   checked,
   onPress,
-  theme,
 }: {
   checked: boolean
   onPress?: () => void
-  theme: MarkdownTheme
 }) {
   const box = (
     <View
-      className="mt-[3px] h-[18px] w-[18px] items-center justify-center rounded-[5px] border"
-      style={{
-        borderColor: checked ? "#2563eb" : theme.border,
-        backgroundColor: checked ? "#2563eb" : "transparent",
-      }}
+      className={
+        checked
+          ? "mt-1 size-4 items-center justify-center rounded-[4px] border border-primary bg-primary"
+          : "mt-1 size-4 items-center justify-center rounded-[4px] border border-input"
+      }
     >
       {checked ? (
-        <Text style={{ color: "white", fontSize: 12, lineHeight: 14 }}>✓</Text>
+        <Text className="text-[10px] leading-[12px] text-primary-foreground">
+          ✓
+        </Text>
       ) : null}
     </View>
   )
@@ -286,7 +261,13 @@ function Checkbox({
   if (!onPress) return box
   // Widens the touch target without moving the box.
   return (
-    <Pressable onPress={onPress} hitSlop={10}>
+    <Pressable
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+        onPress()
+      }}
+      hitSlop={10}
+    >
       {box}
     </Pressable>
   )
@@ -299,8 +280,6 @@ function renderListItem(
   number: number,
   key: string
 ): ReactNode {
-  const { theme } = ctx
-
   // Only unordered items carry checkboxes in the shared regex, so only they may
   // consume a task index — otherwise an ordered `1. [ ]` would shift every
   // index after it.
@@ -308,62 +287,58 @@ function renderListItem(
   const taskIndex = isTask ? ctx.tasks.seen++ : -1
 
   return (
-    <View key={key} className="flex-row gap-2">
+    <View key={key} className="flex-row gap-1.5">
       {isTask ? (
         <Checkbox
           checked={item.checked === true}
-          theme={theme}
           onPress={
             ctx.onToggleTask ? () => ctx.onToggleTask?.(taskIndex) : undefined
           }
         />
       ) : (
-        <Text
-          style={{ color: theme.muted, fontSize: 15, lineHeight: 22 }}
-          className="min-w-[18px]"
-        >
+        <Text className={`min-w-[18px] ${BODY} text-muted-foreground`}>
           {ordered ? `${number}.` : "•"}
         </Text>
       )}
-      <View className="flex-1 gap-1">{renderBlocks(item.children, ctx)}</View>
+      <View className="flex-1 gap-1">
+        {renderBlocks(
+          item.children,
+          item.checked === true ? { ...ctx, muted: true } : ctx
+        )}
+      </View>
     </View>
   )
 }
 
 function renderTable(node: MdNode, ctx: Ctx, key: string): ReactNode {
-  const { theme } = ctx
   const rows = node.children ?? []
 
   return (
     <ScrollView key={key} horizontal showsHorizontalScrollIndicator={false}>
-      <View
-        className="overflow-hidden rounded-lg border"
-        style={{ borderColor: theme.border }}
-      >
+      <View className="overflow-hidden rounded-md border border-border">
         {rows.map((row, r) => (
           <View
             key={r}
-            className="flex-row"
-            style={{
-              borderTopWidth: r === 0 ? 0 : 1,
-              borderTopColor: theme.border,
-            }}
+            className={
+              r === 0 ? "flex-row" : "flex-row border-t border-border"
+            }
           >
             {(row.children ?? []).map((cell, c) => (
               <View
                 key={c}
-                className="w-36 px-3 py-2"
-                style={{
-                  borderLeftWidth: c === 0 ? 0 : 1,
-                  borderLeftColor: theme.border,
-                  backgroundColor: r === 0 ? theme.codeBg : "transparent",
-                }}
+                className={[
+                  "w-36 px-3 py-2",
+                  c === 0 ? "" : "border-l border-border",
+                  r === 0 ? "bg-muted" : "",
+                ].join(" ")}
               >
                 <Text
+                  className={
+                    r === 0
+                      ? "font-sans-semibold text-sm text-card-foreground"
+                      : "font-sans text-sm text-card-foreground"
+                  }
                   style={{
-                    color: theme.text,
-                    fontSize: 14,
-                    fontWeight: r === 0 ? "600" : "400",
                     textAlign:
                       (node.align?.[c] as "left" | "center" | "right") ??
                       "left",
@@ -381,22 +356,21 @@ function renderTable(node: MdNode, ctx: Ctx, key: string): ReactNode {
 }
 
 function renderBlock(node: MdNode, ctx: Ctx, key: string): ReactNode {
-  const { theme } = ctx
-
   switch (node.type) {
     case "paragraph":
       return renderParagraph(node, ctx, key)
 
+    // Every heading level is body-sized on the web; only the weight and, at h3,
+    // the colour set them apart.
     case "heading":
       return (
         <Text
           key={key}
-          style={{
-            color: theme.text,
-            fontSize: HEADING_SIZE[(node.depth ?? 1) - 1] ?? 15,
-            fontWeight: "700",
-            marginTop: 4,
-          }}
+          className={
+            (node.depth ?? 1) >= 3
+              ? "mt-1 font-sans-bold text-base leading-5 text-muted-foreground"
+              : "mt-1 font-sans-bold text-base leading-5 text-card-foreground"
+          }
         >
           {renderInlines(node.children, ctx)}
         </Text>
@@ -416,11 +390,7 @@ function renderBlock(node: MdNode, ctx: Ctx, key: string): ReactNode {
 
     case "blockquote":
       return (
-        <View
-          key={key}
-          className="gap-2 pl-3"
-          style={{ borderLeftWidth: 3, borderLeftColor: theme.quoteBar }}
-        >
+        <View key={key} className="gap-2 border-l-2 border-quote-bar pl-3">
           {renderBlocks(node.children, ctx)}
         </View>
       )
@@ -431,26 +401,17 @@ function renderBlock(node: MdNode, ctx: Ctx, key: string): ReactNode {
           key={key}
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="rounded-lg"
-          style={{ backgroundColor: theme.codeBg }}
+          className="rounded-md border border-border bg-muted"
           contentContainerClassName="p-3"
         >
-          <Text
-            style={{ fontFamily: "Menlo", fontSize: 13, color: theme.text }}
-          >
+          <Text className="font-mono text-[13px] leading-5 text-card-foreground">
             {node.value ?? ""}
           </Text>
         </ScrollView>
       )
 
     case "thematicBreak":
-      return (
-        <View
-          key={key}
-          style={{ height: 1, backgroundColor: theme.border }}
-          className="my-1"
-        />
-      )
+      return <View key={key} className="my-1 h-px bg-border" />
 
     case "table":
       return renderTable(node, ctx, key)
@@ -458,7 +419,7 @@ function renderBlock(node: MdNode, ctx: Ctx, key: string): ReactNode {
     // Raw HTML has no native equivalent; showing the source beats dropping it.
     case "html":
       return (
-        <Text key={key} style={{ color: theme.muted, fontSize: 13 }}>
+        <Text key={key} className="font-mono text-[13px] text-muted-foreground">
           {node.value ?? ""}
         </Text>
       )
@@ -494,13 +455,15 @@ interface IProps {
  * caller applies any markers first — this draws whatever markdown it is given.
  */
 export function MarkdownView({ children, onToggleTask }: IProps) {
-  const theme = useMarkdownTheme()
+  // Only the tag palette needs the scheme as a value; everything else themes
+  // itself through the `dark:` variants NativeWind resolves.
+  const dark = useColorScheme() === "dark"
   const renderers = useMarkdownRenderers()
 
   const content = useMemo(() => {
-    const ctx: Ctx = { theme, renderers, onToggleTask, tasks: { seen: 0 } }
+    const ctx: Ctx = { dark, renderers, onToggleTask, tasks: { seen: 0 } }
     return renderBlocks(parseMarkdown(children).children as MdNode[], ctx)
-  }, [children, theme, renderers, onToggleTask])
+  }, [children, dark, renderers, onToggleTask])
 
   return <View className="gap-2">{content}</View>
 }

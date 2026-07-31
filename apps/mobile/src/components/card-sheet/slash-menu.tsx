@@ -20,20 +20,20 @@ interface IProps {
  */
 export function SlashMenu({ items, isOpen, onToggle, onSelect }: IProps) {
   return (
-    <View className="flex-row items-center border-t border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+    <View className="flex-row items-center pb-1">
       <Pressable
         onPress={onToggle}
         className={
           isOpen
-            ? "m-2 h-9 w-9 items-center justify-center rounded-lg bg-blue-600"
-            : "m-2 h-9 w-9 items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800"
+            ? "m-2 h-9 w-9 items-center justify-center rounded-lg bg-primary"
+            : "m-2 h-9 w-9 items-center justify-center rounded-lg bg-secondary"
         }
       >
         <Text
           className={
             isOpen
-              ? "text-lg font-semibold text-white"
-              : "text-lg font-semibold text-neutral-600 dark:text-neutral-300"
+              ? "text-lg font-sans-semibold text-primary-foreground"
+              : "text-lg font-sans-semibold text-secondary-foreground"
           }
         >
           /
@@ -50,13 +50,13 @@ export function SlashMenu({ items, isOpen, onToggle, onSelect }: IProps) {
           <Pressable
             key={command.id}
             onPress={() => onSelect(command)}
-            className="rounded-lg bg-neutral-100 px-3 py-1.5 active:bg-neutral-200 dark:bg-neutral-800 dark:active:bg-neutral-700"
+            className="rounded-lg bg-secondary px-3 py-1.5 active:bg-accent"
           >
-            <Text className="text-[13px] font-medium text-neutral-900 dark:text-neutral-100">
+            <Text className="text-[13px] font-sans-medium text-card-foreground">
               {command.title}
             </Text>
             {command.hint ? (
-              <Text className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              <Text className="text-[11px] text-muted-foreground">
                 {command.hint}
               </Text>
             ) : null}

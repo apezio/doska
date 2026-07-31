@@ -1,112 +1,24 @@
-import type { Card, Column, Dashboard } from "@doska/core/types"
-import { useUpdateCard } from "@doska/core/mutations"
+import { useCreateCard, useSetColumnCollapsed } from "@doska/core/mutations"
 import { useBoard } from "@doska/core/queries"
 import { sync } from "@doska/core/sync"
 import { byPosition } from "@doska/core/utils"
-import { cut, toggleTaskByIndex } from "@doska/markdown/core"
-import { router } from "expo-router"
 import { useEffect } from "react"
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native"
-import { MarkdownView } from "@/components/markdown/markdown-view"
+import { BoardHeader } from "@/components/board/board-header"
+import { Column } from "@/components/board/column"
 import { useActiveBoard } from "@/lib/use-active-board"
 
-function CardRow({ card }: { card: Card }) {
-  const { mutate: updateCard } = useUpdateCard(card.id)
-  // `hasMore` is the cut marker having fired: the rest opens in the card view.
-  const { body: preview, applied: hasMore } = cut.cardRender(card.body)
-
-  return (
-    <Pressable
-      onPress={() => router.push(`/card/${card.id}`)}
-      className="gap-1 rounded-xl border border-neutral-200 bg-white p-3 active:opacity-70 dark:border-neutral-800 dark:bg-neutral-900"
-    >
-      <Text className="text-[15px] font-medium text-neutral-900 dark:text-neutral-100">
-        {card.title}
-      </Text>
-      {preview ? (
-        <MarkdownView
-          onToggleTask={(index) =>
-            updateCard({ body: toggleTaskByIndex(card.body, index) })
-          }
-        >
-          {preview}
-        </MarkdownView>
-      ) : null}
-      {hasMore ? (
-        <Text className="text-[13px] text-neutral-400">Open to see more</Text>
-      ) : null}
-      {card.deadline ? (
-        <Text className="text-xs text-neutral-400">{card.deadline}</Text>
-      ) : null}
-    </Pressable>
-  )
-}
-
-function ColumnView({ column, cards }: { column: Column; cards: Card[] }) {
-  return (
-    <View className="w-72 flex-1">
-      <Text className="mb-2 text-[15px] font-semibold text-neutral-900 dark:text-neutral-100">
-        {column.title}{" "}
-        <Text className="font-normal text-neutral-400">{cards.length}</Text>
-      </Text>
-      <ScrollView contentContainerClassName="gap-2 pb-6">
-        {cards.map((card) => (
-          <CardRow key={card.id} card={card} />
-        ))}
-      </ScrollView>
-    </View>
-  )
-}
-
-function BoardPicker({
-  dashboards,
-  deckId,
-  onSelect,
-}: {
-  dashboards: Dashboard[]
-  deckId: string | null
-  onSelect: (id: string) => void
-}) {
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      className="max-h-12 grow-0 border-b border-neutral-200 dark:border-neutral-800"
-      contentContainerClassName="items-center gap-2 px-3 py-2"
-    >
-      {dashboards.map((dashboard) => (
-        <Pressable
-          key={dashboard.id}
-          onPress={() => onSelect(dashboard.id)}
-          className={
-            dashboard.id === deckId
-              ? "rounded-full bg-blue-600 px-3 py-1.5"
-              : "rounded-full bg-neutral-200 px-3 py-1.5 dark:bg-neutral-800"
-          }
-        >
-          <Text
-            className={
-              dashboard.id === deckId
-                ? "text-[13px] font-medium text-white"
-                : "text-[13px] font-medium text-neutral-700 dark:text-neutral-300"
-            }
-          >
-            {dashboard.title}
-          </Text>
-        </Pressable>
-      ))}
-    </ScrollView>
-  )
-}
-
-function BoardBody({ deckId }: { deckId: string }) {
+function BoardBody({ deckId, prefix }: { deckId: string; prefix: string }) {
   const { data: board } = useBoard(deckId)
+  const { mutate: setColumnCollapsed } = useSetColumnCollapsed(deckId)
+  const { mutate: createCard } = useCreateCard(deckId)
+  const { width } = useWindowDimensions()
 
   if (!board) {
     return (
@@ -119,20 +31,32 @@ function BoardBody({ deckId }: { deckId: string }) {
   if (board.columns.length === 0) {
     return (
       <View className="flex-1 items-center justify-center">
-        <Text className="text-neutral-500">No columns yet.</Text>
+        <Text className="text-muted-foreground">No columns yet.</Text>
       </View>
     )
   }
 
   return (
-    <ScrollView horizontal contentContainerClassName="gap-3 p-3">
-      {board.columns.map((column) => (
-        <ColumnView
+    <ScrollView
+      horizontal
+      // One column per screen, settling on a column edge rather than mid-swipe.
+      snapToInterval={width}
+      decelerationRate="fast"
+      showsHorizontalScrollIndicator={false}
+    >
+      {[...board.columns].sort(byPosition).map((column) => (
+        <Column
           key={column.id}
           column={column}
+          width={width}
+          prefix={prefix}
           cards={board.cards
             .filter((card) => card.columnId === column.id)
             .sort(byPosition)}
+          onToggleBody={() =>
+            setColumnCollapsed({ id: column.id, collapsed: !column.collapsed })
+          }
+          onAddCard={() => createCard(column.id)}
         />
       ))}
     </ScrollView>
@@ -141,6 +65,7 @@ function BoardBody({ deckId }: { deckId: string }) {
 
 export default function BoardScreen() {
   const { dashboards, deckId, select } = useActiveBoard()
+  const active = dashboards.find((dashboard) => dashboard.id === deckId)
 
   // Only the active board is pulled during normal use, so background sync has
   // to be told which one that is.
@@ -149,16 +74,14 @@ export default function BoardScreen() {
   }, [deckId])
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-neutral-950">
-      {dashboards.length > 1 && (
-        <BoardPicker
-          dashboards={dashboards}
-          deckId={deckId}
-          onSelect={select}
-        />
-      )}
+    <View className="flex-1 bg-sidebar">
+      <BoardHeader
+        dashboards={dashboards}
+        deckId={deckId}
+        onSelect={select}
+      />
       {deckId ? (
-        <BoardBody deckId={deckId} />
+        <BoardBody deckId={deckId} prefix={active?.prefix ?? ""} />
       ) : (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator />

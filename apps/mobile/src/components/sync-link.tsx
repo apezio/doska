@@ -23,8 +23,8 @@ export function SyncLink() {
       href="/sign-in"
       className={
         connection.status === "dropped"
-          ? "text-base text-red-600"
-          : "text-base text-blue-600"
+          ? "text-base text-destructive"
+          : "text-base text-primary"
       }
     >
       {label}

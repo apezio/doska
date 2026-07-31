@@ -8,6 +8,7 @@ import {
   type TextInputSelectionChangeEventData,
 } from "react-native"
 import { MarkdownView } from "@/components/markdown/markdown-view"
+import { useTokens } from "@/lib/tokens"
 
 interface IProps {
   body: string
@@ -29,6 +30,7 @@ export function CardBody({
   onSelectionChange,
   selection,
 }: IProps) {
+  const tokens = useTokens()
   // The cut marker stays visible here as a divider rather than truncating, the
   // way it does on a board card.
   const preview = useMemo(() => cut.previewRender(body).body, [body])
@@ -43,11 +45,11 @@ export function CardBody({
         onSelectionChange={onSelectionChange}
         selection={selection}
         placeholder="Notes"
-        placeholderTextColor="#a3a3a3"
+        placeholderTextColor={tokens.mutedForeground}
         textAlignVertical="top"
         // Fills the pane and scrolls internally, which is what keeps the caret
         // above the keyboard as the note grows.
-        className="flex-1 px-4 py-2 font-mono text-[15px] leading-[22px] text-neutral-900 dark:text-neutral-100"
+        className="flex-1 px-4 py-2 font-mono text-[15px] leading-[22px] text-card-foreground"
       />
     )
   }
@@ -55,7 +57,7 @@ export function CardBody({
   if (!body.trim()) {
     return (
       <Pressable onPress={onEdit} className="px-4 py-2">
-        <Text className="text-[15px] text-neutral-400">Notes</Text>
+        <Text className="text-[15px] text-muted-foreground">Notes</Text>
       </Pressable>
     )
   }

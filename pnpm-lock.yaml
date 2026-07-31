@@ -247,6 +247,15 @@ importers:
       '@doska/ports':
         specifier: workspace:*
         version: link:../../packages/ports
+      '@doska/ui-kit':
+        specifier: workspace:*
+        version: link:../../packages/ui-kit
+      '@expo-google-fonts/geist-mono':
+        specifier: ^0.4.3
+        version: 0.4.3
+      '@expo-google-fonts/mulish':
+        specifier: ^0.4.2
+        version: 0.4.2
       '@react-native-community/netinfo':
         specifier: 12.0.1
         version: 12.0.1(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)
@@ -256,12 +265,21 @@ importers:
       expo:
         specifier: ~57.0.9
         version: 57.0.9(@babel/core@7.29.7(supports-color@10.2.2))(@expo/dom-webview@57.0.1)(@expo/metro-runtime@57.0.8)(expo-router@57.0.9)(react-dom@19.2.8(react@19.2.8))(react-native-worklets@0.10.1(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)(supports-color@10.2.2))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)(supports-color@10.2.2)(typescript@6.0.3)
+      expo-blur:
+        specifier: ^57.0.2
+        version: 57.0.2(expo@57.0.9)(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)
       expo-constants:
         specifier: ~57.0.8
         version: 57.0.8(expo@57.0.9)(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(supports-color@10.2.2)
       expo-dev-client:
         specifier: ~57.0.10
         version: 57.0.10(expo@57.0.9)(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))
+      expo-font:
+        specifier: ^57.0.1
+        version: 57.0.1(expo@57.0.9)(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)
+      expo-haptics:
+        specifier: ^57.0.1
+        version: 57.0.1(expo@57.0.9)
       expo-linking:
         specifier: ~57.0.4
         version: 57.0.4(expo@57.0.9)(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)(supports-color@10.2.2)
@@ -1928,8 +1946,14 @@ packages:
     resolution: {integrity: sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
+  '@expo-google-fonts/geist-mono@0.4.3':
+    resolution: {integrity: sha512-gjnwv1QOG4meZpMhrLjTIPC/+lhyNu8EcXa2eJPVbPrYvguVjCfBq+Ezq6cWKWW8ung6fqb2TjvuTalE6lqlnw==}
+
   '@expo-google-fonts/material-symbols@0.4.42':
     resolution: {integrity: sha512-KZmHZRcthJ3KFZZlpzHjopA9guZgWR9fb3uVZlTR0BNlvG2pw1bnYBCpkze2PB0vRllwGhAM7lWXsfmcWCbXYg==}
+
+  '@expo-google-fonts/mulish@0.4.2':
+    resolution: {integrity: sha512-89tkBww9zl5YVTdCLMp+I7XfjsoqUxw8iU7swOqhCOafwr0Ldr01Xd4SmMr+/mizz+pIECGPU8826bgjx8vDDQ==}
 
   '@expo/cli@57.0.11':
     resolution: {integrity: sha512-ENXCwRyL8Q9qbabUmm0L6w9kXTmdGotW7eDEEWmUDXLPux+nEzNDqw0MzWQ5K3ZsXS51QmUJZg5yETB+6SnNRg==}
@@ -4481,6 +4505,13 @@ packages:
       react: '*'
       react-native: '*'
 
+  expo-blur@57.0.2:
+    resolution: {integrity: sha512-Aoud8H8lmlNkbRufyvRLefmGFELdBf1n5Te/Xm+Zx8ORINH+aXL+gKb5mbftFSha860+I7pMArz77TBYz8HDVg==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
+      react-native: '*'
+
   expo-constants@57.0.8:
     resolution: {integrity: sha512-ts+B7E5076BtkblrKGy7+Sm/R2obHfTwqhmYQVYbWRtilv3+C/xNwHZhyNEnAvzM/JjKqx7UdaITUBYaeFreZw==}
     peerDependencies:
@@ -4528,6 +4559,11 @@ packages:
       expo: '*'
       react: '*'
       react-native: '*'
+
+  expo-haptics@57.0.1:
+    resolution: {integrity: sha512-8VhbnxlIrfXjP0syZr1JT197nafYicQu9119adOJnX62osU9Cw+PdDnAx/6LxuKJRzQdwxOMq7b7eWjhNL5zAQ==}
+    peerDependencies:
+      expo: '*'
 
   expo-json-utils@57.0.1:
     resolution: {integrity: sha512-cgTe1NqzQdYs/WN+3nIY5IZg8s0pb0xaTUbhYvxQDn137GbwRfHoGM2se3m3Vsl4Qu+B9G4RPEK5WJDEU2Do7g==}
@@ -9208,7 +9244,11 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
+  '@expo-google-fonts/geist-mono@0.4.3': {}
+
   '@expo-google-fonts/material-symbols@0.4.42': {}
+
+  '@expo-google-fonts/mulish@0.4.2': {}
 
   '@expo/cli@57.0.11(@expo/dom-webview@57.0.1)(@expo/metro-runtime@57.0.8)(expo-constants@57.0.8)(expo-font@57.0.1)(expo-router@57.0.9)(expo@57.0.9)(react-dom@19.2.8(react@19.2.8))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)(supports-color@10.2.2)(typescript@6.0.3)':
     dependencies:
@@ -11994,6 +12034,12 @@ snapshots:
       - supports-color
       - typescript
 
+  expo-blur@57.0.2(expo@57.0.9)(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8):
+    dependencies:
+      expo: 57.0.9(@babel/core@7.29.7(supports-color@10.2.2))(@expo/dom-webview@57.0.1)(@expo/metro-runtime@57.0.8)(expo-router@57.0.9)(react-dom@19.2.8(react@19.2.8))(react-native-worklets@0.10.1(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)(supports-color@10.2.2))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)(supports-color@10.2.2)(typescript@6.0.3)
+      react: 19.2.8
+      react-native: 0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2)
+
   expo-constants@57.0.8(expo@57.0.9)(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(supports-color@10.2.2):
     dependencies:
       '@expo/env': 2.4.2(supports-color@10.2.2)
@@ -12048,6 +12094,10 @@ snapshots:
       expo: 57.0.9(@babel/core@7.29.7(supports-color@10.2.2))(@expo/dom-webview@57.0.1)(@expo/metro-runtime@57.0.8)(expo-router@57.0.9)(react-dom@19.2.8(react@19.2.8))(react-native-worklets@0.10.1(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)(supports-color@10.2.2))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)(supports-color@10.2.2)(typescript@6.0.3)
       react: 19.2.8
       react-native: 0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2)
+
+  expo-haptics@57.0.1(expo@57.0.9):
+    dependencies:
+      expo: 57.0.9(@babel/core@7.29.7(supports-color@10.2.2))(@expo/dom-webview@57.0.1)(@expo/metro-runtime@57.0.8)(expo-router@57.0.9)(react-dom@19.2.8(react@19.2.8))(react-native-worklets@0.10.1(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)(supports-color@10.2.2))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.8)(supports-color@10.2.2))(react@19.2.8)(supports-color@10.2.2)(typescript@6.0.3)
 
   expo-json-utils@57.0.1: {}
 

@@ -43,7 +43,7 @@ export default function UpcomingScreen() {
 
   if (!data) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
+      <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator />
       </View>
     )
@@ -52,35 +52,35 @@ export default function UpcomingScreen() {
   const grouped = sections(data)
   if (grouped.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
-        <Text className="text-neutral-500">Nothing due.</Text>
+      <View className="flex-1 items-center justify-center bg-background">
+        <Text className="text-muted-foreground">Nothing due.</Text>
       </View>
     )
   }
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-neutral-950">
+    <View className="flex-1 bg-background">
       <SectionList
         sections={grouped}
         keyExtractor={(entry) => entry.card.id}
         contentContainerClassName="gap-2 p-3"
         renderSectionHeader={({ section }) => (
-          <Text className="pt-3 text-xs font-semibold uppercase text-neutral-400">
+          <Text className="pt-3 text-xs font-sans-semibold uppercase text-muted-foreground">
             {section.title}
           </Text>
         )}
         renderItem={({ item }) => (
-          <View className="gap-1 rounded-xl border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
+          <View className="gap-1 rounded-xl border border-border bg-card p-3">
             <Text
               className={
                 item.isDone
-                  ? "text-[15px] font-medium text-neutral-400 line-through"
-                  : "text-[15px] font-medium text-neutral-900 dark:text-neutral-100"
+                  ? "text-[15px] font-sans-medium text-muted-foreground line-through"
+                  : "text-[15px] font-sans-medium text-card-foreground"
               }
             >
               {item.card.title}
             </Text>
-            <Text className="text-xs text-neutral-400">
+            <Text className="text-xs text-muted-foreground">
               {item.card.deadline} · {item.boardTitle} · {item.columnTitle}
             </Text>
           </View>

@@ -4,13 +4,14 @@ import { useRouter } from "expo-router"
 import { useState } from "react"
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native"
 import { getServerUrl, setServerUrl } from "@/lib/adapters/server-url"
+import { useTokens } from "@/lib/tokens"
 
 export default function SignInScreen() {
   const { data: session } = useSession()
 
   return (
     <ScrollView
-      className="flex-1 bg-neutral-50 dark:bg-neutral-950"
+      className="flex-1 bg-background"
       contentContainerClassName="gap-4 p-4"
       keyboardShouldPersistTaps="handled"
     >
@@ -25,10 +26,10 @@ function SignedIn({ login }: { login: string | null }) {
   return (
     <View className="gap-4">
       <View className="gap-1">
-        <Text className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <Text className="text-xl font-sans-semibold text-card-foreground">
           Sync is on
         </Text>
-        <Text className="text-[13px] text-neutral-500 dark:text-neutral-400">
+        <Text className="text-[13px] text-muted-foreground">
           Signed in{login ? ` as ${login}` : ""} to {getServerUrl()}.
         </Text>
       </View>
@@ -67,10 +68,10 @@ function SyncSetup() {
   return (
     <View className="gap-4">
       <View className="gap-1">
-        <Text className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <Text className="text-xl font-sans-semibold text-card-foreground">
           Set up sync
         </Text>
-        <Text className="text-[13px] text-neutral-500 dark:text-neutral-400">
+        <Text className="text-[13px] text-muted-foreground">
           Your boards stay on this device until you set up sync.
         </Text>
       </View>
@@ -104,7 +105,7 @@ function SyncSetup() {
           onSubmitEditing={submit}
         />
         {isError && (
-          <Text className="text-xs text-red-600">Invalid credentials.</Text>
+          <Text className="text-xs text-destructive">Invalid credentials.</Text>
         )}
       </View>
 
@@ -118,10 +119,12 @@ function SyncSetup() {
 }
 
 function Field(props: React.ComponentProps<typeof TextInput>) {
+  const tokens = useTokens()
+
   return (
     <TextInput
-      className="rounded-xl border border-neutral-200 bg-white px-3 py-3 text-[15px] text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
-      placeholderTextColor="#a3a3a3"
+      className="rounded-xl border border-border bg-card px-3 py-3 text-[15px] text-card-foreground"
+      placeholderTextColor={tokens.mutedForeground}
       {...props}
     />
   )
@@ -142,11 +145,11 @@ function Button({
       onPress={onPress}
       className={
         disabled
-          ? "items-center rounded-xl bg-blue-600/40 px-4 py-3"
-          : "items-center rounded-xl bg-blue-600 px-4 py-3 active:bg-blue-700"
+          ? "items-center rounded-xl bg-primary/40 px-4 py-3"
+          : "items-center rounded-xl bg-primary px-4 py-3 active:bg-blue-700"
       }
     >
-      <Text className="text-[15px] font-medium text-white">{label}</Text>
+      <Text className="text-[15px] font-sans-medium text-primary-foreground">{label}</Text>
     </Pressable>
   )
 }

@@ -1,4 +1,4 @@
-import { useColorScheme } from "react-native"
+import { useColorScheme } from "nativewind"
 
 /**
  * The same tokens as `global.css`, for the props that take a colour value
@@ -20,6 +20,7 @@ export interface Tokens {
   muted: string
   mutedForeground: string
   border: string
+  destructive: string
   sidebar: string
   /**
    * The column head's tint over its blur: the web's `bg-background/80` taken
@@ -40,6 +41,7 @@ const LIGHT: Tokens = {
   muted: "#f7f7f8",
   mutedForeground: "#676d7f",
   border: "#eeeff2",
+  destructive: "#ff5656",
   sidebar: "#ffffff",
   headVeil: "#ffffffcc",
 }
@@ -55,10 +57,13 @@ const DARK: Tokens = {
   muted: "#343c54",
   mutedForeground: "#999da9",
   border: "#ffffff1f",
+  destructive: "#ff5656",
   sidebar: "#1d2230",
   headVeil: "#1d2230cc",
 }
 
+// NativeWind's scheme, not React Native's: the theme toggle overrides the
+// device one, and these values have to follow the classes.
 export function useTokens(): Tokens {
-  return useColorScheme() === "dark" ? DARK : LIGHT
+  return useColorScheme().colorScheme === "dark" ? DARK : LIGHT
 }

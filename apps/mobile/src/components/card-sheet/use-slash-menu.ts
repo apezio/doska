@@ -5,7 +5,10 @@ import {
   type SlashCommand,
 } from "@doska/markdown/core"
 import { useCallback, useMemo, useState } from "react"
-import type { TextInputSelectionChangeEventData, NativeSyntheticEvent } from "react-native"
+import type {
+  TextInputSelectionChangeEventData,
+  NativeSyntheticEvent,
+} from "react-native"
 
 // A `/` at the start of input or right after whitespace, followed by the query
 // (any non-whitespace run) up to the caret. Same trigger the web menu uses.

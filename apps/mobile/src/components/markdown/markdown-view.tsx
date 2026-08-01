@@ -319,9 +319,7 @@ function renderTable(node: MdNode, ctx: Ctx, key: string): ReactNode {
         {rows.map((row, r) => (
           <View
             key={r}
-            className={
-              r === 0 ? "flex-row" : "flex-row border-t border-border"
-            }
+            className={r === 0 ? "flex-row" : "flex-row border-t border-border"}
           >
             {(row.children ?? []).map((cell, c) => (
               <View

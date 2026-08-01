@@ -9,6 +9,11 @@ allowBuilds:
 
 # Dependabot advisory
 overrides:
+  # One React for the whole workspace, at the version Expo SDK 57 ships against.
+  # Two copies gave the mobile app two @tanstack/react-query instances, so the
+  # provider and the hooks in @doska/core saw different contexts.
+  react: 19.2.3
+  react-dom: 19.2.3
   brace-expansion: ^5.0.8
   postcss: ^8.5.18
   find-my-way: ^9.7.0

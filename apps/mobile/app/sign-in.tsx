@@ -149,7 +149,9 @@ function Button({
           : "items-center rounded-xl bg-primary px-4 py-3 active:bg-blue-700"
       }
     >
-      <Text className="text-[15px] font-sans-medium text-primary-foreground">{label}</Text>
+      <Text className="text-[15px] font-sans-medium text-primary-foreground">
+        {label}
+      </Text>
     </Pressable>
   )
 }

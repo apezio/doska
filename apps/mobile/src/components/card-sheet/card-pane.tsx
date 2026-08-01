@@ -102,11 +102,7 @@ export function CardPane({ cardId, content, onQueue, onClose }: IProps) {
       {!isPreview && (
         <SlashMenu
           items={
-            slash.hasTrigger
-              ? slash.items
-              : isListOpen
-                ? slash.commands
-                : []
+            slash.hasTrigger ? slash.items : isListOpen ? slash.commands : []
           }
           isOpen={isListOpen}
           onToggle={() => setListOpen(!isListOpen)}

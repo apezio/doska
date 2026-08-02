@@ -47,9 +47,11 @@ export function CardBody({
         placeholder="Notes"
         placeholderTextColor={tokens.mutedForeground}
         textAlignVertical="top"
-        // Fills the pane and scrolls internally, which is what keeps the caret
-        // above the keyboard as the note grows.
-        className="flex-1 px-4 py-2 font-mono text-[15px] leading-[22px] text-card-foreground"
+        // Grows with the note instead of scrolling inside itself, so the title
+        // above it scrolls away with the text. `CardPane` owns the scrolling and
+        // the caret-following that used to come with it for free.
+        scrollEnabled={false}
+        className="grow px-4 py-2 font-mono text-[15px] leading-[22px] text-card-foreground"
       />
     )
   }

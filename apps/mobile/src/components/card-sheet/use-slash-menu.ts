@@ -103,6 +103,7 @@ export function useSlashMenu({
 
   return {
     commands,
+    caret,
     /** Commands matching a typed `/` trigger; empty when there is none. */
     items,
     hasTrigger: trigger !== null,

@@ -107,13 +107,14 @@ export default function RootLayout() {
             <Stack screenOptions={headerOptions}>
               {/* The sidebar's screens draw their own headers, matching the web's. */}
               <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+              {/* The bar carries the card's meta, which `CardPane` fills in —
+                  in the sheet's content it drew over the title. */}
               <Stack.Screen
                 name="card/[id]"
                 options={{
                   ...sheetOptions,
-                  // The editor wants the height; the grabber says it can still
-                  // be pulled down, which a plain modal gives no sign of.
                   sheetAllowedDetents: [1],
+                  headerShown: true,
                 }}
               />
               <Stack.Screen name="board/actions" options={sheetOptions} />

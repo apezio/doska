@@ -28,6 +28,8 @@ export interface Tokens {
    * because BlurView is styled by value.
    */
   headVeil: string
+  /** {@link headVeil}'s counterpart over the card sheet's `--card` surface. */
+  cardVeil: string
 }
 
 const LIGHT: Tokens = {
@@ -44,6 +46,7 @@ const LIGHT: Tokens = {
   destructive: "#ff5656",
   sidebar: "#ffffff",
   headVeil: "#ffffffcc",
+  cardVeil: "#ffffffcc",
 }
 
 const DARK: Tokens = {
@@ -60,6 +63,7 @@ const DARK: Tokens = {
   destructive: "#ff5656",
   sidebar: "#1d2230",
   headVeil: "#1d2230cc",
+  cardVeil: "#2d3447cc",
 }
 
 // NativeWind's scheme, not React Native's: the theme toggle overrides the

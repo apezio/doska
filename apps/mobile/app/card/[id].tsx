@@ -8,8 +8,9 @@ import { CardPane } from "@/components/card-sheet/card-pane"
 export default function CardScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { data: card } = useCard(id ?? null)
-  // Flushes its queued write on unmount, which covers every way this route closes.
-  const { queue, flush } = useCardSave()
+  // Flushes its queued write on unmount, which covers every way this sheet
+  // closes — including the swipe down, which is now the only way out.
+  const { queue } = useCardSave()
 
   const deleted = Boolean(card?.deletedAt)
   useEffect(() => {
@@ -24,16 +25,5 @@ export default function CardScreen() {
     )
   }
 
-  return (
-    <CardPane
-      key={id}
-      cardId={id}
-      content={card}
-      onQueue={queue}
-      onClose={() => {
-        flush()
-        router.back()
-      }}
-    />
-  )
+  return <CardPane key={id} cardId={id} content={card} onQueue={queue} />
 }

@@ -20,7 +20,7 @@ interface IProps {
  */
 export function SlashMenu({ items, isOpen, onToggle, onSelect }: IProps) {
   return (
-    <View className="flex-row items-center pb-1">
+    <View className="flex-row items-center border-t border-border pb-1">
       <Pressable
         onPress={onToggle}
         className={

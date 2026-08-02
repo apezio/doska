@@ -1,8 +1,9 @@
 import { cardDisplayId } from "@doska/contract/prefix"
 import { useCardCol, useCardDeck } from "@doska/core/queries"
-import { Pressable, Text, View } from "react-native"
+import { Text, View } from "react-native"
 import { CardMeta } from "@/components/board/card-meta"
 import { ColumnSwatch } from "@/components/board/column-swatch"
+import { SheetBar } from "@/components/ui/sheet"
 
 interface IProps {
   cardId: string
@@ -15,8 +16,9 @@ interface IProps {
   onClose: () => void
 }
 
-/** The card panel's own bar: preview toggle, save, then the meta row. The
- * sheet's own gesture is the way back, so there is no close button. */
+/** The card sheet's own bar: the mode toggle leading, `Done` trailing, then the
+ * meta row. Editing saves as you type, so the trailing action dismisses rather
+ * than commits — which is what `Done` means on iOS and `Save` does not. */
 export function CardPaneHeader({
   cardId,
   body,
@@ -31,21 +33,15 @@ export function CardPaneHeader({
 
   return (
     <View className="shrink-0 bg-card">
-      <View className="flex-row items-center justify-end gap-2 px-3 py-2">
-        <Pressable onPress={onTogglePreview} hitSlop={8} className="px-2 py-1">
-          <Text className="text-base font-sans-medium text-card-foreground">
-            {isPreview ? "Edit" : "Preview"}
-          </Text>
-        </Pressable>
-        {/* Saving is continuous; the button is the way out that flushes it. */}
-        <Pressable
-          onPress={onClose}
-          className="rounded-lg bg-primary px-3 py-1.5 active:opacity-80"
-        >
-          <Text className="text-base font-sans-medium text-primary-foreground">
-            Save
-          </Text>
-        </Pressable>
+      {/* Clears the sheet's grabber, which the system draws over the top edge. */}
+      <View className="px-4 pt-2">
+        <SheetBar
+          leading={{
+            label: isPreview ? "Edit" : "Preview",
+            onPress: onTogglePreview,
+          }}
+          trailing={{ label: "Done", onPress: onClose }}
+        />
       </View>
 
       <View className="flex-row items-center gap-4 border-t border-muted px-4 py-2">

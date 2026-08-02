@@ -109,7 +109,12 @@ export default function RootLayout() {
               <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
               <Stack.Screen
                 name="card/[id]"
-                options={{ headerShown: false, presentation: "modal" }}
+                options={{
+                  ...sheetOptions,
+                  // The editor wants the height; the grabber says it can still
+                  // be pulled down, which a plain modal gives no sign of.
+                  sheetAllowedDetents: [1],
+                }}
               />
               <Stack.Screen name="board/actions" options={sheetOptions} />
               <Stack.Screen name="board/prefix" options={sheetOptions} />

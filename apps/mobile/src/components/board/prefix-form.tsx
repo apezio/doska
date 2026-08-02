@@ -1,7 +1,7 @@
 import { normalizePrefix } from "@doska/core/operations"
 import { useState } from "react"
-import { Text, TextInput, View } from "react-native"
-import { SheetButton, SheetTitle } from "@/components/ui/sheet"
+import { TextInput, View } from "react-native"
+import { SheetBar, SheetFootnote } from "@/components/ui/sheet"
 import { useTokens } from "@/lib/tokens"
 
 interface IProps {
@@ -43,9 +43,10 @@ export function PrefixForm({ prefix, taken, onCommit, onClose }: IProps) {
 
   return (
     <View>
-      <SheetTitle
+      <SheetBar
         title="Card prefix"
-        description={`Every card on this board is numbered ${sample}-1, ${sample}-2, and so on.`}
+        leading={{ label: "Cancel", onPress: onClose }}
+        trailing={{ label: "Save", onPress: commit }}
       />
 
       <TextInput
@@ -67,14 +68,13 @@ export function PrefixForm({ prefix, taken, onCommit, onClose }: IProps) {
             : "mt-2 rounded-xl border border-border bg-secondary px-3 py-3 font-mono text-base text-card-foreground"
         }
       />
-      {error ? (
-        <Text className="mt-1 px-1 text-[13px] text-destructive">{error}</Text>
-      ) : null}
-
-      <View className="mt-4 flex-row gap-2">
-        <SheetButton label="Cancel" variant="ghost" onPress={onClose} />
-        <SheetButton label="Save" onPress={commit} />
-      </View>
+      <SheetFootnote
+        error={Boolean(error)}
+        text={
+          error ??
+          `Every card on this board is numbered ${sample}-1, ${sample}-2, and so on.`
+        }
+      />
     </View>
   )
 }

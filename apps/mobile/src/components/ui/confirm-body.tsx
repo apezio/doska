@@ -1,5 +1,5 @@
-import { View } from "react-native"
-import { SheetButton, SheetTitle } from "./sheet"
+import { Text, View } from "react-native"
+import { SheetAction } from "./sheet"
 
 interface IProps {
   title: string
@@ -9,7 +9,8 @@ interface IProps {
   onClose: () => void
 }
 
-/** The web's `ConfirmDialog`, as a sheet body. */
+/** The web's `ConfirmDialog` as an iOS action sheet: the question centred and
+ * quiet above, the destructive choice and the way out stacked below it. */
 export function ConfirmBody({
   title,
   description,
@@ -19,18 +20,26 @@ export function ConfirmBody({
 }: IProps) {
   return (
     <View>
-      <SheetTitle title={title} description={description} />
-      <View className="mt-4 flex-row gap-2">
-        <SheetButton label="Cancel" variant="ghost" onPress={onClose} />
-        <SheetButton
-          label={confirmLabel}
-          variant="destructive"
-          onPress={() => {
-            onConfirm()
-            onClose()
-          }}
-        />
+      <View className="px-6 pb-4 pt-1">
+        <Text className="text-center text-[15px] font-sans-semibold text-card-foreground">
+          {title}
+        </Text>
+        <Text className="mt-1 text-center text-[13px] leading-[18px] text-muted-foreground">
+          {description}
+        </Text>
       </View>
+
+      <SheetAction
+        label={confirmLabel}
+        role="destructive"
+        onPress={() => {
+          onConfirm()
+          onClose()
+        }}
+      />
+      {/* Its own group: on iOS the gap is what sets cancel apart. */}
+      <View className="h-2" />
+      <SheetAction label="Cancel" role="cancel" onPress={onClose} />
     </View>
   )
 }

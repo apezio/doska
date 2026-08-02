@@ -3,7 +3,7 @@ import { byPosition } from "@doska/core/utils"
 import { generateKeyBetween } from "fractional-indexing"
 import { ChevronDown, ChevronUp } from "lucide-react-native"
 import { Pressable, ScrollView, Text, View } from "react-native"
-import { SheetButton, SheetTitle } from "@/components/ui/sheet"
+import { SheetBar } from "@/components/ui/sheet"
 import { useTokens } from "@/lib/tokens"
 import { ColumnSwatch } from "./column-swatch"
 
@@ -43,21 +43,21 @@ export function ReorderColumns({ columns, onReorder, onClose }: IProps) {
 
   return (
     <View>
-      <SheetTitle
+      <SheetBar
         title="Reorder columns"
-        description="Move a column to change its place on the board."
+        trailing={{ label: "Done", onPress: onClose }}
       />
 
       <ScrollView className="max-h-96" contentContainerClassName="py-1">
         {ordered.map((column, index) => (
           <View
             key={column.id}
-            className="flex-row items-center gap-2 rounded-xl px-3 py-2"
+            className="flex-row items-center gap-3 rounded-xl px-3 py-2.5"
           >
             <ColumnSwatch color={column.color} />
             <Text
               numberOfLines={1}
-              className="flex-1 text-[15px] font-sans-medium text-card-foreground"
+              className="flex-1 text-[17px] font-sans text-card-foreground"
             >
               {column.title}
             </Text>
@@ -65,23 +65,19 @@ export function ReorderColumns({ columns, onReorder, onClose }: IProps) {
               icon={ChevronUp}
               label={`Move ${column.title} up`}
               disabled={index === 0}
-              color={tokens.mutedForeground}
+              color={tokens.primary}
               onPress={() => move(index, -1)}
             />
             <Step
               icon={ChevronDown}
               label={`Move ${column.title} down`}
               disabled={index === ordered.length - 1}
-              color={tokens.mutedForeground}
+              color={tokens.primary}
               onPress={() => move(index, 1)}
             />
           </View>
         ))}
       </ScrollView>
-
-      <View className="mt-3 flex-row">
-        <SheetButton label="Done" onPress={onClose} />
-      </View>
     </View>
   )
 }
@@ -105,8 +101,9 @@ function Step({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
+      hitSlop={6}
       style={disabled ? { opacity: 0.3 } : undefined}
-      className="rounded-lg bg-button-muted p-2 active:opacity-70"
+      className="p-1.5 active:opacity-40"
     >
       <Icon size={18} color={color} />
     </Pressable>

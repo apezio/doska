@@ -8,16 +8,11 @@ import { useBoard } from "@doska/core/queries"
 import { sync } from "@doska/core/sync"
 import type { Card, Dashboard } from "@doska/core/types"
 import { byPosition } from "@doska/core/utils"
+import { Button, EmptyState, Spinner } from "@doska/ui-kit-mobile"
 import { useFocusEffect } from "expo-router"
 import { generateKeyBetween } from "fractional-indexing"
 import { useCallback, useMemo, useState } from "react"
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native"
+import { useWindowDimensions, View } from "react-native"
 import Animated from "react-native-reanimated"
 import Sortable, {
   type SortableGridDragEndParams,
@@ -28,7 +23,7 @@ import { useCardGeometry } from "@/components/board/drag/card-geometry"
 import { CardGeometryProvider } from "@/components/board/drag/card-geometry-provider"
 import { useDropPoint } from "@/components/board/drag/use-drop-point"
 import { useEdgePaging } from "@/components/board/drag/use-edge-paging"
-import { ScreenHeader } from "@/components/ui/screen-header"
+import { ScreenHeader } from "@/components/screen-header"
 import { selectBoard, useActiveBoard } from "@/lib/use-active-board"
 
 /**
@@ -116,13 +111,9 @@ function Board({ board: dashboard }: { board: Dashboard }) {
     <>
       <BoardHeader board={dashboard} />
       {!board ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator />
-        </View>
+        <Spinner />
       ) : columns.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-muted-foreground">No columns yet.</Text>
-        </View>
+        <EmptyState message="No columns yet." />
       ) : (
         <Animated.ScrollView
           ref={pagerRef}
@@ -189,29 +180,20 @@ export default function BoardScreen() {
       ) : (
         <>
           <ScreenHeader />
-          <View className="flex-1 items-center justify-center gap-3 px-8">
-            {isPending ? (
-              <ActivityIndicator />
-            ) : (
-              <>
-                <Text className="text-center text-muted-foreground">
-                  No boards yet.
-                </Text>
-                <Pressable
-                  onPress={() =>
-                    createDashboard("Untitled board", {
-                      onSuccess: (created) => selectBoard(created.id),
-                    })
-                  }
-                  className="rounded-xl bg-primary px-4 py-3 active:opacity-80"
-                >
-                  <Text className="text-[15px] font-sans-medium text-primary-foreground">
-                    Add a dashboard
-                  </Text>
-                </Pressable>
-              </>
-            )}
-          </View>
+          {isPending ? (
+            <Spinner />
+          ) : (
+            <EmptyState message="No boards yet.">
+              <Button
+                label="Add a dashboard"
+                onPress={() =>
+                  createDashboard("Untitled board", {
+                    onSuccess: (created) => selectBoard(created.id),
+                  })
+                }
+              />
+            </EmptyState>
+          )}
         </>
       )}
     </View>

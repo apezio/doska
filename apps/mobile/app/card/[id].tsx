@@ -1,8 +1,9 @@
 import { useCardSave } from "@doska/core/mutations"
 import { useCard } from "@doska/core/queries"
+import { Spinner } from "@doska/ui-kit-mobile"
 import { router, useLocalSearchParams } from "expo-router"
 import { useEffect } from "react"
-import { ActivityIndicator, View } from "react-native"
+import { View } from "react-native"
 import { CardPane } from "@/components/card-sheet/card-pane"
 
 export default function CardScreen() {
@@ -19,8 +20,8 @@ export default function CardScreen() {
 
   if (!id || !card) {
     return (
-      <View className="flex-1 items-center justify-center bg-card">
-        <ActivityIndicator />
+      <View className="flex-1 bg-card">
+        <Spinner />
       </View>
     )
   }

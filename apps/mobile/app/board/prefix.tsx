@@ -1,7 +1,7 @@
 import { useUpdateDashboardPrefix } from "@doska/core/mutations"
+import { SheetScreen } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { PrefixForm } from "@/components/board/prefix-form"
-import { SheetScreen } from "@/components/ui/sheet"
 import { useActiveBoard } from "@/lib/use-active-board"
 
 export default function BoardPrefixSheet() {

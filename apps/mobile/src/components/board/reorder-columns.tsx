@@ -1,10 +1,10 @@
 import type { Column } from "@doska/core/types"
 import { byPosition } from "@doska/core/utils"
+import { IconButton, SheetBar } from "@doska/ui-kit-mobile"
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { generateKeyBetween } from "fractional-indexing"
 import { ChevronDown, ChevronUp } from "lucide-react-native"
-import { Pressable, ScrollView, Text, View } from "react-native"
-import { SheetBar } from "@/components/ui/sheet"
-import { useTokens } from "@/lib/tokens"
+import { ScrollView, Text, View } from "react-native"
 import { ColumnSwatch } from "./column-swatch"
 
 interface IProps {
@@ -61,14 +61,18 @@ export function ReorderColumns({ columns, onReorder, onClose }: IProps) {
             >
               {column.title}
             </Text>
-            <Step
+            <IconButton
+              variant="plain"
+              size={18}
               icon={ChevronUp}
               label={`Move ${column.title} up`}
               disabled={index === 0}
               color={tokens.primary}
               onPress={() => move(index, -1)}
             />
-            <Step
+            <IconButton
+              variant="plain"
+              size={18}
               icon={ChevronDown}
               label={`Move ${column.title} down`}
               disabled={index === ordered.length - 1}
@@ -79,33 +83,5 @@ export function ReorderColumns({ columns, onReorder, onClose }: IProps) {
         ))}
       </ScrollView>
     </View>
-  )
-}
-
-function Step({
-  icon: Icon,
-  label,
-  disabled,
-  color,
-  onPress,
-}: {
-  icon: typeof ChevronUp
-  label: string
-  disabled: boolean
-  color: string
-  onPress: () => void
-}) {
-  return (
-    <Pressable
-      disabled={disabled}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      hitSlop={6}
-      style={disabled ? { opacity: 0.3 } : undefined}
-      className="p-1.5 active:opacity-40"
-    >
-      <Icon size={18} color={color} />
-    </Pressable>
   )
 }

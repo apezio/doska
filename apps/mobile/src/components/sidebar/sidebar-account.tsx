@@ -1,10 +1,10 @@
 import { useSession } from "@doska/core/queries"
 import { useConnection } from "@doska/core/sync"
 import { initials } from "@doska/core/utils"
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
 import { ChevronRight, UserRound } from "lucide-react-native"
 import { Pressable, Text, View } from "react-native"
-import { useTokens } from "@/lib/tokens"
 
 const DROPPED = {
   offline: "Offline",

@@ -1,7 +1,8 @@
 import type { TrashEntry, TrashKind } from "@doska/core/operations"
+import { Button } from "@doska/ui-kit-mobile"
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { Columns3, LayoutDashboard, StickyNote } from "lucide-react-native"
-import { Pressable, Text, View } from "react-native"
-import { useTokens } from "@/lib/tokens"
+import { Text, View } from "react-native"
 
 const ICONS: Record<TrashKind, typeof StickyNote> = {
   cards: StickyNote,
@@ -46,19 +47,13 @@ export function TrashRow({ entry, isRestoring, onRestore }: IProps) {
           {` · ${expiry(entry.expiresAt)}`}
         </Text>
       </View>
-      <Pressable
+      <Button
+        variant="secondary"
+        size="sm"
+        label="Restore"
         disabled={isRestoring}
         onPress={onRestore}
-        className={
-          isRestoring
-            ? "rounded-lg bg-secondary px-3 py-1.5 opacity-40"
-            : "rounded-lg bg-secondary px-3 py-1.5 active:opacity-70"
-        }
-      >
-        <Text className="text-[13px] font-sans-medium text-secondary-foreground">
-          Restore
-        </Text>
-      </Pressable>
+      />
     </View>
   )
 }

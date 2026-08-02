@@ -3,6 +3,8 @@ import "../global.css"
 import { onSessionExpired } from "@doska/core/auth"
 import { keys } from "@doska/core/keys"
 import { queryClient } from "@doska/core/query-client"
+import { Spinner } from "@doska/ui-kit-mobile"
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import {
   GeistMono_400Regular,
   GeistMono_500Medium,
@@ -18,11 +20,10 @@ import { useFonts } from "expo-font"
 import { Stack } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { useEffect, useState } from "react"
-import { ActivityIndicator, Text, View } from "react-native"
+import { Text, View } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { bootstrap } from "@/lib/bootstrap"
 import { restoreTheme } from "@/lib/theme"
-import { useTokens } from "@/lib/tokens"
 
 onSessionExpired(() => {
   queryClient.setQueryData(keys.session, { authed: false, login: null })
@@ -98,8 +99,8 @@ export default function RootLayout() {
           </View>
         ) : !ready || !fontsLoaded ? (
           // Rendering before the fonts resolve flashes the system face and reflows.
-          <View className="flex-1 items-center justify-center bg-background">
-            <ActivityIndicator />
+          <View className="flex-1 bg-background">
+            <Spinner />
           </View>
         ) : (
           <>

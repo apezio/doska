@@ -1,6 +1,6 @@
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import type { LucideIcon } from "lucide-react-native"
 import { Pressable, Text } from "react-native"
-import { useTokens } from "@/lib/tokens"
 
 interface IProps {
   icon?: LucideIcon

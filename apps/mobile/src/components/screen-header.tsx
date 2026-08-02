@@ -1,10 +1,10 @@
+import { IconButton } from "@doska/ui-kit-mobile"
 import { DrawerActions } from "@react-navigation/native"
 import { useNavigation } from "expo-router"
 import { Menu } from "lucide-react-native"
 import type { ReactNode } from "react"
-import { Pressable, View } from "react-native"
+import { Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { useTokens } from "@/lib/tokens"
 
 interface IProps {
   children?: ReactNode
@@ -15,7 +15,6 @@ interface IProps {
 export function ScreenHeader({ children }: IProps) {
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
-  const tokens = useTokens()
 
   return (
     <View
@@ -23,17 +22,22 @@ export function ScreenHeader({ children }: IProps) {
       className="shrink-0 border-b border-sidebar-border bg-sidebar"
     >
       <View className="h-[46px] flex-row items-center gap-2 px-3">
-        <Pressable
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel="Open menu"
+        <IconButton
+          icon={Menu}
+          label="Open menu"
           onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-          className="rounded-lg p-1.5 active:bg-muted"
-        >
-          <Menu size={20} color={tokens.mutedForeground} />
-        </Pressable>
+        />
         {children}
       </View>
     </View>
+  )
+}
+
+/** A screen's name in its header, where the screen has no editable title. */
+export function ScreenTitle({ children }: { children: string }) {
+  return (
+    <Text className="flex-1 px-1 text-base font-sans-semibold text-sidebar-foreground">
+      {children}
+    </Text>
   )
 }

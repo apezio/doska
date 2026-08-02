@@ -1,4 +1,6 @@
 import type { SlashCommand } from "@doska/markdown/core"
+import { Frosted } from "@doska/ui-kit-mobile"
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import {
   Code,
   Eye,
@@ -12,10 +14,8 @@ import {
   TextQuote,
   type LucideIcon,
 } from "lucide-react-native"
-import { BlurView } from "expo-blur"
 import type { ReactNode } from "react"
 import { Pressable, ScrollView, Text, View } from "react-native"
-import { useTokens } from "@/lib/tokens"
 
 const ICON: Record<string, LucideIcon> = {
   todo: ListChecks,
@@ -125,11 +125,7 @@ function Pill({ grow, children }: { grow?: boolean; children: ReactNode }) {
 
   return (
     <View style={grow ? { ...SHADOW, flex: 1 } : SHADOW}>
-      <BlurView
-        intensity={20}
-        tint={tokens.dark ? "dark" : "light"}
-        // Styled by value, not by class: NativeWind only rewrites `className`
-        // on React Native's own components, and BlurView is not one.
+      <Frosted
         style={{
           height: PILL_HEIGHT,
           flexDirection: "row",
@@ -144,7 +140,7 @@ function Pill({ grow, children }: { grow?: boolean; children: ReactNode }) {
         }}
       >
         {children}
-      </BlurView>
+      </Frosted>
     </View>
   )
 }

@@ -1,11 +1,10 @@
 import { useRenameDashboard } from "@doska/core/mutations"
 import type { Dashboard } from "@doska/core/types"
+import { IconButton, TextField } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { MoreHorizontal } from "lucide-react-native"
 import { useState } from "react"
-import { Pressable, TextInput } from "react-native"
-import { ScreenHeader } from "@/components/ui/screen-header"
-import { useTokens } from "@/lib/tokens"
+import { ScreenHeader } from "@/components/screen-header"
 
 interface IProps {
   board: Dashboard
@@ -14,8 +13,6 @@ interface IProps {
 /** The board's top bar: the drawer toggle, the editable board name, and the
  * actions the web keeps behind its `⋯` menu — here a sheet route. */
 export function BoardHeader({ board }: IProps) {
-  const tokens = useTokens()
-
   const { mutate: rename } = useRenameDashboard()
 
   // The field is a draft until it commits, but a rename arriving from sync — or
@@ -38,7 +35,7 @@ export function BoardHeader({ board }: IProps) {
 
   return (
     <ScreenHeader>
-      <TextInput
+      <TextField
         value={draft}
         onChangeText={setDraft}
         onBlur={commitTitle}
@@ -46,18 +43,13 @@ export function BoardHeader({ board }: IProps) {
         returnKeyType="done"
         accessibilityLabel="Board name"
         placeholder="Untitled board"
-        placeholderTextColor={tokens.mutedForeground}
         className="flex-1 px-1 text-base font-sans-semibold text-sidebar-foreground"
       />
-      <Pressable
-        hitSlop={8}
-        accessibilityRole="button"
-        accessibilityLabel="Board actions"
+      <IconButton
+        icon={MoreHorizontal}
+        label="Board actions"
         onPress={() => router.push("/board/actions")}
-        className="rounded-lg p-1.5 active:bg-muted"
-      >
-        <MoreHorizontal size={20} color={tokens.mutedForeground} />
-      </Pressable>
+      />
     </ScreenHeader>
   )
 }

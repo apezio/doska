@@ -2,11 +2,12 @@ import { useRestore } from "@doska/core/mutations"
 import { purgeExpired } from "@doska/core/operations"
 import { useDashboards, useTrash } from "@doska/core/queries"
 import { sync } from "@doska/core/sync"
+import { EmptyState, Spinner } from "@doska/ui-kit-mobile"
 import { useFocusEffect } from "expo-router"
 import { useCallback, useEffect } from "react"
-import { ActivityIndicator, FlatList, Text, View } from "react-native"
+import { FlatList, Text, View } from "react-native"
 import { TrashRow } from "@/components/trash/trash-row"
-import { ScreenHeader } from "@/components/ui/screen-header"
+import { ScreenHeader, ScreenTitle } from "@/components/screen-header"
 
 /**
  * Everything deleted across every board, newest first. Like the digest it pulls
@@ -45,21 +46,15 @@ export default function TrashScreen() {
   return (
     <View className="flex-1 bg-background">
       <ScreenHeader>
-        <Text className="flex-1 px-1 text-base font-sans-semibold text-sidebar-foreground">
-          Trash
-        </Text>
+        <ScreenTitle>Trash</ScreenTitle>
       </ScreenHeader>
 
       {error ? (
-        <Centered>
-          Couldn&apos;t read the trash. Close the app and open it again.
-        </Centered>
+        <EmptyState message="Couldn't read the trash. Close the app and open it again." />
       ) : isPending ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator />
-        </View>
+        <Spinner />
       ) : entries.length === 0 ? (
-        <Centered>The trash is empty.</Centered>
+        <EmptyState message="The trash is empty." />
       ) : (
         <FlatList
           data={entries}
@@ -79,14 +74,6 @@ export default function TrashScreen() {
           )}
         />
       )}
-    </View>
-  )
-}
-
-function Centered({ children }: { children: string }) {
-  return (
-    <View className="flex-1 items-center justify-center px-8">
-      <Text className="text-center text-muted-foreground">{children}</Text>
     </View>
   )
 }

@@ -1,9 +1,9 @@
 import { useBoard } from "@doska/core/queries"
 import type { Dashboard } from "@doska/core/types"
+import { Separator, SheetItem, SheetScreen } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { ArrowRightLeft, Hash, Trash2 } from "lucide-react-native"
 import { View } from "react-native"
-import { SheetItem, SheetScreen } from "@/components/ui/sheet"
 import { useActiveBoard } from "@/lib/use-active-board"
 
 /** The board actions the web keeps behind its `⋯` menu. Each one pushes another
@@ -27,7 +27,7 @@ function Actions({ board }: { board: Dashboard }) {
           disabled={columns.length < 2}
           onPress={() => router.push("/board/reorder")}
         />
-        <View className="my-1 h-px bg-border" />
+        <Separator className="my-1" />
         <SheetItem
           icon={Trash2}
           label="Delete board"

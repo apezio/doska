@@ -1,10 +1,10 @@
 import type { SlashCommand } from "@doska/markdown/core"
 import type { Card } from "@doska/core/types"
+import { TextField } from "@doska/ui-kit-mobile"
 import { useEffect, useRef, useState } from "react"
-import { ScrollView, TextInput, View } from "react-native"
+import { ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useKeyboardHeight } from "@/lib/use-keyboard-height"
-import { useTokens } from "@/lib/tokens"
 import { CardBody } from "./card-body"
 import { CardPaneHeader } from "./card-pane-header"
 import { EditorToolbar, TOOLBAR_HEIGHT } from "./editor-toolbar"
@@ -21,7 +21,6 @@ interface IProps {
 
 /** One card's editing session. Mount it keyed by `cardId`. */
 export function CardPane({ cardId, content, onQueue }: IProps) {
-  const tokens = useTokens()
   const insets = useSafeAreaInsets()
   const keyboard = useKeyboardHeight()
 
@@ -95,12 +94,11 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
           deadline={content.deadline}
           cardNumber={content.number}
         />
-        <TextInput
+        <TextField
           multiline
           value={title}
           onChangeText={(value) => edit({ title: value })}
           placeholder="Title"
-          placeholderTextColor={tokens.mutedForeground}
           className={
             isPreview
               ? "px-4 py-1.5 text-xl font-sans-semibold text-card-foreground"

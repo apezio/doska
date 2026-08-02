@@ -1,14 +1,13 @@
 import { cut, toggleTaskByIndex } from "@doska/markdown/core"
+import { TextField } from "@doska/ui-kit-mobile"
 import { useMemo } from "react"
 import {
   Pressable,
   Text,
-  TextInput,
   type NativeSyntheticEvent,
   type TextInputSelectionChangeEventData,
 } from "react-native"
 import { MarkdownView } from "@/components/markdown/markdown-view"
-import { useTokens } from "@/lib/tokens"
 
 interface IProps {
   body: string
@@ -30,14 +29,13 @@ export function CardBody({
   onSelectionChange,
   selection,
 }: IProps) {
-  const tokens = useTokens()
   // The cut marker stays visible here as a divider rather than truncating, the
   // way it does on a board card.
   const preview = useMemo(() => cut.previewRender(body).body, [body])
 
   if (!isPreview) {
     return (
-      <TextInput
+      <TextField
         multiline
         autoFocus
         value={body}
@@ -45,7 +43,6 @@ export function CardBody({
         onSelectionChange={onSelectionChange}
         selection={selection}
         placeholder="Notes"
-        placeholderTextColor={tokens.mutedForeground}
         textAlignVertical="top"
         scrollEnabled={false}
         className="grow px-4 py-2 font-mono text-[15px] leading-[22px] text-card-foreground"

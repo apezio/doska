@@ -1,12 +1,13 @@
 import { useCreateDashboard } from "@doska/core/mutations"
+import { Button } from "@doska/ui-kit-mobile"
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { DrawerActions } from "@react-navigation/native"
 import Constants from "expo-constants"
 import { router, usePathname } from "expo-router"
 import type { DrawerContentComponentProps } from "expo-router/drawer"
 import { Anchor, CalendarClock, Plus, Trash2 } from "lucide-react-native"
-import { Pressable, ScrollView, Text, View } from "react-native"
+import { ScrollView, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { useTokens } from "@/lib/tokens"
 import { selectBoard, useActiveBoard } from "@/lib/use-active-board"
 import { DashboardsList } from "./dashboards-list"
 import { GitHubButton } from "./github-button"
@@ -57,19 +58,16 @@ export function AppSidebar({
 
       <ScrollView contentContainerClassName="pb-4">
         <View className="px-4 pb-2">
-          <Pressable
+          <Button
+            variant="secondary"
+            icon={Plus}
+            label="Add a dashboard"
             onPress={() =>
               createDashboard("Untitled board", {
                 onSuccess: (created) => openBoard(created.id),
               })
             }
-            className="flex-row items-center justify-center gap-1.5 rounded-lg bg-secondary px-3 py-2.5 active:opacity-70"
-          >
-            <Plus size={16} color={tokens.foreground} />
-            <Text className="text-[15px] font-sans-medium text-sidebar-foreground">
-              Add a dashboard
-            </Text>
-          </Pressable>
+          />
         </View>
 
         <View className="gap-0.5 px-2">

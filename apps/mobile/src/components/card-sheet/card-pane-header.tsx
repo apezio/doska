@@ -1,5 +1,6 @@
 import { cardDisplayId } from "@doska/contract/prefix"
 import { useCardCol, useCardDeck } from "@doska/core/queries"
+import { Chip } from "@doska/ui-kit-mobile"
 import { Text, View } from "react-native"
 import { CardMeta } from "@/components/board/card-meta"
 import { ColumnSwatch } from "@/components/board/column-swatch"
@@ -27,12 +28,12 @@ export function CardPaneHeader({ cardId, body, deadline, cardNumber }: IProps) {
         done={column?.done ?? false}
       />
       {column ? (
-        <View className="flex-row items-center gap-1.5 rounded-full bg-muted px-2 py-0.5">
+        <Chip className="bg-muted">
           <ColumnSwatch color={column.color} />
           <Text className="text-xs font-sans-medium uppercase text-muted-foreground">
             {column.title}
           </Text>
-        </View>
+        </Chip>
       ) : null}
     </View>
   )

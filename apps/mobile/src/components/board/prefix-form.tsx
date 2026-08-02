@@ -1,8 +1,7 @@
 import { normalizePrefix } from "@doska/core/operations"
+import { Input, SheetBar, SheetFootnote } from "@doska/ui-kit-mobile"
 import { useState } from "react"
-import { TextInput, View } from "react-native"
-import { SheetBar, SheetFootnote } from "@/components/ui/sheet"
-import { useTokens } from "@/lib/tokens"
+import { View } from "react-native"
 
 interface IProps {
   prefix: string
@@ -19,7 +18,6 @@ interface IProps {
 export function PrefixForm({ prefix, taken, onCommit, onClose }: IProps) {
   const [draft, setDraft] = useState(prefix)
   const [error, setError] = useState<string | null>(null)
-  const tokens = useTokens()
 
   const takenUpper = new Set(
     taken.filter(Boolean).map((one) => one.toUpperCase())
@@ -49,24 +47,22 @@ export function PrefixForm({ prefix, taken, onCommit, onClose }: IProps) {
         trailing={{ label: "Save", onPress: commit }}
       />
 
-      <TextInput
+      <Input
+        mono
+        tone="secondary"
+        invalid={Boolean(error)}
+        className="mt-2"
         value={draft}
         autoFocus
         maxLength={6}
         autoCapitalize="characters"
         autoCorrect={false}
         accessibilityLabel="Board prefix"
-        placeholderTextColor={tokens.mutedForeground}
         onChangeText={(value) => {
           setDraft(normalizePrefix(value))
           setError(null)
         }}
         onSubmitEditing={commit}
-        className={
-          error
-            ? "mt-2 rounded-xl border border-destructive bg-secondary px-3 py-3 font-mono text-base text-card-foreground"
-            : "mt-2 rounded-xl border border-border bg-secondary px-3 py-3 font-mono text-base text-card-foreground"
-        }
       />
       <SheetFootnote
         error={Boolean(error)}

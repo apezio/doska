@@ -1,8 +1,8 @@
 import { useMoveColumn } from "@doska/core/mutations"
 import { useBoard } from "@doska/core/queries"
+import { SheetScreen } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { ReorderColumns } from "@/components/board/reorder-columns"
-import { SheetScreen } from "@/components/ui/sheet"
 import { useActiveBoard } from "@/lib/use-active-board"
 
 function Reorder({ deckId }: { deckId: string }) {

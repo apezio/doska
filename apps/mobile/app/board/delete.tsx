@@ -1,7 +1,6 @@
 import { useDeleteDashboard } from "@doska/core/mutations"
+import { ConfirmBody, SheetScreen } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
-import { ConfirmBody } from "@/components/ui/confirm-body"
-import { SheetScreen } from "@/components/ui/sheet"
 import { useActiveBoard } from "@/lib/use-active-board"
 
 export default function BoardDeleteSheet() {

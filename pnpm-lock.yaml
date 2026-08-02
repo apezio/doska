@@ -261,6 +261,9 @@ importers:
       '@doska/ui-kit':
         specifier: workspace:*
         version: link:../../packages/ui-kit
+      '@doska/ui-kit-mobile':
+        specifier: workspace:*
+        version: link:../../packages/ui-kit-mobile
       '@expo-google-fonts/geist-mono':
         specifier: ^0.4.3
         version: 0.4.3
@@ -748,6 +751,45 @@ importers:
       react-dom:
         specifier: 19.2.3
         version: 19.2.3(react@19.2.3)
+      typescript:
+        specifier: ~6
+        version: 6.0.3
+
+  packages/ui-kit-mobile:
+    devDependencies:
+      '@doska/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@doska/tokens':
+        specifier: workspace:*
+        version: link:../tokens
+      '@types/react':
+        specifier: ^19
+        version: 19.2.17
+      eslint:
+        specifier: ^10
+        version: 10.8.0(jiti@2.7.0)(supports-color@10.2.2)
+      expo-blur:
+        specifier: ^57.0.2
+        version: 57.0.2(expo@57.0.9)(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.3)(supports-color@10.2.2))(react@19.2.3)
+      expo-haptics:
+        specifier: ^57.0.1
+        version: 57.0.1(expo@57.0.9)
+      lucide-react-native:
+        specifier: ^1.28.0
+        version: 1.28.0(react-native-svg@15.15.4(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.3)(supports-color@10.2.2))(react@19.2.3))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.3)(supports-color@10.2.2))(react@19.2.3)
+      nativewind:
+        specifier: ^4.2.6
+        version: 4.2.6(cdbfd139e81c7c7c886c8947b38f52a5)
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      react-native:
+        specifier: 0.86.2
+        version: 0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.3)(supports-color@10.2.2)
+      react-native-safe-area-context:
+        specifier: ~5.7.0
+        version: 5.7.0(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.3)(supports-color@10.2.2))(react@19.2.3)
       typescript:
         specifier: ~6
         version: 6.0.3

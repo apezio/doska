@@ -2,10 +2,11 @@ import type { DigestCard } from "@doska/core/operations"
 import { useDashboards, useDigest } from "@doska/core/queries"
 import { sync } from "@doska/core/sync"
 import { todayIso } from "@doska/core/utils"
+import { EmptyState, Spinner } from "@doska/ui-kit-mobile"
 import { useFocusEffect } from "expo-router"
 import { useCallback } from "react"
-import { ActivityIndicator, SectionList, Text, View } from "react-native"
-import { ScreenHeader } from "@/components/ui/screen-header"
+import { SectionList, Text, View } from "react-native"
+import { ScreenHeader, ScreenTitle } from "@/components/screen-header"
 
 /** The same three buckets the web digest shows, and the shape a deadline
  * notification will want in DSK-78. */
@@ -52,19 +53,13 @@ export default function UpcomingScreen() {
   return (
     <View className="flex-1 bg-background">
       <ScreenHeader>
-        <Text className="flex-1 px-1 text-base font-sans-semibold text-sidebar-foreground">
-          Upcoming
-        </Text>
+        <ScreenTitle>Upcoming</ScreenTitle>
       </ScreenHeader>
 
       {!data ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator />
-        </View>
+        <Spinner />
       ) : grouped.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-muted-foreground">Nothing due.</Text>
-        </View>
+        <EmptyState message="Nothing due." />
       ) : (
         <SectionList
           sections={grouped}

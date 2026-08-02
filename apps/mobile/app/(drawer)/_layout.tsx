@@ -1,6 +1,6 @@
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { Drawer } from "expo-router/drawer"
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
-import { useTokens } from "@/lib/tokens"
 
 /** The web's sidebar, which below its `md` breakpoint is exactly this: a panel
  * that slides in over the screen. Every screen inside draws its own header. */

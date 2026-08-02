@@ -1,5 +1,6 @@
 import type { Card, Column as ColumnType } from "@doska/core/types"
-import { BlurView } from "expo-blur"
+import { Frosted } from "@doska/ui-kit-mobile"
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { useCallback } from "react"
 import { Pressable, Text, View } from "react-native"
 import Animated, { useAnimatedRef } from "react-native-reanimated"
@@ -7,7 +8,6 @@ import Sortable, {
   type SortableGridDragEndParams,
   type SortableGridRenderItem,
 } from "react-native-sortables"
-import { useTokens } from "@/lib/tokens"
 import { BoardCard } from "./board-card"
 import { ColumnSwatch } from "./column-swatch"
 import { CARD_GAP, useCardGeometry } from "./drag/card-geometry"
@@ -42,7 +42,7 @@ export function Column({
   onDragStart,
   onDragEnd,
 }: IProps) {
-  const { dark, headVeil } = useTokens()
+  const { headVeil } = useTokens()
   const showBody = !column.collapsed
   const scrollRef = useAnimatedRef<Animated.ScrollView>()
   const { registerList, registerHeight } = useCardGeometry()
@@ -106,11 +106,7 @@ export function Column({
       </Animated.ScrollView>
 
       {/* The web's `sticky top-0` head: `bg-background/80 backdrop-blur-xs`. */}
-      <BlurView
-        intensity={20}
-        tint={dark ? "dark" : "light"}
-        // Styled by value, not by class: NativeWind only rewrites `className`
-        // on React Native's own components, and BlurView is not one.
+      <Frosted
         style={{
           position: "absolute",
           top: 0,
@@ -139,7 +135,7 @@ export function Column({
             {showBody ? "Hide body" : "Show body"}
           </Text>
         </Pressable>
-      </BlurView>
+      </Frosted>
     </View>
   )
 }

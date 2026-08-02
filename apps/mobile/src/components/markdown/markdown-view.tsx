@@ -1,15 +1,8 @@
 import { markdownExtra, parseMarkdown } from "@doska/markdown/ast"
 import { attachmentKeyFromSrc } from "@doska/markdown/core"
-import * as Haptics from "expo-haptics"
+import { Checkbox, Separator } from "@doska/ui-kit-mobile"
 import { Fragment, useMemo, type ReactNode } from "react"
-import {
-  Linking,
-  Pressable,
-  ScrollView,
-  Text,
-  useColorScheme,
-  View,
-} from "react-native"
+import { Linking, ScrollView, Text, useColorScheme, View } from "react-native"
 import { useMarkdownRenderers, type MarkdownRenderers } from "./renderers"
 import { tagColor } from "./tag-palette"
 
@@ -235,44 +228,6 @@ function renderParagraph(node: MdNode, ctx: Ctx, key: string): ReactNode {
   )
 }
 
-function Checkbox({
-  checked,
-  onPress,
-}: {
-  checked: boolean
-  onPress?: () => void
-}) {
-  const box = (
-    <View
-      className={
-        checked
-          ? "mt-1 size-4 items-center justify-center rounded-[4px] border border-primary bg-primary"
-          : "mt-1 size-4 items-center justify-center rounded-[4px] border border-input"
-      }
-    >
-      {checked ? (
-        <Text className="text-[10px] leading-[12px] text-primary-foreground">
-          ✓
-        </Text>
-      ) : null}
-    </View>
-  )
-
-  if (!onPress) return box
-  // Widens the touch target without moving the box.
-  return (
-    <Pressable
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-        onPress()
-      }}
-      hitSlop={10}
-    >
-      {box}
-    </Pressable>
-  )
-}
-
 function renderListItem(
   item: MdNode,
   ctx: Ctx,
@@ -290,6 +245,7 @@ function renderListItem(
     <View key={key} className="flex-row gap-1.5">
       {isTask ? (
         <Checkbox
+          className="mt-1"
           checked={item.checked === true}
           onPress={
             ctx.onToggleTask ? () => ctx.onToggleTask?.(taskIndex) : undefined
@@ -409,7 +365,7 @@ function renderBlock(node: MdNode, ctx: Ctx, key: string): ReactNode {
       )
 
     case "thematicBreak":
-      return <View key={key} className="my-1 h-px bg-border" />
+      return <Separator key={key} className="my-1" />
 
     case "table":
       return renderTable(node, ctx, key)

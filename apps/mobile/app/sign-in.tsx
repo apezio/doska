@@ -1,10 +1,10 @@
 import { useLogin, useLogout } from "@doska/core/mutations"
 import { useSession } from "@doska/core/queries"
+import { Button, Input } from "@doska/ui-kit-mobile"
 import { useRouter } from "expo-router"
 import { useState } from "react"
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native"
+import { ScrollView, Text, View } from "react-native"
 import { getServerUrl, setServerUrl } from "@/lib/adapters/server-url"
-import { useTokens } from "@/lib/tokens"
 
 export default function SignInScreen() {
   const { data: session } = useSession()
@@ -77,7 +77,7 @@ function SyncSetup() {
       </View>
 
       <View className="gap-2">
-        <Field
+        <Input
           value={server}
           onChangeText={setServer}
           placeholder="Server URL (https://…)"
@@ -86,7 +86,7 @@ function SyncSetup() {
           keyboardType="url"
           textContentType="URL"
         />
-        <Field
+        <Input
           value={login}
           onChangeText={setLogin}
           placeholder="Login"
@@ -94,7 +94,7 @@ function SyncSetup() {
           autoCorrect={false}
           textContentType="username"
         />
-        <Field
+        <Input
           value={password}
           onChangeText={setPassword}
           placeholder="Password"
@@ -115,43 +115,5 @@ function SyncSetup() {
         onPress={submit}
       />
     </View>
-  )
-}
-
-function Field(props: React.ComponentProps<typeof TextInput>) {
-  const tokens = useTokens()
-
-  return (
-    <TextInput
-      className="rounded-xl border border-border bg-card px-3 py-3 text-[15px] text-card-foreground"
-      placeholderTextColor={tokens.mutedForeground}
-      {...props}
-    />
-  )
-}
-
-function Button({
-  label,
-  disabled,
-  onPress,
-}: {
-  label: string
-  disabled?: boolean
-  onPress: () => void
-}) {
-  return (
-    <Pressable
-      disabled={disabled}
-      onPress={onPress}
-      className={
-        disabled
-          ? "items-center rounded-xl bg-primary/40 px-4 py-3"
-          : "items-center rounded-xl bg-primary px-4 py-3 active:bg-blue-700"
-      }
-    >
-      <Text className="text-[15px] font-sans-medium text-primary-foreground">
-        {label}
-      </Text>
-    </Pressable>
   )
 }

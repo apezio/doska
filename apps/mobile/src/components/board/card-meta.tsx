@@ -1,4 +1,5 @@
 import { taskProgress } from "@doska/markdown/core"
+import { Chip } from "@doska/ui-kit-mobile"
 import {
   deadlineRelative,
   deadlineStatus,
@@ -21,9 +22,9 @@ function Deadline({ value, done }: { value: string; done: boolean }) {
   const chip = CHIP[status]
 
   return (
-    <View className={`rounded-full px-2 py-0.5 ${chip.box}`}>
+    <Chip className={chip.box}>
       <Text className={`text-xs font-sans-semibold ${chip.text}`}>{label}</Text>
-    </View>
+    </Chip>
   )
 }
 

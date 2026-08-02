@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react-native"
 import type { ReactNode } from "react"
 import { Pressable, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { useTokens } from "@/lib/tokens"
+import { useTokens } from "./tokens"
 
 /**
  * The content of a sheet route. The sheet itself — its height, its grabber, its

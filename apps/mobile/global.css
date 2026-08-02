@@ -1,99 +1,31 @@
+/* The shared design tokens */
+@import "@doska/tokens/tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* The design tokens, mirroring the `:root` and `.dark` blocks in
-   `apps/client/src/index.css` — same names, same values, so a class like
-   `bg-card` means the same thing on both platforms. Change one, change both.
-
-   The dark set hangs off `prefers-color-scheme` rather than the web's `.dark`
-   class: there is no document element to put a class on, and NativeWind
-   resolves the media query against the device colour scheme. */
 :root {
-  --background: #f7f7fa;
-  --foreground: #343c54;
-  --card: #ffffff;
-  --card-foreground: #343c54;
-  --popover: #ffffff;
-  --popover-foreground: #343c54;
-  --primary: #725cff;
-  --primary-foreground: #ffffff;
-  --secondary: #eeeff2;
-  --secondary-foreground: #343c54;
-  --muted: #f7f7f8;
-  --muted-foreground: #676d7f;
-  --accent: #f4f2ff;
-  --accent-foreground: #725cff;
-  --destructive: #ff5656;
-  --success: #e3f4f0;
-  --success-foreground: #308f77;
-  --border: #eeeff2;
-  --input: #eeeff2;
-  --ring: #725cff;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #343c54;
-  --sidebar-primary: #725cff;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f4f2ff;
-  --sidebar-accent-foreground: #725cff;
-  --sidebar-border: #eeeff2;
-
-  /* Markdown colours the web states as `color-mix` / `oklch`, resolved here
-     because React Native parses neither. See `packages/markdown/markdown.css`. */
+  /* See `packages/markdown/markdown.css`. */
   --mark: #9687fe4d;
   --quote-bar: #c2b9fb;
 
-  /* The deadline chip's tints. The web writes them as opacity modifiers
-     (`bg-destructive/10`, `bg-amber-500/15`), which NativeWind cannot compute
-     against a `var()` colour. */
   --deadline-overdue: #ff56561a;
   --deadline-soon: #f59e0b26;
   --deadline-soon-foreground: #d97706;
 
-  /* `ring-foreground/10` on the card, `bg-muted-foreground/5` on the muted
-     button — both alpha over a `var()` colour, which NativeWind cannot mix. */
   --card-ring: #343c541a;
   --button-muted: #676d7f0d;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #232939;
-    --foreground: #f7f7f8;
-    --card: #2d3447;
-    --card-foreground: #f7f7f8;
-    --popover: #2d3447;
-    --popover-foreground: #f7f7f8;
-    --primary: #9585ff;
-    --primary-foreground: #f7f7f8;
-    --secondary: #343c54;
-    --secondary-foreground: #f7f7f8;
-    --muted: #343c54;
-    --muted-foreground: #999da9;
-    --accent: #343c54;
-    --accent-foreground: #f7f7f8;
-    --destructive: #ff5656;
-    --success: #308f77;
-    --success-foreground: #f7f7f8;
-    --border: #ffffff1f;
-    --input: #ffffff26;
-    --ring: #9585ff;
-    --sidebar: #1d2230;
-    --sidebar-foreground: #f7f7f8;
-    --sidebar-primary: #9585ff;
-    --sidebar-primary-foreground: #232939;
-    --sidebar-accent: #343c54;
-    --sidebar-accent-foreground: #f7f7f8;
-    --sidebar-border: #ffffff1f;
+.dark:root {
+  --mark: #9687fe4d;
+  --quote-bar: #5b5998;
 
-    --mark: #9687fe4d;
-    --quote-bar: #5b5998;
+  --deadline-overdue: #ff56561a;
+  --deadline-soon: #f59e0b26;
+  --deadline-soon-foreground: #fbbf24;
 
-    --deadline-overdue: #ff56561a;
-    --deadline-soon: #f59e0b26;
-    --deadline-soon-foreground: #fbbf24;
-
-    --card-ring: #f7f7f81a;
-    --button-muted: #ffffff0a;
-  }
+  --card-ring: #f7f7f81a;
+  --button-muted: #ffffff0a;
 }

@@ -26,7 +26,7 @@ export function BoardCard({ card, prefix, showBody, done }: IProps) {
   return (
     <Pressable
       onPress={() => router.push(`/card/${card.id}`)}
-      className="mb-3 gap-2 overflow-hidden rounded-xl border border-card-ring bg-card py-2 active:opacity-70"
+      className="gap-2 overflow-hidden rounded-xl border border-card-ring bg-card py-2 active:opacity-70"
     >
       <View className="px-3">
         <Text className="text-base font-sans-semibold leading-snug text-card-foreground">

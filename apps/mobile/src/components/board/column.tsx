@@ -1,12 +1,21 @@
 import type { Card, Column as ColumnType } from "@doska/core/types"
 import { BlurView } from "expo-blur"
-import { Pressable, ScrollView, Text, View } from "react-native"
+import { useCallback } from "react"
+import { Pressable, Text, View } from "react-native"
+import Animated, { useAnimatedRef } from "react-native-reanimated"
+import Sortable, {
+  type SortableGridDragEndParams,
+  type SortableGridRenderItem,
+} from "react-native-sortables"
 import { useTokens } from "@/lib/tokens"
 import { BoardCard } from "./board-card"
 import { ColumnSwatch } from "./column-swatch"
+import { CARD_GAP, useCardGeometry } from "./drag/card-geometry"
 
 /** Reserved as the scroller's top inset, since the head floats over it. */
 const HEAD_HEIGHT = 60
+/** Held this long without moving, a card lifts instead of the list scrolling. */
+const PICKUP_MS = 250
 
 interface IProps {
   column: ColumnType
@@ -15,6 +24,8 @@ interface IProps {
   width: number
   onToggleBody: () => void
   onAddCard: () => void
+  onDragStart: (columnId: string) => void
+  onDragEnd: (columnId: string, params: SortableGridDragEndParams<Card>) => void
 }
 
 /**
@@ -28,15 +39,38 @@ export function Column({
   width,
   onToggleBody,
   onAddCard,
+  onDragStart,
+  onDragEnd,
 }: IProps) {
   const { dark, headVeil } = useTokens()
   const showBody = !column.collapsed
+  const scrollRef = useAnimatedRef<Animated.ScrollView>()
+  const { registerList, registerHeight } = useCardGeometry()
+
+  const renderCard = useCallback<SortableGridRenderItem<Card>>(
+    ({ item }) => (
+      <View
+        onLayout={(event) =>
+          registerHeight(column.id, item.id, event.nativeEvent.layout.height)
+        }
+      >
+        <BoardCard
+          card={item}
+          prefix={prefix}
+          showBody={showBody}
+          done={column.done}
+        />
+      </View>
+    ),
+    [column.id, column.done, prefix, showBody, registerHeight]
+  )
 
   return (
     <View style={{ width }} className="flex-1">
       {/* Cards scroll edge to edge and pass under the head, which is what its
           blur is there to catch. */}
-      <ScrollView
+      <Animated.ScrollView
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerClassName="grow px-3 pb-6"
         contentContainerStyle={{ paddingTop: HEAD_HEIGHT }}
@@ -59,17 +93,28 @@ export function Column({
               +
             </Text>
           </Pressable>
-          {cards.map((card) => (
-            <BoardCard
-              key={card.id}
-              card={card}
-              prefix={prefix}
-              showBody={showBody}
-              done={column.done}
+          <View ref={(list) => registerList(column.id, list)}>
+            <Sortable.Grid
+              columns={1}
+              data={cards}
+              keyExtractor={(card) => card.id}
+              renderItem={renderCard}
+              rowGap={CARD_GAP}
+              dragActivationDelay={PICKUP_MS}
+              // Its own scroller, so a card held at the top or bottom can
+              // reach a drop site that is off-screen.
+              scrollableRef={scrollRef}
+              // A card is nearly as wide as the screen, so snapping its centre
+              // under the finger throws it sideways as it lifts.
+              enableActiveItemSnap={false}
+              hapticsEnabled
+              showDropIndicator
+              onDragStart={() => onDragStart(column.id)}
+              onDragEnd={(params) => onDragEnd(column.id, params)}
             />
-          ))}
+          </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* The web's `sticky top-0` head: `bg-background/80 backdrop-blur-xs`. */}
       <BlurView

@@ -31,13 +31,25 @@ import { useEdgePaging } from "@/components/board/drag/use-edge-paging"
 import { ScreenHeader } from "@/components/ui/screen-header"
 import { selectBoard, useActiveBoard } from "@/lib/use-active-board"
 
-function Board({
-  board: dashboard,
-  takenPrefixes,
-}: {
-  board: Dashboard
-  takenPrefixes: string[]
-}) {
+/**
+ * The key for a card dropped between `before` and `after`, or null if there is
+ * no room for one. `generateKeyBetween` throws when the two neighbours carry
+ * the same position, which should not happen and yet does — and because the
+ * drop handler is async, the throw surfaces only as an unhandled rejection
+ * reading `Error:  >= `. Named here instead, with the cards that collided.
+ */
+function keyBetween(before?: Card, after?: Card): string | null {
+  try {
+    return generateKeyBetween(before?.position ?? null, after?.position ?? null)
+  } catch {
+    console.warn(
+      `[board] no key between ${before?.id}@${before?.position} and ${after?.id}@${after?.position} — drop ignored`
+    )
+    return null
+  }
+}
+
+function Board({ board: dashboard }: { board: Dashboard }) {
   const deckId = dashboard.id
   const { data: board } = useBoard(deckId)
   const { mutate: setColumnCollapsed } = useSetColumnCollapsed(deckId)
@@ -92,27 +104,17 @@ function Board({
       // A key minted strictly between the drop site's neighbours, as on the
       // web: only the moved card is written, so a reorder someone else is
       // making at the same time never collides with this one.
-      moveCard([
-        {
-          ...moved,
-          columnId: toColumnId,
-          position: generateKeyBetween(
-            neighbours[0]?.position ?? null,
-            neighbours[1]?.position ?? null
-          ),
-        },
-      ])
+      const position = keyBetween(neighbours[0], neighbours[1])
+      if (!position) return
+
+      moveCard([{ ...moved, columnId: toColumnId, position }])
     },
     [board, columnIds, dropPoint, heightOf, moveCard, page, resolveDropIndex]
   )
 
   return (
     <>
-      <BoardHeader
-        board={dashboard}
-        columns={board?.columns ?? []}
-        takenPrefixes={takenPrefixes}
-      />
+      <BoardHeader board={dashboard} />
       {!board ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator />
@@ -162,7 +164,7 @@ function Board({
 }
 
 export default function BoardScreen() {
-  const { dashboards, board, deckId, isPending } = useActiveBoard()
+  const { board, deckId, isPending } = useActiveBoard()
   const { mutate: createDashboard } = useCreateDashboard()
 
   // Only the active board is pulled during normal use, so background sync has
@@ -181,12 +183,7 @@ export default function BoardScreen() {
         // is the only way it can be carried to another column.
         <Sortable.PortalProvider key={board.id}>
           <CardGeometryProvider>
-            <Board
-              board={board}
-              takenPrefixes={dashboards
-                .filter((one) => one.id !== board.id)
-                .map((one) => one.prefix ?? "")}
-            />
+            <Board board={board} />
           </CardGeometryProvider>
         </Sortable.PortalProvider>
       ) : (

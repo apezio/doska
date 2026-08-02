@@ -1,46 +1,26 @@
 import type { LucideIcon } from "lucide-react-native"
 import type { ReactNode } from "react"
-import { Modal, Pressable, Text, View } from "react-native"
+import { Pressable, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { useKeyboardHeight } from "@/lib/use-keyboard-height"
 import { useTokens } from "@/lib/tokens"
 
-interface ISheetProps {
-  open: boolean
-  onClose: () => void
-  children: ReactNode
-}
-
 /**
- * The mobile stand-in for the web's menus and modals: everything slides up from
- * the bottom edge, which is the only place a thumb reliably reaches.
+ * The content of a sheet route. The sheet itself — its height, its grabber, its
+ * dismiss gesture, its scrim — is the native form sheet configured on the route
+ * in `app/_layout.tsx`; this only pads what sits inside it.
  *
- * One sheet holds one screen's worth of content at a time — swapping the
- * children rather than stacking a second `Modal` over the first, which iOS
- * animates badly when a menu opens a dialog.
+ * Must not stretch: the route's detent is `fitToContents`, which measures this.
  */
-export function Sheet({ open, onClose, children }: ISheetProps) {
+export function SheetScreen({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets()
-  const keyboard = useKeyboardHeight()
 
   return (
-    <Modal
-      visible={open}
-      transparent
-      animationType="slide"
-      statusBarTranslucent
-      // Android's back gesture, which otherwise leaves the sheet up.
-      onRequestClose={onClose}
+    <View
+      style={{ paddingBottom: insets.bottom + 12 }}
+      className="bg-card px-4 pt-4"
     >
-      <Pressable className="flex-1 bg-black/40" onPress={onClose} />
-      <View
-        style={{ paddingBottom: (keyboard || insets.bottom) + 12 }}
-        className="rounded-t-3xl border-t border-border bg-card px-4 pt-3"
-      >
-        <View className="mb-3 h-1 w-10 self-center rounded-full bg-border" />
-        {children}
-      </View>
-    </Modal>
+      {children}
+    </View>
   )
 }
 

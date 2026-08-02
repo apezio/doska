@@ -47,6 +47,25 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts(FONTS)
   const tokens = useTokens()
 
+  /**
+   * A real sheet: iOS's `UISheetPresentationController`, Android's bottom
+   * sheet. The grabber, the scrim fade, the swipe to dismiss and the height are
+   * all the platform's, so nothing here draws them.
+   *
+   * `fitToContents` measures the route's content, so a sheet body must not
+   * stretch to fill — see `SheetScreen`.
+   */
+  const sheetOptions = {
+    headerShown: false,
+    presentation: "formSheet",
+    sheetAllowedDetents: "fitToContents",
+    sheetGrabberVisible: true,
+    sheetCornerRadius: 24,
+    // The reorder list scrolls within the sheet instead of growing it.
+    sheetExpandsWhenScrolledToEdge: false,
+    contentStyle: { backgroundColor: tokens.card },
+  } as const
+
   // The native header is not a React Native view, so it takes tokens as values.
   const headerOptions = {
     headerStyle: { backgroundColor: tokens.card },
@@ -92,6 +111,10 @@ export default function RootLayout() {
                 name="card/[id]"
                 options={{ headerShown: false, presentation: "modal" }}
               />
+              <Stack.Screen name="board/actions" options={sheetOptions} />
+              <Stack.Screen name="board/prefix" options={sheetOptions} />
+              <Stack.Screen name="board/reorder" options={sheetOptions} />
+              <Stack.Screen name="board/delete" options={sheetOptions} />
               <Stack.Screen
                 name="sign-in"
                 options={{ title: "Sync", presentation: "modal" }}

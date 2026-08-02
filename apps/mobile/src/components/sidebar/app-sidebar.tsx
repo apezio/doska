@@ -1,7 +1,8 @@
 import { useCreateDashboard } from "@doska/core/mutations"
 import { DrawerActions } from "@react-navigation/native"
 import Constants from "expo-constants"
-import { router, useNavigation, usePathname } from "expo-router"
+import { router, usePathname } from "expo-router"
+import type { DrawerContentComponentProps } from "expo-router/drawer"
 import { Anchor, CalendarClock, Plus, Trash2 } from "lucide-react-native"
 import { Pressable, ScrollView, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -13,9 +14,15 @@ import { SidebarAccount } from "./sidebar-account"
 import { SidebarButton } from "./sidebar-button"
 import { ThemeToggle } from "./theme-toggle"
 
-export function AppSidebar() {
+/** `navigation` comes from the drawer's own `drawerContent` props: the sidebar
+ * renders in the parent navigator's context, so a `useNavigation()` here would
+ * dispatch `CLOSE_DRAWER` upwards, where no drawer handles it. */
+export function AppSidebar({
+  navigation,
+}: {
+  navigation: DrawerContentComponentProps["navigation"]
+}) {
   const insets = useSafeAreaInsets()
-  const navigation = useNavigation()
   const pathname = usePathname()
   const tokens = useTokens()
   const { dashboards, deckId } = useActiveBoard()

@@ -6,7 +6,6 @@ import {
   scrollTo,
   useAnimatedRef,
   useFrameCallback,
-  useScrollViewOffset,
   useSharedValue,
 } from "react-native-reanimated"
 import { usePortalContext } from "react-native-sortables"
@@ -31,7 +30,6 @@ const DWELL_MS = 450
 export function useEdgePaging(columnIds: string[], width: number) {
   const portal = usePortalContext()
   const pagerRef = useAnimatedRef<Animated.ScrollView>()
-  const offset = useScrollViewOffset(pagerRef)
   const edgeSince = useSharedValue(0)
   const ids = useSharedValue(columnIds)
   const pageWidth = useSharedValue(width)
@@ -55,13 +53,21 @@ export function useEdgePaging(columnIds: string[], width: number) {
   // The drop handler runs on the JS side and needs to know which column the
   // card is over, so every page change is mirrored back out.
   const page = useRef(0)
+  // The same page for the frame callback. Read off the scroll events rather
+  // than `useScrollViewOffset`, whose ref is still empty on the first render —
+  // the pager only mounts once the board loads.
+  const scrolledPage = useSharedValue(0)
+
   function setPage(next: number) {
     page.current = next
   }
 
   function onPagerScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
-    if (width > 0)
-      page.current = Math.round(event.nativeEvent.contentOffset.x / width)
+    if (width > 0) {
+      const next = Math.round(event.nativeEvent.contentOffset.x / width)
+      page.current = next
+      scrolledPage.value = next
+    }
   }
 
   useFrameCallback((frame) => {
@@ -81,10 +87,7 @@ export function useEdgePaging(columnIds: string[], width: number) {
     const travel = position.x - originX.value
     const reach = pageWidth.value * EDGE_TRAVEL
     const step = travel < -reach ? -1 : travel > reach ? 1 : 0
-    const current =
-      target.value >= 0
-        ? target.value
-        : Math.round(offset.value / pageWidth.value)
+    const current = target.value >= 0 ? target.value : scrolledPage.value
     const next = current + step
     if (step === 0 || next < 0 || next >= ids.value.length) {
       edgeSince.value = 0

@@ -9,7 +9,7 @@ export default function DrawerLayout() {
 
   return (
     <Drawer
-      drawerContent={() => <AppSidebar />}
+      drawerContent={(props) => <AppSidebar navigation={props.navigation} />}
       screenOptions={{
         headerShown: false,
         drawerType: "front",

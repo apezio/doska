@@ -66,7 +66,7 @@ export function Column({
   )
 
   return (
-    <View style={{ width }} className="flex-1">
+    <View className="flex-1 bg-background" style={{ width }}>
       {/* Cards scroll edge to edge and pass under the head, which is what its
           blur is there to catch. */}
       <Animated.ScrollView
@@ -75,44 +75,33 @@ export function Column({
         contentContainerClassName="grow px-3 pb-6"
         contentContainerStyle={{ paddingTop: HEAD_HEIGHT }}
       >
-        <View
-          className="min-h-40 grow rounded-3xl border border-sidebar-primary-foreground bg-background p-4"
-          // The well's recessed edge — part of the look, not a drop shadow, so
-          // it has to be inset. Same values as the web column.
-          style={{
-            boxShadow: dark
-              ? "inset 0 1px 3px rgba(0, 0, 0, 0.4)"
-              : "inset 0 1px 3px rgba(0, 0, 0, 0.1)",
-          }}
+        <Pressable
+          onPress={onAddCard}
+          className="mb-3 h-12 items-center justify-center rounded-xl border border-card-ring bg-card active:opacity-70"
         >
-          <Pressable
-            onPress={onAddCard}
-            className="mb-3 h-8 items-center justify-center rounded-lg bg-button-muted active:opacity-70"
-          >
-            <Text className="text-base font-sans-medium text-muted-foreground">
-              +
-            </Text>
-          </Pressable>
-          <View ref={(list) => registerList(column.id, list)}>
-            <Sortable.Grid
-              columns={1}
-              data={cards}
-              keyExtractor={(card) => card.id}
-              renderItem={renderCard}
-              rowGap={CARD_GAP}
-              dragActivationDelay={PICKUP_MS}
-              // Its own scroller, so a card held at the top or bottom can
-              // reach a drop site that is off-screen.
-              scrollableRef={scrollRef}
-              // A card is nearly as wide as the screen, so snapping its centre
-              // under the finger throws it sideways as it lifts.
-              enableActiveItemSnap={false}
-              hapticsEnabled
-              showDropIndicator
-              onDragStart={() => onDragStart(column.id)}
-              onDragEnd={(params) => onDragEnd(column.id, params)}
-            />
-          </View>
+          <Text className="text-xl font-sans-medium text-muted-foreground">
+            +
+          </Text>
+        </Pressable>
+        <View ref={(list) => registerList(column.id, list)}>
+          <Sortable.Grid
+            columns={1}
+            data={cards}
+            keyExtractor={(card) => card.id}
+            renderItem={renderCard}
+            rowGap={CARD_GAP}
+            dragActivationDelay={PICKUP_MS}
+            // Its own scroller, so a card held at the top or bottom can
+            // reach a drop site that is off-screen.
+            scrollableRef={scrollRef}
+            // A card is nearly as wide as the screen, so snapping its centre
+            // under the finger throws it sideways as it lifts.
+            enableActiveItemSnap={false}
+            hapticsEnabled
+            showDropIndicator
+            onDragStart={() => onDragStart(column.id)}
+            onDragEnd={(params) => onDragEnd(column.id, params)}
+          />
         </View>
       </Animated.ScrollView>
 

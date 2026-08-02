@@ -11,12 +11,17 @@ import {
 import { usePortalContext } from "react-native-sortables"
 
 /**
- * How far sideways a lifted card has to be carried, as a share of the screen,
- * before it counts as being held against that side. Travel rather than a band
- * at the screen's edge: a card is nearly as wide as the screen, so its own
- * edges sit in both bands from the moment it lifts.
+ * How far sideways a lifted card has to be carried before it counts as being
+ * held against that side. Travel rather than a band at the screen's edge: a
+ * card is nearly as wide as the screen, so its own edges sit in both bands from
+ * the moment it lifts.
+ *
+ * Small, and in points rather than a share of the screen, because the travel
+ * available is only the room left between the finger and the screen edge — a
+ * card grabbed near its left side cannot be carried far to the left at all.
+ * The dwell is what keeps a wobble from paging the board, not the distance.
  */
-const EDGE_TRAVEL = 0.2
+const EDGE_TRAVEL = 36
 const DWELL_MS = 450
 
 /**
@@ -85,8 +90,7 @@ export function useEdgePaging(columnIds: string[], width: number) {
     }
 
     const travel = position.x - originX.value
-    const reach = pageWidth.value * EDGE_TRAVEL
-    const step = travel < -reach ? -1 : travel > reach ? 1 : 0
+    const step = travel < -EDGE_TRAVEL ? -1 : travel > EDGE_TRAVEL ? 1 : 0
     const current = target.value >= 0 ? target.value : scrolledPage.value
     const next = current + step
     if (step === 0 || next < 0 || next >= ids.value.length) {

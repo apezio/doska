@@ -24,7 +24,7 @@ export interface Tokens {
   sidebar: string
   /**
    * The column head's tint over its blur: the web's `bg-background/80` taken
-   * over the mobile board's `--sidebar` surface. Value-only — it has no class,
+   * over the column's `--background` surface. Value-only — it has no class,
    * because BlurView is styled by value.
    */
   headVeil: string
@@ -45,7 +45,7 @@ const LIGHT: Tokens = {
   border: "#eeeff2",
   destructive: "#ff5656",
   sidebar: "#ffffff",
-  headVeil: "#ffffffcc",
+  headVeil: "#f7f7facc",
   cardVeil: "#ffffffcc",
 }
 
@@ -62,7 +62,7 @@ const DARK: Tokens = {
   border: "#ffffff1f",
   destructive: "#ff5656",
   sidebar: "#1d2230",
-  headVeil: "#1d2230cc",
+  headVeil: "#232939cc",
   cardVeil: "#2d3447cc",
 }
 

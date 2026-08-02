@@ -1,7 +1,6 @@
 import type { SlashCommand } from "@doska/markdown/core"
 import type { Card } from "@doska/core/types"
-import { Stack } from "expo-router"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ScrollView, TextInput, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useKeyboardHeight } from "@/lib/use-keyboard-height"
@@ -25,7 +24,6 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
   const tokens = useTokens()
   const insets = useSafeAreaInsets()
   const keyboard = useKeyboardHeight()
-  const scroller = useRef<ScrollView>(null)
 
   const [draft, setDraft] = useState<Draft>({})
   // Decided at mount, never re-derived: once you type, `content.body` is no
@@ -45,10 +43,18 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
     onChangeValue: (value) => edit({ body: value }),
   })
 
-  // Typing at the end of the note has to keep the caret in view, and nothing
-  // else may move the scroller — deleting a line mid-note also changes the
-  // content height, and following that would throw the reader to the bottom.
+  const scroller = useRef<ScrollView>(null)
+  // Only the caret at the very end can be pushed out of view by something other
+  // than the user: the note growing under it, or the keyboard rising over it.
+  // Anywhere else the caret keeps its place on screen, and chasing it there
+  // would yank the note out from under someone deleting a line mid-body.
   const isAtEnd = slash.caret >= body.length
+
+  // The keyboard does not change the content height, so `onContentSizeChange`
+  // never fires for it — but it does change how much of the note is visible.
+  useEffect(() => {
+    if (isAtEnd && keyboard) scroller.current?.scrollToEnd({ animated: true })
+  }, [isAtEnd, keyboard])
 
   const toolbar = {
     // The full list stands open while editing, so a typed `/` only narrows it.
@@ -63,79 +69,60 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
     },
   }
 
+  // Everything the bar covers: its own height, a gap, and the keyboard or the
+  // home indicator underneath it. The pane itself carries no padding — an
+  // absolute child is laid out against the border box, so padding here would
+  // fail to lift the bar.
+  const bottomInset = keyboard || insets.bottom
+
   return (
-    <View
-      className="flex-1 bg-card"
-      style={{ paddingBottom: keyboard || insets.bottom }}
-    >
-      {/* The meta rides the sheet's own header bar rather than a row of its
-          own: inside the sheet's content it drew on top of the title. */}
-      <Stack.Screen
-        options={{
-          headerTitleAlign: "left",
-          headerTitle: () => (
-            <CardPaneHeader
-              cardId={cardId}
-              body={body}
-              deadline={content.deadline}
-              cardNumber={content.number}
-            />
-          ),
+    <View collapsable={false} className="flex-1 bg-card">
+      <ScrollView
+        ref={scroller}
+        className="flex-1"
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: TOOLBAR_HEIGHT + 16 + bottomInset,
         }}
-      />
+        onContentSizeChange={() => {
+          if (isAtEnd) scroller.current?.scrollToEnd({ animated: false })
+        }}
+      >
+        <CardPaneHeader
+          cardId={cardId}
+          body={body}
+          deadline={content.deadline}
+          cardNumber={content.number}
+        />
+        <TextInput
+          multiline
+          value={title}
+          onChangeText={(value) => edit({ title: value })}
+          placeholder="Title"
+          placeholderTextColor={tokens.mutedForeground}
+          className={
+            isPreview
+              ? "px-4 py-1.5 text-xl font-sans-semibold text-card-foreground"
+              : "px-4 py-1.5 font-mono text-xl text-card-foreground"
+          }
+        />
+        <CardBody
+          body={body}
+          isPreview={isPreview}
+          onChangeBody={(value) => edit({ body: value })}
+          onEdit={() => setPreview(false)}
+          onSelectionChange={slash.onSelectionChange}
+          selection={slash.selection}
+        />
+      </ScrollView>
 
-      {/* The bar overlays this rather than the pane, so it is positioned inside
-          the space the keyboard leaves rather than against the padding that
-          creates it — absolute children are laid out against the border box. */}
-      <View className="flex-1">
-        {/* One scroller over both, so the title scrolls away with the note
-            rather than staying pinned above it. */}
-        <ScrollView
-          ref={scroller}
-          className="flex-1"
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="interactive"
-          // The bar takes no layout space, so `scrollToEnd` would otherwise
-          // stop with the caret's line underneath it.
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingBottom: TOOLBAR_HEIGHT + 16,
-          }}
-          onContentSizeChange={() => {
-            if (!isPreview && isAtEnd) {
-              scroller.current?.scrollToEnd({ animated: false })
-            }
-          }}
-        >
-          <TextInput
-            multiline
-            value={title}
-            onChangeText={(value) => edit({ title: value })}
-            placeholder="Title"
-            placeholderTextColor={tokens.mutedForeground}
-            className={
-              isPreview
-                ? "px-4 py-1.5 text-xl font-sans-semibold text-card-foreground"
-                : "px-4 py-1.5 font-mono text-xl text-card-foreground"
-            }
-          />
-          <CardBody
-            body={body}
-            isPreview={isPreview}
-            onChangeBody={(value) => edit({ body: value })}
-            onEdit={() => setPreview(false)}
-            onSelectionChange={slash.onSelectionChange}
-            selection={slash.selection}
-          />
-        </ScrollView>
-
-        {/* Floats over the note, so the blur has something to blur.
-            `InputAccessoryView` would be the native way to ride the keyboard,
-            but it does not render inside a `formSheet` — the bar simply
-            vanished whenever the keyboard opened. */}
-        <View className="absolute inset-x-0 bottom-0">
-          <EditorToolbar {...toolbar} />
-        </View>
+      {/* Floats over the note, so the blur has something to blur.
+          `InputAccessoryView` would be the native way to ride the keyboard, but
+          it does not render inside a `formSheet` — the bar simply vanished
+          whenever the keyboard opened. */}
+      <View className="absolute inset-x-0" style={{ bottom: bottomInset }}>
+        <EditorToolbar {...toolbar} />
       </View>
     </View>
   )

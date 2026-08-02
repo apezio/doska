@@ -107,15 +107,11 @@ export default function RootLayout() {
             <Stack screenOptions={headerOptions}>
               {/* The sidebar's screens draw their own headers, matching the web's. */}
               <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-              {/* The bar carries the card's meta, which `CardPane` fills in —
-                  in the sheet's content it drew over the title. */}
+              {/* No bar at all — the toolbar rides the keyboard instead — so
+                  the grabber is the only thing saying it pulls down. */}
               <Stack.Screen
                 name="card/[id]"
-                options={{
-                  ...sheetOptions,
-                  sheetAllowedDetents: [1],
-                  headerShown: true,
-                }}
+                options={{ ...sheetOptions, sheetAllowedDetents: [1] }}
               />
               <Stack.Screen name="board/actions" options={sheetOptions} />
               <Stack.Screen name="board/prefix" options={sheetOptions} />

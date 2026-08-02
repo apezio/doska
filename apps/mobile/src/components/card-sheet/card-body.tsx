@@ -47,9 +47,6 @@ export function CardBody({
         placeholder="Notes"
         placeholderTextColor={tokens.mutedForeground}
         textAlignVertical="top"
-        // Grows with the note instead of scrolling inside itself, so the title
-        // above it scrolls away with the text. `CardPane` owns the scrolling and
-        // the caret-following that used to come with it for free.
         scrollEnabled={false}
         className="grow px-4 py-2 font-mono text-[15px] leading-[22px] text-card-foreground"
       />
@@ -58,14 +55,14 @@ export function CardBody({
 
   if (!body.trim()) {
     return (
-      <Pressable onPress={onEdit} className="px-4 py-2">
+      <Pressable onPress={onEdit} className="grow px-4 py-2">
         <Text className="text-[15px] text-muted-foreground">Notes</Text>
       </Pressable>
     )
   }
 
   return (
-    <Pressable onPress={onEdit} className="px-4 py-2">
+    <Pressable onPress={onEdit} className="grow px-4 py-2">
       <MarkdownView
         onToggleTask={(index) => onChangeBody(toggleTaskByIndex(body, index))}
       >

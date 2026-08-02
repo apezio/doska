@@ -12,14 +12,14 @@ interface IProps {
   cardNumber: number | null
 }
 
-/** The card's meta row. Rendered as the sheet header's title, so the bar draws
- * its own background and separator and this holds no chrome of its own. */
+/** The card's meta row, standing in for a navigation bar. The system draws the
+ * sheet's grabber over the top ~16pt of this, so the row starts below it. */
 export function CardPaneHeader({ cardId, body, deadline, cardNumber }: IProps) {
   const { data: column } = useCardCol(cardId)
   const { data: deck } = useCardDeck(cardId)
 
   return (
-    <View className="flex-row items-center gap-4">
+    <View className="flex-row items-center gap-4 border-b border-muted px-4 pb-2.5 pt-5">
       <CardMeta
         displayId={cardDisplayId(deck?.prefix ?? "", cardNumber) ?? ""}
         body={body}

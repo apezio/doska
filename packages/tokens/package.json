@@ -10,6 +10,7 @@
     ".": "./src/index.ts",
     "./tokens.css": "./tokens.css",
     "./theme.css": "./theme.css",
+    "./markdown.css": "./markdown.css",
     "./tailwind-colors.cjs": "./tailwind-colors.cjs"
   },
   "scripts": {

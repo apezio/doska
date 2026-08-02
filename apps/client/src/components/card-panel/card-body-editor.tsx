@@ -1,15 +1,11 @@
-import {
-  MarkdownTextarea,
-  DEFAULT_SLASH_COMMANDS,
-  toAttachmentSrc,
-  cut,
-} from "@doska/markdown"
+import { DEFAULT_SLASH_COMMANDS, toAttachmentSrc, cut } from "@doska/markdown"
 import { useMemo } from "react"
 import { useCard } from "@doska/core/queries"
 import { imageSlashCommands } from "../card/attachments/image-slash-commands"
 import { isRenderableImage } from "../card/attachments/renderable-image"
 import { useUploads } from "../card/attachments/context/attachment-upload-context"
 import { CardMarkdown } from "../card/card-markdown"
+import { Markdown, MarkdownTextarea } from "../markdown"
 import { useCardRefOptions } from "../card/refs/use-card-refs"
 
 const PREVIEW_MARKERS = [cut]
@@ -52,6 +48,7 @@ export function CardBodyEditor({
   return (
     <CardMarkdown cardId={cardId}>
       <MarkdownTextarea
+        renderPreview={Markdown}
         value={body}
         onChange={(e) => onChangeBody(e.target.value)}
         onChangeValue={onChangeBody}

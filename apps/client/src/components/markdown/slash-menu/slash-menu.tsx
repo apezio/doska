@@ -1,5 +1,5 @@
 import { useIsMobile } from "@doska/ui-kit"
-import { DEFAULT_SLASH_COMMANDS, type SlashCommand } from "./commands"
+import { DEFAULT_SLASH_COMMANDS, type SlashCommand } from "@doska/markdown"
 import { SlashMenuDropdown } from "./slash-menu-dropdown"
 import { SlashMenuFab } from "./slash-menu-fab"
 import { useSlashMenu } from "./use-slash-menu"

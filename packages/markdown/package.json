@@ -4,35 +4,27 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./ast": "./src/ast.ts",
-    "./core": "./src/core.ts",
-    "./markdown.css": "./src/markdown.css"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@doska/ui-kit": "workspace:*",
-    "react-markdown": "10.1.0",
     "remark-gfm": "4.0.1",
     "remark-mark-highlight": "0.1.1",
     "remark-parse": "^11.0.0",
     "unified": "^11.0.5"
   },
   "peerDependencies": {
-    "react": "^19",
-    "react-dom": "^19"
+    "react": "^19"
   },
   "devDependencies": {
     "@doska/configs": "workspace:*",
     "@types/mdast": "^4.0.4",
     "@types/react": "^19",
-    "@types/react-dom": "^19",
     "eslint": "^10",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8",
     "typescript": "~6"
   }
 }

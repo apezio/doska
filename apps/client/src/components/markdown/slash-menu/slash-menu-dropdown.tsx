@@ -1,5 +1,5 @@
 import { AnchoredMenu } from "../menu"
-import type { SlashCommand } from "./commands"
+import type { SlashCommand } from "@doska/markdown"
 
 interface IProps {
   items: SlashCommand[]

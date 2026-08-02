@@ -2,10 +2,10 @@ import { createContext, useContext, type ReactNode } from "react"
 
 /**
  * Hooks for the pieces of a body that only the host app can resolve — an
- * attachment key to an image, a wikilink target to whatever it names.
- * `Markdown` reads them
- * from context rather than taking them as props, so adding one doesn't have to
- * be threaded through every wrapper between the call site and the renderer.
+ * attachment key to an image, a wikilink target to whatever it names. The
+ * platform renderers read them from context rather than taking them as props,
+ * so adding one doesn't have to be threaded through every wrapper between the
+ * call site and the renderer.
  */
 export interface MarkdownRenderers {
   /** Renders an `attachment:<key>` image ref. */

@@ -5,7 +5,7 @@ import {
   DEFAULT_SLASH_COMMANDS,
   filterSlashCommands,
   type SlashCommand,
-} from "./commands"
+} from "@doska/markdown"
 
 // A `/` at the start of input or right after whitespace, followed by the query
 // (any non-whitespace run) up to the caret.

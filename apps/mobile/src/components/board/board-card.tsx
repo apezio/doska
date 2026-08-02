@@ -1,7 +1,7 @@
 import { cardDisplayId } from "@doska/contract/prefix"
 import { useUpdateCard } from "@doska/core/mutations"
 import type { Card } from "@doska/core/types"
-import { cut, toggleTaskByIndex } from "@doska/markdown/core"
+import { cut, toggleTaskByIndex } from "@doska/markdown"
 import { router } from "expo-router"
 import { Pressable, Text, View } from "react-native"
 import { MarkdownView } from "@/components/markdown/markdown-view"

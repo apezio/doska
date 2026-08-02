@@ -140,9 +140,15 @@
 }
 
 /* Drop the paragraph the loose variant adds, so its spacing matches the tight
-   variant instead of picking up the default `.markdown p` margin. */
+   variant instead of picking up the default `.markdown p` margin. Its first
+   paragraph also has to go inline, or the checkbox — a sibling of the <p>, not
+   a child — would sit on its own line above the text. */
 .markdown li.task-list-item > p {
   margin: 0;
+}
+
+.markdown li.task-list-item > p:first-of-type {
+  display: inline;
 }
 
 /* Checkboxes render via the shared ui-kit <Checkbox> component, so the box
@@ -175,6 +181,26 @@
 .markdown th {
   font-weight: 600;
   background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+/* Raw HTML, which the renderer does not interpret — showing the source beats
+   dropping it silently. */
+.markdown .raw-html {
+  color: var(--muted-foreground);
+}
+
+/* Footnotes. Rendered where they appear rather than collected into a section:
+   card bodies are short enough that a jump link would be noise. */
+.markdown .footnote-ref {
+  font-size: 0.75em;
+  color: var(--muted-foreground);
+}
+
+.markdown .footnote-def {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.875em;
+  color: var(--muted-foreground);
 }
 
 /* Horizontal rule */
@@ -317,16 +343,56 @@
 
 /* cold yellow → cyan → blue → indigo → violet → magenta → rose
    (green/teal band skipped). Neighbours alternate fg lightness. */
-.markdown .tag[data-tag-color="0"] { --tag-h: 90; --tag-l: 0.48; --tag-dl: 0.84; }
-.markdown .tag[data-tag-color="1"] { --tag-h: 212; --tag-l: 0.5; --tag-dl: 0.84; }
-.markdown .tag[data-tag-color="2"] { --tag-h: 233; --tag-l: 0.44; --tag-dl: 0.78; }
-.markdown .tag[data-tag-color="3"] { --tag-h: 252; --tag-l: 0.52; --tag-dl: 0.86; }
-.markdown .tag[data-tag-color="4"] { --tag-h: 270; --tag-l: 0.42; --tag-dl: 0.78; }
-.markdown .tag[data-tag-color="5"] { --tag-h: 288; --tag-l: 0.52; --tag-dl: 0.86; }
-.markdown .tag[data-tag-color="6"] { --tag-h: 306; --tag-l: 0.42; --tag-dl: 0.78; }
-.markdown .tag[data-tag-color="7"] { --tag-h: 324; --tag-l: 0.52; --tag-dl: 0.86; }
-.markdown .tag[data-tag-color="8"] { --tag-h: 342; --tag-l: 0.44; --tag-dl: 0.79; }
-.markdown .tag[data-tag-color="9"] { --tag-h: 358; --tag-l: 0.52; --tag-dl: 0.85; }
+.markdown .tag[data-tag-color="0"] {
+  --tag-h: 90;
+  --tag-l: 0.48;
+  --tag-dl: 0.84;
+}
+.markdown .tag[data-tag-color="1"] {
+  --tag-h: 212;
+  --tag-l: 0.5;
+  --tag-dl: 0.84;
+}
+.markdown .tag[data-tag-color="2"] {
+  --tag-h: 233;
+  --tag-l: 0.44;
+  --tag-dl: 0.78;
+}
+.markdown .tag[data-tag-color="3"] {
+  --tag-h: 252;
+  --tag-l: 0.52;
+  --tag-dl: 0.86;
+}
+.markdown .tag[data-tag-color="4"] {
+  --tag-h: 270;
+  --tag-l: 0.42;
+  --tag-dl: 0.78;
+}
+.markdown .tag[data-tag-color="5"] {
+  --tag-h: 288;
+  --tag-l: 0.52;
+  --tag-dl: 0.86;
+}
+.markdown .tag[data-tag-color="6"] {
+  --tag-h: 306;
+  --tag-l: 0.42;
+  --tag-dl: 0.78;
+}
+.markdown .tag[data-tag-color="7"] {
+  --tag-h: 324;
+  --tag-l: 0.52;
+  --tag-dl: 0.86;
+}
+.markdown .tag[data-tag-color="8"] {
+  --tag-h: 342;
+  --tag-l: 0.44;
+  --tag-dl: 0.79;
+}
+.markdown .tag[data-tag-color="9"] {
+  --tag-h: 358;
+  --tag-l: 0.52;
+  --tag-dl: 0.85;
+}
 
 /* Cut marker divider — full-width dashed line, no added vertical space */
 .markdown .cut-divider {
@@ -340,14 +406,14 @@
 }
 
 .cut-divider::before {
-    content: "cut";
-    position: absolute;
-    font-size: 0.8rem;
-    color: var(--border);
-    font-family: var(--font-mono);
-    background: var(--card);
-    text-align: end;
-    top: -0.4rem;
-    right: 18px;
-    line-height: 0.8;
+  content: "cut";
+  position: absolute;
+  font-size: 0.8rem;
+  color: var(--border);
+  font-family: var(--font-mono);
+  background: var(--card);
+  text-align: end;
+  top: -0.4rem;
+  right: 18px;
+  line-height: 0.8;
 }

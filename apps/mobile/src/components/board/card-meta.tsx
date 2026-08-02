@@ -1,4 +1,4 @@
-import { taskProgress } from "@doska/markdown/core"
+import { taskProgress } from "@doska/markdown"
 import { Chip } from "@doska/ui-kit-mobile"
 import {
   deadlineRelative,

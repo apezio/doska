@@ -3,15 +3,13 @@ import remarkGfm from "remark-gfm"
 import { remarkMark } from "remark-mark-highlight"
 import remarkParse from "remark-parse"
 import { unified } from "unified"
-import { remarkCut } from "./plugins/remark-cut"
-import { remarkTags } from "./plugins/remark-tags"
-import { remarkWikilinks } from "./plugins/remark-wikilinks"
+import { remarkCut } from "../plugins/remark-cut"
+import { remarkTags } from "../plugins/remark-tags"
+import { remarkWikilinks } from "../plugins/remark-wikilinks"
 
 /**
- * The same plugin stack `Markdown` runs, stopping at mdast instead of going on
- * to hast and the DOM. Every plugin here is a plain tree transform, so a
- * platform without a DOM gets the identical `[[wikilink]]`, `[tag]`, `==mark==`
- * and cut handling by walking this tree itself.
+ * Every plugin here is a plain tree transform, so the pipeline stops at mdast
+ * and each platform walks the same tree — see `renderMarkdown`.
  *
  * Plugin order matters: `remarkWikilinks` must run before `remarkTags`, which
  * would otherwise claim the inner `[target]` as a tag pill.
@@ -29,10 +27,32 @@ export function parseMarkdown(markdown: string): Root {
 }
 
 /**
+ * Permissive mdast shape. The real `mdast` unions do not know about the `mark`
+ * node `remarkMark` adds, and the traversal dispatches on `type` anyway.
+ */
+export interface MdNode {
+  type: string
+  value?: string
+  url?: string
+  alt?: string | null
+  title?: string | null
+  identifier?: string
+  label?: string | null
+  depth?: number
+  ordered?: boolean | null
+  start?: number | null
+  spread?: boolean | null
+  checked?: boolean | null
+  lang?: string | null
+  align?: (string | null)[]
+  children?: MdNode[]
+  data?: unknown
+}
+
+/**
  * The extra node types the custom plugins introduce. They ride on `emphasis`
- * nodes tagged with `data.hProperties` (which is what the web build turns into
- * span attributes), so a renderer checks for these before treating an
- * `emphasis` as italics.
+ * nodes tagged with `data.hProperties`, so a renderer checks for these before
+ * treating an `emphasis` as italics.
  */
 export type MarkdownExtra =
   | { kind: "wikilink"; target: string }

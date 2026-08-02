@@ -1,4 +1,4 @@
-import type { SlashCommand } from "@doska/markdown/core"
+import type { SlashCommand } from "@doska/markdown"
 import { Frosted } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import {

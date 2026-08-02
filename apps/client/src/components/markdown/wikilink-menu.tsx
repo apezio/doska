@@ -1,6 +1,10 @@
 import { useCallback } from "react"
-import { AnchoredMenu, useTriggerMenu } from "../menu"
-import { filterWikilinks, toWikilink, type WikilinkOption } from "./wikilink"
+import { AnchoredMenu, useTriggerMenu } from "./menu"
+import {
+  filterWikilinks,
+  toWikilink,
+  type WikilinkOption,
+} from "@doska/markdown"
 
 // `[[` followed by the query up to the caret. The query may contain spaces —
 // card titles do — but stops at a bracket or line break.

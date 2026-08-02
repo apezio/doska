@@ -31,7 +31,10 @@ function parseListItem(line: string): ListItem | null {
   if (ordered) {
     const [, indent, num, delim, content] = ordered
     const next = Number(num) + 1
-    return { continuation: `${indent}${next}${delim} `, empty: content.trim() === "" }
+    return {
+      continuation: `${indent}${next}${delim} `,
+      empty: content.trim() === "",
+    }
   }
 
   return null

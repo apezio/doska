@@ -1,4 +1,4 @@
-import { WIKILINK_RE } from "../wikilinks/wikilink"
+import { WIKILINK_RE } from "../wikilink"
 
 interface MdastNode {
   type: string

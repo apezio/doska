@@ -1,4 +1,4 @@
-import { cut, toggleTaskByIndex } from "@doska/markdown/core"
+import { cut, toggleTaskByIndex } from "@doska/markdown"
 import { TextField } from "@doska/ui-kit-mobile"
 import { useMemo } from "react"
 import {

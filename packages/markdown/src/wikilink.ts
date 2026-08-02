@@ -1,5 +1,3 @@
-import type { MenuItem } from "../menu"
-
 /**
  * A `[[target]]` wikilink, as in Obsidian. The syntax is all this package
  * knows — what a target names, and what it renders as, belongs to the host
@@ -8,7 +6,10 @@ import type { MenuItem } from "../menu"
 export const WIKILINK_RE = /\[\[([^[\]\n]+)\]\]/g
 
 /** One link target offered by the `[[` menu. */
-export interface WikilinkOption extends MenuItem {
+export interface WikilinkOption {
+  id: string
+  title: string
+  hint?: string
   /** What lands in the text — the `ROAD-12` in `[[ROAD-12]]`. */
   target: string
 }

@@ -1,19 +1,34 @@
 import { cn } from "@doska/ui-kit"
-import { useRef } from "react"
-import { Markdown } from "./markdown"
-import { useMarkers } from "./markers"
-import { type SlashCommand } from "./slash-menu"
-import { WikilinkMenu, type WikilinkOption } from "./wikilinks"
-import { toggleTaskByIndex } from "./task-progress"
+import { useRef, type ReactNode } from "react"
+import {
+  toggleTaskByIndex,
+  useMarkers,
+  type Marker,
+  type SlashCommand,
+  type WikilinkOption,
+} from "@doska/markdown"
 import { useCutLine } from "./hooks/use-cut-line"
 import { useListContinuation } from "./hooks/use-list-continuation"
 import { usePasteFiles } from "./hooks/use-paste-files"
 import { useCaretScroll } from "./hooks/use-caret-scroll"
-import type { Marker } from "./markers"
 import { SlashMenu } from "./slash-menu/slash-menu"
+import { WikilinkMenu } from "./wikilink-menu"
+
+interface PreviewProps {
+  /** The body with markers already applied. */
+  children: string
+  className?: string
+  /** Absent when the caller passed no `onToggleTask`. */
+  onToggleTask?: (index: number) => void
+}
 
 interface IProps extends React.ComponentProps<"textarea"> {
   isPreview?: boolean
+  /**
+   * Draws the preview. Rendering markdown is the app's job — it owns the
+   * adapter that turns the parsed body into its own components.
+   */
+  renderPreview: (props: PreviewProps) => ReactNode
   value?: string
   markers?: Marker[]
   onToggleTask?: (value: string) => void
@@ -40,6 +55,7 @@ const NOOP = () => {}
 
 export function MarkdownTextarea({
   isPreview,
+  renderPreview,
   markers = NO_MARKERS,
   onToggleTask,
   slashMenu,
@@ -78,18 +94,14 @@ export function MarkdownTextarea({
   if (isPreview)
     return (
       <div className={cn("space-y-4 pt-3 select-text", containerClassName)}>
-        {body && (
-          <Markdown
-            onToggleTask={
-              onToggleTask
-                ? (index) => onToggleTask(toggleTaskByIndex(value, index))
-                : undefined
-            }
-            className={props.className}
-          >
-            {body}
-          </Markdown>
-        )}
+        {body &&
+          renderPreview({
+            children: body,
+            className: props.className,
+            onToggleTask: onToggleTask
+              ? (index) => onToggleTask(toggleTaskByIndex(value, index))
+              : undefined,
+          })}
       </div>
     )
   return (

@@ -1,6 +1,6 @@
 /**
  * The `[tag]` pill palette, mirroring the `[data-tag-color]` rules in
- * `@doska/markdown/markdown.css`. The web states them in `oklch()`, which React
+ * `@doska/tokens/markdown.css`. The web states them in `oklch()`, which React
  * Native's colour parser does not accept, so they are resolved to sRGB here —
  * change the CSS and these have to be regenerated to match.
  *

@@ -151,10 +151,10 @@ export default defineConfig({
           // overrides Rollup's dynamic-import split — so they fall through to
           // keep the deferral `date-input-calendar` is written to get.
           if (/[\\/](date-fns|react-day-picker)[\\/]/.test(id)) return
-          // The markdown rendering stack (react-markdown + the unified/
-          // remark/micromark/mdast/hast ecosystem) is the heaviest dep.
+          // The markdown parsing stack (the unified/remark/micromark/mdast
+          // ecosystem) is the heaviest dep.
           if (
-            /[\\/](react-markdown|remark|micromark|mdast|hast|unist|unified|vfile|property-information|character-entities|decode-named-character-reference|html-url-attributes|space-separated-tokens|comma-separated-tokens|trough|bail|devlop|zwitch|ccount|escape-string-regexp|markdown-table)/.test(
+            /[\\/](remark|micromark|mdast|hast|unist|unified|vfile|property-information|character-entities|decode-named-character-reference|html-url-attributes|space-separated-tokens|comma-separated-tokens|trough|bail|devlop|zwitch|ccount|escape-string-regexp|markdown-table)/.test(
               id
             )
           ) {

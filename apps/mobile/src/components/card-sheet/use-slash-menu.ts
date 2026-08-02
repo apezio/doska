@@ -3,7 +3,7 @@ import {
   DEFAULT_SLASH_COMMANDS,
   filterSlashCommands,
   type SlashCommand,
-} from "@doska/markdown/core"
+} from "@doska/markdown"
 import { useCallback, useMemo, useState } from "react"
 import type {
   TextInputSelectionChangeEventData,

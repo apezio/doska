@@ -1,4 +1,4 @@
-import type { SlashCommand } from "@doska/markdown/core"
+import type { SlashCommand } from "@doska/markdown"
 import type { Card } from "@doska/core/types"
 import { TextField } from "@doska/ui-kit-mobile"
 import { useEffect, useRef, useState } from "react"

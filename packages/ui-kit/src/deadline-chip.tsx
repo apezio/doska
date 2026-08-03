@@ -5,7 +5,7 @@ import {
   deadlineStatus,
   formatDeadline,
   type DeadlineStatus,
-} from "./lib/deadline"
+} from "@doska/utils/dates"
 
 const CHIP_BY_STATUS: Record<DeadlineStatus, string> = {
   overdue: "bg-destructive/10 text-destructive/80",

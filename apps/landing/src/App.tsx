@@ -2,7 +2,7 @@ import { Board } from "./board"
 import { Hero } from "./hero"
 import { SiteFooter } from "./site-footer"
 import { SiteHeader } from "./site-header"
-import "@doska/markdown/markdown.css"
+import "@doska/tokens/markdown.css"
 
 export function App() {
   return (

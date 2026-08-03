@@ -5,8 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts",
-    "./column-colors": "./src/lib/column-colors.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -14,6 +13,8 @@
   },
   "dependencies": {
     "@base-ui/react": "1.6.0",
+    "@doska/tokens": "workspace:*",
+    "@doska/utils": "workspace:*",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "date-fns": "^4.4.0",

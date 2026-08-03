@@ -16,6 +16,15 @@ export interface TrashEntry {
   cardCount: number
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** "29 days left" — rounded up, so the last day reads as a day rather than 0. */
+export function expiryLabel(expiresAt: number): string {
+  const days = Math.ceil((expiresAt - Date.now()) / DAY_MS)
+  if (days <= 0) return "Deleting shortly"
+  return days === 1 ? "1 day left" : `${days} days left`
+}
+
 /**
  * What the trash shows: one entry per deletion the user performed, newest
  * first. A deletion cascades, so only the topmost tombstone of each is listed —

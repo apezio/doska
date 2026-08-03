@@ -1,16 +1,13 @@
-import {
-  MarkdownTextarea,
-  DEFAULT_SLASH_COMMANDS,
-  toAttachmentSrc,
-  cut,
-} from "@doska/markdown"
+import { DEFAULT_SLASH_COMMANDS, toAttachmentSrc, cut } from "@doska/markdown"
 import { useMemo } from "react"
+import { useCardRefOptions } from "@doska/core/card-refs"
 import { useCard } from "@doska/core/queries"
+import { useDeck } from "../deck/deck-context"
 import { imageSlashCommands } from "../card/attachments/image-slash-commands"
 import { isRenderableImage } from "../card/attachments/renderable-image"
 import { useUploads } from "../card/attachments/context/attachment-upload-context"
 import { CardMarkdown } from "../card/card-markdown"
-import { useCardRefOptions } from "../card/refs/use-card-refs"
+import { Markdown, MarkdownTextarea } from "../markdown"
 
 const PREVIEW_MARKERS = [cut]
 
@@ -31,9 +28,10 @@ export function CardBodyEditor({
   onChangeBody,
   overlayContainer,
 }: IProps) {
+  const { id: deckId, prefix } = useDeck()
   const { data: card } = useCard(cardId)
   const { addFiles } = useUploads()
-  const cardRefs = useCardRefOptions(cardId)
+  const cardRefs = useCardRefOptions(deckId, prefix, cardId)
   const attachments = card?.attachments
 
   const slashCommands = useMemo(
@@ -52,6 +50,7 @@ export function CardBodyEditor({
   return (
     <CardMarkdown cardId={cardId}>
       <MarkdownTextarea
+        renderPreview={Markdown}
         value={body}
         onChange={(e) => onChangeBody(e.target.value)}
         onChangeValue={onChangeBody}

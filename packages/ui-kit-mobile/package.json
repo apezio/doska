@@ -1,0 +1,39 @@
+{
+  "name": "@doska/ui-kit-mobile",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens": "./src/tokens.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@doska/tokens": "workspace:*",
+    "expo-blur": "*",
+    "expo-haptics": "*",
+    "lucide-react-native": "*",
+    "nativewind": "*",
+    "react": "^19",
+    "react-native": "*",
+    "react-native-safe-area-context": "*"
+  },
+  "devDependencies": {
+    "@doska/configs": "workspace:*",
+    "@doska/tokens": "workspace:*",
+    "@types/react": "^19",
+    "eslint": "^10",
+    "expo-blur": "^57.0.2",
+    "expo-haptics": "^57.0.1",
+    "lucide-react-native": "^1.28.0",
+    "nativewind": "^4.2.6",
+    "react": "^19.2.3",
+    "react-native": "0.86.2",
+    "react-native-safe-area-context": "~5.7.0",
+    "typescript": "~6"
+  }
+}

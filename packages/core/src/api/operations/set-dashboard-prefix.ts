@@ -10,6 +10,34 @@ export function normalizePrefix(input: string): string {
     .slice(0, 6)
 }
 
+export interface PrefixCheck {
+  /** The normalized prefix, or `null` when `error` is set. */
+  prefix: string | null
+  error: string | null
+}
+
+/**
+ * The prefix editor's inline check, against the prefixes the caller already has
+ * in hand. `setDashboardPrefix` re-checks against the database — this is what
+ * the form says before it gets there.
+ */
+export function validatePrefix(
+  input: string,
+  current: string,
+  taken: string[]
+): PrefixCheck {
+  const prefix = normalizePrefix(input)
+  if (!prefix) return { prefix: null, error: "Enter a prefix" }
+
+  const others = new Set(
+    taken.filter(Boolean).map((one) => one.toUpperCase())
+  )
+  if (others.has(prefix) && prefix !== current.toUpperCase())
+    return { prefix: null, error: `${prefix} is taken` }
+
+  return { prefix, error: null }
+}
+
 /** True when another live board already uses `prefix` (case-insensitive). */
 export async function prefixTaken(
   prefix: string,

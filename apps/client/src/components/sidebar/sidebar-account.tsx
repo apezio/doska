@@ -1,26 +1,24 @@
+import { useAccount } from "@doska/core/account"
 import { initials } from "@doska/core/utils"
 import {
   Avatar,
   AvatarFallback,
   Button,
+  cn,
   SidebarMenu,
   SidebarMenuItem,
 } from "@doska/ui-kit"
 import { LogIn, LogOut, UserRound } from "lucide-react"
 import { useLoginPrompt } from "@/components/login/login-prompt-context"
 import { useLogout } from "@doska/core/mutations"
-import { useAuth } from "@/lib/hooks"
 
 export function SidebarAccount() {
-  const { authed, login } = useAuth()
+  const { session, name, subtitle, dropped } = useAccount()
   const openLogin = useLoginPrompt()
   const { mutate: logout } = useLogout()
 
-  // `authed` is null until the first session check resolves; show a neutral
-  // placeholder until then so neither the wrong identity nor a control flashes.
-  const name =
-    authed === null ? "…" : authed ? (login ?? "Signed in") : "Not signed in"
-  const subtitle = authed === null ? "" : authed ? "Syncing" : "Sign in to sync"
+  const authed = session?.authed ?? null
+  const login = session?.login ?? null
 
   return (
     <SidebarMenu>
@@ -37,7 +35,12 @@ export function SidebarAccount() {
           </Avatar>
           <div className="flex flex-col overflow-hidden text-left leading-tight">
             <span className="truncate text-sm font-medium">{name}</span>
-            <span className="truncate text-xs text-muted-foreground">
+            <span
+              className={cn(
+                "truncate text-xs",
+                dropped ? "text-destructive" : "text-muted-foreground"
+              )}
+            >
               {subtitle}
             </span>
           </div>

@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Change, Column } from "@doska/contract"
-import { COLUMN_COLORS } from "@doska/ui-kit/column-colors"
+import { COLUMN_COLORS } from "@doska/tokens/columns"
 import { z } from "zod"
 import {
   type Board,

@@ -1,4 +1,14 @@
-export { addDays, longDate, todayIso, weekday } from "./date"
+export {
+  addDays,
+  deadlineLabel,
+  deadlineRelative,
+  deadlineStatus,
+  formatDeadline,
+  longDate,
+  todayIso,
+  weekday,
+  type DeadlineStatus,
+} from "@doska/utils/dates"
 export { initials } from "./initials"
-export { byPosition } from "./position"
+export { byPosition, keyBetween } from "./position"
 export { isAuthed, subscribeAuthed } from "./is-authed"

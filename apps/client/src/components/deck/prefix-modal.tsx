@@ -8,7 +8,7 @@ import {
   ModalTitle,
   cn,
 } from "@doska/ui-kit"
-import { normalizePrefix } from "@doska/core/operations"
+import { normalizePrefix, validatePrefix } from "@doska/core/operations"
 
 interface IProps {
   open: boolean
@@ -42,16 +42,10 @@ export function PrefixModal({
     }
   }
 
-  const takenUpper = new Set(taken.filter(Boolean).map((p) => p.toUpperCase()))
-
   function commit() {
-    const next = normalizePrefix(draft)
-    if (!next) {
-      setError("Enter a prefix")
-      return
-    }
-    if (takenUpper.has(next) && next !== prefix.toUpperCase()) {
-      setError(`${next} is taken`)
+    const { prefix: next, error: invalid } = validatePrefix(draft, prefix, taken)
+    if (next === null) {
+      setError(invalid)
       return
     }
     if (next !== prefix) onCommit(next)

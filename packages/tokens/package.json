@@ -1,0 +1,30 @@
+{
+  "name": "@doska/tokens",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./columns": "./src/columns.ts",
+    "./tags": "./src/tags.ts",
+    "./deadline": "./src/deadline.ts",
+    "./tokens.css": "./tokens.css",
+    "./theme.css": "./theme.css",
+    "./markdown.css": "./markdown.css",
+    "./tailwind-colors.cjs": "./tailwind-colors.cjs"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@doska/configs": "workspace:*",
+    "@types/node": "^22",
+    "eslint": "^10",
+    "typescript": "~6",
+    "vitest": "^4.1.10"
+  }
+}

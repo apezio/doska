@@ -4,8 +4,8 @@ import { useLocation, useRoute } from "wouter"
 import { routes } from "@/lib/routes"
 import { CardPane } from "./card-pane"
 import { PanelResizeHandle } from "./panel-resize-handle"
-import { useCardSave } from "./use-card-save"
 import { usePanelResize } from "./use-panel-resize"
+import { useCardSave } from "@doska/core/mutations"
 import { useCard } from "@doska/core/queries"
 
 interface IProps {

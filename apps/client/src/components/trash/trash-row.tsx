@@ -1,20 +1,15 @@
 import { Button, Card as CardBase } from "@doska/ui-kit"
 import { Columns3, LayoutDashboard, StickyNote } from "lucide-react"
-import type { TrashEntry, TrashKind } from "@doska/core/operations"
+import {
+  expiryLabel,
+  type TrashEntry,
+  type TrashKind,
+} from "@doska/core/operations"
 
 const ICONS: Record<TrashKind, typeof StickyNote> = {
   cards: StickyNote,
   columns: Columns3,
   dashboards: LayoutDashboard,
-}
-
-const DAY_MS = 24 * 60 * 60 * 1000
-
-/** "29 days left" — rounded up, so the last day reads as a day rather than 0. */
-function expiry(expiresAt: number): string {
-  const days = Math.ceil((expiresAt - Date.now()) / DAY_MS)
-  if (days <= 0) return "Deleting shortly"
-  return days === 1 ? "1 day left" : `${days} days left`
 }
 
 interface IProps {
@@ -39,7 +34,7 @@ export function TrashRow({ entry, isRestoring, onRestore }: IProps) {
           </span>
         </span>
         <span className="shrink-0 text-sm text-muted-foreground max-sm:hidden">
-          {expiry(entry.expiresAt)}
+          {expiryLabel(entry.expiresAt)}
         </span>
         <Button
           size="sm"

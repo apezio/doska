@@ -1,8 +1,9 @@
 import type { CSSProperties } from "react"
 import { useLocation } from "wouter"
+import { useCardRef } from "@doska/core/card-refs"
 import { cn, columnHue } from "@doska/ui-kit"
 import { routes } from "@/lib/routes"
-import { useCardRef } from "./use-card-refs"
+import { useDeck } from "../../deck/deck-context"
 
 /**
  * A `[[ROAD-12]]` reference rendered inside a card body: the card's id, then
@@ -12,7 +13,8 @@ import { useCardRef } from "./use-card-refs"
  */
 export function CardRefLink({ displayId }: { displayId: string }) {
   const [, navigate] = useLocation()
-  const ref = useCardRef(displayId)
+  const { id: deckId, prefix } = useDeck()
+  const ref = useCardRef(deckId, prefix, displayId)
 
   if (!ref)
     return (

@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { generateKeyBetween } from "fractional-indexing"
 import { useLocation } from "wouter"
 import { sync } from "@doska/core/sync"
+import { setLastBoard, useLastBoard } from "@doska/core/last-board"
 import { useDashboards } from "@doska/core/queries"
 import { useDashboardNav } from "@/lib/hooks/use-dashboard-nav"
 import type { Dashboard } from "@doska/core/types"
-
-/** localStorage key holding the id of the board that was open most recently. */
-const LAST_BOARD_KEY = "doska:last-board"
 
 /**
  * Resolves the dashboard for the open route: the list, the active board (or a
@@ -31,12 +29,10 @@ export function useActiveDashboard(deckId?: string) {
   }
 
   // The board open most recently, surfaced on Home as a "continue editing"
-  // shortcut. Seeded from storage, then tracked in state — storage is the
-  // cross-session copy, not something to re-read every render.
-  const [lastBoardId, setLastBoardId] = useState(
-    () => deckId ?? localStorage.getItem(LAST_BOARD_KEY)
-  )
-  if (deckId && deckId !== lastBoardId) setLastBoardId(deckId)
+  // shortcut. The open board wins over the remembered one, which is still the
+  // previous board until the effect below records this one.
+  const remembered = useLastBoard()
+  const lastBoardId = deckId ?? remembered
 
   // Resolved against the live list so a deleted board never lingers.
   const lastBoard = lastBoardId
@@ -51,7 +47,7 @@ export function useActiveDashboard(deckId?: string) {
 
   // Remember the open board so Home can offer to reopen it.
   useEffect(() => {
-    if (deckId) localStorage.setItem(LAST_BOARD_KEY, deckId)
+    if (deckId) setLastBoard(deckId)
   }, [deckId])
 
   // Point background sync at the open board (and reconcile on switch).

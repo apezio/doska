@@ -1,4 +1,4 @@
-import { ExternalLink } from "lucide-react-native"
+import ExternalLink from "lucide-react-native/icons/external-link"
 import { Linking } from "react-native"
 import { SidebarButton } from "./sidebar-button"
 

@@ -1,7 +1,7 @@
 import { IconButton } from "@doska/ui-kit-mobile"
 import { DrawerActions } from "@react-navigation/native"
 import { useNavigation } from "expo-router"
-import { Menu } from "lucide-react-native"
+import Menu from "lucide-react-native/icons/menu"
 import type { ReactNode } from "react"
 import { Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"

@@ -5,7 +5,9 @@ import {
 } from "@doska/core/operations"
 import { Button } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
-import { Columns3, LayoutDashboard, StickyNote } from "lucide-react-native"
+import Columns3 from "lucide-react-native/icons/columns-3"
+import LayoutDashboard from "lucide-react-native/icons/layout-dashboard"
+import StickyNote from "lucide-react-native/icons/sticky-note"
 import { Text, View } from "react-native"
 
 const ICONS: Record<TrashKind, typeof StickyNote> = {

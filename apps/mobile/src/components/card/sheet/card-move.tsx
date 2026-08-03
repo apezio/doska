@@ -2,7 +2,7 @@ import { useMoveCardToColumn } from "@doska/core/mutations"
 import { useBoard, useCard, useCardDeck } from "@doska/core/queries"
 import { byPosition } from "@doska/core/utils"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
-import { Check } from "lucide-react-native"
+import Check from "lucide-react-native/icons/check"
 import { Pressable, Text, View } from "react-native"
 import { ColumnSwatch } from "@/components/column/column-swatch"
 

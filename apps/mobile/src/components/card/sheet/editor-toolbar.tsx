@@ -1,19 +1,17 @@
 import type { SlashCommand } from "@doska/markdown"
 import { Frosted } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
-import {
-  Code,
-  Eye,
-  Heading1,
-  Heading2,
-  Heading3,
-  Link,
-  ListChecks,
-  Minus,
-  Scissors,
-  TextQuote,
-  type LucideIcon,
-} from "lucide-react-native"
+import type { LucideIcon } from "lucide-react-native"
+import Code from "lucide-react-native/icons/code"
+import Eye from "lucide-react-native/icons/eye"
+import Heading1 from "lucide-react-native/icons/heading-1"
+import Heading2 from "lucide-react-native/icons/heading-2"
+import Heading3 from "lucide-react-native/icons/heading-3"
+import Link from "lucide-react-native/icons/link"
+import ListChecks from "lucide-react-native/icons/list-checks"
+import Minus from "lucide-react-native/icons/minus"
+import Scissors from "lucide-react-native/icons/scissors"
+import TextQuote from "lucide-react-native/icons/text-quote"
 import type { ReactNode } from "react"
 import { Pressable, ScrollView, Text, View } from "react-native"
 

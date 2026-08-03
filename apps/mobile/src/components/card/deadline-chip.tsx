@@ -6,7 +6,7 @@ import {
 import { DEADLINE } from "@doska/tokens/deadline"
 import { Chip } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
-import { Calendar } from "lucide-react-native"
+import Calendar from "lucide-react-native/icons/calendar"
 import { Text } from "react-native"
 
 /** Matches the web's `CHIP_BY_STATUS`, minus the hover state. */

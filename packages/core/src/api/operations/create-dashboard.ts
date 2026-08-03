@@ -3,12 +3,13 @@ import { derivePrefix } from "@doska/contract/prefix"
 import { BOARD_COLUMNS } from "../../seed"
 import type { Dashboard } from "../../types"
 import { db } from "../db/db"
+import { newId } from "./new-id"
 import { sync } from "../sync"
 import { stamp } from "../sync/hlc"
 
 /** Creates a board with the default columns, appends it to the list, returns it. */
 export async function createDashboard(name: string): Promise<Dashboard> {
-  const id = `board-${crypto.randomUUID().slice(0, 8)}`
+  const id = newId("board")
   const list = await db.getDashboards()
   const last = list.reduce<string | null>(
     (max, d) => (max === null || d.position > max ? d.position : max),
@@ -33,7 +34,7 @@ export async function createDashboard(name: string): Promise<Dashboard> {
     BOARD_COLUMNS.map(async (template) => {
       const column = {
         ...template,
-        id: `col-${crypto.randomUUID().slice(0, 8)}`,
+        id: newId("col"),
         dashboardId: id,
         updatedAt: stamp(),
         deletedAt: null,

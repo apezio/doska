@@ -40,7 +40,8 @@
     "@orpc/contract": "^1.14.12",
     "@tanstack/react-query": "5.101.4",
     "better-auth": "^1.6.25",
-    "fractional-indexing": "^3.2.0"
+    "fractional-indexing": "^3.2.0",
+    "uuid": "^14.0.1"
   },
   "peerDependencies": {
     "react": "^19"

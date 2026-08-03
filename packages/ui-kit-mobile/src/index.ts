@@ -1,5 +1,4 @@
 export { Button } from "./button"
-export { Calendar } from "./calendar"
 export { Checkbox } from "./checkbox"
 export { Chip } from "./chip"
 export { ConfirmBody } from "./confirm-body"

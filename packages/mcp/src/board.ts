@@ -17,8 +17,9 @@ const live = <T extends Record_>(record: T): boolean =>
 const byPosition = (a: Ordered, b: Ordered): number =>
   a.position < b.position ? -1 : a.position > b.position ? 1 : 0
 
+/** 12 hex chars of a v4 uuid — the same id shape the clients mint. */
 export const newId = (prefix: string): string =>
-  `${prefix}-${crypto.randomUUID().slice(0, 8)}`
+  `${prefix}-${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`
 
 /** A fractional index placing a record at either end of its sorted siblings. */
 export function positionAt(

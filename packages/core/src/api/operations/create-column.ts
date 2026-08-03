@@ -1,5 +1,6 @@
 import { generateKeyBetween } from "fractional-indexing"
 import { db } from "../db/db"
+import { newId } from "./new-id"
 import { live } from "./live"
 import { sync } from "../sync"
 import { stamp } from "../sync/hlc"
@@ -9,7 +10,7 @@ export async function createColumn(
   dashboardId: string,
   title: string
 ): Promise<string> {
-  const id = `col-${crypto.randomUUID().slice(0, 8)}`
+  const id = newId("col")
   const columns = (await db.getColumns()).filter(
     (c) => c.dashboardId === dashboardId && live(c)
   )

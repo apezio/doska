@@ -1,9 +1,8 @@
 import { cardDisplayId } from "@doska/contract/prefix"
 import { useCardCol, useCardDeck } from "@doska/core/queries"
-import { Chip, IconButton } from "@doska/ui-kit-mobile"
+import { Chip } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
-import { MoreHorizontal } from "lucide-react-native"
-import { Text, View } from "react-native"
+import { Pressable, Text, View } from "react-native"
 import { CardMeta } from "@/components/card/card-meta"
 import { ColumnSwatch } from "@/components/column/column-swatch"
 import { ROUTES } from "@/lib/routes"
@@ -25,24 +24,27 @@ export function CardPaneHeader({ cardId, body, deadline, cardNumber }: IProps) {
   return (
     <View className="flex-row items-center gap-4 border-b border-muted px-4 pb-2.5 pt-5">
       <CardMeta
+        cardId={cardId}
         displayId={cardDisplayId(deck?.prefix ?? "", cardNumber) ?? ""}
         body={body}
         deadline={deadline}
         done={column?.done ?? false}
       />
       {column ? (
-        <Chip className="bg-muted">
-          <ColumnSwatch color={column.color} />
-          <Text className="text-xs font-sans-medium uppercase text-muted-foreground">
-            {column.title}
-          </Text>
-        </Chip>
+        <Pressable
+          onPress={() => router.push(ROUTES.cardMove(cardId))}
+          accessibilityRole="button"
+          accessibilityLabel={`Column: ${column.title}`}
+          hitSlop={6}
+        >
+          <Chip className="bg-muted">
+            <ColumnSwatch color={column.color} />
+            <Text className="text-xs font-sans-medium uppercase text-muted-foreground">
+              {column.title}
+            </Text>
+          </Chip>
+        </Pressable>
       ) : null}
-      <IconButton
-        icon={MoreHorizontal}
-        label="Card actions"
-        onPress={() => router.push(ROUTES.cardActions(cardId))}
-      />
     </View>
   )
 }

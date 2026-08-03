@@ -3,6 +3,9 @@
 // for the runtime as it is constructed, so the ports have to be in place before
 // any module that touches core is evaluated.
 
+// `uuid` reads `crypto.getRandomValues`, which React Native has no global for.
+import "react-native-get-random-values"
+
 import { installRuntime, type Runtime } from "@doska/core"
 import { mobileAuth } from "./mobile-auth"
 import { mobileDb } from "./mobile-db"

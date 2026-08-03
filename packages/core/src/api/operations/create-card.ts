@@ -1,13 +1,14 @@
 import { generateKeyBetween } from "fractional-indexing"
 import { fallbackCard } from "../../seed"
 import { db } from "../db/db"
+import { newId } from "./new-id"
 import { live } from "./live"
 import { sync } from "../sync"
 import { stamp } from "../sync/hlc"
 
 /** Creates an empty card at the top of a column and returns its new id. */
 export async function createCard(columnId: string): Promise<string> {
-  const id = `card-${crypto.randomUUID().slice(0, 8)}`
+  const id = newId("card")
   const cards = await db.getCards(columnId)
   const first = cards
     .filter(live)

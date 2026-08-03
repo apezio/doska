@@ -46,7 +46,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <AppGate>
-          <StatusBar style="auto" />
+          <StatusBar style={tokens.dark ? "light" : "dark"} />
           <Stack screenOptions={headerOptions}>
             <Stack.Screen
               name={SCREENS.drawer}

@@ -3,8 +3,9 @@ import {
   renderMarkdown,
   useMarkdownRenderers,
 } from "@doska/markdown"
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { useMemo, type ReactNode } from "react"
-import { useColorScheme, View } from "react-native"
+import { View } from "react-native"
 import { createNativeAdapter } from "./native-adapter"
 
 interface IProps {
@@ -22,9 +23,7 @@ interface IProps {
  * caller applies any markers first — this draws whatever markdown it is given.
  */
 export function MarkdownView({ children, onToggleTask }: IProps) {
-  // Only the tag palette needs the scheme as a value; everything else themes
-  // itself through the `dark:` variants NativeWind resolves.
-  const dark = useColorScheme() === "dark"
+  const { dark } = useTokens()
   const renderers = useMarkdownRenderers()
 
   const content: ReactNode[] = useMemo(() => {

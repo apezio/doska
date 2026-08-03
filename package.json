@@ -14,6 +14,7 @@
     "desktop": "pnpm --filter desktop dev",
     "mobile": "pnpm --filter mobile dev",
     "mobile-device": "pnpm --filter mobile exec expo run:ios --device",
+    "mobile-install": "pnpm --filter mobile exec expo run:ios --device --configuration Release",
     "lint": "turbo run lint",
     "type-check": "turbo run typecheck",
     "test": "turbo run test --filter=!desktop",

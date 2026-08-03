@@ -1,9 +1,4 @@
 {
   "extends": "@doska/configs/tsconfig/node.json",
-  "compilerOptions": {
-    // `@doska/markdown` is consumed as source and its renderer half is TSX,
-    // even though nothing here renders anything.
-    "jsx": "react-jsx"
-  },
   "include": ["src"]
 }

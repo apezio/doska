@@ -1,6 +1,6 @@
 import type { Card } from "@doska/contract"
 import { cardDisplayId } from "@doska/contract/prefix"
-import { taskProgress } from "@doska/markdown"
+import { taskProgress } from "@doska/markdown/core"
 
 /**
  * How a card goes back to a client: the ids it can be addressed by, its

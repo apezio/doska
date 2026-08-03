@@ -1,9 +1,11 @@
 import { bootstrapClient } from "@doska/core/bootstrap"
-import { Spinner } from "@doska/ui-kit-mobile"
 import { useFonts } from "expo-font"
+import * as SplashScreen from "expo-splash-screen"
 import { type ReactNode, useEffect, useState } from "react"
 import { Text, View } from "react-native"
 import { FONTS } from "@/lib/fonts"
+
+SplashScreen.preventAutoHideAsync()
 
 interface IProps {
   children: ReactNode
@@ -15,6 +17,7 @@ export function AppGate({ children }: IProps) {
   const [ready, setReady] = useState(false)
   const [failure, setFailure] = useState<Error | null>(null)
   const [fontsLoaded] = useFonts(FONTS)
+  const settled = failure !== null || (ready && fontsLoaded)
 
   useEffect(() => {
     bootstrapClient().then(
@@ -22,6 +25,11 @@ export function AppGate({ children }: IProps) {
       (error: Error) => setFailure(error)
     )
   }, [])
+
+  // Runs after the frame that renders the children, so nothing blank shows.
+  useEffect(() => {
+    if (settled) SplashScreen.hideAsync()
+  }, [settled])
 
   if (failure) {
     return (
@@ -33,14 +41,8 @@ export function AppGate({ children }: IProps) {
     )
   }
 
-  // Rendering before the fonts resolve flashes the system face and reflows.
-  if (!ready || !fontsLoaded) {
-    return (
-      <View className="flex-1 bg-background">
-        <Spinner />
-      </View>
-    )
-  }
+  // The native splash is still up here, so there is nothing to render.
+  if (!settled) return null
 
   return <>{children}</>
 }

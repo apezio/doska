@@ -1,5 +1,5 @@
 import { cn } from "@doska/ui-kit"
-import { useRef, type ReactNode } from "react"
+import { useRef, type ComponentType } from "react"
 import {
   toggleTaskByIndex,
   useMarkers,
@@ -26,9 +26,11 @@ interface IProps extends React.ComponentProps<"textarea"> {
   isPreview?: boolean
   /**
    * Draws the preview. Rendering markdown is the app's job — it owns the
-   * adapter that turns the parsed body into its own components.
+   * adapter that turns the parsed body into its own components. A component
+   * type, not a function to call: rendered inline, its hooks would join this
+   * component's list and vanish again when the preview closes.
    */
-  renderPreview: (props: PreviewProps) => ReactNode
+  renderPreview: ComponentType<PreviewProps>
   value?: string
   markers?: Marker[]
   onToggleTask?: (value: string) => void
@@ -55,7 +57,7 @@ const NOOP = () => {}
 
 export function MarkdownTextarea({
   isPreview,
-  renderPreview,
+  renderPreview: Preview,
   markers = NO_MARKERS,
   onToggleTask,
   slashMenu,
@@ -94,14 +96,18 @@ export function MarkdownTextarea({
   if (isPreview)
     return (
       <div className={cn("space-y-4 pt-3 select-text", containerClassName)}>
-        {body &&
-          renderPreview({
-            children: body,
-            className: props.className,
-            onToggleTask: onToggleTask
-              ? (index) => onToggleTask(toggleTaskByIndex(value, index))
-              : undefined,
-          })}
+        {body && (
+          <Preview
+            className={props.className}
+            onToggleTask={
+              onToggleTask
+                ? (index) => onToggleTask(toggleTaskByIndex(value, index))
+                : undefined
+            }
+          >
+            {body}
+          </Preview>
+        )}
       </div>
     )
   return (

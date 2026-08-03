@@ -2,8 +2,8 @@ import { cardDisplayId } from "@doska/contract/prefix"
 import { useCardCol, useCardDeck } from "@doska/core/queries"
 import { Chip } from "@doska/ui-kit-mobile"
 import { Text, View } from "react-native"
-import { CardMeta } from "@/components/board/card-meta"
-import { ColumnSwatch } from "@/components/board/column-swatch"
+import { CardMeta } from "@/components/card/card-meta"
+import { ColumnSwatch } from "@/components/column/column-swatch"
 
 interface IProps {
   cardId: string

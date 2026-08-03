@@ -8,9 +8,12 @@ import Sortable, {
   type SortableGridDragEndParams,
   type SortableGridRenderItem,
 } from "react-native-sortables"
-import { BoardCard } from "./board-card"
+import { BoardCard } from "@/components/card/board-card"
 import { ColumnSwatch } from "./column-swatch"
-import { CARD_GAP, useCardGeometry } from "./drag/card-geometry"
+import {
+  CARD_GAP,
+  useCardGeometry,
+} from "@/components/board/drag/card-geometry"
 
 /** Reserved as the scroller's top inset, since the head floats over it. */
 const HEAD_HEIGHT = 60

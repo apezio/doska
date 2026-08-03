@@ -8,15 +8,13 @@ interface ColumnGeometry {
 }
 
 /**
- * Tracks enough of each column to place a card dropped into it from another
- * one. Within a column the sortable owns all of this; across columns it does
- * not, because the dragged card never belongs to the column it lands in.
+ * Places a card dropped into a column it does not belong to — the one case the
+ * sortable cannot work out itself.
  *
- * Only heights are collected, never positions: a sortable lays its cards out
- * by transform, so their own `onLayout` says nothing about where they sit.
- * The column being dropped into is never the one being dragged in, so its
- * cards are in plain order and stacking the heights up from the list's top
- * gives their real positions.
+ * Heights, not positions: a sortable lays its cards out by transform, so their
+ * `onLayout` says nothing about where they sit. The drop target is never the
+ * column being dragged in, so its cards are in plain order and stacking heights
+ * from the list's top gives their real positions.
  */
 export function CardGeometryProvider({ children }: { children: ReactNode }) {
   const columns = useRef<Record<string, ColumnGeometry>>({})

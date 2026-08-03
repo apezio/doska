@@ -1,11 +1,10 @@
 import { useRef } from "react"
-import { runOnJS, useAnimatedReaction } from "react-native-reanimated"
+import { useAnimatedReaction } from "react-native-reanimated"
 import { usePortalContext } from "react-native-sortables"
+import { scheduleOnRN } from "react-native-worklets"
 
 /**
- * Where the lifted card was last seen, in window coordinates. The sortable
- * clears the position as the card is released, so the last one has to be kept
- * to work out what a drop landed on.
+ * Where the lifted card was last seen, in window coordinates.
  */
 export function useDropPoint() {
   const portal = usePortalContext()
@@ -18,7 +17,7 @@ export function useDropPoint() {
   useAnimatedReaction(
     () => portal?.activeItemAbsolutePosition.value ?? null,
     (position) => {
-      if (position) runOnJS(keep)(position)
+      if (position) scheduleOnRN(keep, position)
     }
   )
 

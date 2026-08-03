@@ -4,7 +4,8 @@ import { IconButton, TextField } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { MoreHorizontal } from "lucide-react-native"
 import { useState } from "react"
-import { ScreenHeader } from "@/components/screen-header"
+import { ScreenHeader } from "@/components/shell/screen-header"
+import { ROUTES } from "@/lib/routes"
 
 interface IProps {
   board: Dashboard
@@ -48,7 +49,7 @@ export function BoardHeader({ board }: IProps) {
       <IconButton
         icon={MoreHorizontal}
         label="Board actions"
-        onPress={() => router.push("/board/actions")}
+        onPress={() => router.push(ROUTES.boardActions)}
       />
     </ScreenHeader>
   )

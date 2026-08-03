@@ -8,11 +8,15 @@ export default function BoardDeleteSheet() {
   const { mutate: deleteDashboard } = useDeleteDashboard()
   if (!board) return null
 
+  const description =
+    `"${board.title}" and all of its columns and cards move to the trash, ` +
+    "where they stay restorable for 14 days."
+
   return (
     <SheetScreen>
       <ConfirmBody
         title="Delete board?"
-        description={`"${board.title}" and all of its columns and cards move to the trash, where they stay restorable for 14 days.`}
+        description={description}
         confirmLabel="Delete board"
         onConfirm={() => deleteDashboard(board.id)}
         onClose={() => router.dismissAll()}

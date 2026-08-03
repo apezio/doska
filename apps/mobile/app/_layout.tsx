@@ -3,26 +3,14 @@ import "../global.css"
 import { onSessionExpired } from "@doska/core/auth"
 import { keys } from "@doska/core/keys"
 import { queryClient } from "@doska/core/query-client"
-import { Spinner } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
-import {
-  GeistMono_400Regular,
-  GeistMono_500Medium,
-} from "@expo-google-fonts/geist-mono"
-import {
-  Mulish_400Regular,
-  Mulish_500Medium,
-  Mulish_600SemiBold,
-  Mulish_700Bold,
-} from "@expo-google-fonts/mulish"
 import { QueryClientProvider } from "@tanstack/react-query"
-import { useFonts } from "expo-font"
 import { Stack } from "expo-router"
 import { StatusBar } from "expo-status-bar"
-import { useEffect, useState } from "react"
-import { Text, View } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-import { bootstrap } from "@/lib/bootstrap"
+import { AppGate } from "@/components/shell/app-gate"
+import { FONT } from "@/lib/fonts"
+import { SCREENS } from "@/lib/routes"
 import { restoreTheme } from "@/lib/theme"
 
 onSessionExpired(() => {
@@ -32,99 +20,52 @@ onSessionExpired(() => {
 // Before the first render, so a chosen theme never flashes the device's one.
 restoreTheme()
 
-// Keys become family names, so they must match `fontFamily` in tailwind.config.js.
-const FONTS = {
-  Mulish_400Regular,
-  Mulish_500Medium,
-  Mulish_600SemiBold,
-  Mulish_700Bold,
-  GeistMono_400Regular,
-  GeistMono_500Medium,
-}
-
 export default function RootLayout() {
-  const [ready, setReady] = useState(false)
-  const [failure, setFailure] = useState<Error | null>(null)
-  const [fontsLoaded] = useFonts(FONTS)
   const tokens = useTokens()
 
-  /**
-   * A real sheet: iOS's `UISheetPresentationController`, Android's bottom
-   * sheet. The grabber, the scrim fade, the swipe to dismiss and the height are
-   * all the platform's, so nothing here draws them.
-   *
-   * `fitToContents` measures the route's content, so a sheet body must not
-   * stretch to fill — see `SheetScreen`.
-   */
   const sheetOptions = {
     headerShown: false,
     presentation: "formSheet",
     sheetAllowedDetents: "fitToContents",
     sheetGrabberVisible: true,
     sheetCornerRadius: 24,
-    // The reorder list scrolls within the sheet instead of growing it.
     sheetExpandsWhenScrolledToEdge: false,
     contentStyle: { backgroundColor: tokens.card },
   } as const
 
-  // The native header is not a React Native view, so it takes tokens as values.
   const headerOptions = {
     headerStyle: { backgroundColor: tokens.card },
     headerTitleStyle: {
       color: tokens.foreground,
-      fontFamily: "Mulish_600SemiBold",
+      fontFamily: FONT.sansSemibold,
     },
     headerTintColor: tokens.primary,
   }
 
-  useEffect(() => {
-    bootstrap().then(
-      () => setReady(true),
-      (error: Error) => setFailure(error)
-    )
-  }, [])
-
   return (
-    // The drawer's swipe and its overlay both come from gesture-handler, which
-    // needs this at the very root to receive touches. Both wrappers stay above
-    // the gates: a screen must never mount — even for one render — outside the
-    // provider its hooks read.
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        {failure ? (
-          <View className="flex-1 items-center justify-center bg-background">
-            <Text className="p-6 text-center font-sans text-destructive">
-              {failure.message}
-            </Text>
-          </View>
-        ) : !ready || !fontsLoaded ? (
-          // Rendering before the fonts resolve flashes the system face and reflows.
-          <View className="flex-1 bg-background">
-            <Spinner />
-          </View>
-        ) : (
-          <>
-            <StatusBar style="auto" />
-            <Stack screenOptions={headerOptions}>
-              {/* The sidebar's screens draw their own headers, matching the web's. */}
-              <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-              {/* No bar at all — the toolbar rides the keyboard instead — so
-                  the grabber is the only thing saying it pulls down. */}
-              <Stack.Screen
-                name="card/[id]"
-                options={{ ...sheetOptions, sheetAllowedDetents: [1] }}
-              />
-              <Stack.Screen name="board/actions" options={sheetOptions} />
-              <Stack.Screen name="board/prefix" options={sheetOptions} />
-              <Stack.Screen name="board/reorder" options={sheetOptions} />
-              <Stack.Screen name="board/delete" options={sheetOptions} />
-              <Stack.Screen
-                name="sign-in"
-                options={{ title: "Sync", presentation: "modal" }}
-              />
-            </Stack>
-          </>
-        )}
+        <AppGate>
+          <StatusBar style="auto" />
+          <Stack screenOptions={headerOptions}>
+            <Stack.Screen
+              name={SCREENS.drawer}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={SCREENS.card}
+              options={{ ...sheetOptions, sheetAllowedDetents: [1] }}
+            />
+            <Stack.Screen name={SCREENS.boardActions} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.boardPrefix} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.boardReorder} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.boardDelete} options={sheetOptions} />
+            <Stack.Screen
+              name={SCREENS.signIn}
+              options={{ title: "Sync", presentation: "modal" }}
+            />
+          </Stack>
+        </AppGate>
       </QueryClientProvider>
     </GestureHandlerRootView>
   )

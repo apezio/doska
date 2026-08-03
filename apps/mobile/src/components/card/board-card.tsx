@@ -1,10 +1,9 @@
 import { cardDisplayId } from "@doska/contract/prefix"
-import { useUpdateCard } from "@doska/core/mutations"
 import type { Card } from "@doska/core/types"
-import { cut, toggleTaskByIndex } from "@doska/markdown"
 import { router } from "expo-router"
 import { Pressable, Text, View } from "react-native"
-import { MarkdownView } from "@/components/markdown/markdown-view"
+import { CardPreview } from "@/components/card/card-preview"
+import { ROUTES } from "@/lib/routes"
 import { CardMeta } from "./card-meta"
 
 interface IProps {
@@ -18,14 +17,9 @@ interface IProps {
 
 /** A board card: title, meta row, then the cut-truncated body preview. */
 export function BoardCard({ card, prefix, showBody, done }: IProps) {
-  const { mutate: updateCard } = useUpdateCard(card.id)
-  // `hasMore` is the cut marker having fired: the rest opens in the card view.
-  const { body: preview, applied: hasMore } = cut.cardRender(card.body)
-  const hasBody = preview.trim().length > 0
-
   return (
     <Pressable
-      onPress={() => router.push(`/card/${card.id}`)}
+      onPress={() => router.push(ROUTES.card(card.id))}
       className="gap-2 overflow-hidden rounded-xl border border-card-ring bg-card py-2 active:opacity-70"
     >
       <View className="px-3">
@@ -43,22 +37,7 @@ export function BoardCard({ card, prefix, showBody, done }: IProps) {
         />
       </View>
 
-      {hasBody && showBody ? (
-        <View className="gap-1 border-t border-muted px-3 pt-2">
-          <MarkdownView
-            onToggleTask={(index) =>
-              updateCard({ body: toggleTaskByIndex(card.body, index) })
-            }
-          >
-            {preview}
-          </MarkdownView>
-          {hasMore ? (
-            <Text className="text-[13px] text-muted-foreground">
-              Open to see more
-            </Text>
-          ) : null}
-        </View>
-      ) : null}
+      {showBody && <CardPreview card={card} />}
     </Pressable>
   )
 }

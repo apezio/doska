@@ -9,13 +9,15 @@ export default function BoardPrefixSheet() {
   const { mutate: setPrefix } = useUpdateDashboardPrefix()
   if (!board) return null
 
+  const taken = dashboards
+    .filter((one) => one.id !== board.id)
+    .map((one) => one.prefix ?? "")
+
   return (
     <SheetScreen>
       <PrefixForm
         prefix={board.prefix ?? ""}
-        taken={dashboards
-          .filter((one) => one.id !== board.id)
-          .map((one) => one.prefix ?? "")}
+        taken={taken}
         onCommit={(prefix) => setPrefix({ id: board.id, prefix })}
         // Past the actions sheet underneath, back to the board.
         onClose={() => router.dismissAll()}

@@ -4,13 +4,12 @@ import { Spinner } from "@doska/ui-kit-mobile"
 import { router, useLocalSearchParams } from "expo-router"
 import { useEffect } from "react"
 import { View } from "react-native"
-import { CardPane } from "@/components/card-sheet/card-pane"
+import { CardPane } from "@/components/card/sheet/card-pane"
 
 export default function CardScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { data: card } = useCard(id ?? null)
-  // Flushes its queued write on unmount, which covers every way this sheet
-  // closes — including the swipe down, which is now the only way out.
+  // Flushes its queued write on unmount
   const { queue } = useCardSave()
 
   const deleted = Boolean(card?.deletedAt)

@@ -2,35 +2,24 @@ import { useEffect, useRef } from "react"
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native"
 import type Animated from "react-native-reanimated"
 import {
-  runOnJS,
   scrollTo,
   useAnimatedRef,
   useFrameCallback,
   useSharedValue,
 } from "react-native-reanimated"
 import { usePortalContext } from "react-native-sortables"
+import { scheduleOnRN } from "react-native-worklets"
 
-/**
- * How far sideways a lifted card has to be carried before it counts as being
- * held against that side. Travel rather than a band at the screen's edge: a
- * card is nearly as wide as the screen, so its own edges sit in both bands from
- * the moment it lifts.
- *
- * Small, and in points rather than a share of the screen, because the travel
- * available is only the room left between the finger and the screen edge — a
- * card grabbed near its left side cannot be carried far to the left at all.
- * The dwell is what keeps a wobble from paging the board, not the distance.
- */
+/** Travel, not a band at the screen edge: a card is nearly screen-wide, so it
+ * sits in both bands from the moment it lifts. Small because the room between
+ * finger and screen edge is all there is; the dwell is what filters wobble. */
 const EDGE_TRAVEL = 36
 const DWELL_MS = 450
 
 /**
- * Pages the board while a card is in the air. A column fills the screen, so a
- * card can only reach another column by the board moving under it: hold the
- * card against either side and the next column comes across.
- *
- * The sortable publishes the lifted card's position for its own portal, which
- * is what this reads — there is no second gesture here.
+ * Pages the board while a card is in the air — a column fills the screen, so a
+ * card reaches another column only by the board moving under it. Reads the
+ * position the sortable publishes for its portal; there is no gesture here.
  */
 export function useEdgePaging(columnIds: string[], width: number) {
   const portal = usePortalContext()
@@ -38,12 +27,10 @@ export function useEdgePaging(columnIds: string[], width: number) {
   const edgeSince = useSharedValue(0)
   const ids = useSharedValue(columnIds)
   const pageWidth = useSharedValue(width)
-  // The page this hook has scrolled to, held until the scroll lands, since
-  // until then the offset still reads as the page being left. -1 when the
-  // board is where the user last put it.
+  // -1 while the board is where the user put it. Held until the scroll lands:
+  // until then the offset still reads as the page being left.
   const target = useSharedValue(-1)
-  // Where the card was when it lifted, so its travel can be read off. NaN
-  // while nothing is in the air.
+  // NaN while nothing is in the air.
   const originX = useSharedValue(Number.NaN)
 
   // Frame callbacks capture their closure once, so what they read travels as
@@ -55,12 +42,11 @@ export function useEdgePaging(columnIds: string[], width: number) {
     pageWidth.value = width
   }, [width, pageWidth])
 
-  // The drop handler runs on the JS side and needs to know which column the
-  // card is over, so every page change is mirrored back out.
+  // For the drop handler, which runs on the JS side.
   const page = useRef(0)
-  // The same page for the frame callback. Read off the scroll events rather
-  // than `useScrollViewOffset`, whose ref is still empty on the first render —
-  // the pager only mounts once the board loads.
+  // The same page for the frame callback. Off scroll events rather than
+  // `useScrollViewOffset`, whose ref is still empty on the first render — the
+  // pager mounts only once the board loads.
   const scrolledPage = useSharedValue(0)
 
   function setPage(next: number) {
@@ -105,11 +91,10 @@ export function useEdgePaging(columnIds: string[], width: number) {
     }
     if (now - edgeSince.value < DWELL_MS) return
 
-    // Set, not cleared: holding on at the edge pages again only after another
-    // full dwell, never on the frame the scroll starts.
+    // Set, not cleared: holding on pages again only after another full dwell.
     edgeSince.value = now
     target.value = next
-    runOnJS(setPage)(next)
+    scheduleOnRN(setPage, next)
     scrollTo(pagerRef, next * pageWidth.value, 0, true)
   })
 

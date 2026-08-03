@@ -8,6 +8,7 @@ import type { DrawerContentComponentProps } from "expo-router/drawer"
 import { Anchor, CalendarClock, Plus, Trash2 } from "lucide-react-native"
 import { ScrollView, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { ROUTES } from "@/lib/routes"
 import { selectBoard, useActiveBoard } from "@/lib/use-active-board"
 import { DashboardsList } from "./dashboards-list"
 import { GitHubButton } from "./github-button"
@@ -31,14 +32,14 @@ export function AppSidebar({
 
   // Navigating from inside the drawer does not dismiss it; the drawer is its own
   // navigator and the route change happens underneath it.
-  function go(href: "/" | "/upcoming" | "/trash") {
+  function go(href: (typeof ROUTES)["board" | "upcoming" | "trash"]) {
     router.navigate(href)
     navigation.dispatch(DrawerActions.closeDrawer())
   }
 
   function openBoard(id: string) {
     selectBoard(id)
-    go("/")
+    go(ROUTES.board)
   }
 
   return (
@@ -74,20 +75,20 @@ export function AppSidebar({
           <SidebarButton
             icon={CalendarClock}
             label="Upcoming"
-            isActive={pathname === "/upcoming"}
-            onPress={() => go("/upcoming")}
+            isActive={pathname === ROUTES.upcoming}
+            onPress={() => go(ROUTES.upcoming)}
           />
           <SidebarButton
             icon={Trash2}
             label="Trash"
-            isActive={pathname === "/trash"}
-            onPress={() => go("/trash")}
+            isActive={pathname === ROUTES.trash}
+            onPress={() => go(ROUTES.trash)}
           />
         </View>
 
         <DashboardsList
           dashboards={dashboards}
-          activeDashboardId={pathname === "/" ? deckId : null}
+          activeDashboardId={pathname === ROUTES.board ? deckId : null}
           onSelectDashboard={(dashboard) => openBoard(dashboard.id)}
         />
       </ScrollView>

@@ -71,6 +71,53 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
   },
 ]
 
+// A `/` at the start of input or right after whitespace, followed by the query
+// (any non-whitespace run) up to the caret.
+export const SLASH_TRIGGER = /(?:^|\s)\/(\S*)$/
+
+export interface SlashTrigger {
+  /** Index of the `/` itself. */
+  start: number
+  query: string
+  atLineStart: boolean
+}
+
+/** The `/` trigger the caret sits in, or null when there is none. */
+export function matchSlashTrigger(
+  value: string,
+  caret: number
+): SlashTrigger | null {
+  const before = value.slice(0, caret)
+  const match = SLASH_TRIGGER.exec(before)
+  if (!match) return null
+
+  const start = caret - match[1].length - 1
+  return { start, query: match[1], atLineStart: isLineStart(value, start) }
+}
+
+/** Nothing but whitespace since the previous line break, which block commands require. */
+export function isLineStart(value: string, index: number): boolean {
+  const lineStart = value.lastIndexOf("\n", index - 1) + 1
+  return value.slice(lineStart, index).trim() === ""
+}
+
+/**
+ * A command inserted with no typed trigger, from a toolbar or a floating
+ * button. A block command mid-line is pushed onto a fresh line, so the markdown
+ * stays valid.
+ */
+export function untriggeredInsert(
+  command: SlashCommand,
+  value: string,
+  caret: number
+): { text: string; caretOffset: number } {
+  const atLineStart = caret === 0 || value[caret - 1] === "\n"
+  const prefix =
+    (command.scope ?? "block") === "block" && !atLineStart ? "\n" : ""
+  const { text, caretOffset } = applyInsert(command.insert)
+  return { text: prefix + text, caretOffset: prefix.length + caretOffset }
+}
+
 /** Splits an `insert` template on the `$` caret sentinel. */
 export function applyInsert(insert: string): {
   text: string

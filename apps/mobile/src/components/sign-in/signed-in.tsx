@@ -1,7 +1,7 @@
 import { useLogout } from "@doska/core/mutations"
 import { Button } from "@doska/ui-kit-mobile"
 import { Text, View } from "react-native"
-import { getServerUrl } from "@/lib/adapters/server-url"
+import { getServerUrl } from "@doska/core/server"
 
 interface IProps {
   login: string | null

@@ -1,8 +1,10 @@
 import { cn, deadlineLabel } from "@doska/ui-kit"
-import type { DigestCard } from "@doska/core/operations"
+import type {
+  DigestCard,
+  DigestGroup as Group,
+} from "@doska/core/operations"
 import { longDate, weekday } from "@doska/core/utils"
 import { DigestRow } from "./digest-row"
-import type { Group } from "./group"
 
 /** One date's heading and its cards. */
 export function DigestGroup({

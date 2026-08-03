@@ -1,7 +1,7 @@
 import { useCreateDashboard } from "@doska/core/mutations"
 import { Button, EmptyState, Spinner } from "@doska/ui-kit-mobile"
 import { ScreenHeader } from "@/components/shell/screen-header"
-import { selectBoard } from "@/lib/use-active-board"
+import { setLastBoard } from "@doska/core/last-board"
 
 interface IProps {
   isPending: boolean
@@ -23,7 +23,7 @@ export function NoBoards({ isPending }: IProps) {
             label="Add a dashboard"
             onPress={() =>
               createDashboard("Untitled board", {
-                onSuccess: (created) => selectBoard(created.id),
+                onSuccess: (created) => setLastBoard(created.id),
               })
             }
           />

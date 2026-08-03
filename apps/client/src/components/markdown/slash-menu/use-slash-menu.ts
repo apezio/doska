@@ -4,12 +4,10 @@ import {
   applyInsert,
   DEFAULT_SLASH_COMMANDS,
   filterSlashCommands,
+  SLASH_TRIGGER,
+  untriggeredInsert,
   type SlashCommand,
 } from "@doska/markdown"
-
-// A `/` at the start of input or right after whitespace, followed by the query
-// (any non-whitespace run) up to the caret.
-const TRIGGER_RE = /(?:^|\s)\/(\S*)$/
 
 interface Options {
   value: string
@@ -47,31 +45,25 @@ export function useSlashMenu(
       value,
       onChangeValue,
       enabled,
-      trigger: TRIGGER_RE,
+      trigger: SLASH_TRIGGER,
       triggerLength: 1,
       getItems,
       toInsert,
     })
 
-  /**
-   * Inserts a command at the current caret, without a typed `/` trigger (used
-   * by the mobile floating menu). Block commands are pushed onto a fresh line
-   * when the caret sits mid-line, so the markdown stays valid.
-   */
+  /** Inserts a command at the current caret, without a typed `/` trigger (used
+   * by the mobile floating menu). */
   const insertCommand = useCallback(
     (command: SlashCommand) => {
       const textarea = ref.current
       if (!textarea) return
       textarea.focus()
       const start = textarea.selectionStart
-      const atLineStart = start === 0 || textarea.value[start - 1] === "\n"
-      const prefix =
-        (command.scope ?? "block") === "block" && !atLineStart ? "\n" : ""
-      const { text, caretOffset } = applyInsert(command.insert)
-      spliceAt(start, textarea.selectionEnd, {
-        text: prefix + text,
-        caretOffset: prefix.length + caretOffset,
-      })
+      spliceAt(
+        start,
+        textarea.selectionEnd,
+        untriggeredInsert(command, textarea.value, start)
+      )
     },
     [ref, spliceAt]
   )

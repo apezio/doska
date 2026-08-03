@@ -3,7 +3,7 @@ import { Button, Input } from "@doska/ui-kit-mobile"
 import { useRouter } from "expo-router"
 import { useState } from "react"
 import { Text, View } from "react-native"
-import { getServerUrl, setServerUrl } from "@/lib/adapters/server-url"
+import { getServerUrl, setServerUrl } from "@doska/core/server"
 
 export function SyncSetup() {
   const router = useRouter()

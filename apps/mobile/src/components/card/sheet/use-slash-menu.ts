@@ -2,14 +2,12 @@ import {
   applyInsert,
   DEFAULT_SLASH_COMMANDS,
   filterSlashCommands,
+  matchSlashTrigger,
+  untriggeredInsert,
   type SlashCommand,
 } from "@doska/markdown"
 import { useCallback, useMemo, useState } from "react"
 import type { TextInputSelectionChangeEvent } from "react-native"
-
-// A `/` at the start of input or right after whitespace, followed by the query
-// (any non-whitespace run) up to the caret. Same trigger the web menu uses.
-const TRIGGER_RE = /(?:^|\s)\/(\S*)$/
 
 interface Options {
   value: string
@@ -39,17 +37,10 @@ export function useSlashMenu({
     setSelection(undefined)
   }, [])
 
-  const trigger = useMemo(() => {
-    const before = value.slice(0, caret)
-    const match = TRIGGER_RE.exec(before)
-    if (!match) return null
-    const start = caret - match[1].length - 1
-    return {
-      start,
-      query: match[1],
-      atLineStart: start === 0 || value[start - 1] === "\n",
-    }
-  }, [value, caret])
+  const trigger = useMemo(
+    () => matchSlashTrigger(value, caret),
+    [value, caret]
+  )
 
   const items = useMemo(
     () =>
@@ -79,18 +70,11 @@ export function useSlashMenu({
     [trigger, caret, splice]
   )
 
-  /**
-   * Inserts a command at the caret with no typed trigger, for the toolbar.
-   * Block commands are pushed onto a fresh line when the caret sits mid-line,
-   * so the markdown stays valid.
-   */
+  /** Inserts a command at the caret with no typed trigger, for the toolbar. */
   const insertCommand = useCallback(
     (command: SlashCommand) => {
-      const atLineStart = caret === 0 || value[caret - 1] === "\n"
-      const prefix =
-        (command.scope ?? "block") === "block" && !atLineStart ? "\n" : ""
-      const { text, caretOffset } = applyInsert(command.insert)
-      splice(caret, caret, prefix + text, prefix.length + caretOffset)
+      const { text, caretOffset } = untriggeredInsert(command, value, caret)
+      splice(caret, caret, text, caretOffset)
     },
     [caret, value, splice]
   )

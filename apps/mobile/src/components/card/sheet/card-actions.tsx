@@ -1,6 +1,6 @@
 import { useCard, useCardCol } from "@doska/core/queries"
 import { Separator, SheetItem } from "@doska/ui-kit-mobile"
-import { formatDeadline } from "@doska/ui-kit/deadline"
+import { formatDeadline } from "@doska/core/utils"
 import { router } from "expo-router"
 import { ArrowRightLeft, CalendarClock, Trash2 } from "lucide-react-native"
 import { View } from "react-native"

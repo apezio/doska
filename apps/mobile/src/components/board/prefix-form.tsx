@@ -1,4 +1,4 @@
-import { normalizePrefix } from "@doska/core/operations"
+import { normalizePrefix, validatePrefix } from "@doska/core/operations"
 import { Input, SheetBar, SheetFootnote } from "@doska/ui-kit-mobile"
 import { useState } from "react"
 import { View } from "react-native"
@@ -19,18 +19,10 @@ export function PrefixForm({ prefix, taken, onCommit, onClose }: IProps) {
   const [draft, setDraft] = useState(prefix)
   const [error, setError] = useState<string | null>(null)
 
-  const takenUpper = new Set(
-    taken.filter(Boolean).map((one) => one.toUpperCase())
-  )
-
   function commit() {
-    const next = normalizePrefix(draft)
-    if (!next) {
-      setError("Enter a prefix")
-      return
-    }
-    if (takenUpper.has(next) && next !== prefix.toUpperCase()) {
-      setError(`${next} is taken`)
+    const { prefix: next, error: invalid } = validatePrefix(draft, prefix, taken)
+    if (next === null) {
+      setError(invalid)
       return
     }
     if (next !== prefix) onCommit(next)

@@ -1,12 +1,7 @@
-import { useMemo } from "react"
-import { useQueryClient } from "@tanstack/react-query"
-import type { Card } from "@doska/contract"
 import { cardDisplayId } from "@doska/contract/prefix"
-import type { WikilinkOption } from "@doska/markdown"
-import type { Board } from "@doska/core/types"
-import { keys } from "@doska/core/keys"
-import { useBoard } from "@doska/core/queries"
-import { useDeck } from "../../deck/deck-context"
+import type { Card } from "@doska/contract"
+import { useMemo } from "react"
+import { useBoard } from "./queries"
 
 const NO_CARDS: Card[] = []
 
@@ -18,12 +13,22 @@ function referenceable(cards: Card[], prefix: string) {
   })
 }
 
+export interface CardRefOption {
+  id: string
+  title: string
+  hint: string
+  target: string
+}
+
 /**
  * Cards the `[[` menu can offer, in board order. `excludeCardId` drops the card
  * being edited, since a card referencing itself is never useful.
  */
-export function useCardRefOptions(excludeCardId?: string): WikilinkOption[] {
-  const { id: deckId, prefix } = useDeck()
+export function useCardRefOptions(
+  deckId: string,
+  prefix: string,
+  excludeCardId?: string
+): CardRefOption[] {
   const { data: board } = useBoard(deckId)
   const cards = board?.cards ?? NO_CARDS
 
@@ -51,17 +56,16 @@ export interface ResolvedCardRef {
 
 /**
  * Resolves the display id in a `[[ROAD-12]]` reference back to a card on the
- * open board, with the column it currently sits in. Undefined when the id
+ * same board, with the column it currently sits in. Undefined when the id
  * matches nothing — the card was deleted, or the id was typed by hand and
  * never existed.
  */
-export function useCardRef(displayId: string): ResolvedCardRef | undefined {
-  const { id: deckId, prefix } = useDeck()
-
-  // read from cache
-  const qc = useQueryClient()
-  const board = qc.getQueryData<Board>(keys.board(deckId))
-
+export function useCardRef(
+  deckId: string,
+  prefix: string,
+  displayId: string
+): ResolvedCardRef | undefined {
+  const { data: board } = useBoard(deckId)
   const cards = board?.cards ?? NO_CARDS
   const columns = board?.columns
 
@@ -71,7 +75,8 @@ export function useCardRef(displayId: string): ResolvedCardRef | undefined {
       (entry) => entry.displayId.toLowerCase() === wanted
     )
     if (!match) return undefined
-    const column = columns?.find((c) => c.id === match.card.columnId)
+
+    const column = columns?.find((one) => one.id === match.card.columnId)
     return {
       card: match.card,
       columnTitle: column?.title ?? "",

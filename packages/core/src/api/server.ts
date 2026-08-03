@@ -4,6 +4,31 @@
 import { runtime } from "../runtime"
 import { appFetch } from "./fetch"
 
+const SERVER_URL_KEY = "deck:server-url"
+
+const urlListeners = new Set<() => void>()
+
+export function subscribeServerUrl(listener: () => void): () => void {
+  urlListeners.add(listener)
+  return () => urlListeners.delete(listener)
+}
+
+/**
+ * Where the sync server lives, as the user configured it. Empty on platforms
+ * that have an origin to fall back on (web) and until the sign-in screen sets
+ * it anywhere else, where empty means the app runs purely local.
+ */
+export function getServerUrl(): string {
+  return runtime().kv.get(SERVER_URL_KEY) ?? ""
+}
+
+export function setServerUrl(url: string): void {
+  const trimmed = url.trim().replace(/\/+$/, "")
+  if (trimmed) runtime().kv.set(SERVER_URL_KEY, trimmed)
+  else runtime().kv.remove(SERVER_URL_KEY)
+  for (const listener of urlListeners) listener()
+}
+
 export function subscribeSyncConfig(listener: () => void): () => void {
   return runtime().http.subscribe(listener)
 }

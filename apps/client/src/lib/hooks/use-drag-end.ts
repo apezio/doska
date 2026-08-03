@@ -1,7 +1,6 @@
 import type { DropResult } from "@hello-pangea/dnd"
-import { generateKeyBetween } from "fractional-indexing"
 import type { Board, Card } from "@doska/core/types"
-import { byPosition } from "@doska/core/utils"
+import { byPosition, keyBetween } from "@doska/core/utils"
 
 /**
  * Builds the drop handler for the board: translates a drag result into the
@@ -36,12 +35,11 @@ export function useDragEnd(
 
     // Mint a key strictly between the neighbors — only the moved card changes,
     // so concurrent reorders of other cards never collide with this write.
-    const before = destCards[destination.index - 1]
-    const after = destCards[destination.index]
-    const position = generateKeyBetween(
-      before?.position ?? null,
-      after?.position ?? null
+    const position = keyBetween(
+      destCards[destination.index - 1],
+      destCards[destination.index]
     )
+    if (position === null) return
 
     moveCard([{ ...moved, columnId: destination.droppableId, position }])
   }

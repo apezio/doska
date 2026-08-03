@@ -1,12 +1,3 @@
-/**
- * The `[tag]` pill palette, mirroring the `[data-tag-color]` rules in
- * `@doska/tokens/markdown.css`. The web states them in `oklch()`, which React
- * Native's colour parser does not accept, so they are resolved to sRGB here —
- * change the CSS and these have to be regenerated to match.
- *
- * Index is the slot `remarkTags` assigns; the length must stay
- * `TAG_COLOR_COUNT`.
- */
 export interface TagColor {
   lightBg: string
   lightFg: string
@@ -14,6 +5,14 @@ export interface TagColor {
   darkFg: string
 }
 
+/**
+ * The `[tag]` pill palette as sRGB, mirroring the `[data-tag-color]` rules in
+ * `markdown.css` — the web states them in `oklch()`, which React Native's color
+ * parser does not accept. Change the CSS and these have to be regenerated.
+ *
+ * Index is the slot `remarkTags` assigns; the length must stay
+ * `TAG_COLOR_COUNT`.
+ */
 export const TAG_PALETTE: TagColor[] = [
   {
     lightBg: "#fbeec9",

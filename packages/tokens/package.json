@@ -8,6 +8,9 @@
   ],
   "exports": {
     ".": "./src/index.ts",
+    "./columns": "./src/columns.ts",
+    "./tags": "./src/tags.ts",
+    "./deadline": "./src/deadline.ts",
     "./tokens.css": "./tokens.css",
     "./theme.css": "./theme.css",
     "./markdown.css": "./markdown.css",

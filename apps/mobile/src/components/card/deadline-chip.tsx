@@ -1,10 +1,11 @@
-import { Chip } from "@doska/ui-kit-mobile"
-import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import {
   deadlineRelative,
   deadlineStatus,
   formatDeadline,
-} from "@doska/ui-kit/deadline"
+} from "@doska/core/utils"
+import { DEADLINE } from "@doska/tokens/deadline"
+import { Chip } from "@doska/ui-kit-mobile"
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { Calendar } from "lucide-react-native"
 import { Text } from "react-native"
 
@@ -14,10 +15,6 @@ const CHIP = {
   soon: { box: "bg-deadline-soon", text: "text-deadline-soon-foreground" },
   upcoming: { box: "", text: "text-muted-foreground" },
 }
-
-/** `--deadline-soon-foreground`, which lives in the app's CSS and not in the
- * token set — an icon takes a color, not a class. */
-const SOON_TINT = { light: "#d97706", dark: "#fbbf24" }
 
 interface IProps {
   /** No deadline still renders: the bare calendar is how one gets set. */
@@ -42,9 +39,7 @@ export function DeadlineChip({ value, done }: IProps) {
     status === "overdue"
       ? destructive
       : status === "soon"
-        ? dark
-          ? SOON_TINT.dark
-          : SOON_TINT.light
+        ? DEADLINE[dark ? "dark" : "light"].soonForeground
         : mutedForeground
 
   return (

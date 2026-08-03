@@ -1,16 +1,17 @@
 export { getDashboards } from "./get-dashboards"
 export { getBoard } from "./get-board"
-export { getDigest, upcomingBounds } from "./get-digest"
+export { getDigest, groupByDeadline, upcomingBounds } from "./get-digest"
 export { getCardDeck } from "./get-card-deck"
 export type { CardDeck } from "./get-card-deck"
 export { getCardCol } from "./get-card-col"
-export type { DigestCard, DigestFilter } from "./get-digest"
+export type { DigestCard, DigestFilter, DigestGroup } from "./get-digest"
 export { createDashboard } from "./create-dashboard"
 export { renameDashboard } from "./rename-dashboard"
 export {
   setDashboardPrefix,
   normalizePrefix,
   prefixTaken,
+  validatePrefix,
 } from "./set-dashboard-prefix"
 export { deleteDashboard } from "./delete-dashboard"
 export { createColumn } from "./create-column"
@@ -28,6 +29,6 @@ export { moveCard } from "./move-card"
 export { moveCardToColumn } from "./move-card-to-column"
 export { restore } from "./restore"
 export type { TrashKind } from "./restore"
-export { getTrash } from "./get-trash"
+export { getTrash, expiryLabel } from "./get-trash"
 export type { TrashEntry } from "./get-trash"
 export { purgeExpired } from "./purge-expired"

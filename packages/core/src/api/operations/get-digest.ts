@@ -1,3 +1,4 @@
+import { UPCOMING_DAYS } from "@doska/utils/dates"
 import type { Card, Column } from "../../types"
 import { addDays, byPosition, todayIso } from "../../utils"
 import { db } from "../db/db"
@@ -42,14 +43,11 @@ function targetsByBoard(columns: Column[]) {
 /** Sorts below every real `YYYY-MM-DD`, so it opens an overdue range. */
 const MIN_DATE = ""
 
-/** How far ahead the upcoming range looks. */
-const RANGE_DAYS = 60
-
 /** Inclusive `[from, to]` deadline bounds of the upcoming range: today through
- * `RANGE_DAYS` out. */
+ * `UPCOMING_DAYS` out. */
 export function upcomingBounds(): [string, string] {
   const today = todayIso()
-  return [today, addDays(today, RANGE_DAYS)]
+  return [today, addDays(today, UPCOMING_DAYS)]
 }
 
 /** Inclusive `[from, to]` deadline bounds for a filter, as of today.*/
@@ -96,4 +94,36 @@ export async function getDigest(filter: DigestFilter): Promise<DigestCard[]> {
       },
     ]
   })
+}
+
+export interface DigestGroup {
+  /** The group's deadline, or `""` for the overdue pile that leads the list. */
+  date: string
+  entries: DigestCard[]
+}
+
+/**
+ * Consecutive runs of one date, with everything dated before `today` swept
+ * into a single overdue group ahead of them. `getDigest` returns deadline
+ * order, so a plain pass groups them — no sort, and no map keyed by date. Done
+ * cards never enter the overdue pile: a finished card isn't a missed deadline.
+ */
+export function groupByDeadline(
+  entries: DigestCard[],
+  today = todayIso()
+): DigestGroup[] {
+  const overdue: DigestCard[] = []
+  const groups: DigestGroup[] = []
+  for (const entry of entries) {
+    const date = entry.card.deadline ?? ""
+    if (date < today) {
+      if (!entry.isDone) overdue.push(entry)
+      continue
+    }
+    const last = groups[groups.length - 1]
+    if (last && last.date === date) last.entries.push(entry)
+    else groups.push({ date, entries: [entry] })
+  }
+  if (overdue.length) groups.unshift({ date: "", entries: overdue })
+  return groups
 }

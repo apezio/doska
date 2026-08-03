@@ -1,9 +1,9 @@
+import { useCardRef } from "@doska/core/card-refs"
+import { columnSwatch } from "@doska/tokens/columns"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
 import { Text } from "react-native"
-import { columnSwatch } from "@/components/column/swatch-colors"
 import { ROUTES } from "@/lib/routes"
-import { useCardRef } from "./use-card-refs"
 
 interface IProps {
   deckId: string

@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from "react"
+import { isLineStart } from "@doska/markdown"
 import { getCaretCoords } from "./caret-position"
 import type { MenuItem } from "./menu-item"
 
@@ -103,11 +104,9 @@ export function useTriggerMenu<T extends MenuItem>(
 
     const query = match[1]
     const triggerStart = caret - query.length - triggerLength
-    // Nothing but whitespace since the previous line break puts the trigger at
-    // the start of its line, which some items require.
-    const lineStart = before.lastIndexOf("\n", triggerStart - 1) + 1
-    const atLineStart = before.slice(lineStart, triggerStart).trim() === ""
-    const items = getItems(query, { atLineStart })
+    const items = getItems(query, {
+      atLineStart: isLineStart(before, triggerStart),
+    })
     if (items.length === 0) return setMenu(null)
 
     const { left, top, height } = getCaretCoords(textarea, triggerStart)

@@ -1,9 +1,11 @@
-import { todayIso } from "@doska/ui-kit"
 import { useState } from "react"
-import { type DigestCard, type DigestFilter } from "@doska/core/operations"
+import {
+  groupByDeadline,
+  type DigestCard,
+  type DigestFilter,
+} from "@doska/core/operations"
 import { DigestBody } from "./digest-body"
 import { DigestHeader } from "./digest-header"
-import { group } from "./group"
 
 interface IProps {
   filter: DigestFilter
@@ -29,7 +31,7 @@ export function Digest({
 }: IProps) {
   const [hideDone, setHideDone] = useState(false)
   const visible = hideDone ? entries.filter((e) => !e.isDone) : entries
-  const groups = group(visible, todayIso())
+  const groups = groupByDeadline(visible)
 
   return (
     <div className="flex h-full min-h-0 flex-col">

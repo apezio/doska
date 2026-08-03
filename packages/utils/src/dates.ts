@@ -1,6 +1,12 @@
+// Deadlines are plain `YYYY-MM-DD` calendar dates. This package keeps no
+// runtime dependencies so the server can load it as freely as the clients.
+
 export type DeadlineStatus = "overdue" | "soon" | "upcoming"
 
-/** Local `YYYY-MM-DD` for today, used as the reference point for the status. */
+/** How far ahead the app's upcoming view looks. */
+export const UPCOMING_DAYS = 60
+
+/** Local `YYYY-MM-DD` for today, the reference point for every status below. */
 export function todayIso(): string {
   const d = new Date()
   const month = String(d.getMonth() + 1).padStart(2, "0")
@@ -54,4 +60,26 @@ export function deadlineLabel(iso: string): string {
   if (days === -1) return "yesterday"
   if (days > 1) return `${days} days left`
   return `${-days} days ago`
+}
+
+/** The day a date falls on, spelled out — the label people actually scan for.
+ * Parsed as UTC to match `addDays`, so the weekday can't drift by a day. */
+export function weekday(iso: string): string {
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString(undefined, {
+    weekday: "long",
+    timeZone: "UTC",
+  })
+}
+
+/** A date as `21 August`, ordered by locale — the year tacked on only when it
+ * isn't the current one. Parsed as UTC to match `weekday`. */
+export function longDate(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`)
+  const sameYear = d.getUTCFullYear() === new Date().getFullYear()
+  return d.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "long",
+    year: sameYear ? undefined : "numeric",
+    timeZone: "UTC",
+  })
 }

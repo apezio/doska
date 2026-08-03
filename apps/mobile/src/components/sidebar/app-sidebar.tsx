@@ -9,7 +9,8 @@ import { Anchor, CalendarClock, Plus, Trash2 } from "lucide-react-native"
 import { ScrollView, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { ROUTES } from "@/lib/routes"
-import { selectBoard, useActiveBoard } from "@/lib/use-active-board"
+import { setLastBoard } from "@doska/core/last-board"
+import { useActiveBoard } from "@/lib/use-active-board"
 import { DashboardsList } from "./dashboards-list"
 import { GitHubButton } from "./github-button"
 import { SidebarAccount } from "./sidebar-account"
@@ -38,7 +39,7 @@ export function AppSidebar({
   }
 
   function openBoard(id: string) {
-    selectBoard(id)
+    setLastBoard(id)
     go(ROUTES.board)
   }
 

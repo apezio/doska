@@ -1,8 +1,8 @@
+import { bootstrapClient } from "@doska/core/bootstrap"
 import { Spinner } from "@doska/ui-kit-mobile"
 import { useFonts } from "expo-font"
 import { type ReactNode, useEffect, useState } from "react"
 import { Text, View } from "react-native"
-import { bootstrap } from "@/lib/bootstrap"
 import { FONTS } from "@/lib/fonts"
 
 interface IProps {
@@ -17,7 +17,7 @@ export function AppGate({ children }: IProps) {
   const [fontsLoaded] = useFonts(FONTS)
 
   useEffect(() => {
-    bootstrap().then(
+    bootstrapClient().then(
       () => setReady(true),
       (error: Error) => setFailure(error)
     )

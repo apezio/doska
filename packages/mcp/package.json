@@ -12,7 +12,8 @@
   "dependencies": {
     "@doska/contract": "workspace:*",
     "@doska/markdown": "workspace:*",
-    "@doska/ui-kit": "workspace:*",
+    "@doska/tokens": "workspace:*",
+    "@doska/utils": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "fractional-indexing": "^3.2.0",
     "zod": "^4.4.3"

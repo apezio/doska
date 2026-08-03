@@ -1,7 +1,5 @@
 import "../global.css"
 
-import { onSessionExpired } from "@doska/core/auth"
-import { keys } from "@doska/core/keys"
 import { queryClient } from "@doska/core/query-client"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { QueryClientProvider } from "@tanstack/react-query"
@@ -12,10 +10,6 @@ import { AppGate } from "@/components/shell/app-gate"
 import { FONT } from "@/lib/fonts"
 import { SCREENS } from "@/lib/routes"
 import { restoreTheme } from "@/lib/theme"
-
-onSessionExpired(() => {
-  queryClient.setQueryData(keys.session, { authed: false, login: null })
-})
 
 // Before the first render, so a chosen theme never flashes the device's one.
 restoreTheme()

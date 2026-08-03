@@ -3,7 +3,7 @@ import type { Card, Column, Dashboard } from "@doska/contract"
 import { cardDisplayId } from "@doska/contract/prefix"
 import { z } from "zod"
 import type { Board } from "../board"
-import { addDays, todayIso, UPCOMING_DAYS } from "../dates"
+import { addDays, todayIso, UPCOMING_DAYS } from "@doska/utils/dates"
 import { reply } from "./reply"
 import { shapeCard } from "./shape"
 

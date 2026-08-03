@@ -1,5 +1,5 @@
 import type { Http } from "@doska/ports"
-import { getServerUrl, subscribeServerUrl } from "./server-url"
+import { getServerUrl, subscribeServerUrl } from "@doska/core/server"
 
 /**
  * React Native's `fetch` reaches any origin — there is no CORS to route around,

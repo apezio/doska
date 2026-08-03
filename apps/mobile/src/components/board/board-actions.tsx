@@ -2,7 +2,7 @@ import { useBoard } from "@doska/core/queries"
 import type { Dashboard } from "@doska/core/types"
 import { Separator, SheetItem } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
-import { ArrowRightLeft, Hash, Trash2 } from "lucide-react-native"
+import { ArrowRightLeft, Hash, Plus, Trash2 } from "lucide-react-native"
 import { View } from "react-native"
 import { ROUTES } from "@/lib/routes"
 
@@ -22,6 +22,13 @@ export function BoardActions({ board }: IProps) {
         label="Card prefix"
         trailing={board.prefix ?? ""}
         onPress={() => router.push(ROUTES.boardPrefix)}
+      />
+      {/* The web's trailing "+" column, which a one-column-per-screen board has
+          nowhere to put. */}
+      <SheetItem
+        icon={Plus}
+        label="Add column"
+        onPress={() => router.push(ROUTES.columnNew)}
       />
       <SheetItem
         icon={ArrowRightLeft}

@@ -3,13 +3,16 @@ import type { Card } from "@doska/core/types"
 import { cut, toggleTaskByIndex } from "@doska/markdown"
 import { Text, View } from "react-native"
 import { MarkdownView } from "@/components/markdown/markdown-view"
+import { CardMarkdown } from "./card-markdown"
 
 interface IProps {
   card: Card
+  deckId: string
+  prefix: string
 }
 
 /** The card's body down to the cut marker, or nothing if it has no body. */
-export function CardPreview({ card }: IProps) {
+export function CardPreview({ card, deckId, prefix }: IProps) {
   const { mutate: updateCard } = useUpdateCard(card.id)
   // `hasMore` is the cut marker having fired: the rest opens in the card view.
   const { body: preview, applied: hasMore } = cut.cardRender(card.body)
@@ -18,13 +21,15 @@ export function CardPreview({ card }: IProps) {
 
   return (
     <View className="gap-1 border-t border-muted px-3 pt-2">
-      <MarkdownView
-        onToggleTask={(index) =>
-          updateCard({ body: toggleTaskByIndex(card.body, index) })
-        }
-      >
-        {preview}
-      </MarkdownView>
+      <CardMarkdown deckId={deckId} prefix={prefix}>
+        <MarkdownView
+          onToggleTask={(index) =>
+            updateCard({ body: toggleTaskByIndex(card.body, index) })
+          }
+        >
+          {preview}
+        </MarkdownView>
+      </CardMarkdown>
       {hasMore && (
         <Text className="text-[13px] text-muted-foreground">
           Open to see more

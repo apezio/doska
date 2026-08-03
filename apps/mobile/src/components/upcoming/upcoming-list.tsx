@@ -29,10 +29,11 @@ function sections(cards: DigestCard[]) {
 
 interface IProps {
   cards: DigestCard[]
+  hideDone: boolean
 }
 
-export function UpcomingList({ cards }: IProps) {
-  const grouped = sections(cards)
+export function UpcomingList({ cards, hideDone }: IProps) {
+  const grouped = sections(hideDone ? cards.filter((c) => !c.isDone) : cards)
 
   if (grouped.length === 0) return <EmptyState message="Nothing due." />
 

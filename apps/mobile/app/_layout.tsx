@@ -56,10 +56,17 @@ export default function RootLayout() {
               name={SCREENS.card}
               options={{ ...sheetOptions, sheetAllowedDetents: [1] }}
             />
+            <Stack.Screen name={SCREENS.cardActions} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.cardDeadline} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.cardMove} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.cardDelete} options={sheetOptions} />
             <Stack.Screen name={SCREENS.boardActions} options={sheetOptions} />
             <Stack.Screen name={SCREENS.boardPrefix} options={sheetOptions} />
             <Stack.Screen name={SCREENS.boardReorder} options={sheetOptions} />
             <Stack.Screen name={SCREENS.boardDelete} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.columnNew} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.columnActions} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.columnDelete} options={sheetOptions} />
             <Stack.Screen
               name={SCREENS.signIn}
               options={{ title: "Sync", presentation: "modal" }}

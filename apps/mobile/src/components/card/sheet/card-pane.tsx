@@ -1,5 +1,6 @@
 import type { SlashCommand } from "@doska/markdown"
 import type { Card } from "@doska/core/types"
+import { useCardDeck } from "@doska/core/queries"
 import { TextField } from "@doska/ui-kit-mobile"
 import { useEffect, useRef, useState } from "react"
 import { ScrollView, View } from "react-native"
@@ -23,6 +24,7 @@ interface IProps {
 export function CardPane({ cardId, content, onQueue }: IProps) {
   const insets = useSafeAreaInsets()
   const keyboard = useKeyboardHeight()
+  const { data: deck } = useCardDeck(cardId)
 
   const [draft, setDraft] = useState<Draft>({})
   // Decided at mount, never re-derived: once you type, `content.body` is no
@@ -107,6 +109,8 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
         />
         <CardBody
           body={body}
+          deckId={deck?.id ?? ""}
+          prefix={deck?.prefix ?? ""}
           isPreview={isPreview}
           onChangeBody={(value) => edit({ body: value })}
           onEdit={() => setPreview(false)}

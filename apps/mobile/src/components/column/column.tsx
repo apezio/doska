@@ -1,6 +1,4 @@
 import type { Card, Column as ColumnType } from "@doska/core/types"
-import { Frosted } from "@doska/ui-kit-mobile"
-import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { useCallback } from "react"
 import { Pressable, Text, View } from "react-native"
 import Animated, { useAnimatedRef } from "react-native-reanimated"
@@ -9,18 +7,17 @@ import Sortable, {
   type SortableGridRenderItem,
 } from "react-native-sortables"
 import { BoardCard } from "@/components/card/board-card"
-import { ColumnSwatch } from "./column-swatch"
+import { ColumnHead, HEAD_HEIGHT } from "./column-head"
 import {
   CARD_GAP,
   useCardGeometry,
 } from "@/components/board/drag/card-geometry"
 
-/** Reserved as the scroller's top inset, since the head floats over it. */
-const HEAD_HEIGHT = 60
 /** Held this long without moving, a card lifts instead of the list scrolling. */
 const PICKUP_MS = 250
 
 interface IProps {
+  deckId: string
   column: ColumnType
   cards: Card[]
   prefix: string
@@ -36,6 +33,7 @@ interface IProps {
  * shape the web takes below its `md` breakpoint.
  */
 export function Column({
+  deckId,
   column,
   cards,
   prefix,
@@ -45,7 +43,6 @@ export function Column({
   onDragStart,
   onDragEnd,
 }: IProps) {
-  const { headVeil } = useTokens()
   const showBody = !column.collapsed
   const scrollRef = useAnimatedRef<Animated.ScrollView>()
   const { registerList, registerHeight } = useCardGeometry()
@@ -59,13 +56,14 @@ export function Column({
       >
         <BoardCard
           card={item}
+          deckId={deckId}
           prefix={prefix}
           showBody={showBody}
           done={column.done}
         />
       </View>
     ),
-    [column.id, column.done, prefix, showBody, registerHeight]
+    [column.id, column.done, deckId, prefix, showBody, registerHeight]
   )
 
   return (
@@ -108,37 +106,12 @@ export function Column({
         </View>
       </Animated.ScrollView>
 
-      {/* The web's `sticky top-0` head: `bg-background/80 backdrop-blur-xs`. */}
-      <Frosted
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: HEAD_HEIGHT,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 8,
-          paddingHorizontal: 12,
-          backgroundColor: headVeil,
-        }}
-      >
-        <View className="flex-1 flex-row items-center gap-1.5">
-          <ColumnSwatch color={column.color} />
-          <Text
-            numberOfLines={1}
-            className="text-base font-sans-medium uppercase text-muted-foreground"
-          >
-            {column.title}
-          </Text>
-        </View>
-        <Pressable onPress={onToggleBody} hitSlop={10}>
-          <Text className="text-[13px] font-sans-medium text-muted-foreground">
-            {showBody ? "Hide body" : "Show body"}
-          </Text>
-        </Pressable>
-      </Frosted>
+      <ColumnHead
+        deckId={deckId}
+        column={column}
+        showBody={showBody}
+        onToggleBody={onToggleBody}
+      />
     </View>
   )
 }

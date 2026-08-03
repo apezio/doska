@@ -13,7 +13,14 @@ export const ROUTES = {
   boardPrefix: "/board/prefix",
   boardReorder: "/board/reorder",
   boardDelete: "/board/delete",
+  columnNew: "/column/new",
+  columnActions: (id: string) => `/column/${id}/actions` as const,
+  columnDelete: (id: string) => `/column/${id}/delete` as const,
   card: (id: string) => `/card/${id}` as const,
+  cardActions: (id: string) => `/card/${id}/actions` as const,
+  cardDeadline: (id: string) => `/card/${id}/deadline` as const,
+  cardMove: (id: string) => `/card/${id}/move` as const,
+  cardDelete: (id: string) => `/card/${id}/delete` as const,
 } as const
 
 export const SCREENS = {
@@ -26,5 +33,12 @@ export const SCREENS = {
   boardPrefix: "board/prefix",
   boardReorder: "board/reorder",
   boardDelete: "board/delete",
-  card: "card/[id]",
+  columnNew: "column/new",
+  columnActions: "column/[id]/actions",
+  columnDelete: "column/[id]/delete",
+  card: "card/[id]/index",
+  cardActions: "card/[id]/actions",
+  cardDeadline: "card/[id]/deadline",
+  cardMove: "card/[id]/move",
+  cardDelete: "card/[id]/delete",
 } as const

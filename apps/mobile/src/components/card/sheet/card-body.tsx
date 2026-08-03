@@ -4,25 +4,28 @@ import { useMemo } from "react"
 import {
   Pressable,
   Text,
-  type NativeSyntheticEvent,
-  type TextInputSelectionChangeEventData,
+  type TextInputSelectionChangeEvent,
 } from "react-native"
+import { CardMarkdown } from "@/components/card/card-markdown"
 import { MarkdownView } from "@/components/markdown/markdown-view"
 
 interface IProps {
   body: string
+  /** The card's board, for the `[[ROAD-12]]` refs in its body. */
+  deckId: string
+  prefix: string
   isPreview: boolean
   onChangeBody: (value: string) => void
   /** Fired by tapping the read-only preview. */
   onEdit: () => void
-  onSelectionChange: (
-    e: NativeSyntheticEvent<TextInputSelectionChangeEventData>
-  ) => void
+  onSelectionChange: (e: TextInputSelectionChangeEvent) => void
   selection?: { start: number; end: number }
 }
 
 export function CardBody({
   body,
+  deckId,
+  prefix,
   isPreview,
   onChangeBody,
   onEdit,
@@ -60,11 +63,13 @@ export function CardBody({
 
   return (
     <Pressable onPress={onEdit} className="grow px-4 py-2">
-      <MarkdownView
-        onToggleTask={(index) => onChangeBody(toggleTaskByIndex(body, index))}
-      >
-        {preview}
-      </MarkdownView>
+      <CardMarkdown deckId={deckId} prefix={prefix}>
+        <MarkdownView
+          onToggleTask={(index) => onChangeBody(toggleTaskByIndex(body, index))}
+        >
+          {preview}
+        </MarkdownView>
+      </CardMarkdown>
     </Pressable>
   )
 }

@@ -107,6 +107,7 @@ export function ColumnPager({ board: dashboard }: IProps) {
       {columns.map((column) => (
         <Column
           key={column.id}
+          deckId={deckId}
           column={column}
           width={width}
           prefix={dashboard.prefix ?? ""}

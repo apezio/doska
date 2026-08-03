@@ -5,10 +5,7 @@ import {
   type SlashCommand,
 } from "@doska/markdown"
 import { useCallback, useMemo, useState } from "react"
-import type {
-  TextInputSelectionChangeEventData,
-  NativeSyntheticEvent,
-} from "react-native"
+import type { TextInputSelectionChangeEvent } from "react-native"
 
 // A `/` at the start of input or right after whitespace, followed by the query
 // (any non-whitespace run) up to the caret. Same trigger the web menu uses.
@@ -36,14 +33,11 @@ export function useSlashMenu({
     { start: number; end: number } | undefined
   >(undefined)
 
-  const onSelectionChange = useCallback(
-    (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
-      setCaret(e.nativeEvent.selection.start)
-      // Once the input reports the caret we asked for, hand control back.
-      setSelection(undefined)
-    },
-    []
-  )
+  const onSelectionChange = useCallback((e: TextInputSelectionChangeEvent) => {
+    setCaret(e.nativeEvent.selection.start)
+    // Once the input reports the caret we asked for, hand control back.
+    setSelection(undefined)
+  }, [])
 
   const trigger = useMemo(() => {
     const before = value.slice(0, caret)

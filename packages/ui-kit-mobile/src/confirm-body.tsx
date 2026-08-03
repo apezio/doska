@@ -6,7 +6,11 @@ interface IProps {
   description: string
   confirmLabel: string
   onConfirm: () => void
+  /** Where confirming leaves you. */
   onClose: () => void
+  /** Where cancelling leaves you, when that is somewhere else — confirming can
+   * dismiss a screen that cancelling has to leave standing. */
+  onCancel?: () => void
 }
 
 /** The web's `ConfirmDialog` as an iOS action sheet: the question centred and
@@ -17,6 +21,7 @@ export function ConfirmBody({
   confirmLabel,
   onConfirm,
   onClose,
+  onCancel = onClose,
 }: IProps) {
   return (
     <View>
@@ -39,7 +44,7 @@ export function ConfirmBody({
       />
       {/* Its own group: on iOS the gap is what sets cancel apart. */}
       <View className="h-2" />
-      <SheetAction label="Cancel" role="cancel" onPress={onClose} />
+      <SheetAction label="Cancel" role="cancel" onPress={onCancel} />
     </View>
   )
 }

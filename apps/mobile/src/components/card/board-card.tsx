@@ -8,6 +8,7 @@ import { CardMeta } from "./card-meta"
 
 interface IProps {
   card: Card
+  deckId: string
   prefix: string
   /** The card's column is collapsed, so only the title and meta show. */
   showBody: boolean
@@ -16,7 +17,7 @@ interface IProps {
 }
 
 /** A board card: title, meta row, then the cut-truncated body preview. */
-export function BoardCard({ card, prefix, showBody, done }: IProps) {
+export function BoardCard({ card, deckId, prefix, showBody, done }: IProps) {
   return (
     <Pressable
       onPress={() => router.push(ROUTES.card(card.id))}
@@ -37,7 +38,7 @@ export function BoardCard({ card, prefix, showBody, done }: IProps) {
         />
       </View>
 
-      {showBody && <CardPreview card={card} />}
+      {showBody && <CardPreview card={card} deckId={deckId} prefix={prefix} />}
     </Pressable>
   )
 }

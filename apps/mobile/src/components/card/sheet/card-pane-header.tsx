@@ -1,9 +1,12 @@
 import { cardDisplayId } from "@doska/contract/prefix"
 import { useCardCol, useCardDeck } from "@doska/core/queries"
-import { Chip } from "@doska/ui-kit-mobile"
+import { Chip, IconButton } from "@doska/ui-kit-mobile"
+import { router } from "expo-router"
+import { MoreHorizontal } from "lucide-react-native"
 import { Text, View } from "react-native"
 import { CardMeta } from "@/components/card/card-meta"
 import { ColumnSwatch } from "@/components/column/column-swatch"
+import { ROUTES } from "@/lib/routes"
 
 interface IProps {
   cardId: string
@@ -35,6 +38,11 @@ export function CardPaneHeader({ cardId, body, deadline, cardNumber }: IProps) {
           </Text>
         </Chip>
       ) : null}
+      <IconButton
+        icon={MoreHorizontal}
+        label="Card actions"
+        onPress={() => router.push(ROUTES.cardActions(cardId))}
+      />
     </View>
   )
 }

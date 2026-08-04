@@ -19,7 +19,7 @@ export function BoardPage({ deckId }: IProps) {
 
   return (
     <AppShell deck={deck} cardCloseHref={`~${routes.deck.to(dashboard.id)}`}>
-      <DeckView dashboard={dashboard} />
+      <DeckView key={dashboard.id} dashboard={dashboard} />
     </AppShell>
   )
 }

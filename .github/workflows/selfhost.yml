@@ -1,8 +1,6 @@
 name: Self-host
 
-# Boots the self-host stack from images built out of this checkout and probes
-# it. Without this the Dockerfiles and docker-compose.selfhost.yml are only ever
-# exercised when a release tag publishes them — i.e. too late.
+# Boots the self-host stack from images built out of this checkout and probes it.
 
 # Keep the two path lists identical — Actions does not support YAML anchors.
 on:
@@ -13,10 +11,11 @@ on:
       - "apps/server/**"
       - "packages/**"
       - "docker-compose.selfhost.yml"
+      - "backup.sh"
       - ".dockerignore"
       - "pnpm-lock.yaml"
       - ".github/ci/**"
-      - ".github/scripts/selfhost-smoke.sh"
+      - ".github/scripts/selfhost-*.sh"
       - ".github/workflows/selfhost.yml"
   pull_request:
     paths:
@@ -24,10 +23,11 @@ on:
       - "apps/server/**"
       - "packages/**"
       - "docker-compose.selfhost.yml"
+      - "backup.sh"
       - ".dockerignore"
       - "pnpm-lock.yaml"
       - ".github/ci/**"
-      - ".github/scripts/selfhost-smoke.sh"
+      - ".github/scripts/selfhost-*.sh"
       - ".github/workflows/selfhost.yml"
   workflow_dispatch:
 
@@ -43,7 +43,7 @@ env:
   COMPOSE: docker compose -f docker-compose.selfhost.yml -f .github/ci/selfhost.override.yml
 
 jobs:
-  smoke:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,8 +51,6 @@ jobs:
       - name: Set up Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
-      # amd64 only, unlike the release build: cross-building arm64 under QEMU
-      # would double the runtime for no extra signal about the stack.
       - name: Build server image
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
@@ -73,44 +71,54 @@ jobs:
           cache-from: type=gha,scope=selfhost-web
           cache-to: type=gha,mode=max,scope=selfhost-web
 
-      # A missing AUTH_* must stop the stack rather than boot it unauthenticated.
+      - name: Save images
+        run: |
+          docker save \
+            ghcr.io/${{ github.repository_owner }}/doska-server:ci \
+            ghcr.io/${{ github.repository_owner }}/doska-web:ci \
+            | gzip -1 > /tmp/selfhost-images.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: selfhost-images
+          path: /tmp/selfhost-images.tar.gz
+          retention-days: 1
+          compression-level: 0
+
+  smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: selfhost-images, path: /tmp }
+      - name: Load images
+        run: docker load < /tmp/selfhost-images.tar.gz
+
       - name: Required env vars are enforced
         run: |
           if err=$($COMPOSE --env-file /dev/null config --quiet 2>&1); then
             echo "compose accepted an empty env — AUTH_*/BASE_URL are no longer required" >&2
             exit 1
           fi
-          # It has to fail for that reason, not because the file moved.
           case $err in
             *AUTH_SECRET* | *AUTH_LOGIN* | *BASE_URL*) echo "ok: $err" ;;
             *) echo "compose failed for an unrelated reason: $err" >&2; exit 1 ;;
           esac
 
       - name: Write .env
-        run: |
-          cat > .env <<EOF
-          AUTH_LOGIN=smoke
-          AUTH_PASSWORD=smoke-secret
-          AUTH_SECRET=$(openssl rand -hex 32)
-          POSTGRES_PASSWORD=smoke-postgres
-          BASE_URL=http://127.0.0.1:8080
-          EOF
+        run: ./.github/ci/write-env.sh http://127.0.0.1:8080
 
-      # --wait blocks on the compose healthchecks, which is the boot assertion.
       - name: Start the stack
         run: $COMPOSE up -d --wait
 
       - name: Smoke test
         env:
-          # Explicit, so it keeps matching the BASE_URL written above whatever
-          # the script's own default is.
           BASE: http://127.0.0.1:8080
           AUTH_LOGIN: smoke
           AUTH_PASSWORD: smoke-secret
         run: ./.github/scripts/selfhost-smoke.sh
 
-      # A BASE_URL that deliberately disagrees with the origin we reach it on, so
-      # anything inferred from proxy headers fails the discovery check.
       - name: BASE_URL overrides the inferred origin
         run: |
           sed -i 's|^BASE_URL=.*|BASE_URL=https://doska.ci.test|' .env
@@ -118,9 +126,8 @@ jobs:
           BASE=http://127.0.0.1:8080 EXPECT_BASE_URL=https://doska.ci.test \
             ./.github/scripts/selfhost-smoke.sh discovery
 
-      # A bare DOMAIN would send Caddy to Let's Encrypt for a name that does not
-      # resolve; the http:// scheme turns automatic HTTPS off. So this covers the
-      # proxy chain and leaves certificate issuance untested.
+      # The http:// scheme in DOMAIN turns Caddy's automatic HTTPS off, so this
+      # covers the proxy chain without going to Let's Encrypt for a fake name.
       - name: https profile proxies to the stack
         run: |
           sed -i 's|^BASE_URL=.*|BASE_URL=http://doska.ci.test|' .env
@@ -137,3 +144,106 @@ jobs:
       - name: Tear down
         if: always()
         run: $COMPOSE --profile https down --volumes --remove-orphans
+
+  upgrade:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      # No CI overlay: pull_policy stays `always` and the released images pull.
+      COMPOSE_OLD: docker compose -f docker-compose.selfhost.yml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: selfhost-images, path: /tmp }
+      - name: Load images
+        run: docker load < /tmp/selfhost-images.tar.gz
+
+      - name: Write .env
+        run: ./.github/ci/write-env.sh http://127.0.0.1:8080
+
+      - name: Start the last released version
+        env:
+          DOCKER_IMAGE_TAG: latest
+        run: $COMPOSE_OLD up -d --wait
+
+      - name: Seed data on the old version
+        env:
+          COMPOSE: docker compose -f docker-compose.selfhost.yml
+        run: ./.github/scripts/selfhost-data.sh seed
+
+      - name: Upgrade to this checkout
+        run: $COMPOSE up -d --wait
+
+      - name: Data survived the upgrade
+        run: ./.github/scripts/selfhost-data.sh verify
+
+      - name: Smoke test after the upgrade
+        env:
+          BASE: http://127.0.0.1:8080
+          AUTH_LOGIN: smoke
+          AUTH_PASSWORD: smoke-secret
+        run: ./.github/scripts/selfhost-smoke.sh
+
+      - name: Container logs
+        if: failure()
+        run: $COMPOSE logs --no-color --tail 200
+
+      - name: Tear down
+        if: always()
+        run: $COMPOSE down --volumes --remove-orphans
+
+  restore:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: selfhost-images, path: /tmp }
+      - name: Load images
+        run: docker load < /tmp/selfhost-images.tar.gz
+
+      - name: Write .env
+        run: ./.github/ci/write-env.sh http://127.0.0.1:8080
+
+      - name: Start the stack and seed data
+        run: |
+          $COMPOSE up -d --wait
+          ./.github/scripts/selfhost-data.sh seed
+
+      - name: Back up
+        run: |
+          sh backup.sh
+          ls -l backups/
+
+      - name: Destroy the database
+        run: $COMPOSE down --volumes
+
+      # db only: a running server would migrate and seed the admin account
+      # first, and the dump would land on tables and rows already there.
+      - name: Restore into an empty database
+        run: |
+          $COMPOSE up -d --wait db
+          dump=$(ls -t backups/*.sql.gz | head -1)
+          gunzip -c "$dump" | \
+            $COMPOSE exec -T db psql -U doska -d doska -v ON_ERROR_STOP=1 --quiet
+
+      - name: Start the rest of the stack
+        run: $COMPOSE up -d --wait
+
+      - name: Data came back
+        run: ./.github/scripts/selfhost-data.sh verify
+
+      - name: Smoke test after the restore
+        env:
+          BASE: http://127.0.0.1:8080
+          AUTH_LOGIN: smoke
+          AUTH_PASSWORD: smoke-secret
+        run: ./.github/scripts/selfhost-smoke.sh
+
+      - name: Container logs
+        if: failure()
+        run: $COMPOSE logs --no-color --tail 200
+
+      - name: Tear down
+        if: always()
+        run: $COMPOSE down --volumes --remove-orphans

@@ -4,10 +4,17 @@
 # Runs pg_dump through the db container's local socket, so it needs no app
 # password and works even after POSTGRES_PASSWORD changed. It is a no-op when you
 # use a managed DATABASE_URL (back that up through your provider) or when there
-# is no data volume yet. Restore with:
+# is no data volume yet.
 #
+# Restore into an empty database with only `db` running — a booted server has
+# already migrated the schema and seeded the admin account, and the dump would
+# land on tables and rows that exist:
+#
+#   docker compose -f docker-compose.selfhost.yml down --volumes
+#   docker compose -f docker-compose.selfhost.yml up -d --wait db
 #   gunzip -c backups/doska-XXXX.sql.gz | \
 #     docker compose -f docker-compose.selfhost.yml exec -T db psql -U doska doska
+#   docker compose -f docker-compose.selfhost.yml up -d
 set -eu
 
 COMPOSE_FILE="docker-compose.selfhost.yml"

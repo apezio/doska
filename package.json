@@ -23,6 +23,10 @@
     "e2e:ui": "pnpm --filter @doska/e2e e2e:ui",
     "test:install": "bash .github/scripts/install-test.sh",
     "test:selfhost": "bash .github/scripts/selfhost-smoke.sh",
+    "test:selfhost:data": "bash .github/scripts/selfhost-data.sh",
+    "test:selfhost:upgrade": "bash .github/scripts/selfhost-upgrade.sh",
+    "test:selfhost:restore": "bash .github/scripts/selfhost-restore.sh",
+    "selfhost:down": "docker compose -f docker-compose.selfhost.yml --profile https down --volumes --remove-orphans",
     "upd": "pnpm dlx npm-check-updates --workspaces --root -i"
   },
   "devDependencies": {

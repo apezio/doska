@@ -1,0 +1,142 @@
+name: Self-host
+
+# Boots the self-host stack from images built out of this checkout and probes
+# it. Without this the Dockerfiles and docker-compose.selfhost.yml are only ever
+# exercised when a release tag publishes them — i.e. too late.
+
+# Keep the two path lists identical — Actions does not support YAML anchors.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/client/**"
+      - "apps/server/**"
+      - "packages/**"
+      - "docker-compose.selfhost.yml"
+      - ".dockerignore"
+      - "pnpm-lock.yaml"
+      - ".github/ci/**"
+      - ".github/scripts/selfhost-smoke.sh"
+      - ".github/workflows/selfhost.yml"
+  pull_request:
+    paths:
+      - "apps/client/**"
+      - "apps/server/**"
+      - "packages/**"
+      - "docker-compose.selfhost.yml"
+      - ".dockerignore"
+      - "pnpm-lock.yaml"
+      - ".github/ci/**"
+      - ".github/scripts/selfhost-smoke.sh"
+      - ".github/workflows/selfhost.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: selfhost-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # The tag the compose file resolves to, and what the builds below produce.
+  DOCKER_IMAGE_TAG: ci
+  COMPOSE: docker compose -f docker-compose.selfhost.yml -f .github/ci/selfhost.override.yml
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      # amd64 only, unlike the release build: this is about whether the stack
+      # works, and cross-building arm64 under QEMU would double the runtime.
+      - name: Build server image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          file: apps/server/Dockerfile
+          load: true
+          tags: ghcr.io/${{ github.repository_owner }}/doska-server:ci
+          cache-from: type=gha,scope=selfhost-server
+          cache-to: type=gha,mode=max,scope=selfhost-server
+
+      - name: Build web image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          file: apps/client/Dockerfile
+          load: true
+          tags: ghcr.io/${{ github.repository_owner }}/doska-web:ci
+          cache-from: type=gha,scope=selfhost-web
+          cache-to: type=gha,mode=max,scope=selfhost-web
+
+      # The compose file declares AUTH_* and BASE_URL with `:?`, so a missing one
+      # must stop the stack before it starts rather than booting something
+      # unauthenticated. --env-file /dev/null hides the .env written below.
+      - name: Required env vars are enforced
+        run: |
+          if err=$($COMPOSE --env-file /dev/null config --quiet 2>&1); then
+            echo "compose accepted an empty env — AUTH_*/BASE_URL are no longer required" >&2
+            exit 1
+          fi
+          # It has to fail *for that reason*, not because the file moved.
+          case $err in
+            *AUTH_SECRET* | *AUTH_LOGIN* | *BASE_URL*) echo "ok: $err" ;;
+            *) echo "compose failed for an unrelated reason: $err" >&2; exit 1 ;;
+          esac
+
+      - name: Write .env
+        run: |
+          cat > .env <<EOF
+          AUTH_LOGIN=smoke
+          AUTH_PASSWORD=smoke-secret
+          AUTH_SECRET=$(openssl rand -hex 32)
+          POSTGRES_PASSWORD=smoke-postgres
+          BASE_URL=http://127.0.0.1:8080
+          EOF
+
+      # --wait blocks until every service reports healthy, so the healthchecks in
+      # the compose file are the first assertion: boot, migrations and all.
+      - name: Start the stack
+        run: $COMPOSE up -d --wait
+
+      - name: Smoke test
+        env:
+          AUTH_LOGIN: smoke
+          AUTH_PASSWORD: smoke-secret
+        run: ./.github/scripts/selfhost-smoke.sh
+
+      # Same stack, a BASE_URL that deliberately disagrees with the origin we
+      # reach it on (https vs http, and a different host). Anything inferred from
+      # proxy headers would come back as http://127.0.0.1:8080 and fail here.
+      - name: BASE_URL overrides the inferred origin
+        run: |
+          sed -i 's|^BASE_URL=.*|BASE_URL=https://doska.ci.test|' .env
+          $COMPOSE up -d --wait --force-recreate server
+          EXPECT_BASE_URL=https://doska.ci.test ./.github/scripts/selfhost-smoke.sh discovery
+
+      # The https profile with a plain `DOMAIN=doska.example.com` would send Caddy
+      # to Let's Encrypt for a domain that does not resolve. An explicit http://
+      # scheme turns automatic HTTPS off, which leaves the part worth testing —
+      # that the profile starts and proxies caddy -> web -> server — and leaves
+      # certificate issuance itself uncovered.
+      - name: https profile proxies to the stack
+        run: |
+          sed -i 's|^BASE_URL=.*|BASE_URL=http://doska.ci.test|' .env
+          echo "DOMAIN=http://doska.ci.test" >> .env
+          $COMPOSE --profile https up -d --wait
+          BASE=http://127.0.0.1 HOST_HEADER=doska.ci.test \
+            EXPECT_BASE_URL=http://doska.ci.test \
+            ./.github/scripts/selfhost-smoke.sh api web discovery
+
+      - name: Container logs
+        if: failure()
+        run: $COMPOSE --profile https logs --no-color --tail 200
+
+      - name: Tear down
+        if: always()
+        run: $COMPOSE --profile https down --volumes --remove-orphans

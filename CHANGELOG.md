@@ -21,12 +21,18 @@
   page and the mobile app.
 - Record ids carry 12 hex characters of a uuid instead of 8. At ten thousand
   records that is a one in 5.6 million chance of a collision, not one in ninety.
+- Columns narrow to their own width from 430px up, so tablets show a deck rather
+  than one full-width column.
 
 ### Fixed
 
 - Markdown preview was called as a function, not rendered, so its hooks landed in
   the editor's hook list and vanished when the preview closed.
 - Dark theme on mobile.
+- A board opened scrolled to its last column, and switching boards kept the
+  previous board's scroll position.
+- A server that could not be reached was reported as being signed out; the
+  failure now surfaces instead of silently signing the account out.
 - Flaky end-to-end specs.
 - End-to-end job ran against a Playwright container older than the pinned
   package, so no browser launched.

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- iOS app prototype: sync and sign-in, boards paged column by column, card editing in a
+  native sheet, drag and drop, upcoming, trash, themes.
+- `mobile-install` builds a release configuration onto a connected device.
+
 ### Changed
 
 - Domain and data layers moved into `@doska/core`, reached through ports the host
@@ -9,12 +15,25 @@
   second platform imports the shared code instead of forking it.
 - Platform-agnostic packages compile without DOM types, so a browser API can no
   longer reach shared code unnoticed.
+- Markdown editing sits in `@doska/markdown` behind an adapter per platform, so
+  both apps share the parser, slash commands, wikilinks and the cut line.
+- Design tokens moved into `@doska/tokens`, shared by the client, the landing
+  page and the mobile app.
+- Record ids carry 12 hex characters of a uuid instead of 8. At ten thousand
+  records that is a one in 5.6 million chance of a collision, not one in ninety.
 
 ### Fixed
 
+- Markdown preview was called as a function, not rendered, so its hooks landed in
+  the editor's hook list and vanished when the preview closed.
+- Dark theme on mobile.
 - Flaky end-to-end specs.
 - End-to-end job ran against a Playwright container older than the pinned
   package, so no browser launched.
+
+### Security
+
+- Refreshed transitive dependencies in the lock file.
 
 ## [0.15.0] - 2026-07-30
 

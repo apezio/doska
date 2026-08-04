@@ -25,7 +25,7 @@ export function Column({ children, onAddCard, ...props }: IProps) {
     <div
       role="group"
       aria-label={props.title}
-      className="flex w-full max-w-none shrink-0 snap-center flex-col overflow-y-auto overscroll-y-contain pb-6 md:max-w-sm"
+      className="xs:max-w-sm flex w-full max-w-none shrink-0 snap-center flex-col overflow-y-auto overscroll-y-contain pb-6"
     >
       <ColumnHead {...props} />
       <Droppable droppableId={props.id}>

@@ -12,6 +12,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --breakpoint-xs: 430px;
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: "Mulish Variable", ui-sans-serif, system-ui, sans-serif;

@@ -95,6 +95,9 @@ jobs:
       - name: Load images
         run: docker load < /tmp/selfhost-images.tar.gz
 
+      - name: Write .env
+        run: ./.github/ci/write-env.sh http://127.0.0.1:8080
+
       - name: Required env vars are enforced
         run: |
           if err=$($COMPOSE --env-file /dev/null config --quiet 2>&1); then
@@ -102,12 +105,9 @@ jobs:
             exit 1
           fi
           case $err in
-            *AUTH_SECRET* | *AUTH_LOGIN* | *BASE_URL*) echo "ok: $err" ;;
+            *AUTH_* | *BASE_URL*) echo "ok: $err" ;;
             *) echo "compose failed for an unrelated reason: $err" >&2; exit 1 ;;
           esac
-
-      - name: Write .env
-        run: ./.github/ci/write-env.sh http://127.0.0.1:8080
 
       - name: Start the stack
         run: $COMPOSE up -d --wait

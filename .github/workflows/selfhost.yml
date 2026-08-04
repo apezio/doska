@@ -39,7 +39,6 @@ permissions:
   contents: read
 
 env:
-  # The tag the compose file resolves to, and what the builds below produce.
   DOCKER_IMAGE_TAG: ci
   COMPOSE: docker compose -f docker-compose.selfhost.yml -f .github/ci/selfhost.override.yml
 
@@ -52,8 +51,8 @@ jobs:
       - name: Set up Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
-      # amd64 only, unlike the release build: this is about whether the stack
-      # works, and cross-building arm64 under QEMU would double the runtime.
+      # amd64 only, unlike the release build: cross-building arm64 under QEMU
+      # would double the runtime for no extra signal about the stack.
       - name: Build server image
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
@@ -74,16 +73,14 @@ jobs:
           cache-from: type=gha,scope=selfhost-web
           cache-to: type=gha,mode=max,scope=selfhost-web
 
-      # The compose file declares AUTH_* and BASE_URL with `:?`, so a missing one
-      # must stop the stack before it starts rather than booting something
-      # unauthenticated. --env-file /dev/null hides the .env written below.
+      # A missing AUTH_* must stop the stack rather than boot it unauthenticated.
       - name: Required env vars are enforced
         run: |
           if err=$($COMPOSE --env-file /dev/null config --quiet 2>&1); then
             echo "compose accepted an empty env — AUTH_*/BASE_URL are no longer required" >&2
             exit 1
           fi
-          # It has to fail *for that reason*, not because the file moved.
+          # It has to fail for that reason, not because the file moved.
           case $err in
             *AUTH_SECRET* | *AUTH_LOGIN* | *BASE_URL*) echo "ok: $err" ;;
             *) echo "compose failed for an unrelated reason: $err" >&2; exit 1 ;;
@@ -99,31 +96,31 @@ jobs:
           BASE_URL=http://127.0.0.1:8080
           EOF
 
-      # --wait blocks until every service reports healthy, so the healthchecks in
-      # the compose file are the first assertion: boot, migrations and all.
+      # --wait blocks on the compose healthchecks, which is the boot assertion.
       - name: Start the stack
         run: $COMPOSE up -d --wait
 
       - name: Smoke test
         env:
+          # Explicit, so it keeps matching the BASE_URL written above whatever
+          # the script's own default is.
+          BASE: http://127.0.0.1:8080
           AUTH_LOGIN: smoke
           AUTH_PASSWORD: smoke-secret
         run: ./.github/scripts/selfhost-smoke.sh
 
-      # Same stack, a BASE_URL that deliberately disagrees with the origin we
-      # reach it on (https vs http, and a different host). Anything inferred from
-      # proxy headers would come back as http://127.0.0.1:8080 and fail here.
+      # A BASE_URL that deliberately disagrees with the origin we reach it on, so
+      # anything inferred from proxy headers fails the discovery check.
       - name: BASE_URL overrides the inferred origin
         run: |
           sed -i 's|^BASE_URL=.*|BASE_URL=https://doska.ci.test|' .env
           $COMPOSE up -d --wait --force-recreate server
-          EXPECT_BASE_URL=https://doska.ci.test ./.github/scripts/selfhost-smoke.sh discovery
+          BASE=http://127.0.0.1:8080 EXPECT_BASE_URL=https://doska.ci.test \
+            ./.github/scripts/selfhost-smoke.sh discovery
 
-      # The https profile with a plain `DOMAIN=doska.example.com` would send Caddy
-      # to Let's Encrypt for a domain that does not resolve. An explicit http://
-      # scheme turns automatic HTTPS off, which leaves the part worth testing —
-      # that the profile starts and proxies caddy -> web -> server — and leaves
-      # certificate issuance itself uncovered.
+      # A bare DOMAIN would send Caddy to Let's Encrypt for a name that does not
+      # resolve; the http:// scheme turns automatic HTTPS off. So this covers the
+      # proxy chain and leaves certificate issuance untested.
       - name: https profile proxies to the stack
         run: |
           sed -i 's|^BASE_URL=.*|BASE_URL=http://doska.ci.test|' .env

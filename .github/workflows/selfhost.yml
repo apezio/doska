@@ -192,6 +192,49 @@ jobs:
         if: always()
         run: $COMPOSE down --volumes --remove-orphans
 
+  e2e:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: selfhost-images, path: /tmp }
+      - name: Load images
+        run: docker load < /tmp/selfhost-images.tar.gz
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm --filter @doska/e2e exec playwright install --with-deps chromium
+
+      - name: Write .env
+        run: ./.github/ci/write-env.sh http://127.0.0.1:8080
+
+      - name: Start the stack
+        run: $COMPOSE up -d --wait
+
+      - name: E2E against the containers
+        env:
+          BASE_URL: http://127.0.0.1:8080
+          AUTH_LOGIN: smoke
+          AUTH_PASSWORD: smoke-secret
+        run: pnpm e2e:container
+
+      - name: Container logs
+        if: failure()
+        run: $COMPOSE logs --no-color --tail 200
+
+      - name: Tear down
+        if: always()
+        run: $COMPOSE down --volumes --remove-orphans
+
   restore:
     needs: build
     runs-on: ubuntu-latest

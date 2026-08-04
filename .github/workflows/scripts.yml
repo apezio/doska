@@ -1,0 +1,38 @@
+name: Scripts
+
+# install.sh ships to self-hosters and runs outside every other check in this
+# repo. Hermetic — the docker CLI is stubbed, so no daemon and no network.
+
+# Keep the two path lists identical — Actions does not support YAML anchors.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "install.sh"
+      - "backup.sh"
+      - "docker-compose.selfhost.yml"
+      - ".github/scripts/install-test.sh"
+      - ".github/workflows/scripts.yml"
+  pull_request:
+    paths:
+      - "install.sh"
+      - "backup.sh"
+      - "docker-compose.selfhost.yml"
+      - ".github/scripts/install-test.sh"
+      - ".github/workflows/scripts.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: scripts-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  install-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install.sh cases
+        run: bash .github/scripts/install-test.sh

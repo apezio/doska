@@ -2,13 +2,19 @@ import { test, expect } from "@playwright/test"
 import { addCard, boardTitle, createBoard, deleteBoard } from "../helpers"
 
 test.describe("board lifecycle", () => {
-  test("a created board persists across a reload", async ({ page }) => {
-    await createBoard(page)
-    await expect(boardTitle(page, "Untitled board")).toBeVisible()
+  test(
+    "a created board persists across a reload",
+    {
+      tag: "@container",
+    },
+    async ({ page }) => {
+      await createBoard(page)
+      await expect(boardTitle(page, "Untitled board")).toBeVisible()
 
-    await page.reload()
-    await expect(boardTitle(page, "Untitled board")).toBeVisible()
-  })
+      await page.reload()
+      await expect(boardTitle(page, "Untitled board")).toBeVisible()
+    }
+  )
 
   test("renaming a board persists across a reload", async ({ page }) => {
     // Create the board under test rather than relying on a seeded fixture.

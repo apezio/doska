@@ -5,7 +5,7 @@ import { TEST_CREDENTIALS, signIn, signOut } from "../helpers"
  * The sign-in flow gates sync. These drive it from the sidebar account control
  * exactly as a user would: open the dialog, succeed or fail, and sign back out.
  */
-test.describe("authentication", () => {
+test.describe("authentication", { tag: "@container" }, () => {
   test("wrong credentials show an error and keep the dialog open", async ({
     page,
   }) => {

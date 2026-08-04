@@ -3,8 +3,14 @@ import { expect, type APIRequestContext, type Page } from "@playwright/test"
 /**
  * The single credential pair the e2e API server is booted with (see
  * playwright.config). Sync is gated behind it; local editing is not.
+ *
+ * Overridable because the container run signs in to a self-host stack seeded
+ * from its own .env (see playwright.container.config).
  */
-export const TEST_CREDENTIALS = { login: "e2e", password: "e2e-secret" }
+export const TEST_CREDENTIALS = {
+  login: process.env.AUTH_LOGIN || "e2e",
+  password: process.env.AUTH_PASSWORD || "e2e-secret",
+}
 
 /**
  * Signs the open page in through the UI so its background sync is authorized —

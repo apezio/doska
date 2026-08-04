@@ -21,6 +21,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
     "e2e": "turbo run e2e --filter=!desktop",
     "e2e:ui": "pnpm --filter @doska/e2e e2e:ui",
+    "e2e:container": "pnpm --filter @doska/e2e e2e:container",
     "test:install": "bash .github/scripts/install-test.sh",
     "test:selfhost": "bash .github/scripts/selfhost-smoke.sh",
     "test:selfhost:data": "bash .github/scripts/selfhost-data.sh",

@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test"
 import { addCard, card, column, createBoard } from "../helpers"
 
-test.describe("card lifecycle", () => {
+test.describe("card lifecycle", { tag: "@container" }, () => {
   test("create, edit, persist, then delete a card", async ({ page }) => {
     // Create the board under test rather than relying on a seeded fixture.
     await createBoard(page)

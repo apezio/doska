@@ -37,15 +37,12 @@
 
 ## [0.15.0] - 2026-07-30
 
-### Fixed
-
-- Hybrid logical clock timestamps on writes made through the MCP server, which
-  could order agent edits incorrectly against client edits.
-
-## [0.15.0-beta.4] - 2026-07-29
-
 ### Added
 
+- Trash: deleted boards, columns and cards are recoverable until retention
+  expires.
+- Ticking a row in the upcoming view moves the card to its board's done column.
+- Board and column actions collapsed into overflow menus.
 - Help modal explaining how to mark a card done from the upcoming view when the
   board has no done column.
 - Service worker update prompt for the installed PWA.
@@ -53,76 +50,36 @@
 
 ### Changed
 
+- Landing page content and seed data.
+- At most one done column per board; marking a column done clears the flag from
+  the others.
+- Trash retention cut from 30 to 14 days.
 - MCP server tools cover trash, done columns and card references.
 
 ### Fixed
 
+- PWA manifest served from the landing app.
+- Upcoming view refreshes when changes arrive from another device.
+- `typecheck` now covers the client and landing apps instead of silently passing.
 - Checkbox state in the upcoming view.
 - Board prefix state after renaming a board.
 - Column styles on mobile.
 - macOS traffic lights overlapping the desktop app header.
+- Hybrid logical clock timestamps on writes made through the MCP server, which
+  could order agent edits incorrectly against client edits.
 
 ### Security
 
 - Overrode vulnerable transitive dependencies flagged by Dependabot.
 
-## [0.15.0-beta.3] - 2026-07-28
-
-### Added
-
-- Ticking a row in the upcoming view moves the card to its board's done column.
-- Board and column actions collapsed into overflow menus.
-
-### Changed
-
-- At most one done column per board; marking a column done clears the flag from
-  the others.
-- Trash retention cut from 30 to 14 days.
-
-### Fixed
-
-- Upcoming view refreshes when changes arrive from another device.
-- `typecheck` now covers the client and landing apps instead of silently passing.
-
-## [0.15.0-beta.2] - 2026-07-25
-
-### Added
-
-- Trash: deleted boards, columns and cards are recoverable until retention
-  expires.
-
-### Changed
-
-- Landing page content and seed data.
-
-### Fixed
-
-- PWA manifest served from the landing app.
-
-## [0.15.0-beta.1] - 2026-07-25
-
-Re-tag of [0.14.0] to open the 0.15 beta channel. No functional changes.
-
 ## [0.14.0] - 2026-07-25
 
-### Fixed
-
-- Column width on narrow viewports.
-- Caret and selection handling while editing cards on mobile.
-
-## [0.14.0-beta.6] - 2026-07-24
-
-### Fixed
-
-- List and quote continuation when pressing Enter in the editor.
-- Slash menu placement near the viewport edge.
-- Board prefix input sizing.
-- Sync regression that dropped concurrent updates.
-
-## [0.14.0-beta.5] - 2026-07-24
-
 ### Added
 
+- Beta release channel, published separately from stable.
+- Single click opens a card for editing.
+- Public landing page with SEO metadata and its own deployment.
+- Digest board prototype.
 - Upcoming view: cards from every board ordered by deadline, overdue first.
 - Zoom controls in the desktop app.
 - Additional column colors.
@@ -130,52 +87,25 @@ Re-tag of [0.14.0] to open the 0.15 beta channel. No functional changes.
 
 ### Changed
 
+- Reduced card re-renders on board updates.
 - Digest filters simplified.
 - Mutation layer reorganized around per-entity hooks.
 
 ### Fixed
 
+- Offline banner can be dismissed.
+- Clicking an inline image opens the full-size attachment.
+- Card font color in dark theme.
 - Clearing a deadline from the mobile date picker.
 - Stale IndexedDB version after a schema bump.
 - PWA update prompt firing on every load.
 - Browser zoom breaking board layout.
-
-## [0.14.0-beta.4] - 2026-07-23
-
-### Added
-
-- Digest and upcoming board prototypes.
-
-## [0.14.0-beta.3] - 2026-07-22
-
-### Added
-
-- Public landing page with SEO metadata and its own deployment.
-
-### Fixed
-
-- Card font color in dark theme.
-
-## [0.14.0-beta.2] - 2026-07-21
-
-### Added
-
-- Single click opens a card for editing.
-
-### Changed
-
-- Reduced card re-renders on board updates.
-
-### Fixed
-
-- Offline banner can be dismissed.
-- Clicking an inline image opens the full-size attachment.
-
-## [0.14.0-beta.1] - 2026-07-20
-
-### Added
-
-- Beta release channel, published separately from stable.
+- List and quote continuation when pressing Enter in the editor.
+- Slash menu placement near the viewport edge.
+- Board prefix input sizing.
+- Sync regression that dropped concurrent updates.
+- Column width on narrow viewports.
+- Caret and selection handling while editing cards on mobile.
 
 ## [0.13.0] - 2026-07-20
 

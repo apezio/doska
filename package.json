@@ -20,6 +20,7 @@
     "test": "turbo run test --filter=!desktop",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
     "e2e": "turbo run e2e --filter=!desktop",
+    "e2e:ui": "pnpm --filter @doska/e2e e2e:ui",
     "upd": "pnpm dlx npm-check-updates --workspaces --root -i"
   },
   "devDependencies": {

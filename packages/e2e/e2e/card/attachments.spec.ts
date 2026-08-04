@@ -5,45 +5,10 @@ import {
   cardPanel,
   createBoard,
   editCardBody,
+  mockFileRoutes,
+  PNG,
   signIn,
 } from "../helpers"
-
-const PNG = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M8AAAMBAQDJ/pLvAAAAAElFTkSuQmCC",
-  "base64"
-)
-
-/**
- * The real server 503s without S3 configured, so every test mocks the
- * `/api/files` routes the client's `S3FileStorage` talks to. Must be
- * registered before the action that triggers the request.
- */
-async function mockFileRoutes(page: Page): Promise<void> {
-  let uploads = 0
-  await page.route("**/api/files", async (route) => {
-    uploads += 1
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        key: `att/${uploads}.png`,
-        mime: "image/png",
-        size: PNG.length,
-      }),
-    })
-  })
-  await page.route("**/api/files/**", async (route) => {
-    if (route.request().method() === "DELETE") {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ ok: true }),
-      })
-      return
-    }
-    await route.fulfill({ status: 200, contentType: "image/png", body: PNG })
-  })
-}
 
 async function attachFile(page: Page, name: string): Promise<void> {
   await page

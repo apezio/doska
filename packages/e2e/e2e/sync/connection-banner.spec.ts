@@ -54,11 +54,12 @@ test.describe("connection banner", () => {
   test("shows on Home, where there is no sync pill to fall back on", async ({
     page,
   }) => {
-    // The case the banner exists for. Going offline the moment Home loads
-    // catches the session check mid-flight — an unreachable server must not
-    // read as signed out, which would quietly drop the app to local-only and
-    // take the notice with it.
+    // The case the banner exists for: Home has no sync pill, so this notice is
+    // the only sign sync is down. Wait for the session check to land before
+    // dropping the connection — a load with no session yet reads as signed out,
+    // which is local-only, which has nothing to report.
     await page.goto("/")
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible()
     await page.context().setOffline(true)
 
     await expect(banner(page)).toBeVisible({ timeout: 15_000 })

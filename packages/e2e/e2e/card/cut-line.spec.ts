@@ -20,8 +20,6 @@ async function openNotesWith(page: Page, lines: string[]) {
 }
 
 test.describe("cut line", () => {
-  test.use({ permissions: ["clipboard-read", "clipboard-write"] })
-
   test("cuts the line the caret sits on, without a dangling blank", async ({
     page,
   }) => {
@@ -42,21 +40,34 @@ test.describe("cut line", () => {
     await expect(notes).toHaveValue("one\nthree")
   })
 
-  test("the cut line lands on the clipboard as a whole line", async ({
-    page,
-  }) => {
-    const notes = await openNotesWith(page, ["one", "two", "three"])
-
-    await notes.press("ArrowUp")
-    await notes.press("ControlOrMeta+x")
-
-    // navigator.clipboard is on the real page, not Node's ambient Navigator type.
-    const clipboard = await page.evaluate(() =>
-      (
-        navigator as Navigator & { clipboard: { readText(): Promise<string> } }
-      ).clipboard.readText()
+  // Playwright only recognises the clipboard permissions in chromium — firefox
+  // and webkit reject `clipboard-read` at context creation — so reading the
+  // clipboard back is checked there only. The cut itself is checked everywhere.
+  test.describe("clipboard contents", () => {
+    test.skip(
+      ({ browserName }) => browserName !== "chromium",
+      "clipboard permissions are chromium-only"
     )
-    expect(clipboard).toBe("two\n")
+    test.use({ permissions: ["clipboard-read", "clipboard-write"] })
+
+    test("the cut line lands on the clipboard as a whole line", async ({
+      page,
+    }) => {
+      const notes = await openNotesWith(page, ["one", "two", "three"])
+
+      await notes.press("ArrowUp")
+      await notes.press("ControlOrMeta+x")
+
+      // navigator.clipboard is on the real page, not Node's ambient Navigator type.
+      const clipboard = await page.evaluate(() =>
+        (
+          navigator as Navigator & {
+            clipboard: { readText(): Promise<string> }
+          }
+        ).clipboard.readText()
+      )
+      expect(clipboard).toBe("two\n")
+    })
   })
 
   test("a selection cuts only what's selected", async ({ page }) => {

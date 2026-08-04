@@ -58,29 +58,39 @@ test.describe("dropping and pasting files", () => {
     await expect(cardPanel(page).getByText("nope")).toHaveCount(0)
   })
 
-  test("pasting an image attaches it and writes the markdown at the caret", async ({
-    page,
-  }) => {
-    await signIn(page)
-    await mockFileRoutes(page)
-    await createBoard(page)
-    await addCard(page, "To Do")
-    await card(page, "Untitled card").click()
+  // Firefox drops the files from a ClipboardEvent built in the page: the event
+  // keeps its `clipboardData`, but the DataTransfer arrives with zero files, so
+  // there is nothing for the paste handler to attach.
+  test.describe("paste", () => {
+    test.skip(
+      ({ browserName }) => browserName === "firefox",
+      "synthetic ClipboardEvent carries no files in firefox"
+    )
 
-    const notes = page.getByPlaceholder("Notes")
-    await notes.click()
-    await notes.pressSequentially("before")
+    test("pasting an image attaches it and writes the markdown at the caret", async ({
+      page,
+    }) => {
+      await signIn(page)
+      await mockFileRoutes(page)
+      await createBoard(page)
+      await addCard(page, "To Do")
+      await card(page, "Untitled card").click()
 
-    const transfer = await pngDataTransfer(page, "pasted.png")
-    await pasteInto(notes, transfer)
+      const notes = page.getByPlaceholder("Notes")
+      await notes.click()
+      await notes.pressSequentially("before")
 
-    // The upload lands as an image reference spliced in where the caret was...
-    await expect(notes).toHaveValue(/^before!\[pasted\.png\]\(.+\)$/)
-    // ...and as an attachment on the card. (Matched on the tile: the notes now
-    // carry the same name, so plain text would be ambiguous.)
-    await expect(
-      cardPanel(page).getByRole("button", { name: "pasted.png" })
-    ).toBeVisible()
+      const transfer = await pngDataTransfer(page, "pasted.png")
+      await pasteInto(notes, transfer)
+
+      // The upload lands as an image reference spliced in where the caret was...
+      await expect(notes).toHaveValue(/^before!\[pasted\.png\]\(.+\)$/)
+      // ...and as an attachment on the card. (Matched on the tile: the notes now
+      // carry the same name, so plain text would be ambiguous.)
+      await expect(
+        cardPanel(page).getByRole("button", { name: "pasted.png" })
+      ).toBeVisible()
+    })
   })
 
   test("an attached image is offered as a slash command", async ({ page }) => {

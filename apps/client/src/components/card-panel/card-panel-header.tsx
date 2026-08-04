@@ -27,7 +27,12 @@ export function CardPanelHeader({
       )}
     >
       <div className="flex w-20 justify-start">
-        <Button variant="ghost" size="icon-sm" onClick={onClose}>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Close card"
+          onClick={onClose}
+        >
           <X />
         </Button>
       </div>

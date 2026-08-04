@@ -59,6 +59,18 @@ test.describe("card deep link", () => {
     await expect(card(page, "Close me")).toBeVisible()
   })
 
+  test("the close button does the same as Escape", async ({ page }) => {
+    const deckId = await createBoard(page)
+    await addCard(page, "To Do")
+    await retitleCard(page, "Untitled card", "Close me too")
+
+    await openCard(page, "Close me too")
+    await cardPanel(page).getByRole("button", { name: "Close card" }).click()
+
+    await expect(page).toHaveURL(new RegExp(`/d/${deckId}$`))
+    await expect(page.getByPlaceholder("Title")).toHaveCount(0)
+  })
+
   test("a link to a card that no longer exists leaves the board usable", async ({
     page,
   }) => {

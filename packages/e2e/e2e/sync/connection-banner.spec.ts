@@ -51,16 +51,18 @@ test.describe("connection banner", () => {
     await expect(banner(page)).toBeVisible({ timeout: 15_000 })
   })
 
-  test.fixme("shows on Home, where there is no sync pill to fall back on", async ({
+  test("shows on Home, where there is no sync pill to fall back on", async ({
     page,
   }) => {
-    // Off a board the session check is the only request in flight, and while
-    // offline it fails — which reads as *signed out*, so the connection
-    // reports "local" (deliberately quiet) instead of "dropped". The banner
-    // exists precisely for this screen, so this is the case that matters.
+    // The case the banner exists for. Going offline the moment Home loads
+    // catches the session check mid-flight — an unreachable server must not
+    // read as signed out, which would quietly drop the app to local-only and
+    // take the notice with it.
     await page.goto("/")
     await page.context().setOffline(true)
 
     await expect(banner(page)).toBeVisible({ timeout: 15_000 })
+    // Still signed in, too: the sidebar keeps the account it knows.
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible()
   })
 })

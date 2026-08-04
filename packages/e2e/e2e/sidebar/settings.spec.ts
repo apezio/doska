@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 
-// Its only section (DesktopUpdatesSection) renders nothing on web, so there's just open/close to cover.
+// Just the shell here — what its updates section shows lives in updates.spec.
 test.describe("settings modal", () => {
   test("opens from the sidebar and closes on Escape", async ({ page }) => {
     await page.goto("/")

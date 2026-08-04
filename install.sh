@@ -7,6 +7,12 @@
 # secrets wouldn't match the old data.
 #
 #   curl -fsSL https://raw.githubusercontent.com/romenkova/doska/main/install.sh -o install.sh && sh install.sh
+#
+# Unattended: every question can be answered up front by exporting the variable
+# it writes, and --yes stops it asking anything.
+#
+#   AUTH_LOGIN=admin AUTH_PASSWORD=hunter2 BASE_URL=http://box.local:8080 \
+#     sh install.sh --yes
 set -eu
 
 REPO="romenkova/doska"
@@ -73,19 +79,33 @@ die() { printf '\n%b✗ error:%b %s\n' "$C_RED" "$C_RESET" "$1" >&2; exit 1; }
 # exist yet not be openable when there's no controlling terminal.
 has_tty() { { true < /dev/tty; } 2>/dev/null; }
 
+# Whether a question can be put on screen at all.
+interactive() { [ -z "$YES" ] && has_tty; }
+
+# The indirection is what lets a caller pre-answer a question from the environment.
+preset() { [ -n "$1" ] || return 0; eval "printf '%s' \"\${$1:-}\""; }
+
 ask() {
-  # $1 prompt  $2 default  -> echoes the answer
-  _def="$2"
-  if [ -n "$_def" ]; then printf '%b?%b %s %b[%s]%b: ' "$C_BLUE" "$C_RESET" "$1" "$C_DIM" "$_def" "$C_RESET" > /dev/tty
-  else printf '%b?%b %s: ' "$C_BLUE" "$C_RESET" "$1" > /dev/tty; fi
+  # $1 env var holding a pre-supplied answer ('' if none)  $2 prompt  $3 default
+  # -> echoes the answer
+  _pre=$(preset "$1")
+  if [ -n "$_pre" ]; then printf '%s' "$_pre"; return; fi
+  if ! interactive; then printf '%s' "$3"; return; fi
+  _def="$3"
+  if [ -n "$_def" ]; then printf '%b?%b %s %b[%s]%b: ' "$C_BLUE" "$C_RESET" "$2" "$C_DIM" "$_def" "$C_RESET" > /dev/tty
+  else printf '%b?%b %s: ' "$C_BLUE" "$C_RESET" "$2" > /dev/tty; fi
   IFS= read -r _ans < /dev/tty || _ans=""
   [ -n "$_ans" ] || _ans="$_def"
   printf '%s' "$_ans"
 }
 
 ask_secret() {
-  # $1 prompt -> echoes the answer, input hidden
-  printf '%b?%b %s: ' "$C_BLUE" "$C_RESET" "$1" > /dev/tty
+  # $1 env var holding a pre-supplied answer ('' if none)  $2 prompt
+  # -> echoes the answer, input hidden
+  _pre=$(preset "$1")
+  if [ -n "$_pre" ]; then printf '%s' "$_pre"; return; fi
+  if ! interactive; then return; fi
+  printf '%b?%b %s: ' "$C_BLUE" "$C_RESET" "$2" > /dev/tty
   stty -echo < /dev/tty 2>/dev/null || true
   IFS= read -r _ans < /dev/tty || _ans=""
   stty echo < /dev/tty 2>/dev/null || true
@@ -95,6 +115,9 @@ ask_secret() {
 
 ask_yn() {
   # $1 prompt (default no) -> returns 0 for yes, 1 for no
+  # Never yes unattended: every yes here costs money or discards data. Pre-answer
+  # by setting what the branch collects (DATABASE_URL, S3_BUCKET, ...) instead.
+  interactive || return 1
   printf '%b?%b %s %b[y/N]%b: ' "$C_BLUE" "$C_RESET" "$1" "$C_DIM" "$C_RESET" > /dev/tty
   IFS= read -r _ans < /dev/tty || _ans=""
   case "$_ans" in [Yy]*) return 0 ;; *) return 1 ;; esac
@@ -122,10 +145,41 @@ project_name() {
   basename "$PWD" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-'
 }
 
+# Runs "$@" with a deadline, returning 124 if it outlives it. A daemon that has
+# stopped answering never returns from a docker call, and an installer that
+# hangs with no output is worse than one that gives up.
+DOCKER_TIMEOUT=${DOCKER_TIMEOUT:-10}
+with_timeout() {
+  "$@" &
+  _pid=$!
+  _waited=0
+  while kill -0 "$_pid" 2>/dev/null; do
+    if [ "$_waited" -ge "$DOCKER_TIMEOUT" ]; then
+      kill -TERM "$_pid" 2>/dev/null
+      wait "$_pid" 2>/dev/null
+      return 124
+    fi
+    sleep 1
+    _waited=$((_waited + 1))
+  done
+  wait "$_pid" && return 0 || return $?
+}
+
 # The bundled Postgres persists to <project>_doska-pgdata. Its presence means
 # this install has existing data to protect.
 bundled_volume_exists() {
   docker volume ls -q 2>/dev/null | grep -qx "$(project_name)_doska-pgdata"
+}
+
+# Assumes no existing data when the daemon won't answer. That errs towards the
+# safe branch: no wipe is offered, and backup.sh gets its own chance to fail.
+has_existing_data() {
+  with_timeout bundled_volume_exists && _rc=0 || _rc=$?
+  if [ "$_rc" = 124 ]; then
+    warn "Docker isn't answering — skipping the check for an existing database."
+    return 1
+  fi
+  return "$_rc"
 }
 
 # Dump the bundled db first if there's anything to lose. backup.sh no-ops for a
@@ -134,11 +188,38 @@ bundled_volume_exists() {
 backup_first() {
   if [ ! -f "$BACKUP_FILE" ]; then
     # Missing helper is only a problem when there's actually data to lose.
-    bundled_volume_exists && warn "no $BACKUP_FILE present — skipping backup of the existing database before redeploy."
+    has_existing_data && warn "no $BACKUP_FILE present — skipping backup of the existing database before redeploy."
     return 0
   fi
   sh "$BACKUP_FILE" || die "backup failed — aborting before touching anything."
 }
+
+usage() {
+  cat <<'EOF'
+Usage: sh install.sh [--yes] [--no-start]
+
+  -y, --yes       Never prompt. Questions take their pre-supplied answer (see
+                  below) or their default; AUTH_PASSWORD becomes required.
+    --no-start  Set up .env and stop, without pulling images or starting the
+                  stack. Print the command to start it yourself.
+  -h, --help      This.
+
+Pre-supply any answer by exporting the variable it writes: AUTH_LOGIN,
+AUTH_PASSWORD, BASE_URL, DOMAIN, WEB_PORT, DATABASE_URL, S3_BUCKET, S3_REGION,
+S3_ENDPOINT, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY.
+EOF
+}
+
+YES=${DOSKA_YES:-}
+START=1
+for _arg in "$@"; do
+  case "$_arg" in
+    -y | --yes) YES=1 ;;
+    --no-start) START="" ;;
+    -h | --help) usage; exit 0 ;;
+    *) printf 'unknown option: %s\n\n' "$_arg" >&2; usage >&2; exit 2 ;;
+  esac
+done
 
 logo
 
@@ -189,7 +270,7 @@ else
   # exists, those secrets won't match it and the server gets locked out of the
   # existing data. Stop, back it up, and let the user decide — don't proceed
   # into a broken state.
-  if bundled_volume_exists; then
+  if has_existing_data; then
     warn "Found an existing database volume, but there's no .env in this directory."
     info "Its secrets are gone, so a fresh .env can't unlock it. Best to start clean."
     backup_first
@@ -208,57 +289,66 @@ else
       $DOWN_ENV $COMPOSE -f $COMPOSE_FILE down -v"
     fi
   fi
-  if ! has_tty; then
-    die "no terminal for setup. Download $COMPOSE_FILE and $ENV_FILE manually, edit, then run '$COMPOSE up -d'."
+  if [ -z "$YES" ] && ! has_tty; then
+    die "no terminal for setup. Either re-run with --yes and the answers in the environment (see --help), or download $COMPOSE_FILE and $ENV_FILE manually, edit, then run '$COMPOSE up -d'."
   fi
   info "First-time setup — a few questions:"
   printf '\n'
 
-  LOGIN=$(ask "Admin login" "admin")
+  LOGIN=$(ask AUTH_LOGIN "Admin login" "admin")
 
   PASSWORD=""
   while [ -z "$PASSWORD" ]; do
-    PASSWORD=$(ask_secret "Admin password")
-    [ -n "$PASSWORD" ] || red "password cannot be empty."
+    PASSWORD=$(ask_secret AUTH_PASSWORD "Admin password")
+    if [ -z "$PASSWORD" ]; then
+      interactive || die "set AUTH_PASSWORD for an unattended install."
+      red "password cannot be empty."
+    fi
   done
 
-  DOMAIN=$(ask "Public domain for HTTPS (blank for plain http)" "")
+  DOMAIN=$(ask DOMAIN "Public domain for HTTPS (blank for plain http)" "")
   if [ -n "$DOMAIN" ]; then
     BASE_URL="https://$DOMAIN"
     PROFILE="--profile https"
     WEB_PORT=""
+  elif [ -n "${BASE_URL:-}" ]; then
+    # Answered up front; the publish port can't be read back out of an arbitrary URL.
+    WEB_PORT=${WEB_PORT:-8080}
   else
     # Default to a local-only address. Other devices (desktop app, phone, MCP)
     # can't reach "localhost", so only ask for a real host/port if they will.
-    WEB_PORT="8080"
-    BASE_URL="http://localhost:8080"
+    WEB_PORT=${WEB_PORT:-8080}
+    BASE_URL="http://localhost:$WEB_PORT"
     if ask_yn "Reach this from other devices (not just this machine)"; then
-      HOST=$(ask "  Host or IP this server is reached at" "")
+      HOST=$(ask '' "  Host or IP this server is reached at" "")
       [ -n "$HOST" ] || HOST="localhost"
-      WEB_PORT=$(ask "  Web port" "8080")
+      # No preset name: WEB_PORT already holds one, and `ask` would skip asking.
+      WEB_PORT=$(ask '' "  Web port" "$WEB_PORT")
       BASE_URL="http://$HOST:$WEB_PORT"
     fi
   fi
 
   # Database: bundled Postgres by default. Only ask for a connection string if
   # they bring their own; the bundled one needs nothing from them.
-  DBURL=""
-  if ask_yn "Use your own (managed) Postgres instead of the bundled one"; then
+  DBURL=${DATABASE_URL:-}
+  if [ -z "$DBURL" ] && ask_yn "Use your own (managed) Postgres instead of the bundled one"; then
     while [ -z "$DBURL" ]; do
-      DBURL=$(ask "  DATABASE_URL (postgres://user:pass@host:5432/db)" "")
+      DBURL=$(ask DATABASE_URL "  DATABASE_URL (postgres://user:pass@host:5432/db)" "")
       [ -n "$DBURL" ] || red "connection string cannot be empty."
     done
   fi
 
   # Attachments are opt-in: they need an S3 bucket and credentials the user
-  # sets up elsewhere, so ask once and only expand if they want it.
-  S3_BUCKET=""; S3_REGION=""; S3_ENDPOINT=""; S3_KEY=""; S3_SECRET=""
-  if ask_yn "Enable card file attachments (needs an S3 bucket)"; then
-    S3_BUCKET=$(ask "  S3 bucket name" "")
-    S3_REGION=$(ask "  S3 region" "us-east-1")
-    S3_ENDPOINT=$(ask "  S3 endpoint (blank for AWS; set for R2/MinIO)" "")
-    S3_KEY=$(ask "  Access key ID" "")
-    S3_SECRET=$(ask_secret "  Secret access key")
+  # sets up elsewhere, so ask once and only expand if they want it. Clearing
+  # these instead of defaulting would throw a pre-supplied answer away.
+  S3_BUCKET=${S3_BUCKET:-}; S3_REGION=${S3_REGION:-}; S3_ENDPOINT=${S3_ENDPOINT:-}
+  S3_KEY=""; S3_SECRET=""
+  if [ -n "$S3_BUCKET" ] || ask_yn "Enable card file attachments (needs an S3 bucket)"; then
+    S3_BUCKET=$(ask S3_BUCKET "  S3 bucket name" "")
+    S3_REGION=$(ask S3_REGION "  S3 region" "us-east-1")
+    S3_ENDPOINT=$(ask S3_ENDPOINT "  S3 endpoint (blank for AWS; set for R2/MinIO)" "")
+    S3_KEY=$(ask AWS_ACCESS_KEY_ID "  Access key ID" "")
+    S3_SECRET=$(ask_secret AWS_SECRET_ACCESS_KEY "  Secret access key")
   fi
 
   SECRET=$(gen_secret)
@@ -294,6 +384,12 @@ else
 fi
 
 # --- 4. launch ---------------------------------------------------------------
+if [ -z "$START" ]; then
+  step "Not launching" "--no-start: everything is configured, nothing is running."
+  printf '\n  Start it when ready:\n    %s -f %s %s up -d\n\n' "$COMPOSE" "$COMPOSE_FILE" "$PROFILE"
+  exit 0
+fi
+
 step "Launching" "Backs up any existing data, pulls the latest images, and starts the stack."
 backup_first  # no-op on first install and for managed Postgres
 

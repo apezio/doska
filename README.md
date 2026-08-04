@@ -114,11 +114,16 @@ If your boards live in the bundled Postgres, dump it to `./backups/` any time:
 ```
 
 `install.sh` also runs this automatically before it redeploys over an existing
-database. Restore a dump with:
+database. Restore a dump into an empty database, with only `db` running — a
+booted server has already created the schema and the admin account, and the dump
+would land on top of them:
 
 ```sh
+docker compose -f docker-compose.selfhost.yml down --volumes
+docker compose -f docker-compose.selfhost.yml up -d --wait db
 gunzip -c backups/doska-XXXX.sql.gz | \
   docker compose -f docker-compose.selfhost.yml exec -T db psql -U doska doska
+docker compose -f docker-compose.selfhost.yml up -d
 ```
 
 (If you use a managed `DATABASE_URL`, back it up through your provider instead —

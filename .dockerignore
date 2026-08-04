@@ -11,3 +11,10 @@
 **/playwright-report
 **/playwright/.cache
 **/*.tsbuildinfo
+**/src-tauri/target
+**/src-tauri/gen
+apps/mobile/ios
+apps/mobile/android
+**/.expo
+backups
+**/.DS_Store

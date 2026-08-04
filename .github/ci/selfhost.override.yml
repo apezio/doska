@@ -1,0 +1,6 @@
+# CI overlay for docker-compose.selfhost.yml.
+services:
+  server:
+    pull_policy: never
+  web:
+    pull_policy: never

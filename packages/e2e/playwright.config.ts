@@ -19,9 +19,6 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  // Retry locally too (not just on CI): a test that only passes on retry is
-  // reported as "flaky", which surfaces the race instead of letting it slip
-  // through green and reappear on CI.
   retries: process.env.CI ? 2 : 1,
   reporter: "list",
   use: {
@@ -30,10 +27,16 @@ export default defineConfig({
     // the fact (`npx playwright show-trace`), without the cost on green runs.
     trace: "retain-on-failure",
     actionTimeout: 10_000,
+    serviceWorkers: "block",
   },
-  projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-  ],
+  // CI runs chromium only; firefox/webkit are for local cross-browser checks.
+  projects: process.env.CI
+    ? [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }]
+    : [
+        { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+        { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+        { name: "webkit", use: { ...devices["Desktop Safari"] } },
+      ],
   webServer: [
     {
       // Sync API. No DB_FILE, so PGlite runs in-memory and each boot starts from

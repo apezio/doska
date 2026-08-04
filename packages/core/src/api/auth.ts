@@ -19,16 +19,18 @@ export function sessionExpired(): void {
   for (const listener of expiryListeners) listener()
 }
 
-/** Resolves the current session against the server. */
+const SIGNED_OUT: Session = { authed: false, login: null }
+
 export async function fetchSession(): Promise<Session> {
-  if (!isSyncConfigured()) return { authed: false, login: null }
-  try {
-    const { data } = await authClient().getSession()
-    if (!data) return { authed: false, login: null }
-    return { authed: true, login: data.user.username ?? null }
-  } catch {
-    return { authed: false, login: null }
+  if (!isSyncConfigured()) return SIGNED_OUT
+
+  const { data, error } = await authClient().getSession()
+  if (error) {
+    if (error.status === 401 || error.status === 403) return SIGNED_OUT
+    throw new Error(error.message ?? "Could not reach the server")
   }
+  if (!data) return SIGNED_OUT
+  return { authed: true, login: data.user.username ?? null }
 }
 
 /** The one account is seeded with a login, not an email — hence `username`. */

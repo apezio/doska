@@ -23,33 +23,33 @@ test.describe("dashboard list sync", () => {
     await authenticate(request)
   })
 
+  // Every project runs against the same backend and the same account, so the
+  // sidebar also holds the boards the other projects' runs created — a fixed
+  // name matches more than one of them.
   test("a board another client creates appears in the sidebar", async ({
     page,
     request,
+    browserName,
   }) => {
-    await remoteCreateDashboard(request, "Teammate's roadmap")
+    const name = `Teammate's roadmap (${browserName})`
+    await remoteCreateDashboard(request, name)
 
-    await expect(
-      page.getByRole("button", { name: "Teammate's roadmap" })
-    ).toBeVisible()
+    await expect(page.getByRole("button", { name })).toBeVisible()
   })
 
   test("a board another client renames updates in the sidebar", async ({
     page,
     request,
+    browserName,
   }) => {
-    const id = await remoteCreateDashboard(request, "Working title")
-    await expect(
-      page.getByRole("button", { name: "Working title" })
-    ).toBeVisible()
+    const before = `Working title (${browserName})`
+    const after = `Final title (${browserName})`
+    const id = await remoteCreateDashboard(request, before)
+    await expect(page.getByRole("button", { name: before })).toBeVisible()
 
-    await remoteRenameDashboard(request, id, "Final title")
+    await remoteRenameDashboard(request, id, after)
 
-    await expect(
-      page.getByRole("button", { name: "Final title" })
-    ).toBeVisible()
-    await expect(
-      page.getByRole("button", { name: "Working title" })
-    ).toHaveCount(0)
+    await expect(page.getByRole("button", { name: after })).toBeVisible()
+    await expect(page.getByRole("button", { name: before })).toHaveCount(0)
   })
 })

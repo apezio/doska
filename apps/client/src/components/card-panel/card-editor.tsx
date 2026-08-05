@@ -1,6 +1,7 @@
 import { CardContent, cn } from "@doska/ui-kit"
 import { useState } from "react"
-import { Markdown, MarkdownTextarea } from "../markdown"
+import { Markdown } from "@doska/ui-kit"
+import { MarkdownTextarea } from "../markdown"
 import { CardContentLayout } from "./card-content-layout"
 import { CardPanelHeader } from "./card-panel-header"
 import { CardBodyEditor } from "./card-body-editor"

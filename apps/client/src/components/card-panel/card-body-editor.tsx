@@ -7,7 +7,8 @@ import { imageSlashCommands } from "../card/attachments/image-slash-commands"
 import { isRenderableImage } from "../card/attachments/renderable-image"
 import { useUploads } from "../card/attachments/context/attachment-upload-context"
 import { CardMarkdown } from "../card/card-markdown"
-import { Markdown, MarkdownTextarea } from "../markdown"
+import { Markdown } from "@doska/ui-kit"
+import { MarkdownTextarea } from "../markdown"
 
 const PREVIEW_MARKERS = [cut]
 

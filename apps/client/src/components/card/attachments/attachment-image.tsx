@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useCard } from "@doska/core/queries"
+import { MdImage } from "@doska/ui-kit"
 import { useAttachmentUrlByKey } from "@/lib/hooks/use-attachment-url"
 import { AttachmentViewer } from "./attachment-viewer"
 
@@ -21,10 +22,9 @@ export function AttachmentImage({ cardId, attachmentKey, alt }: IProps) {
 
   return (
     <>
-      <img
+      <MdImage
         src={url}
         alt={alt}
-        loading="lazy"
         className="cursor-zoom-in"
         onClick={(e) => {
           if (!attachment) return

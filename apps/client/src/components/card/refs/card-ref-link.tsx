@@ -1,7 +1,6 @@
-import type { CSSProperties } from "react"
 import { useLocation } from "wouter"
 import { useCardRef } from "@doska/core/card-refs"
-import { cn, columnHue } from "@doska/ui-kit"
+import { columnHue, MdWikilink } from "@doska/ui-kit"
 import { routes } from "@/lib/routes"
 import { useDeck } from "../../deck/deck-context"
 
@@ -16,53 +15,19 @@ export function CardRefLink({ displayId }: { displayId: string }) {
   const { id: deckId, prefix } = useDeck()
   const ref = useCardRef(deckId, prefix, displayId)
 
-  if (!ref)
-    return (
-      <span className="wikilink wikilink-missing" title="No such card">
-        <span className="wikilink-target">{displayId}</span>
-      </span>
-    )
+  if (!ref) return <MdWikilink target={displayId} title="No such card" />
 
   const { card, columnTitle, columnColor } = ref
   const title = card.title || "Untitled card"
-  const hue = columnHue(columnColor)
-  const open = () => navigate(routes.card.to(card.id))
 
   return (
-    <span
-      role="link"
-      tabIndex={0}
-      className="wikilink"
+    <MdWikilink
+      target={displayId}
+      label={title}
+      badge={columnTitle || undefined}
+      hue={columnHue(columnColor)}
       title={columnTitle ? `${title} — ${columnTitle}` : title}
-      // The body sits inside the board card's own open-detail handler.
-      onClick={(e) => {
-        e.stopPropagation()
-        open()
-      }}
-      onKeyDown={(e) => {
-        if (e.key !== "Enter" && e.key !== " ") return
-        e.preventDefault()
-        e.stopPropagation()
-        open()
-      }}
-    >
-      <span className="wikilink-target">{displayId}</span>
-      <span className="wikilink-label">{title}</span>
-      {columnTitle && (
-        <span
-          className={cn(
-            "wikilink-badge",
-            hue !== null && "wikilink-badge-tinted"
-          )}
-          style={
-            hue === null
-              ? undefined
-              : ({ "--wikilink-h": hue } as CSSProperties)
-          }
-        >
-          {columnTitle}
-        </span>
-      )}
-    </span>
+      onOpen={() => navigate(routes.card.to(card.id))}
+    />
   )
 }

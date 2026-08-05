@@ -1,3 +1,5 @@
+import { useState, type ReactNode } from "react"
+import { taskProgress, toggleTaskByIndex } from "@doska/markdown"
 import {
   Card,
   CardAction,
@@ -6,28 +8,36 @@ import {
   CardId,
   CardTitle,
   DeadlineChip,
+  Markdown,
   TaskIndicator,
 } from "@doska/ui-kit"
-import type { ReactNode } from "react"
 
 /**
- * A board card. Same ui-kit slots as the app's card, and the body sits in
- * `.markdown` so it picks up the renderer's typography without shipping it.
+ * A board card. Same ui-kit slots as the app's card, and the body goes through
+ * the app's renderer, so the page shows the real thing rather than a mock-up.
+ * The body is state because ticking a task rewrites the markdown, exactly as
+ * it does in the app.
  */
 export function BoardCard({
   id,
   title,
   deadline,
-  tasks,
+  body,
+  lead,
   children,
 }: {
   id: string
   title: string
   /** Fixed dates only — a relative one ("in 3 days") would break prerendering. */
   deadline?: string
-  tasks?: { done: number; total: number }
-  children: ReactNode
+  body: string
+  /** Rendered above the body — a terminal, a demo. */
+  lead?: ReactNode
+  children?: ReactNode
 }) {
+  const [markdown, setMarkdown] = useState(body)
+  const tasks = taskProgress(markdown)
+
   return (
     <Card className="mb-3">
       <CardHeader>
@@ -38,16 +48,26 @@ export function BoardCard({
           <CardId id={id} />
         </CardAction>
       </CardHeader>
-      {(tasks || deadline) && (
+      {(tasks.total > 0 || deadline) && (
         <CardContent>
           <div className="mt-2 flex items-center gap-2 text-sm">
-            {tasks && <TaskIndicator done={tasks.done} total={tasks.total} />}
+            {tasks.total > 0 && (
+              <TaskIndicator done={tasks.done} total={tasks.total} />
+            )}
             {deadline && <DeadlineChip value={deadline} done={false} />}
           </div>
         </CardContent>
       )}
       <CardContent className="pt-2">
-        <div className="markdown preview">{children}</div>
+        {lead}
+        <Markdown
+          onToggleTask={(index) =>
+            setMarkdown((md) => toggleTaskByIndex(md, index))
+          }
+        >
+          {markdown}
+        </Markdown>
+        {children}
       </CardContent>
     </Card>
   )

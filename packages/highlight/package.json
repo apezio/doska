@@ -1,0 +1,21 @@
+{
+  "name": "@doska/highlight",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@doska/markdown": "workspace:*"
+  },
+  "devDependencies": {
+    "@doska/configs": "workspace:*",
+    "eslint": "^10",
+    "typescript": "~6"
+  }
+}

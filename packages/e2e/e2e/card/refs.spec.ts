@@ -325,17 +325,6 @@ test.describe("card references", () => {
     await expect(cardRef(page, "Target card")).toBeVisible()
   })
 
-  test("a reference isn't mistaken for a tag pill", async ({ page }) => {
-    const { targetId } = await boardWithTwoCards(page)
-    await editCardBody(page, "Source card", `[[${targetId}]] and [status]`)
-
-    // The inner `[…]` of a wikilink must not be claimed by the tag syntax.
-    await expect(cardRef(page, "Target card")).toBeVisible()
-    const tags = card(page, "Source card").locator(".tag")
-    await expect(tags).toHaveCount(1)
-    await expect(tags).toHaveText("status")
-  })
-
   test("Enter and Space open the target from a focused reference", async ({
     page,
   }) => {

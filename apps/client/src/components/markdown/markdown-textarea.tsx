@@ -7,6 +7,7 @@ import {
   type SlashCommand,
   type WikilinkOption,
 } from "@doska/markdown"
+import { HighlightOverlay } from "./highlight/highlight-overlay"
 import { useCutLine } from "./hooks/use-cut-line"
 import { useListContinuation } from "./hooks/use-list-continuation"
 import { usePasteFiles } from "./hooks/use-paste-files"
@@ -36,6 +37,8 @@ interface IProps extends React.ComponentProps<"textarea"> {
   onToggleTask?: (value: string) => void
   /** Enables the `/` slash command menu. Off by default. */
   slashMenu?: boolean
+  /** Styles task-list syntax behind the text while editing. Off by default. */
+  highlight?: boolean
   /** Overrides the default slash commands. */
   slashCommands?: SlashCommand[]
   /** Required when `slashMenu` is on, to apply inserted commands. */
@@ -61,6 +64,7 @@ export function MarkdownTextarea({
   markers = NO_MARKERS,
   onToggleTask,
   slashMenu,
+  highlight,
   slashCommands,
   onChangeValue,
   wikilinks,
@@ -93,6 +97,14 @@ export function MarkdownTextarea({
     onPasteFiles,
   })
 
+  // Shared with the highlight overlay: any class here that moves a glyph moves
+  // it in both, which is what keeps the two texts on top of each other.
+  const textClasses = cn(
+    "w-full px-0 py-2 font-mono",
+    "text-base leading-relaxed [font-variant-ligatures:none]",
+    props.className
+  )
+
   if (isPreview)
     return (
       <div className={cn("space-y-4 pt-3 select-text", containerClassName)}>
@@ -117,17 +129,24 @@ export function MarkdownTextarea({
         containerClassName
       )}
     >
+      {highlight && (
+        <HighlightOverlay
+          value={value}
+          className={textClasses}
+          wikilinks={wikilinks}
+        />
+      )}
       <textarea
         {...props}
         ref={textareaRef}
         onPaste={handlePaste}
+        spellCheck={false}
         className={cn(
-          "w-full resize-none bg-transparent outline-none",
+          "relative resize-none bg-transparent outline-none",
           "placeholder:text-muted-foreground/50",
-          "py-2 font-mono",
-          "text-base leading-relaxed [font-variant-ligatures:none]",
           "field-sizing-content",
-          props.className
+          highlight && "text-transparent caret-foreground",
+          textClasses
         )}
       />
       {slashMenu && (

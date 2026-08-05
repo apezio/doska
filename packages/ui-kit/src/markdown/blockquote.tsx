@@ -1,0 +1,9 @@
+import type { ReactNode } from "react"
+
+export function MdBlockquote({ children }: { children: ReactNode }) {
+  return (
+    <blockquote className="my-2 border-l-2 border-l-[color-mix(in_oklab,var(--primary)_40%,var(--muted))] py-0.5 pl-3 text-muted-foreground italic">
+      {children}
+    </blockquote>
+  )
+}

@@ -8,7 +8,7 @@
 @tailwind utilities;
 
 :root {
-  /* See `packages/markdown/markdown.css`. */
+  /* Mirrors the web's markdown components in @doska/ui-kit. */
   --mark: #9687fe4d;
   --quote-bar: #c2b9fb;
 

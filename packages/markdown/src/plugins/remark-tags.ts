@@ -1,5 +1,4 @@
-// Number of predefined pill colors. Must match the `[data-tag-color]` rules in
-// markdown.css.
+// Number of predefined pill colors. Must match `TAG_HUES` in @doska/tokens.
 export const TAG_COLOR_COUNT = 10
 
 interface MdastNode {

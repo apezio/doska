@@ -18,7 +18,8 @@ import { MarkdownCardPreview } from "../markdown"
 import type { DetailedHTMLProps, HTMLAttributes } from "react"
 import { CardAttachments } from "./attachments/card-attachments"
 import { CardMarkdown } from "./card-markdown"
-import { ImageCard, cardSoleImage } from "./image-card"
+import { ImageCard } from "./image-card"
+import { cardSoleImage } from "./sole-image"
 
 const BOARD_MARKERS = [cut]
 

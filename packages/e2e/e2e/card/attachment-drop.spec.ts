@@ -4,7 +4,6 @@ import {
   card,
   cardPanel,
   createBoard,
-  mockFileRoutes,
   pasteInto,
   pngDataTransfer,
   signIn,
@@ -16,10 +15,9 @@ import {
  * file input, so each test hands the page a real `DataTransfer` and dispatches
  * the same event the browser would.
  */
-test.describe("dropping and pasting files", () => {
+test.describe("dropping and pasting files", { tag: "@container" }, () => {
   test("dropping a file on the card body attaches it", async ({ page }) => {
     await signIn(page)
-    await mockFileRoutes(page)
     await createBoard(page)
     await addCard(page, "To Do")
     await card(page, "Untitled card").click()
@@ -71,7 +69,6 @@ test.describe("dropping and pasting files", () => {
       page,
     }) => {
       await signIn(page)
-      await mockFileRoutes(page)
       await createBoard(page)
       await addCard(page, "To Do")
       await card(page, "Untitled card").click()
@@ -95,7 +92,6 @@ test.describe("dropping and pasting files", () => {
 
   test("an attached image is offered as a slash command", async ({ page }) => {
     await signIn(page)
-    await mockFileRoutes(page)
     await createBoard(page)
     await addCard(page, "To Do")
     await card(page, "Untitled card").click()

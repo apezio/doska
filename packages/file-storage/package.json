@@ -13,6 +13,11 @@
   },
   "devDependencies": {
     "@doska/configs": "workspace:*",
-    "@types/node": "^22"
+    "@types/node": "^22",
+    "vitest": "^4.1.10"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
   }
 }

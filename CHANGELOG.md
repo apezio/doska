@@ -1,5 +1,21 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Attachments work out of the box on a self-hosted instance: files land in a
+  local `doska-files` volume, and S3 becomes the opt-in alternative.
+- `backup.sh` also archives the attachments volume.
+- A card whose body is nothing but one image renders as a full-bleed image card.
+
+### Fixed
+
+- External links in the desktop app opened inside the webview; they now go to the
+  system browser.
+- Dokploy deployments served a stale build: the server sat on the shared proxy
+  network instead of an internal one.
+
 ## [0.16.0] - 2026-08-05
 
 ### Added

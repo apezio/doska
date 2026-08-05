@@ -5,7 +5,6 @@ import {
   cardPanel,
   createBoard,
   editCardBody,
-  mockFileRoutes,
   PNG,
   signIn,
 } from "../helpers"
@@ -19,7 +18,13 @@ async function attachFile(page: Page, name: string): Promise<void> {
   ).toBeVisible()
 }
 
-test.describe("card attachments", () => {
+/**
+ * These upload through the real `/api/files` route to whatever storage the
+ * server is configured with — a temp dir here (see playwright.config), the
+ * mounted volume in a container run. Nothing is stubbed, so a broken storage
+ * backend fails these.
+ */
+test.describe("card attachments", { tag: "@container" }, () => {
   test("Attach is disabled until signed in", async ({ page }) => {
     await createBoard(page)
     await addCard(page, "To Do")
@@ -32,7 +37,6 @@ test.describe("card attachments", () => {
 
   test("uploading a file renders its row and tile", async ({ page }) => {
     await signIn(page)
-    await mockFileRoutes(page)
     await createBoard(page)
     await addCard(page, "To Do")
     await card(page, "Untitled card").click()
@@ -49,7 +53,6 @@ test.describe("card attachments", () => {
     page,
   }) => {
     await signIn(page)
-    await mockFileRoutes(page)
     await createBoard(page)
     await addCard(page, "To Do")
     await editCardBody(page, "Untitled card", "Some notes")
@@ -69,9 +72,45 @@ test.describe("card attachments", () => {
     await expect(viewer).toHaveCount(0)
   })
 
+  test("the stored bytes come back through the server, and are gone after a remove", async ({
+    page,
+  }) => {
+    await signIn(page)
+    await createBoard(page)
+    await addCard(page, "To Do")
+    await card(page, "Untitled card").click()
+
+    // The upload response carries the key storage minted — the one handle to
+    // the blob, so the round trip is asserted against it rather than the UI.
+    const upload = page.waitForResponse(
+      (res) =>
+        res.url().endsWith("/api/files") && res.request().method() === "POST"
+    )
+    await attachFile(page, "roundtrip.png")
+    const { key } = (await (await upload).json()) as { key: string }
+    expect(key).toMatch(/^att\/[0-9a-f-]{36}\.png$/)
+
+    const url = `/api/files/${key}`
+    const stored = await page.request.get(url)
+    expect(stored.status()).toBe(200)
+    // Byte-for-byte: anything that mangles the blob on the way to disk or back
+    // still renders as *an* image, so comparing the bytes is the real check.
+    expect(Buffer.from(await stored.body()).equals(PNG)).toBe(true)
+    expect(stored.headers()["x-content-type-options"]).toBe("nosniff")
+    expect(stored.headers()["content-type"]).toBe("image/png")
+
+    await page.getByRole("button", { name: "Remove attachment" }).click()
+    await expect(cardPanel(page).getByText("roundtrip")).toHaveCount(0)
+
+    await expect
+      .poll(async () => (await page.request.get(url)).status(), {
+        message: `blob ${key} still readable after the attachment was removed`,
+      })
+      .toBe(404)
+  })
+
   test("removing an attachment removes its row", async ({ page }) => {
     await signIn(page)
-    await mockFileRoutes(page)
     await createBoard(page)
     await addCard(page, "To Do")
     await card(page, "Untitled card").click()

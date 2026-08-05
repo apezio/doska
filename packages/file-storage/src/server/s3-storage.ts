@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto"
 import type { Readable } from "node:stream"
 import {
   DeleteObjectCommand,
@@ -6,8 +5,8 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3"
-import { extname } from "../file-storage"
 import { dispositionFor, resolveType, safeMime } from "./content-type"
+import { newKey } from "./key"
 
 const DEFAULT_MAX_BYTES = 25 * 1024 * 1024
 
@@ -36,13 +35,6 @@ export interface FetchedFile {
   disposition: "inline" | "attachment"
 }
 
-/** Strict extension for a stored key: a plain lowercase `.xxx` suffix, or "". */
-function keySuffix(name: string): string {
-  const ext = extname(name)
-  // Reject anything path-ish; keep it a plain suffix.
-  return /^\.[a-z0-9]+$/.test(ext) ? ext : ""
-}
-
 /**
  * S3-backed attachment storage.
  */
@@ -68,7 +60,7 @@ export class S3ServerStorage {
     meta: { name: string; mime: string | string[] | undefined }
   ): Promise<PutResult> {
     const mime = safeMime(meta.mime)
-    const key = `att/${randomUUID()}${keySuffix(meta.name)}`
+    const key = newKey(meta.name)
     await this.client.send(
       new PutObjectCommand({
         Bucket: this.bucket,

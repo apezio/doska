@@ -2,5 +2,7 @@
 services:
   server:
     pull_policy: never
+    environment:
+      AUTH_RATE_LIMIT: "off"
   web:
     pull_policy: never

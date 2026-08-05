@@ -1,9 +1,9 @@
 import type { JSHandle, Locator, Page } from "@playwright/test"
 
 /* -------------------------------------------------------------------------- */
-/*  File helpers. Uploads need a backend, which the e2e server has no S3 for,  */
-/*  so the storage routes are stubbed — the one place simulating the remote     */
-/*  host is allowed.                                                           */
+/*  File helpers. Uploads go to the real `/api/files` route and land on real    */
+/*  storage — a temp dir under the host-run config, the mounted volume in a     */
+/*  container run — so nothing here stubs the backend.                          */
 /* -------------------------------------------------------------------------- */
 
 /** A 1×1 PNG, small enough to inline as base64. */
@@ -11,38 +11,6 @@ export const PNG_BASE64 =
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M8AAAMBAQDJ/pLvAAAAAElFTkSuQmCC"
 
 export const PNG = Buffer.from(PNG_BASE64, "base64")
-
-/**
- * The real server 503s without S3 configured, so every attachment test mocks
- * the `/api/files` routes the client's `S3FileStorage` talks to. Must be
- * registered before the action that triggers the request.
- */
-export async function mockFileRoutes(page: Page): Promise<void> {
-  let uploads = 0
-  await page.route("**/api/files", async (route) => {
-    uploads += 1
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        key: `att/${uploads}.png`,
-        mime: "image/png",
-        size: PNG.length,
-      }),
-    })
-  })
-  await page.route("**/api/files/**", async (route) => {
-    if (route.request().method() === "DELETE") {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ ok: true }),
-      })
-      return
-    }
-    await route.fulfill({ status: 200, contentType: "image/png", body: PNG })
-  })
-}
 
 interface FileTransfer {
   items: { add(file: unknown): void }

@@ -1,3 +1,4 @@
+import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { defineConfig, devices } from "@playwright/test"
@@ -5,6 +6,7 @@ import { defineConfig, devices } from "@playwright/test"
 const here = path.dirname(fileURLToPath(import.meta.url))
 const CLIENT_DIR = path.resolve(here, "../../apps/client")
 const SERVER_DIR = path.resolve(here, "../../apps/server")
+const FILES_TMP = path.join(os.tmpdir(), "doska-e2e-files")
 
 /**
  * The sync e2e tests need a real backend, so the harness boots two servers:
@@ -55,6 +57,11 @@ export default defineConfig({
         // so the limiter comes off here rather than the production numbers being
         // widened to accommodate a test harness.
         AUTH_RATE_LIMIT: "off",
+        // Attachments are stored on disk at a path that only exists inside the
+        // container image, so point them at a temp dir and the specs can upload
+        // for real here too. Reused across runs — every key is a fresh UUID, so
+        // one run never sees another's blobs.
+        FILE_DIR_OVERRIDE: FILES_TMP,
       },
       port: SYNC_PORT,
       reuseExistingServer: !process.env.CI,

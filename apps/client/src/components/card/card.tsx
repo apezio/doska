@@ -13,11 +13,12 @@ import { CardMeta } from "./card-meta"
 import { CardContextMenu, CardMenu } from "./menu/card-menu"
 import { useCard } from "@doska/core/queries"
 import { useUpdateCard } from "@doska/core/mutations"
-import { cut, useMarkers } from "@doska/markdown"
+import { cut, soleImage, useMarkers } from "@doska/markdown"
 import { MarkdownCardPreview } from "../markdown"
 import type { DetailedHTMLProps, HTMLAttributes } from "react"
 import { CardAttachments } from "./attachments/card-attachments"
 import { CardMarkdown } from "./card-markdown"
+import { ImageCard, cardSoleImage } from "./image-card"
 
 const BOARD_MARKERS = [cut]
 
@@ -40,6 +41,8 @@ export function Card({ id, showBody, isDragging, ...props }: IProps) {
   const hasBody = preview.trim().length > 0
   const hasMore = applied.includes(cut.name)
   const attachments = card.attachments ?? []
+  const bodyImage = hasBody && !hasMore ? soleImage(preview) : null
+  const image = cardSoleImage(hasBody, bodyImage, attachments)
 
   return (
     <div
@@ -50,45 +53,54 @@ export function Card({ id, showBody, isDragging, ...props }: IProps) {
       )}
     >
       <CardContextMenu cardId={id} onEdit={() => navigate(routes.card.to(id))}>
-        <CardBase className={cn(isDragging && "shadow-shade/5 shadow-xl")}>
-          <CardHeader>
-            <CardTitle>{title || "Untitled card"}</CardTitle>
-            <CardAction className="flex items-center gap-1">
-              <CardMenu
-                cardId={id}
-                onEdit={() => navigate(routes.card.to(id))}
-              />
-            </CardAction>
-          </CardHeader>
-          <CardContent className={cn(!showBody && hasBody && "-mb-2")}>
-            <CardMeta cardId={id} className="mt-2" />
-          </CardContent>
+        {image ? (
+          <ImageCard
+            cardId={id}
+            title={title}
+            image={image}
+            isDragging={isDragging}
+          />
+        ) : (
+          <CardBase className={cn(isDragging && "shadow-shade/5 shadow-xl")}>
+            <CardHeader>
+              <CardTitle>{title || "Untitled card"}</CardTitle>
+              <CardAction className="flex items-center gap-1">
+                <CardMenu
+                  cardId={id}
+                  onEdit={() => navigate(routes.card.to(id))}
+                />
+              </CardAction>
+            </CardHeader>
+            <CardContent className={cn(!showBody && hasBody && "-mb-2")}>
+              <CardMeta cardId={id} className="mt-2" />
+            </CardContent>
 
-          {hasBody && (
-            <div
-              className={cn(
-                "grid transition-[grid-template-rows] duration-200 ease-out",
-                showBody ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-              )}
-            >
-              <div className="overflow-hidden">
-                <CardContent className="space-y-3 pt-2">
-                  <CardMarkdown cardId={id}>
-                    <MarkdownCardPreview
-                      preview={preview}
-                      body={body}
-                      hasMore={hasMore}
-                      onChangeBody={(body) => updateCard({ body })}
-                    />
-                  </CardMarkdown>
-                </CardContent>
+            {hasBody && (
+              <div
+                className={cn(
+                  "grid transition-[grid-template-rows] duration-200 ease-out",
+                  showBody ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                )}
+              >
+                <div className="overflow-hidden">
+                  <CardContent className="space-y-3 pt-2">
+                    <CardMarkdown cardId={id}>
+                      <MarkdownCardPreview
+                        preview={preview}
+                        body={body}
+                        hasMore={hasMore}
+                        onChangeBody={(body) => updateCard({ body })}
+                      />
+                    </CardMarkdown>
+                  </CardContent>
+                </div>
               </div>
-            </div>
-          )}
-          {attachments.length > 0 && showBody && (
-            <CardAttachments className="pt-2" cardId={id} isReadonly />
-          )}
-        </CardBase>
+            )}
+            {attachments.length > 0 && showBody && (
+              <CardAttachments className="pt-2" cardId={id} isReadonly />
+            )}
+          </CardBase>
+        )}
       </CardContextMenu>
     </div>
   )

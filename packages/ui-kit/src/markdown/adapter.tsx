@@ -19,7 +19,6 @@ import { MdStrikethrough } from "./strikethrough"
 import { MdStrong } from "./strong"
 import { MdTable } from "./table"
 import { MdTableCell } from "./table-cell"
-import { MdTag } from "./tag"
 import { MdTaskItem } from "./task-item"
 import { MdWikilink } from "./wikilink"
 import { toAttachmentSrc } from "@doska/markdown"
@@ -165,18 +164,10 @@ export function createWebAdapter({
       return <MdImage key={key} src={source.url} alt={alt} />
     },
 
-    wikilink(target, key) {
-      const custom = renderWikilink?.(target)
+    wikilink(target, alias, key) {
+      const custom = renderWikilink?.(target, alias)
       if (custom) return <Fragment key={key}>{custom}</Fragment>
-      return <MdWikilink key={key} target={target} />
-    },
-
-    tag(color, text, key) {
-      return (
-        <MdTag key={key} color={color}>
-          {text}
-        </MdTag>
-      )
+      return <MdWikilink key={key} target={target} label={alias} />
     },
 
     cut(key) {

@@ -47,7 +47,7 @@ export function Board() {
               />
               <BoardCard
                 id="CARD-2"
-                title="Attachments and tags"
+                title="Attachments"
                 body={cards.attachments}
               />
               <BoardCard

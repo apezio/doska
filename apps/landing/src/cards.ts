@@ -20,9 +20,7 @@ I tried to make Markdown editing more bearable: slash commands, suggestions.`,
   attachments: `File attachments, inline images, support for dragging files
 into a card or pasting from the buffer:
 
-![board-preview.png](attachment:board-preview)
-
-Bracketed words become colored pills: [design] [needs review]`,
+![board-preview.png](attachment:board-preview)`,
 
   deadlines: `Set a due date and the chip shifts color as it nears.\\
 Like this one, which has been overdue for a while.`,

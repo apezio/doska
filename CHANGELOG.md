@@ -8,6 +8,18 @@
   local `doska-files` volume, and S3 becomes the opt-in alternative.
 - `backup.sh` also archives the attachments volume.
 - A card whose body is nothing but one image renders as a full-bleed image card.
+- Markdown is highlighted. The tokenizer lives in
+  `@doska/highlight` and emits plain data, so the mobile editor can reuse it.
+- `[[ROAD-12|Fix the sync bug]]` pins a reference's wording.
+
+### Changed
+
+- The card body no longer gets spellchecked. 
+
+### Removed
+
+- `[tag]` pills. They complicated more than they earned; the idea will come back
+  in a different shape.
 
 ### Fixed
 

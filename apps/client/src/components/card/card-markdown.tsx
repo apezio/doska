@@ -20,7 +20,9 @@ export function CardMarkdown({
       renderImage: (key: string, alt: string) => (
         <AttachmentImage cardId={cardId} attachmentKey={key} alt={alt} />
       ),
-      renderWikilink: (target: string) => <CardRefLink displayId={target} />,
+      renderWikilink: (target: string, alias?: string) => (
+        <CardRefLink displayId={target} alias={alias} />
+      ),
     }),
     [cardId]
   )

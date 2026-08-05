@@ -7,14 +7,19 @@ interface MdastNode {
   data?: { hName?: string; hProperties?: Record<string, unknown> }
 }
 
-function link(target: string): MdastNode {
+function link(target: string, alias?: string): MdastNode {
   return {
     type: "emphasis",
     data: {
       hName: "span",
-      hProperties: { className: ["wikilink"], dataWikilink: target },
+      hProperties: {
+        className: ["wikilink"],
+        dataWikilink: target,
+        ...(alias ? { dataWikilinkAlias: alias } : {}),
+      },
     },
-    children: [{ type: "text", value: target }],
+    // Only a fallback: a platform that draws its own chip ignores the child.
+    children: [{ type: "text", value: alias ?? target }],
   }
 }
 
@@ -27,7 +32,7 @@ function splitText(value: string): MdastNode[] {
     const start = match.index ?? 0
     if (start > last)
       nodes.push({ type: "text", value: value.slice(last, start) })
-    nodes.push(link(match[1].trim()))
+    nodes.push(link(match[1].trim(), match[2]?.trim() || undefined))
     last = start + match[0].length
   }
   if (last < value.length)
@@ -53,12 +58,7 @@ function transform(node: MdastNode) {
 }
 
 /**
- * Renders `[[target]]` as a wikilink. The node only carries the target string;
- * resolving it to something real (a label, click-through) is the host app's
- * job, via the `renderWikilink` renderer.
- *
- * Must run before `remarkTags`, which would otherwise claim the inner
- * `[target]` as a tag pill.
+ * Renders `[[target]]` as a wikilink
  */
 export function remarkWikilinks() {
   return (tree: MdastNode) => transform(tree)

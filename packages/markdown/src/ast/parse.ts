@@ -4,15 +4,11 @@ import { remarkMark } from "remark-mark-highlight"
 import remarkParse from "remark-parse"
 import { unified } from "unified"
 import { remarkCut } from "../plugins/remark-cut"
-import { remarkTags } from "../plugins/remark-tags"
 import { remarkWikilinks } from "../plugins/remark-wikilinks"
 
 /**
  * Every plugin here is a plain tree transform, so the pipeline stops at mdast
  * and each platform walks the same tree — see `renderMarkdown`.
- *
- * Plugin order matters: `remarkWikilinks` must run before `remarkTags`, which
- * would otherwise claim the inner `[target]` as a tag pill.
  */
 const processor = unified()
   .use(remarkParse)
@@ -20,7 +16,6 @@ const processor = unified()
   .use(remarkMark)
   .use(remarkCut)
   .use(remarkWikilinks)
-  .use(remarkTags)
 
 export function parseMarkdown(markdown: string): Root {
   return processor.runSync(processor.parse(markdown))
@@ -55,8 +50,7 @@ export interface MdNode {
  * treating an `emphasis` as italics.
  */
 export type MarkdownExtra =
-  | { kind: "wikilink"; target: string }
-  | { kind: "tag"; color: number }
+  | { kind: "wikilink"; target: string; alias?: string }
   | { kind: "cut" }
   | null
 
@@ -67,14 +61,17 @@ export function markdownExtra(node: { data?: unknown }): MarkdownExtra {
   if (!properties) return null
 
   const target = properties.dataWikilink
-  if (typeof target === "string") return { kind: "wikilink", target }
+  if (typeof target === "string") {
+    const alias = properties.dataWikilinkAlias
+    return {
+      kind: "wikilink",
+      target,
+      alias: typeof alias === "string" ? alias : undefined,
+    }
+  }
 
   const className = properties.className
   const names = Array.isArray(className) ? className : []
-  if (names.includes("tag")) {
-    const color = properties.dataTagColor
-    return { kind: "tag", color: typeof color === "number" ? color : 0 }
-  }
   if (names.includes("cut-divider")) return { kind: "cut" }
 
   return null

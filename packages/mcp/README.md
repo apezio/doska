@@ -48,7 +48,7 @@ to an id you can write against.
 
 The server also ships `instructions` (see `guide.ts`): the board's own concepts —
 the done column, deadlines — and the Markdown dialect card bodies are written in,
-which is `[tag]` pills, `[[card]]` links, `==highlight==` and the `-cut-` line on
+which is `[[card]]` links, `==highlight==` and the `-cut-` line on
 top of GFM. None of that is inferable from a tool schema, and a client that
 doesn't read it will write bodies that render wrong.
 

@@ -3,7 +3,6 @@ import {
   renderMarkdown,
   useMarkdownRenderers,
 } from "@doska/markdown"
-import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { useMemo, type ReactNode } from "react"
 import { View } from "react-native"
 import { createNativeAdapter } from "./native-adapter"
@@ -23,13 +22,12 @@ interface IProps {
  * caller applies any markers first — this draws whatever markdown it is given.
  */
 export function MarkdownView({ children, onToggleTask }: IProps) {
-  const { dark } = useTokens()
   const renderers = useMarkdownRenderers()
 
   const content: ReactNode[] = useMemo(() => {
-    const adapter = createNativeAdapter(renderers, dark)
+    const adapter = createNativeAdapter(renderers)
     return renderMarkdown(parseMarkdown(children), adapter, { onToggleTask })
-  }, [children, dark, renderers, onToggleTask])
+  }, [children, renderers, onToggleTask])
 
   return <View className="gap-2">{content}</View>
 }

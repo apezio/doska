@@ -3,7 +3,6 @@ import type {
   MarkdownAdapter,
   MarkdownRenderers,
 } from "@doska/markdown"
-import { tagColor } from "@doska/tokens/tags"
 import { Checkbox, Separator } from "@doska/ui-kit-mobile"
 import { Fragment } from "react"
 import { Linking, ScrollView, Text, View } from "react-native"
@@ -40,12 +39,11 @@ function blockImage(
 
 /**
  * The React Native half of the renderer. Everything shared with the web —
- * task numbering, which nodes are tags or wikilinks, URL safety — is settled by
+ * task numbering, which nodes are wikilinks, URL safety — is settled by
  * `renderMarkdown` before it reaches these methods.
  */
 export function createNativeAdapter(
-  renderers: MarkdownRenderers,
-  dark: boolean
+  renderers: MarkdownRenderers
 ): MarkdownAdapter {
   return {
     // ----------------------------------------------------------- blocks
@@ -277,31 +275,15 @@ export function createNativeAdapter(
       return blockImage(source, alt, renderers.renderImage, key)
     },
 
-    wikilink(target, key) {
-      const custom = renderers.renderWikilink?.(target)
+    wikilink(target, alias, key) {
+      const custom = renderers.renderWikilink?.(target, alias)
       if (custom) return <Fragment key={key}>{custom}</Fragment>
       return (
         <Text
           key={key}
           className="bg-muted font-sans-medium text-[13px] text-muted-foreground"
         >
-          {` ${target} `}
-        </Text>
-      )
-    },
-
-    tag(color, text, key) {
-      const palette = tagColor(color)
-      return (
-        <Text
-          key={key}
-          className="font-sans-medium text-[13px]"
-          style={{
-            backgroundColor: dark ? palette.darkBg : palette.lightBg,
-            color: dark ? palette.darkFg : palette.lightFg,
-          }}
-        >
-          {` ${text} `}
+          {` ${alias ?? target} `}
         </Text>
       )
     },

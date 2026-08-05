@@ -9,25 +9,22 @@ interface IProps {
   deckId: string
   prefix: string
   displayId: string
+  /** The label as in `[[ROAD-12|Fix the sync bug]]`. */
+  alias?: string
 }
 
 /**
  * A `[[ROAD-12]]` reference inside a card body: the card's id, its title, then
- * the column it sits in, tinted with that column's color. Everything shown is
- * read live rather than stored in the text, so a rename, a move or a re-color
- * propagates to every reference.
- *
- * All `Text`, no `View`: a reference sits mid-sentence, and a view nested in a
- * text node does not lay out inline.
+ * the column it sits in, tinted with that column's color.
  */
-export function CardRefLink({ deckId, prefix, displayId }: IProps) {
+export function CardRefLink({ deckId, prefix, displayId, alias }: IProps) {
   const tokens = useTokens()
   const ref = useCardRef(deckId, prefix, displayId)
 
   if (!ref)
     return (
       <Text className="font-mono text-[13px] text-muted-foreground/50">
-        {` ${displayId} `}
+        {alias ? ` ${displayId} — ${alias} ` : ` ${displayId} `}
       </Text>
     )
 
@@ -45,7 +42,7 @@ export function CardRefLink({ deckId, prefix, displayId }: IProps) {
         {` ${displayId} `}
       </Text>
       <Text className="text-[15px] text-card-foreground">
-        {card.title || "Untitled card"}
+        {alias || card.title || "Untitled card"}
       </Text>
       {columnTitle ? (
         <Text

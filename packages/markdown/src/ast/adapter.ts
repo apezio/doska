@@ -5,7 +5,7 @@ import type { ImageSource } from "./url"
  * What a platform has to supply for `renderMarkdown` to draw a body: one method
  * per kind of node, returning that platform's components. Everything that is a
  * *rule* rather than a *look* — task numbering, list tightness, URL safety,
- * which `emphasis` nodes are really wikilinks or tags — is settled by the
+ * which `emphasis` nodes are really wikilinks — is settled by the
  * traversal before it gets here, so an adapter only decides appearance.
  *
  * Every method takes the React `key` its result must carry; the traversal
@@ -58,8 +58,8 @@ export interface MarkdownAdapter {
     position: "block" | "inline",
     key: string
   ): ReactNode
-  wikilink(target: string, key: string): ReactNode
-  tag(color: number, text: string, key: string): ReactNode
+  /** `alias` is the label written into the text, as in `[[ROAD-12|Fix it]]`. */
+  wikilink(target: string, alias: string | undefined, key: string): ReactNode
   cut(key: string): ReactNode
   footnoteReference(label: string, key: string): ReactNode
 }

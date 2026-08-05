@@ -41,7 +41,7 @@ export function WikilinkMenu({
   )
 
   const toInsert = useCallback((option: WikilinkOption) => {
-    const text = toWikilink(option.target)
+    const text = toWikilink(option.target, option.title)
     return { text, caretOffset: text.length }
   }, [])
 

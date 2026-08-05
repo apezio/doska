@@ -57,6 +57,7 @@ export function CardBodyEditor({
         onChangeValue={onChangeBody}
         onToggleTask={onChangeBody}
         slashMenu
+        highlight
         slashCommands={slashCommands}
         overlayContainer={overlayContainer}
         wikilinks={cardRefs}

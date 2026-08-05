@@ -39,10 +39,8 @@ I tried to make Markdown editing more bearable: slash commands, suggestions.`,
     attachments: [],
     updatedAt: 0,
     deletedAt: null,
-    title: "Attachments and tags",
-    body: `Drop images or files onto a card. Images preview inline, everything else lands as a link.
-
-Bracketed words become colored pills, so a card can carry its own labels: [design] [needs review]`,
+    title: "Attachments",
+    body: `Drop images or files onto a card. Images preview inline, everything else lands as a link.`,
   },
   {
     id: "seed-cards-3",

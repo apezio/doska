@@ -1,4 +1,4 @@
-import { s3StorageFromEnv } from "@doska/file-storage/server"
+import { storageFromEnv } from "@doska/file-storage/server"
 import type { FastifyBaseLogger } from "fastify"
 import { purgeExpired } from "./db/sync/purge"
 
@@ -16,7 +16,7 @@ async function sweep(log: FastifyBaseLogger): Promise<void> {
     const result = await purgeExpired()
     if (result.cards + result.columns + result.dashboards === 0) return
 
-    const storage = s3StorageFromEnv()
+    const storage = storageFromEnv()
     for (const key of result.attachments) {
       try {
         await storage?.remove(key)

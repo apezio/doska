@@ -20,8 +20,6 @@ services:
       AUTH_LOGIN: ${AUTH_LOGIN:?set AUTH_LOGIN in .env}
       AUTH_PASSWORD: ${AUTH_PASSWORD:?set AUTH_PASSWORD in .env}
       AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET in .env}
-      # Attachments are optional: leave S3_BUCKET unset and the feature stays off
-      # (the attach button shows a "set up sync" hint). Set these to enable it.
       S3_BUCKET: ${S3_BUCKET:-}
       S3_REGION: ${S3_REGION:-}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
@@ -30,12 +28,9 @@ services:
       FILE_MAX_BYTES: ${FILE_MAX_BYTES:-}
       PORT: 3000
       NODE_ENV: production
-      # This server's public origin, e.g. https://doska.example.com — no trailing
-      # slash. OAuth discovery advertises absolute URLs (issuer, token endpoint,
-      # the resource_metadata an MCP client is pointed at), so without this they
-      # get inferred from proxy headers and an MCP client gets sent to the wrong
-      # scheme or host. Cookie auth survives that; MCP does not.
       BASE_URL: ${BASE_URL:?set BASE_URL in .env, e.g. https://doska.example.com}
+    volumes:
+      - doska-files:/data/files
     depends_on: { db: { condition: service_healthy } }
     healthcheck:
       # Migrations run on boot before the port opens, hence the start_period.
@@ -108,5 +103,6 @@ services:
 
 volumes:
   doska-pgdata:
+  doska-files:
   caddy-data:
   caddy-config:

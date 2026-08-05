@@ -1,6 +1,6 @@
 import type { IncomingMessage } from "node:http"
 import {
-  s3StorageFromEnv,
+  storageFromEnv,
   type FetchedFile,
   type PutResult,
 } from "@doska/file-storage/server"
@@ -53,7 +53,7 @@ function collectBody(
 
 export function registerFileRoutes(
   app: FastifyInstance,
-  storage: ServerStorage | null = s3StorageFromEnv()
+  storage: ServerStorage | null = storageFromEnv()
 ): void {
   // Raw binary uploads: no parsing, the handler reads the stream itself (same
   // no-op pattern as the parsers in index.ts).

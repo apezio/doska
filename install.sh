@@ -338,12 +338,9 @@ else
     done
   fi
 
-  # Attachments are opt-in: they need an S3 bucket and credentials the user
-  # sets up elsewhere, so ask once and only expand if they want it. Clearing
-  # these instead of defaulting would throw a pre-supplied answer away.
   S3_BUCKET=${S3_BUCKET:-}; S3_REGION=${S3_REGION:-}; S3_ENDPOINT=${S3_ENDPOINT:-}
   S3_KEY=""; S3_SECRET=""
-  if [ -n "$S3_BUCKET" ] || ask_yn "Enable card file attachments (needs an S3 bucket)"; then
+  if [ -n "$S3_BUCKET" ] || ask_yn "Store card attachments in S3 instead of a local volume"; then
     S3_BUCKET=$(ask S3_BUCKET "  S3 bucket name" "")
     S3_REGION=$(ask S3_REGION "  S3 region" "us-east-1")
     S3_ENDPOINT=$(ask S3_ENDPOINT "  S3 endpoint (blank for AWS; set for R2/MinIO)" "")
@@ -376,7 +373,7 @@ else
     printf '\n# Optional — uncomment and set, then re-run this script to apply:\n'
     [ -z "$DBURL" ] && printf '# DATABASE_URL=postgres://user:pass@host:5432/doska  # use managed Postgres instead of bundled\n'
     printf '# DOCKER_IMAGE_TAG=0.4.0  # pin a release instead of latest\n'
-    [ -z "$S3_BUCKET" ] && printf '# S3_BUCKET=  S3_REGION=  AWS_ACCESS_KEY_ID=  AWS_SECRET_ACCESS_KEY=  # card attachments\n'
+    [ -z "$S3_BUCKET" ] && printf '# S3_BUCKET=  S3_REGION=  AWS_ACCESS_KEY_ID=  AWS_SECRET_ACCESS_KEY=  # move attachments off the local volume into S3\n'
     :
   } > "$ENV_FILE"
   chmod 600 "$ENV_FILE"

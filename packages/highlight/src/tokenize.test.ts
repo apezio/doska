@@ -83,10 +83,7 @@ describe("tokenizeMarkdown", () => {
       "heading",
       "strong",
     ])
-    expect(kindsOf(tokenizeLine("> a *b*"), "b")).toEqual([
-      "quote",
-      "emphasis",
-    ])
+    expect(kindsOf(tokenizeLine("> a *b*"), "b")).toEqual(["quote", "emphasis"])
   })
 
   it("separates a link's label from its url", () => {

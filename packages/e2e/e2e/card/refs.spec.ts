@@ -69,6 +69,12 @@ function rowDisplayId(text: string): string {
   return id[0]
 }
 
+/** What picking a menu row writes: the target's id, plus its title as an alias. */
+function rowInsertion(text: string): string {
+  const id = rowDisplayId(text)
+  return `[[${id}|${text.replace(id, "").trim()}]]`
+}
+
 /** A card's "⋯" menu, reached by title alone — a referencing card renders the target's title too. */
 async function openCardMenu(page: Page, title: string) {
   await cardTitled(page, title)
@@ -78,7 +84,7 @@ async function openCardMenu(page: Page, title: string) {
 }
 
 test.describe("card references", () => {
-  test("the [[ menu inserts the referenced card's display id", async ({
+  test("the [[ menu inserts the target's display id and title", async ({
     page,
   }) => {
     const { targetId } = await boardWithTwoCards(page)
@@ -92,7 +98,8 @@ test.describe("card references", () => {
     await expect(item).toBeVisible()
     await item.click()
 
-    await expect(notes).toHaveValue(`[[${targetId}]]`)
+    // The title goes in as an alias so the body reads as prose while editing.
+    await expect(notes).toHaveValue(`[[${targetId}|Target card]]`)
   })
 
   test("the menu filters by title and leaves out the card being edited", async ({
@@ -134,6 +141,43 @@ test.describe("card references", () => {
     await page.getByRole("button", { name: "Save" }).click()
 
     await expect(cardRef(page, "Renamed target")).toBeVisible()
+  })
+
+  test("an alias pins the wording, so a re-title leaves it alone", async ({
+    page,
+  }) => {
+    const { targetId } = await boardWithTwoCards(page)
+    await editCardBody(
+      page,
+      "Source card",
+      `Blocked by [[${targetId}|Fix the sync bug]]`
+    )
+
+    const ref = cardRef(page, "Fix the sync bug")
+    await expect(ref).toBeVisible()
+    await expect(ref).toContainText(targetId)
+
+    await cardTitled(page, "Target card").click()
+    await expect(cardPanel(page)).toBeVisible()
+    await page.getByPlaceholder("Title").fill("Renamed target")
+    await page.getByRole("button", { name: "Save" }).click()
+
+    // The alias is a snapshot the writer chose; nothing rewrites it.
+    await expect(cardRef(page, "Fix the sync bug")).toBeVisible()
+    await expect(cardRef(page, "Renamed target")).toHaveCount(0)
+  })
+
+  test("a broken reference with an alias shows the id alongside it", async ({
+    page,
+  }) => {
+    await boardWithTwoCards(page)
+    await editCardBody(page, "Source card", "Blocked by [[NOPE-999|Some card]]")
+
+    // The alias is the only place that wording survives, but the id is what
+    // you need to fix the link, so both stay on screen.
+    const body = card(page, "Source card")
+    await expect(body.getByText("NOPE-999", { exact: false })).toBeVisible()
+    await expect(body.getByText("Some card", { exact: false })).toBeVisible()
   })
 
   test("the rendered reference picks up the target column's color", async ({
@@ -202,12 +246,12 @@ test.describe("card references", () => {
 
     const rows = refMenuRows(page)
     await expect(rows).toHaveCount(2)
-    const second = rowDisplayId((await rows.allInnerTexts())[1])
+    const second = rowInsertion((await rows.allInnerTexts())[1])
 
     await notes.press("ArrowDown")
     await notes.press("Enter")
 
-    await expect(notes).toHaveValue(`[[${second}]]`)
+    await expect(notes).toHaveValue(second)
   })
 
   test("the highlight wraps around the ends and Tab picks the row", async ({
@@ -222,14 +266,14 @@ test.describe("card references", () => {
 
     const rows = refMenuRows(page)
     await expect(rows).toHaveCount(2)
-    const first = rowDisplayId((await rows.allInnerTexts())[0])
+    const first = rowInsertion((await rows.allInnerTexts())[0])
 
     // Two rows, so a second ArrowDown wraps back to the first.
     await notes.press("ArrowDown")
     await notes.press("ArrowDown")
     await notes.press("Tab")
 
-    await expect(notes).toHaveValue(`[[${first}]]`)
+    await expect(notes).toHaveValue(first)
   })
 
   test("Escape closes the menu, leaves the panel open, and keeps it shut until the text changes", async ({
@@ -271,11 +315,12 @@ test.describe("card references", () => {
     for (let i = 0; i < 5; i++) await notes.press("ArrowLeft")
     await notes.pressSequentially("[[Targ")
 
+    const ref = `[[${targetId}|Target card]]`
     await refMenuItem(page, "Target card", targetId).click()
-    await expect(notes).toHaveValue(`Blocked by [[${targetId}]] soon`)
+    await expect(notes).toHaveValue(`Blocked by ${ref} soon`)
 
     await notes.pressSequentially("!")
-    await expect(notes).toHaveValue(`Blocked by [[${targetId}]]! soon`)
+    await expect(notes).toHaveValue(`Blocked by ${ref}! soon`)
   })
 
   test("deleting the target leaves the reference behind as a broken one", async ({
@@ -303,9 +348,7 @@ test.describe("card references", () => {
 
     await cardTitled(page, "Target card").click()
     await expect(cardPanel(page)).toBeVisible()
-    await page
-      .getByRole("button", { name: "Column: To Do. Move card" })
-      .click()
+    await page.getByRole("button", { name: "Column: To Do. Move card" }).click()
     await page.getByRole("menuitem", { name: "In Progress" }).click()
     await page.getByRole("button", { name: "Save" }).click()
 

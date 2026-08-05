@@ -32,9 +32,10 @@ Card bodies: GitHub-flavored Markdown, plus these
 - Task lists (- [ ] / - [x]) are first class: the card shows a done/total count
   and the boxes are clickable. Use check_task to tick one instead of rewriting
   the body.
-- [text] renders as a colored pill — a tag.
 - [[ROAD-12]] links to another card, Obsidian style, and picks up that card's
-  column color. Ordinary [label](url) links work as normal.
+  column color. It shows the card's current title, so prefer this form.
+  [[ROAD-12|Fix the sync bug]] pins the wording instead, and nothing updates it
+  when that card is renamed. Ordinary [label](url) links work as normal.
 - A line containing only -cut- ends the card's preview: the board card shows
   what is above it, the full body opens in the card view. Put the summary above
   the cut and the detail below it on long cards.

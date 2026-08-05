@@ -40,7 +40,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
       title: "Create card",
       description:
         "Add a card to a column. The body is Markdown in the board's " +
-        "dialect — task lists, [tag] pills, [[ROAD-12]] card links, " +
+        "dialect — task lists, [[ROAD-12]] card links, " +
         "==highlight==, and a -cut- line ending the board preview.",
       inputSchema: {
         boardId: z.string(),

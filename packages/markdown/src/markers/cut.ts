@@ -1,7 +1,7 @@
 import type { Marker } from "./types"
 
 // Matches a line containing only the cut marker (optionally surrounded by whitespace).
-const CUT_RE = /^[ \t]*-cut-[ \t]*$/m
+export const CUT_RE = /^[ \t]*-cut-[ \t]*$/m
 
 export const CUT_TOKEN = "-cut-visible-"
 

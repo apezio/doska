@@ -1,9 +1,7 @@
 /**
- * A `[[target]]` wikilink, as in Obsidian. The syntax is all this package
- * knows — what a target names, and what it renders as, belongs to the host
- * app; see the `renderWikilink` renderer.
+ * A `[[target]]` wikilink, as in Obsidian, optionally carrying its own label
  */
-export const WIKILINK_RE = /\[\[([^[\]\n]+)\]\]/g
+export const WIKILINK_RE = /\[\[([^[\]\n|]+)(?:\|([^[\]\n]*))?\]\]/g
 
 /** One link target offered by the `[[` menu. */
 export interface WikilinkOption {
@@ -14,9 +12,14 @@ export interface WikilinkOption {
   target: string
 }
 
-/** Wraps a target in the wikilink syntax. */
-export function toWikilink(target: string): string {
-  return `[[${target}]]`
+/**
+ * Wraps a target in the wikilink syntax. An `alias` is written alongside it as
+ * the label to display
+ */
+export function toWikilink(target: string, alias?: string): string {
+  const label = alias?.trim()
+  if (!label || /[[\]|\n]/.test(label)) return `[[${target}]]`
+  return `[[${target}|${label}]]`
 }
 
 /** Every target a body links to, in document order, without repeats. */

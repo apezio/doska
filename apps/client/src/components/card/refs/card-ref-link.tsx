@@ -7,18 +7,31 @@ import { useDeck } from "../../deck/deck-context"
 /**
  * A `[[ROAD-12]]` reference rendered inside a card body: the card's id, then
  * its title, then a pill for the column it sits in, tinted with that
- * column's color. Everything shown is read live rather than stored in the
- * text, so a rename, a move or a re-color propagates to every reference.
+ * column's color.
  */
-export function CardRefLink({ displayId }: { displayId: string }) {
+export function CardRefLink({
+  displayId,
+  alias,
+}: {
+  displayId: string
+  alias?: string
+}) {
   const [, navigate] = useLocation()
   const { id: deckId, prefix } = useDeck()
   const ref = useCardRef(deckId, prefix, displayId)
 
-  if (!ref) return <MdWikilink target={displayId} title="No such card" />
+  if (!ref)
+    return (
+      <MdWikilink
+        target={displayId}
+        label={alias}
+        unresolved
+        title="No such card"
+      />
+    )
 
   const { card, columnTitle, columnColor } = ref
-  const title = card.title || "Untitled card"
+  const title = alias || card.title || "Untitled card"
 
   return (
     <MdWikilink

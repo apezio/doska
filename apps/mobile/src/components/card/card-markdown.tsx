@@ -18,8 +18,13 @@ interface IProps {
 export function CardMarkdown({ deckId, prefix, children }: IProps) {
   const renderers = useMemo(
     () => ({
-      renderWikilink: (target: string) => (
-        <CardRefLink deckId={deckId} prefix={prefix} displayId={target} />
+      renderWikilink: (target: string, alias?: string) => (
+        <CardRefLink
+          deckId={deckId}
+          prefix={prefix}
+          displayId={target}
+          alias={alias}
+        />
       ),
     }),
     [deckId, prefix]

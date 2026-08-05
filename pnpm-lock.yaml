@@ -40,6 +40,9 @@ importers:
       '@doska/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@doska/highlight':
+        specifier: workspace:*
+        version: link:../../packages/highlight
       '@doska/markdown':
         specifier: workspace:*
         version: link:../../packages/markdown
@@ -309,7 +312,7 @@ importers:
         version: 57.0.4(expo@57.0.9)(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.3)(supports-color@10.2.2))(react@19.2.3)(supports-color@10.2.2)
       expo-router:
         specifier: ~57.0.9
-        version: 57.0.9(6b8dd4b32e9f5b2ac5c3a2ef79a3e95e)
+        version: 57.0.9(59d08f3f8e478b3065ae7ed8264107f5)
       expo-secure-store:
         specifier: ~57.0.1
         version: 57.0.1(expo@57.0.9)
@@ -603,6 +606,22 @@ importers:
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@22.20.1)(vite@8.1.5(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))
+
+  packages/highlight:
+    dependencies:
+      '@doska/markdown':
+        specifier: workspace:*
+        version: link:../markdown
+    devDependencies:
+      '@doska/configs':
+        specifier: workspace:*
+        version: link:../configs
+      eslint:
+        specifier: ^10
+        version: 10.8.0(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: ~6
+        version: 6.0.3
 
   packages/markdown:
     dependencies:
@@ -9489,7 +9508,7 @@ snapshots:
       ws: 8.21.1
       zod: 3.25.76
     optionalDependencies:
-      expo-router: 57.0.9(6b8dd4b32e9f5b2ac5c3a2ef79a3e95e)
+      expo-router: 57.0.9(59d08f3f8e478b3065ae7ed8264107f5)
       react-native: 0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.3)(supports-color@10.2.2)
     transitivePeerDependencies:
       - '@expo/dom-webview'
@@ -9766,7 +9785,7 @@ snapshots:
       react: 19.2.3
     optionalDependencies:
       '@expo/metro-runtime': 57.0.8(@expo/log-box@57.0.2)(expo@57.0.9)(react-dom@19.2.3(react@19.2.3))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.3)(supports-color@10.2.2))(react@19.2.3)
-      expo-router: 57.0.9(6b8dd4b32e9f5b2ac5c3a2ef79a3e95e)
+      expo-router: 57.0.9(59d08f3f8e478b3065ae7ed8264107f5)
       react-dom: 19.2.3(react@19.2.3)
     transitivePeerDependencies:
       - supports-color
@@ -12402,7 +12421,7 @@ snapshots:
     dependencies:
       react-native: 0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.3)(supports-color@10.2.2)
 
-  expo-router@57.0.9(6b8dd4b32e9f5b2ac5c3a2ef79a3e95e):
+  expo-router@57.0.9(59d08f3f8e478b3065ae7ed8264107f5):
     dependencies:
       '@expo/log-box': 57.0.2(@expo/dom-webview@57.0.1)(expo@57.0.9)(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.3)(supports-color@10.2.2))(react@19.2.3)
       '@expo/metro-runtime': 57.0.8(@expo/log-box@57.0.2)(expo@57.0.9)(react-dom@19.2.3(react@19.2.3))(react-native@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.17)(react@19.2.3)(supports-color@10.2.2))(react@19.2.3)

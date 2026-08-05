@@ -10,8 +10,8 @@ import { createContext, useContext, type ReactNode } from "react"
 export interface MarkdownRenderers {
   /** Renders an `attachment:<key>` image ref. */
   renderImage?: (attachmentKey: string, alt: string) => ReactNode
-  /** Renders a `[[target]]` wikilink. */
-  renderWikilink?: (target: string) => ReactNode
+  /** Renders a `[[target]]` wikilink; `alias` is the label its text carried. */
+  renderWikilink?: (target: string, alias?: string) => ReactNode
 }
 
 const NONE: MarkdownRenderers = {}

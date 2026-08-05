@@ -46,6 +46,7 @@ services:
       start_period: 40s
     networks:
       - internal
+      - dokploy-network
     restart: unless-stopped
 
   web:

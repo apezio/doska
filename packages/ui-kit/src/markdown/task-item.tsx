@@ -6,11 +6,7 @@ function stopPropagation(event: MouseEvent) {
   event.stopPropagation()
 }
 
-/**
- * A GFM task-list item. A "loose" list wraps each item's content in a `<p>`
- * while a "tight" one puts it straight in the `<li>`; the first paragraph goes
- * inline so the checkbox — its sibling, not its child — stays on the same line.
- */
+/** A GFM task-list item*/
 export function MdTaskItem({
   checked,
   onToggle,

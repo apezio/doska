@@ -21,6 +21,14 @@ export function sanitizeUrl(url: string): string {
   return SAFE_PROTOCOL.test(url.slice(0, colon)) ? url : ""
 }
 
+const BARE_DOMAIN = /^[\w-]+(\.[\w-]+)+(?=[/?#]|$)/
+
+export function linkUrl(url: string): string {
+  const safe = sanitizeUrl(url)
+  if (!BARE_DOMAIN.test(safe)) return safe
+  return `https://${safe}`
+}
+
 export type ImageSource =
   { kind: "attachment"; key: string } | { kind: "url"; url: string }
 

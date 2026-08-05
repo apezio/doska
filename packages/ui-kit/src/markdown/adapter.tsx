@@ -25,12 +25,6 @@ import { MdWikilink } from "./wikilink"
 import { toAttachmentSrc } from "@doska/markdown"
 import type { MarkdownAdapter, MarkdownRenderers } from "@doska/markdown"
 
-/**
- * The DOM half of the renderer: one adapter method per node kind, each handing
- * off to the ui-kit markdown component that draws it. Nothing here decides how
- * a body looks — the components own that, and the landing page reuses them
- * without going through the renderer at all.
- */
 export function createWebAdapter({
   renderImage,
   renderWikilink,

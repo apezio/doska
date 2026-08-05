@@ -8,6 +8,7 @@ import { isDesktop } from "@/lib/platform"
 import { bootstrapClient } from "@doska/core/bootstrap"
 import { trackAppHeight } from "@/lib/app-height"
 import { blockEdgeSwipeNavigation } from "@/lib/edge-swipe"
+import { initExternalLinks } from "@/lib/external-links"
 import { initZoom } from "@/lib/zoom"
 import { requestPersistentStorage } from "@/lib/persist"
 import { queryClient } from "@doska/core/query-client"
@@ -24,6 +25,8 @@ trackAppHeight()
 blockEdgeSwipeNavigation()
 
 initZoom()
+
+initExternalLinks()
 
 // Not awaited: the answer only affects eviction policy, never this render.
 if (!isDesktop()) void requestPersistentStorage()

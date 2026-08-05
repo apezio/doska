@@ -1,7 +1,6 @@
 import type { MouseEvent } from "react"
 import { cn } from "../lib/cn"
 
-/** Images and GIFs fit the body's width, whatever they are. */
 export function MdImage({
   src,
   alt,

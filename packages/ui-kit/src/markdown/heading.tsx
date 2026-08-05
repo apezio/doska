@@ -1,10 +1,6 @@
 import { createElement, type ReactNode } from "react"
 import { cn } from "../lib/cn"
 
-/**
- * All levels render at body size — a card is too short for a heading scale;
- * the third level and below step down in color instead.
- */
 export function MdHeading({
   depth,
   children,

@@ -2,10 +2,7 @@ import type { CSSProperties, ReactNode } from "react"
 import { tagHue } from "@doska/tokens/tags"
 
 /**
- * `[content]` rendered as a colored pill. The color index comes from hashing
- * the text in `remarkTags`, so the same text always gets the same pill.
- * Light mode is a pale tint with colored text, dark a translucent fill with
- * light text — the same split the wikilink badge uses.
+ * `[content]` rendered as a colored pill
  */
 export function MdTag({
   color,

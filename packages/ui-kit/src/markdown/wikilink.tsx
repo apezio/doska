@@ -18,15 +18,7 @@ const SEGMENT =
   "inline box-decoration-clone bg-muted px-[0.5em] py-[0.15em] text-muted-foreground"
 
 /**
- * A `[[target]]` reference, laid out like an issue reference: the raw target,
- * the resolved label, and any trailing detail, butted together into one chip.
- * The segments carry their own backgrounds rather than sitting on a shared one,
- * so the detail can be tinted independently — only the outer corners are
- * rounded, which is what makes the row read as a single block.
- *
- * They stay inline rather than flex so a long label wraps with the surrounding
- * text instead of overflowing; the shared font-size and line-height is what
- * keeps their painted heights equal.
+ * A `[[target]]` reference
  */
 export function MdWikilink({
   target,

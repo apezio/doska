@@ -1,11 +1,6 @@
 import type { ReactNode } from "react"
 import { cn } from "../lib/cn"
 
-/**
- * The container a rendered body sits in. Holds the typography every block
- * inherits, and trims the outer blocks' margins so a body sits flush in
- * whatever it is placed in.
- */
 export function MarkdownRoot({
   children,
   className,

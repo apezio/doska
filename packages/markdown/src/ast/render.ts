@@ -1,7 +1,7 @@
 import type { Root } from "mdast"
 import type { ReactNode } from "react"
 import { markdownExtra, type MdNode } from "./parse"
-import { imageSource, sanitizeUrl, type ImageSource } from "./url"
+import { imageSource, linkUrl, type ImageSource } from "./url"
 import type {
   Align,
   ListMarker,
@@ -80,7 +80,7 @@ function renderInline(node: MdNode, ctx: Ctx, key: string): ReactNode {
 
     case "link":
       return adapter.link(
-        sanitizeUrl(node.url ?? ""),
+        linkUrl(node.url ?? ""),
         renderInlines(node.children, ctx),
         key
       )
@@ -89,7 +89,7 @@ function renderInline(node: MdNode, ctx: Ctx, key: string): ReactNode {
       const definition = ctx.definitions.get(node.identifier ?? "")
       const children = renderInlines(node.children, ctx)
       if (!definition) return adapter.text(`[${flatten(node)}]`)
-      return adapter.link(sanitizeUrl(definition.url), children, key)
+      return adapter.link(linkUrl(definition.url), children, key)
     }
 
     case "image":

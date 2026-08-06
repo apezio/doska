@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist/server && node prerender.js",
+    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist/server && node prerender/index.js",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc -b --noEmit",
@@ -24,7 +24,9 @@
     "react-dom": "^19.2.8",
     "react-icons": "^5.7.0",
     "tailwind-merge": "3.6.0",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "vfile": "^6.0.3",
+    "vfile-matter": "^5.0.1"
   },
   "devDependencies": {
     "@doska/configs": "workspace:*",

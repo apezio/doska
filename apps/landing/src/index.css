@@ -19,6 +19,7 @@
   --color-terminal-border: var(--terminal-border);
   --color-terminal-accent: var(--terminal-accent);
   --color-terminal-ok: var(--terminal-ok);
+  --color-docs-nav: var(--docs-nav);
 }
 
 /* The terminal's cursor blink — the only motion in the card. */
@@ -49,6 +50,14 @@
   --terminal-border: #e4e5ea;
   --terminal-accent: #725cff;
   --terminal-ok: #3f8f76;
+  /* Code blocks stay dark in both themes, so these are not theme-flipped. */
+  --code: #1d2230;
+  --code-foreground: #e6e8ee;
+  --code-border: #ffffff1a;
+  --inline-code: #e9eaf1;
+  --inline-code-foreground: #1e2436;
+  --inline-code-border: #dcdee8;
+  --docs-nav: #4b5266;
 }
 
 .dark:root {
@@ -59,6 +68,10 @@
   --terminal-border: #ffffff14;
   --terminal-accent: #9585ff;
   --terminal-ok: #66ae96;
+  --inline-code: #343c54;
+  --inline-code-foreground: #f7f7f8;
+  --inline-code-border: #ffffff1f;
+  --docs-nav: #999da9;
 }
 
 .docs-prose h2 {
@@ -96,6 +109,27 @@
 }
 .docs-prose pre code {
   font-size: 0.875rem;
+}
+
+.docs-prose pre {
+  background-color: var(--code);
+  border-color: var(--code-border);
+  color: var(--code-foreground);
+}
+/* The copy button sits on the dark block, so it cannot follow the page theme. */
+.docs-prose [aria-label="Copy code"] {
+  background-color: #ffffff14;
+  border-color: var(--code-border);
+  color: #e6e8eeb3;
+}
+.docs-prose [aria-label="Copy code"]:hover {
+  color: var(--code-foreground);
+}
+
+.docs-prose :not(pre) > code {
+  background-color: var(--inline-code);
+  border-color: var(--inline-code-border);
+  color: var(--inline-code-foreground);
 }
 
 @layer base {

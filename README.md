@@ -9,6 +9,13 @@ replicated to every device.
 
 Runs in the browser, installs as a PWA, or ships as a native macOS app.
 
+📖 **[Documentation](https://doska.sh/docs)**: [self-hosting](https://doska.sh/docs/self-hosting),
+[environment variables](https://doska.sh/docs/self-hosting/environment),
+[HTTPS](https://doska.sh/docs/self-hosting/https),
+[attachments](https://doska.sh/docs/self-hosting/attachments),
+[backups](https://doska.sh/docs/self-hosting/backups),
+[sync](https://doska.sh/docs/sync), [MCP](https://doska.sh/docs/mcp).
+
 > Browser storage isn't permanent. The app asks the browser not to evict it, but
 > that's best-effort: the browser can still clear it, and "clear site data"
 > always will. So treat local-only as a working copy. If the boards matter, run
@@ -37,7 +44,8 @@ Runs in the browser, installs as a PWA, or ships as a native macOS app.
 - **Local-first** storage (IndexedDB): reads and writes hit the browser, not the
   network, so the UI is instant and works offline.
 - **Opt-in sync**: give it a server you control and boards replicate across your
-  devices in the background, every couple of seconds or on `⌘`+`S`.
+  devices in the background, every couple of seconds or on `⌘`+`S`. How it works:
+  [doska.sh/docs/sync](https://doska.sh/docs/sync).
 - **Deleting is reversible**. `⌘`+`Z` takes back the last delete; everything
   else waits in the trash.
 
@@ -55,7 +63,7 @@ Runs in the browser, installs as a PWA, or ships as a native macOS app.
 
 Run your own server to keep your boards for real and sync them across devices.
 Without one they live only in the browser: fine for trying it out, not for
-anything you want to keep.
+anything you want to keep. Full guide: [doska.sh/docs/self-hosting](https://doska.sh/docs/self-hosting).
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/romenkova/doska/main/install.sh -o install.sh && sh install.sh
@@ -90,6 +98,9 @@ Postgres comes bundled and lives in a Docker volume. To run it elsewhere, point
 - `DATABASE_URL` — point at your own managed Postgres (optional).
 - `BASE_URL` — this server's public origin. Cookie sync works without it; MCP
   OAuth needs it.
+
+Every variable is listed in
+[the docs](https://doska.sh/docs/self-hosting/environment).
 
 > **Single user per server:** the credentials in `.env` are the only account currently.
 
@@ -129,6 +140,9 @@ docker compose -f docker-compose.selfhost.yml up -d
 (If you use a managed `DATABASE_URL`, back it up through your provider instead —
 `backup.sh` skips it.)
 
+Restoring attachments, and what the script does step by step:
+[doska.sh/docs/self-hosting/backups](https://doska.sh/docs/self-hosting/backups).
+
 ## Desktop app
 
 Download the latest macOS build from
@@ -150,7 +164,8 @@ claude mcp add --transport http doska https://your-server/mcp
 
 Sign-in happens in the browser on the first call (OAuth). Edits go through the
 same sync tables the apps use, so they reach your other devices on their next
-sync. Tools are listed in [packages/mcp/README.md](packages/mcp/README.md).
+sync. Tools are listed in [packages/mcp/README.md](packages/mcp/README.md); the
+setup guide is at [doska.sh/docs/mcp](https://doska.sh/docs/mcp).
 
 ## Development
 

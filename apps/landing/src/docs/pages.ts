@@ -15,18 +15,22 @@ export interface DocPage {
   body: string
 }
 
-const DIRECTORY = "../../docs/"
+/** Where `@docs` resolves; see the alias in `vite.config.ts`. */
+const DIRECTORY = "/packages/docs/content/"
 
-const sources = import.meta.glob<string>("../../docs/**/*.md", {
+const sources = import.meta.glob<string>("@docs/**/*.md", {
   query: "?raw",
   import: "default",
   eager: true,
 })
 
-/** `docs/self-hosting/index.md` is `/docs/self-hosting`; `docs/mcp.md`, `/docs/mcp`. */
+/**
+ * `self-hosting/index.md` is `/docs/self-hosting`; `mcp.md`, `/docs/mcp`.
+ * Aliased glob keys are absolute paths, so the package directory is cut off.
+ */
 function pathFor(file: string): string {
   const relative = file
-    .slice(DIRECTORY.length)
+    .slice(file.indexOf(DIRECTORY) + DIRECTORY.length)
     .replace(/\.md$/, "")
     .replace(/(^|\/)index$/, "")
   return relative ? `/docs/${relative}` : "/docs"

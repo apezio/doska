@@ -10,11 +10,6 @@ import {
 } from "@doska/ui-kit"
 import { depth, docs, type DocPage } from "./pages"
 
-/**
- * A sticky column on desktop; on mobile the same list, in the drawer the app
- * puts its boards in. Which one shows is a media query rather than a measured
- * breakpoint, so the prerendered HTML matches whatever hydrates it.
- */
 export function DocsNav({ current }: { current: DocPage }) {
   return (
     <>
@@ -49,7 +44,6 @@ function DocsDrawer({ current }: { current: DocPage }) {
           <SheetHeader>
             <SheetTitle>Documentation</SheetTitle>
           </SheetHeader>
-          {/* Links are full page loads, so the drawer never needs closing. */}
           <div className="overflow-y-auto px-2 pb-4">
             <DocsLinks current={current} />
           </div>
@@ -68,7 +62,7 @@ function DocsLinks({ current }: { current: DocPage }) {
             href={doc.path}
             aria-current={doc === current ? "page" : undefined}
             className={cn(
-              "block rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+              "block rounded-md px-3 py-1.5 text-sm text-docs-nav transition-colors hover:bg-muted hover:text-foreground",
               doc === current && "bg-muted font-semibold text-foreground"
             )}
           >

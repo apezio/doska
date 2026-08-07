@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@doska/docs": "workspace:*",
     "@doska/markdown": "workspace:*",
     "@doska/tokens": "workspace:*",
     "@doska/ui-kit": "workspace:*",

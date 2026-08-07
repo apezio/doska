@@ -11,11 +11,20 @@ export function SiteHeader() {
           <img src="/favicon.svg" alt="" className="size-7" />
           Doska
         </a>
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-0.5">
           <ThemeToggle />
           <Button
-            variant="outline"
-            className="ml-2 h-9 gap-2 px-4"
+            variant="ghost"
+            nativeButton={false}
+            className="h-9 gap-2 px-4"
+            render={<a href="/docs" target="_blank" rel="noreferrer" />}
+          >
+            Docs
+          </Button>
+          <Button
+            variant="ghost"
+            nativeButton={false}
+            className="h-9 gap-2 px-4"
             render={<a href={repo} target="_blank" rel="noreferrer" />}
           >
             <SiGithub className="size-4" />

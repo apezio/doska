@@ -16,6 +16,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // The docs markdown lives in @doska/docs; import.meta.glob can only walk
+      // a directory it can resolve at build time, so point it at the package.
+      "@docs": path.resolve(__dirname, "../../packages/docs/content"),
     },
   },
 })

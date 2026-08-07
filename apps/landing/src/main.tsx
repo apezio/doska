@@ -1,11 +1,17 @@
 import { StrictMode } from "react"
-import { hydrateRoot } from "react-dom/client"
+import { createRoot, hydrateRoot } from "react-dom/client"
 import { App } from "./App"
 import "./index.css"
 
-hydrateRoot(
-  document.getElementById("root")!,
+const root = document.getElementById("root")!
+const app = (
   <StrictMode>
-    <App />
+    <App path={window.location.pathname} />
   </StrictMode>
 )
+
+if (import.meta.env.DEV) {
+  createRoot(root).render(app)
+} else {
+  hydrateRoot(root, app)
+}

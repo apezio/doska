@@ -17,6 +17,7 @@ import { DashboardsList } from "./dashboards-list"
 import { ThemeToggle } from "./theme-toggle"
 import { SidebarAccount } from "./sidebar-account"
 import { GitHubButton } from "./github-button"
+import { DocsButton } from "./docs-button"
 import { SettingsButton } from "@/components/settings/settings-button"
 
 export function AppSidebar() {
@@ -69,6 +70,7 @@ export function AppSidebar() {
       <SidebarFooter>
         <ThemeToggle />
         <SettingsButton />
+        <DocsButton />
         <GitHubButton />
         <SidebarAccount />
       </SidebarFooter>

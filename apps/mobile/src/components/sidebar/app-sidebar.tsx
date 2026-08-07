@@ -15,6 +15,7 @@ import { ROUTES } from "@/lib/routes"
 import { setLastBoard } from "@doska/core/last-board"
 import { useActiveBoard } from "@/lib/use-active-board"
 import { DashboardsList } from "./dashboards-list"
+import { DocsButton } from "./docs-button"
 import { GitHubButton } from "./github-button"
 import { SidebarAccount } from "./sidebar-account"
 import { SidebarButton } from "./sidebar-button"
@@ -99,6 +100,7 @@ export function AppSidebar({
 
       <View className="gap-0.5 border-t border-sidebar-border px-2 pt-2">
         <ThemeToggle />
+        <DocsButton />
         <GitHubButton />
         <SidebarAccount />
       </View>

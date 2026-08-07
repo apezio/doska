@@ -1,11 +1,10 @@
 /** The sitemap is generated from the route list so it can't drift from it. */
-export function sitemap(site, paths) {
-  const urls = paths.map((path) =>
+export function sitemap(site, entries) {
+  const urls = entries.map(({ path, updated }) =>
     [
       "  <url>",
       `    <loc>${site}${path}</loc>`,
-      "    <changefreq>weekly</changefreq>",
-      `    <priority>${path === "/" ? "1.0" : "0.7"}</priority>`,
+      `    <lastmod>${updated}</lastmod>`,
       "  </url>",
     ].join("\n")
   )

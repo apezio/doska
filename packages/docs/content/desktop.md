@@ -3,6 +3,7 @@ title: Desktop and mobile
 nav: Desktop & mobile
 description: "The Doska macOS app, installing the client as a PWA"
 order: 4
+updated: "2026-08-07"
 ---
 
 The same client runs in three places: a browser tab, a phone home screen, and a

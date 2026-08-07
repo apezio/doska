@@ -3,6 +3,7 @@ title: Documentation
 nav: Overview
 description: "Doska is a local-first Kanban board with first-class Markdown support."
 order: 1
+updated: "2026-08-07"
 ---
 
 Doska is a Kanban board where the cards are Markdown. It runs in your browser

@@ -12,6 +12,8 @@ export interface DocPage {
   description: string
   /** Sort order among its siblings. */
   order: number
+  /** `YYYY-MM-DD`, the page's `<lastmod>` in the sitemap. */
+  updated: string
   body: string
 }
 
@@ -44,9 +46,20 @@ function read(file: string, source: string): DocPage {
   matter(vfile, { strip: true })
   const attributes = (vfile.data.matter ?? {}) as Partial<Attributes>
 
-  for (const key of ["title", "nav", "description", "order"] as const)
+  for (const key of [
+    "title",
+    "nav",
+    "description",
+    "order",
+    "updated",
+  ] as const)
     if (attributes[key] === undefined)
       throw new Error(`${file}: frontmatter is missing "${key}"`)
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(attributes.updated as string))
+    throw new Error(
+      `${file}: "updated" must be "YYYY-MM-DD", not "${attributes.updated}"`
+    )
 
   return {
     ...(attributes as Attributes),

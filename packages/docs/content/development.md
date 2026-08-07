@@ -3,6 +3,7 @@ title: Development
 nav: Development
 description: "Run the Doska monorepo locally: requirements, commands, repository layout, and the self-host smoke tests."
 order: 6
+updated: "2026-08-07"
 ---
 
 Doska is a pnpm + Turborepo monorepo. Requires **Node 22+** and **pnpm 11+**

@@ -3,6 +3,7 @@ title: Environment variables
 nav: Environment
 description: "Every variable a self-hosted Doska reads from .env: what it does, and whether it is required."
 order: 1
+updated: "2026-08-07"
 ---
 
 `AUTH_LOGIN`, `AUTH_PASSWORD` and `AUTH_SECRET` are required: the server has no

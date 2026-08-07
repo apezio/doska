@@ -3,6 +3,7 @@ title: Attachments
 nav: Attachments
 description: "Where card files are stored on a self-hosted Doska: the local volume, or S3-compatible buckets."
 order: 3
+updated: "2026-08-07"
 ---
 
 Doska has two ways to store data: a **local volume**, or an **S3 bucket**.

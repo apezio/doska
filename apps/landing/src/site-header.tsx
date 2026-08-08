@@ -16,7 +16,7 @@ export function SiteHeader() {
           <Button
             variant="ghost"
             nativeButton={false}
-            className="h-9 gap-2 px-4"
+            className="h-9 gap-2 px-4 plausible-event-name=Nav+Docs"
             render={<a href="/docs" target="_blank" rel="noreferrer" />}
           >
             Docs
@@ -24,7 +24,7 @@ export function SiteHeader() {
           <Button
             variant="ghost"
             nativeButton={false}
-            className="h-9 gap-2 px-4"
+            className="h-9 gap-2 px-4 plausible-event-name=Nav+GitHub"
             render={<a href={repo} target="_blank" rel="noreferrer" />}
           >
             <SiGithub className="size-4" />

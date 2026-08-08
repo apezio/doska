@@ -39,7 +39,7 @@ export function Hero() {
         <div className="mt-7 flex flex-wrap items-center gap-3">
           <Button
             size="lg"
-            className="h-11 w-full gap-2 px-5 text-base sm:w-auto"
+            className="h-11 w-full gap-2 px-5 text-base sm:w-auto plausible-event-name=CTA+App"
             render={<a href={app} target="_blank" rel="noreferrer" />}
           >
             <ExternalLink className="size-4" />
@@ -48,7 +48,7 @@ export function Hero() {
           <Button
             variant="outline"
             size="lg"
-            className="h-11 w-full gap-2 px-5 text-base sm:w-auto"
+            className="h-11 w-full gap-2 px-5 text-base sm:w-auto plausible-event-name=CTA+GitHub"
             render={<a href={repo} target="_blank" rel="noreferrer" />}
           >
             <SiGithub className="size-4" />
@@ -57,7 +57,7 @@ export function Hero() {
           <Button
             variant="outline"
             size="lg"
-            className="h-11 w-full gap-2 px-5 text-base sm:w-auto"
+            className="h-11 w-full gap-2 px-5 text-base sm:w-auto plausible-event-name=CTA+Download+macOS"
             render={<a href={releases} target="_blank" rel="noreferrer" />}
           >
             <Download className="size-4" />

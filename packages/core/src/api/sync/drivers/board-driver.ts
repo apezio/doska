@@ -4,7 +4,8 @@ import { orpc } from "../orpc"
 import * as board from "./board-channel"
 import * as generic from "./channel-shared"
 
-const CURSOR_PREFIX = "cursor:"
+/** Where a board's pull cursor lives in `META_STORE`. */
+export const boardCursorKey = (boardId: string) => `cursor:${boardId}`
 
 /** Per-board sync against deck's server via oRPC's `board.sync`. */
 export class DeckSyncDriver implements SyncDriver<string, Change> {
@@ -17,11 +18,11 @@ export class DeckSyncDriver implements SyncDriver<string, Change> {
   }
 
   loadCursor(boardId: string): Promise<number> {
-    return generic.loadCursor(CURSOR_PREFIX + boardId)
+    return generic.loadCursor(boardCursorKey(boardId))
   }
 
   saveCursor(boardId: string, value: number): Promise<void> {
-    return generic.saveCursor(CURSOR_PREFIX + boardId, value)
+    return generic.saveCursor(boardCursorKey(boardId), value)
   }
 
   collectChanges(boardId: string, dirty: DirtyStore) {

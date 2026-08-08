@@ -18,15 +18,18 @@ export const TEST_CREDENTIALS = {
  * The sign-in control only appears once the session check resolves to
  * signed-out, which Playwright auto-waits for.
  */
-export async function signIn(page: Page): Promise<void> {
+export async function signIn(
+  page: Page,
+  credentials: { login: string; password: string } = TEST_CREDENTIALS
+): Promise<void> {
   await page.goto("/")
   // `exact` so this picks the sign-in control, not the account row that wraps it
   // (whose accessible name also ends in "Sign in to sync").
   await page
     .getByRole("button", { name: "Sign in to sync", exact: true })
     .click()
-  await page.getByPlaceholder("Login").fill(TEST_CREDENTIALS.login)
-  await page.getByPlaceholder("Password").fill(TEST_CREDENTIALS.password)
+  await page.getByPlaceholder("Login").fill(credentials.login)
+  await page.getByPlaceholder("Password").fill(credentials.password)
   await page.getByRole("button", { name: "Sign in", exact: true }).click()
   // Wait for the *signed-in* control, not the absence of the signed-out one: an
   // open modal already hides the sidebar from the a11y tree, so asserting the

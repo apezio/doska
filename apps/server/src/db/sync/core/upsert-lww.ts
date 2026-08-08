@@ -7,20 +7,27 @@ import type { Tx } from "./counter"
  * newer than what's stored (by `updatedAt`), keeping whatever `seq` the caller
  * stamped on it. Returns whether it wrote, so callers advance their counter
  * only on a real write — a change older than what we hold consumes nothing.
+ *
+ * `insertOnly` names columns to drop from the conflict `set`, for values that
+ * belong to whoever created the row and must survive every later push.
  */
 export async function upsertLWW<T extends PgTable>(
   tx: Tx,
   table: T,
   idCol: PgColumn,
   updatedAtCol: PgColumn,
-  row: T["$inferInsert"] & { id: string; updatedAt: number }
+  row: T["$inferInsert"] & { id: string; updatedAt: number },
+  insertOnly: (keyof T["$inferInsert"])[] = []
 ): Promise<boolean> {
+  const set = { ...row }
+  for (const key of insertOnly) delete set[key]
+
   const written = await tx
     .insert(table)
     .values(row)
     .onConflictDoUpdate({
       target: idCol,
-      set: row,
+      set,
       setWhere: lt(updatedAtCol, row.updatedAt),
     })
     .returning({ id: idCol })

@@ -1,6 +1,30 @@
 # Changelog
 
-## [Unreleased]
+## Unreleased
+
+### Added
+
+- Accounts: a server holds more than one person. The admin adds them
+  from the sidebar's **Accounts** screen, sets anyone's password, and
+  deactivates without deleting — a deactivated account can't sign in and its
+  boards stay put. Nobody can sign themselves up.
+- Every board belongs to an account, and sync only ever serves the signed-in
+  one's. Someone else's board is a 403, and to an agent over MCP it simply
+  isn't there.
+- Docs update, docs pages beta tags.
+
+### Changed
+
+- `AUTH_LOGIN` / `AUTH_PASSWORD` seed the first admin account on first boot and
+  do nothing after that. Editing them and restarting won't change a password;
+  the Accounts screen will.
+- Signing in as a different account wipes the local store first, so one person's
+  boards can't surface in another's session. Signing out leaves the data alone —
+  it's still the same person's.
+- A board the server stops serving is dropped locally, rows, cursor and pending
+  writes together, instead of being retried forever.
+
+## [0.17.0] - 2026-08-08
 
 ### Added
 

@@ -3,7 +3,7 @@ title: Self-hosting
 nav: Self-hosting
 description: "Run the Doska with Docker: the one-line installer, the environment variables, and connecting your devices to it."
 order: 2
-updated: "2026-08-07"
+updated: "2026-08-09"
 ---
 
 ## Prerequisites
@@ -40,8 +40,10 @@ Instead of downloading the files via the links, you can also find them in the Gi
 Open the web UI at `http://<your-host>:8080` and sign in with the `AUTH_LOGIN` /
 `AUTH_PASSWORD` from your `.env`.
 
-> **Single user per server.** The credentials in `.env` are currently the only
-> account.
+Those credentials create the **first admin** account on first boot. The admin
+can add more accounts from the app — see [Accounts](/docs/accounts), currently
+in beta. Boards are private to the account that made them and can't be shared
+yet.
 
 ## Configuration
 
@@ -63,6 +65,7 @@ instead of the self-host compose file.
 ## Next
 
 - [Environment](/docs/self-hosting/environment): every variable in `.env`.
+- [Accounts](/docs/accounts): add more people to this server.
 - [HTTPS](/docs/self-hosting/https): a certificate for a public deployment.
 - [Attachments](/docs/self-hosting/attachments): keep files in S3 instead of a
   local volume.

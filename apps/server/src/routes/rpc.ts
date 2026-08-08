@@ -12,7 +12,7 @@ export function registerRpcRoutes(app: FastifyInstance): void {
   app.all("/api/rpc/*", async (req, reply) => {
     const { matched } = await handler.handle(req.raw, reply.raw, {
       prefix: "/api/rpc",
-      context: {},
+      context: { userId: req.userId },
     })
     if (matched) return reply.hijack()
     reply.code(404).send("Not Found")

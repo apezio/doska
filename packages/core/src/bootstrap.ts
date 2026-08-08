@@ -1,5 +1,6 @@
-import { onSessionExpired } from "./api/auth"
+import { fetchSession, onSessionExpired, SIGNED_OUT } from "./api/auth"
 import { seed } from "./api/db/db"
+import { reconcileIdentity } from "./api/identity"
 import { purgeExpired } from "./api/operations"
 import { seedClock, startBackgroundSync } from "./api/sync"
 import { keys } from "./data/keys"
@@ -15,12 +16,17 @@ import { queryClient } from "./query-client"
  */
 export async function bootstrapClient(syncIntervalMs?: number): Promise<void> {
   onSessionExpired(() => {
-    queryClient.setQueryData(keys.session, { authed: false, login: null })
+    queryClient.setQueryData(keys.session, SIGNED_OUT)
   })
 
   // Restore the high-water mark before any stamp is issued, or a local edit can
   // be timestamped below one already handed out and lose LWW silently.
   await seedClock()
+
+  // Whose data is on this device, settled before the first reconcile can run
+  const session = await fetchSession().catch(() => null)
+  if (session) queryClient.setQueryData(keys.session, session)
+  await reconcileIdentity(session?.userId ?? null)
 
   // Below `seedClock` and not above it: this reconciles once before it returns,
   // which is already too late to restore the clock.

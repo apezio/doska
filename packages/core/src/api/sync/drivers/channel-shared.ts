@@ -23,6 +23,15 @@ export async function saveCursor(key: string, value: number): Promise<void> {
   }
 }
 
+/** Forgets a cursor, so a scope that comes back is pulled from scratch. */
+export async function clearCursor(key: string): Promise<void> {
+  try {
+    await runtime().db.delete(META_STORE, key)
+  } catch {
+    // Storage unavailable; a stale cursor is harmless next to a failed drop.
+  }
+}
+
 export function refOf(change: Change | DashboardChange): string {
   return `${change.store}/${change.record.id}`
 }

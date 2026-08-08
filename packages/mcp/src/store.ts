@@ -5,11 +5,11 @@ import type { Change, Dashboard, DashboardChange } from "@doska/contract"
  * reads hand back whole records (tombstones included), writes push whole records
  * under last-writer-wins, and a delete is a tombstone.
  *
- * Two implementations exist and the tools cannot tell them apart: the server
- * (`apps/server`) goes straight onto the sync tables, the stdio client
- * (`apps/mcp`) goes over the sync API of a remote server. Making sense of what
- * comes back — dropping tombstones, ordering, splitting columns from cards — is
- * `createBoard`'s job, so neither implementation has to do it.
+ * The one implementation today is the server's (`apps/server`), straight onto
+ * the sync tables. Whose boards those are belongs to the implementation, not
+ * here: the tools never name a user. Making sense of what comes back — dropping
+ * tombstones, ordering, splitting columns from cards — is `createBoard`'s job,
+ * so no implementation has to do it.
  */
 export type BoardStore = {
   readDashboards(): Promise<Dashboard[]>

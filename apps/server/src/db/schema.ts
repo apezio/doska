@@ -49,15 +49,20 @@ export const counters = pgTable("counters", {
  * board counter: the list is board-independent, so its pull is `seq > since`
  * across every dashboard.
  */
-export const dashboards = pgTable("dashboards", {
-  id: text("id").primaryKey(),
-  title: text("title").notNull(),
-  position: text("position").notNull(),
-  prefix: text("prefix").notNull().default(""),
-  updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
-  deletedAt: bigint("deleted_at", { mode: "number" }),
-  seq: integer("seq").notNull(),
-})
+export const dashboards = pgTable(
+  "dashboards",
+  {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    position: text("position").notNull(),
+    prefix: text("prefix").notNull().default(""),
+    ownerId: text("owner_id"),
+    updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
+    deletedAt: bigint("deleted_at", { mode: "number" }),
+    seq: integer("seq").notNull(),
+  },
+  (t) => [index("dashboards_owner_seq").on(t.ownerId, t.seq)]
+)
 
 export const columns = pgTable(
   "columns",

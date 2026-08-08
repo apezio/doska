@@ -1,4 +1,8 @@
 import { useLogin } from "@doska/core/mutations"
+import {
+  UNCLAIMED_BOARDS_WARNING,
+  useUnclaimedLocalBoards,
+} from "@doska/core/queries"
 import { Button, Input } from "@doska/ui-kit-mobile"
 import { useRouter } from "expo-router"
 import { useState } from "react"
@@ -11,6 +15,7 @@ export function SyncSetup() {
   const [login, setLogin] = useState("")
   const [password, setPassword] = useState("")
   const { mutate, isPending, isError } = useLogin()
+  const { data: unclaimedBoards } = useUnclaimedLocalBoards()
 
   function submit() {
     // There is no same-origin server to fall back on, so the URL has to be
@@ -36,6 +41,11 @@ export function SyncSetup() {
         <Text className="text-[13px] text-muted-foreground">
           Your boards stay on this device until you set up sync.
         </Text>
+        {unclaimedBoards && (
+          <Text className="text-[13px] text-muted-foreground">
+            {UNCLAIMED_BOARDS_WARNING}
+          </Text>
+        )}
       </View>
 
       <View className="gap-2">

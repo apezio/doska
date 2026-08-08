@@ -1,0 +1,63 @@
+import { runtime } from "../runtime"
+import { clearLastBoard } from "../data/last-board"
+import { DASHBOARDS, META_STORE, STORES } from "./constants"
+import { live } from "./operations/live"
+import { sync } from "./sync"
+import type { Dashboard } from "../types"
+
+/** Whose data the local store currently holds */
+const USER_KEY = "deck:user-id"
+
+/** Every pull cursor is `cursor:<scope>` — see the drivers. `;` is `:` plus one,
+ * so an exclusive upper bound there is the prefix range. */
+const CURSOR_RANGE = {
+  lower: "cursor:",
+  upper: "cursor;",
+  exclusive: { upper: true },
+}
+
+/**
+ * Points the local store at `userId`, wiping it first if it belongs to someone else
+ */
+export async function reconcileIdentity(
+  userId: string | null
+): Promise<boolean> {
+  // Signing out leaves the data alone: it is still the same person's.
+  if (userId === null) return false
+
+  const previous = await runtime().db.get<string>(META_STORE, USER_KEY)
+  if (previous === userId) return false
+
+  if (previous !== undefined) await wipe()
+  await runtime().db.set(META_STORE, USER_KEY, userId)
+  return previous !== undefined
+}
+
+/**
+ * Everything derived from the previous account
+ */
+async function wipe(): Promise<void> {
+  for (const store of STORES) await runtime().db.clear(store)
+
+  const cursors = await runtime().db.keys(META_STORE, CURSOR_RANGE)
+  for (const key of cursors) await runtime().db.delete(META_STORE, key)
+
+  clearLastBoard()
+
+  // Last, so the pull it kicks off finds the cursors already gone.
+  sync.reset()
+}
+
+export const UNCLAIMED_BOARDS_WARNING =
+  "The boards already on this device will become part of the account you sign."
+
+/**
+ * Whether this device holds board work that no account has claimed yet
+ */
+export async function hasUnclaimedLocalBoards(): Promise<boolean> {
+  const known = await runtime().db.get<string>(META_STORE, USER_KEY)
+  if (known !== undefined) return false
+
+  const boards = await runtime().db.getAll<Dashboard>(DASHBOARDS)
+  return boards.some((board) => live(board) && board.updatedAt > 0)
+}

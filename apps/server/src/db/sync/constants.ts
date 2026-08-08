@@ -7,7 +7,7 @@ const boardCounterId = (boardId: string) => `board:${boardId}`
 export const boardCounter = (boardId: string) =>
   counter(boardCounterId(boardId))
 
-/** Account-level board-list counter. */
+/** Board-list counter. Global, not per-user  */
 export const boardsListCounter = () => counter("boards-list")
 
 /** The `counters` row holding a board's next human-readable card number. */

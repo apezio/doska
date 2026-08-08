@@ -34,8 +34,8 @@ export async function collectDashboardChanges(
   return { changes, refs }
 }
 
-/** Hard-deletes a tombstoned board's columns and cards. */
-async function purgeBoard(boardId: string): Promise<void> {
+/** Hard-deletes a board's columns and cards, tombstoned or not. */
+export async function purgeBoard(boardId: string): Promise<void> {
   const columns = await runtime().db.getAll<Column>(COLUMNS)
   for (const column of columns) {
     if (column.dashboardId !== boardId) continue

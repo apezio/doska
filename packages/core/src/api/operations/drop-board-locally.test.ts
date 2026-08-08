@@ -1,0 +1,131 @@
+import { beforeEach, describe, expect, it } from "vitest"
+import type { KeyRange } from "@doska/ports"
+import type { Runtime } from "../../runtime"
+import { installRuntime } from "../../runtime"
+import { CARDS, COLUMNS, DASHBOARDS, META_STORE } from "../constants"
+
+/** An in-memory `ClientDB`, keyed `store/key`, honouring the cards-by-column index. */
+const rows = new Map<string, unknown>()
+
+const inStore = (store: string) =>
+  [...rows.entries()]
+    .filter(([composite]) => composite.startsWith(`${store}/`))
+    .map(([, value]) => value)
+
+const db = {
+  get: (store: string, key: string) =>
+    Promise.resolve(rows.get(`${store}/${key}`)),
+  getAll: (store: string, query?: { index: string; range: KeyRange }) =>
+    Promise.resolve(
+      inStore(store).filter(
+        (row) =>
+          !query ||
+          (row as Record<string, unknown>)[query.index] === query.range.lower
+      )
+    ),
+  set: (store: string, key: string, value: unknown) => {
+    rows.set(`${store}/${key}`, value)
+    return Promise.resolve()
+  },
+  delete: (store: string, key: string) => {
+    rows.delete(`${store}/${key}`)
+    return Promise.resolve()
+  },
+}
+
+const kvStore = new Map<string, string>()
+
+const kv = {
+  get: (key: string) => kvStore.get(key) ?? null,
+  set: (key: string, value: string) => void kvStore.set(key, value),
+  remove: (key: string) => void kvStore.delete(key),
+}
+
+const net = { online: () => true, subscribe: () => () => {} }
+
+// No server configured, so the engines stay paused and nothing reaches the wire.
+const http = { isConfigured: () => false, subscribe: () => () => {} }
+
+const board = (id: string) => ({ id, updatedAt: 1, deletedAt: null })
+const column = (id: string, dashboardId: string) => ({
+  id,
+  dashboardId,
+  updatedAt: 1,
+  deletedAt: null,
+})
+const card = (id: string, columnId: string) => ({
+  id,
+  columnId,
+  updatedAt: 1,
+  deletedAt: null,
+})
+
+/** Two boards, so the drop has something it must leave alone. */
+function seedBoards() {
+  rows.set(`${DASHBOARDS}/gone`, board("gone"))
+  rows.set(`${COLUMNS}/col-gone`, column("col-gone", "gone"))
+  rows.set(`${CARDS}/card-gone`, card("card-gone", "col-gone"))
+  rows.set(`${META_STORE}/cursor:gone`, 42)
+
+  rows.set(`${DASHBOARDS}/mine`, board("mine"))
+  rows.set(`${COLUMNS}/col-mine`, column("col-mine", "mine"))
+  rows.set(`${CARDS}/card-mine`, card("card-mine", "col-mine"))
+  rows.set(`${META_STORE}/cursor:mine`, 7)
+}
+
+const keysIn = (store: string) =>
+  [...rows.keys()]
+    .filter((composite) => composite.startsWith(`${store}/`))
+    .map((composite) => composite.slice(store.length + 1))
+    .sort()
+
+beforeEach(() => {
+  rows.clear()
+  kvStore.clear()
+  installRuntime({ db, kv, net, http } as unknown as Runtime)
+})
+
+describe("dropBoardLocally", () => {
+  it("removes the board's row, contents and cursor, and nothing else", async () => {
+    seedBoards()
+
+    const { dropBoardLocally } = await import("./drop-board-locally")
+    await dropBoardLocally("gone")
+
+    expect(keysIn(DASHBOARDS)).toEqual(["mine"])
+    expect(keysIn(COLUMNS)).toEqual(["col-mine"])
+    expect(keysIn(CARDS)).toEqual(["card-mine"])
+    expect(keysIn(META_STORE)).toEqual(["cursor:mine"])
+  })
+
+  // The regression that matters: a ref that can never be acked keeps `pending`
+  // off zero forever, so the app claims unsaved work it cannot save.
+  it("leaves pending at zero when the board had unpushed edits", async () => {
+    seedBoards()
+
+    const { sync } = await import("../sync/sync-engine")
+    sync.markDirty(DASHBOARDS, "gone")
+    sync.markDirty(COLUMNS, "col-gone")
+    sync.markDirty(CARDS, "card-gone")
+    expect(sync.getState().pending).toBe(3)
+
+    const { dropBoardLocally } = await import("./drop-board-locally")
+    await dropBoardLocally("gone")
+
+    expect(sync.getState().pending).toBe(0)
+  })
+
+  it("keeps another board's pending edits", async () => {
+    seedBoards()
+
+    const { sync } = await import("../sync/sync-engine")
+    sync.markDirty(CARDS, "card-gone")
+    sync.markDirty(CARDS, "card-mine")
+
+    const { dropBoardLocally } = await import("./drop-board-locally")
+    await dropBoardLocally("gone")
+
+    expect(sync.isDirty(CARDS, "card-mine")).toBe(true)
+    expect(sync.getState().pending).toBe(1)
+  })
+})

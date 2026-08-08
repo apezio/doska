@@ -62,11 +62,16 @@ function DocsLinks({ current }: { current: DocPage }) {
             href={doc.path}
             aria-current={doc === current ? "page" : undefined}
             className={cn(
-              "block rounded-md px-3 py-1.5 text-sm text-docs-nav transition-colors hover:bg-muted hover:text-foreground",
+              "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-docs-nav transition-colors hover:bg-muted hover:text-foreground",
               doc === current && "bg-muted font-semibold text-foreground"
             )}
           >
             {doc.nav}
+            {doc.badge && (
+              <span className="rounded-sm border border-current px-1 text-[10px] font-medium tracking-wide uppercase opacity-70">
+                {doc.badge}
+              </span>
+            )}
           </a>
         </li>
       ))}

@@ -3,6 +3,13 @@ import type { FastifyReply, FastifyRequest } from "fastify"
 import { env } from "../env"
 import { auth } from "."
 
+declare module "fastify" {
+  interface FastifyRequest {
+    /* The authenticated user, set by the guard that let the request through */
+    userId: string
+  }
+}
+
 /** Resolves the server's public origin, preferring the configured base URL. */
 export function originOf(req: FastifyRequest): string {
   if (env.baseUrl) return env.baseUrl
@@ -16,11 +23,16 @@ export async function requireSession(
 ): Promise<void> {
   const headers = fromNodeHeaders(req.headers)
 
-  // Browser (cookie) and desktop (bearer) alike: one session, one lookup.
-  const session = await auth.api.getSession({ headers })
+  const session = await auth.api.getSession({
+    headers,
+    query: { disableCookieCache: true },
+  })
   if (!session) {
     await reply.code(401).send({ error: "Unauthorized" })
+    return
   }
+
+  req.userId = session.user.id
 }
 
 /** Guards MCP routes: 401 with an OAuth `WWW-Authenticate` challenge when the token is missing. */
@@ -40,5 +52,8 @@ export async function requireMCPSession(
       )
       .header("access-control-expose-headers", "WWW-Authenticate")
       .send({ error: "Unauthorized" })
+    return
   }
+
+  req.userId = token.userId
 }

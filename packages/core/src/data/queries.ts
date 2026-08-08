@@ -1,8 +1,16 @@
 import { useQuery } from "@tanstack/react-query"
+import { listAccounts } from "../api/accounts"
 import { fetchSession } from "../api/auth"
+import {
+  hasUnclaimedLocalBoards,
+  UNCLAIMED_BOARDS_WARNING,
+} from "../api/identity"
 import * as api from "../api/operations"
 import type { DigestFilter } from "../api/operations"
 import { keys } from "./keys"
+
+export type { Account } from "../api/accounts"
+export { UNCLAIMED_BOARDS_WARNING }
 
 /**
  * The sync session. `data` is `undefined` until the first check resolves; auth
@@ -10,6 +18,26 @@ import { keys } from "./keys"
  */
 export function useSession() {
   return useQuery({ queryKey: keys.session, queryFn: fetchSession })
+}
+
+/** Whether the sign-in form should warn that the boards on this device are
+ * about to become part of whichever account signs in*/
+export function useUnclaimedLocalBoards() {
+  return useQuery({
+    queryKey: keys.unclaimedLocalBoards,
+    queryFn: hasUnclaimedLocalBoards,
+    networkMode: "always",
+  })
+}
+
+/** Every account on the server. Admin-only server-side, so `enabled` is how the
+ * caller keeps a non-admin session from firing a request that would 403. */
+export function useAccounts(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.accounts,
+    queryFn: listAccounts,
+    enabled,
+  })
 }
 
 // These read IndexedDB, so they must resolve offline (see query-client.ts).

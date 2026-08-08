@@ -3,7 +3,7 @@ title: Documentation
 nav: Overview
 description: "Doska is a local-first Kanban board with first-class Markdown support."
 order: 1
-updated: "2026-08-07"
+updated: "2026-08-09"
 ---
 
 Doska is a Kanban board where the cards are Markdown. It runs in your browser
@@ -44,6 +44,7 @@ then grouped by day.
 ## Where to go next
 
 - [Self-hosting](/docs/self-hosting),  one-line installer, HTTPS, backups.
+- [Accounts](/docs/accounts),  more than one person on your server.
 - [MCP](/docs/mcp),  let an agent read and edit your boards.
 - [Desktop and mobile](/docs/desktop),  the macOS app and the PWA.
 - [Development](/docs/development),  run the monorepo locally.

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { KeyValue } from "@doska/ports"
 import { DirtyStore } from "./dirty"
 import type { PushInput, PushResult, SyncDriver } from "./driver"
-import { SyncEngine } from "./engine"
+import { SyncEngine, type SyncFailure } from "./engine"
 
 /** A change is just the ref it occupies; enough to drive the engine. */
 type Change = { ref: string }
@@ -75,6 +75,41 @@ describe("SyncEngine", () => {
     // mark rides the first pass and the rerun pushes nothing.
     expect(driver.pushes.flatMap((p) => p.changes)).toEqual([{ ref: "b1/c1" }])
     expect(engine.getState().pending).toBe(0)
+  })
+
+  it("forgets dirty refs on clearDirty, in memory and on disk", async () => {
+    const driver = new FakeDriver()
+    const key = freshKey()
+    const engine = new SyncEngine(driver, { kv, storageKey: key })
+
+    engine.mark("b1/c1")
+    engine.clearDirty()
+
+    expect(engine.getState().pending).toBe(0)
+    expect([...new DirtyStore(kv, key).all()]).toEqual([])
+
+    // Nothing left to find a scope from, so the reconcile pushes nothing.
+    await engine.reconcile()
+    expect(driver.pushes).toEqual([])
+  })
+
+  it("syncs nothing after a reset until it is pointed somewhere again", async () => {
+    const driver = new FakeDriver()
+    const engine = new SyncEngine(driver, { kv, storageKey: freshKey() })
+
+    engine.setActiveScope("b1")
+    engine.watchScopes(["b2"])
+    engine.mark("b1/c1")
+    await engine.reconcileScopes(["b3"])
+    driver.pushes.length = 0
+
+    engine.reset()
+    await engine.reconcile()
+    expect(driver.pushes).toEqual([])
+
+    engine.setActiveScope("b9")
+    await engine.reconcile()
+    expect([...new Set(driver.pushedScopes)]).toEqual(["b9"])
   })
 
   it("restores dirty refs when the push rejects", async () => {
@@ -174,5 +209,100 @@ describe("SyncEngine", () => {
     await engine.reconcile()
 
     expect(driver.pushedScopes).toEqual(["b1", "b2", "b1", "b2"])
+  })
+})
+
+/** A refused scope: `classify` says so, and the engine must stop asking. */
+describe("a forbidden scope", () => {
+  const forbidden = new Error("403")
+
+  /** Rejects `refused`; every other scope syncs normally. Returns the scopes tried. */
+  function refusing(driver: FakeDriver, refused: string): string[] {
+    const tried: string[] = []
+    const ok = driver.push
+    driver.push = (input) => {
+      tried.push(input.scope)
+      return input.scope === refused
+        ? Promise.reject(forbidden)
+        : (ok.call(driver, input) as Promise<PushResult<Change>>)
+    }
+    return tried
+  }
+
+  const options = (storageKey: string, dropped: string[]) => ({
+    kv,
+    storageKey,
+    classify: (err: unknown): SyncFailure =>
+      err === forbidden ? "forbidden" : "server",
+    onForbidden: (scope: string) => void dropped.push(scope),
+  })
+
+  it("is dropped, reported to the owner, and never asked for again", async () => {
+    const driver = new FakeDriver()
+    const dropped: string[] = []
+    const engine = new SyncEngine(driver, options(freshKey(), dropped))
+    const tried = refusing(driver, "b1")
+
+    engine.setActiveScope("b1")
+    await engine.reconcile()
+    expect(dropped).toEqual(["b1"])
+
+    await engine.reconcile()
+    expect(tried).toEqual(["b1"])
+  })
+
+  it("leaves the connection healthy and the other scopes syncing", async () => {
+    const driver = new FakeDriver()
+    const dropped: string[] = []
+    const engine = new SyncEngine(driver, options(freshKey(), dropped))
+    const tried = refusing(driver, "b1")
+
+    engine.setActiveScope("b1")
+    engine.watchScopes(["b1", "b2"])
+    await engine.reconcile()
+
+    // Not "error": the session is fine, one board simply isn't ours.
+    expect(engine.getState().status).toBe("idle")
+    expect(engine.getState().failures).toBe(0)
+    expect(engine.getState().failure).toBeNull()
+
+    await engine.reconcile()
+    expect(tried.filter((scope) => scope === "b2").length).toBe(2)
+  })
+
+  it("claims no fresh success when it was the only scope in the pass", async () => {
+    const driver = new FakeDriver()
+    const dropped: string[] = []
+    const engine = new SyncEngine(driver, options(freshKey(), dropped))
+    refusing(driver, "b1")
+
+    engine.setActiveScope("b1")
+    await engine.reconcile()
+
+    expect(engine.getState().lastSyncedAt).toBeNull()
+  })
+
+  it("stops retrying refs the server will keep refusing", async () => {
+    const driver = new FakeDriver()
+    const dropped: string[] = []
+    const key = freshKey()
+    const engine = new SyncEngine(driver, {
+      ...options(key, dropped),
+      // What `dropBoardLocally` does for real: the refs go with the scope.
+      onForbidden: (scope: string) => {
+        dropped.push(scope)
+        engine.dropDirty(
+          [...engine.dirty.all()].filter((ref) => ref.startsWith(`${scope}/`))
+        )
+      },
+    })
+    refusing(driver, "b1")
+
+    engine.mark("b1/c1")
+    engine.mark("b2/c1")
+    await engine.reconcile()
+
+    expect(engine.getState().pending).toBe(0)
+    expect([...new DirtyStore(kv, key).all()]).toEqual([])
   })
 })

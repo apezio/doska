@@ -10,7 +10,14 @@ import { boardsListCounter } from "../constants"
  * Mirrors {@link applyPush} but for the board-independent list channel: the
  * `seq` it stamps orders dashboards across every board, so any client can pull
  * the whole list past its cursor.
+ *
+ * `userId` owns any board this push creates.
  */
-export function applyPush(changes: DashboardChange[]): Promise<void> {
-  return applyChanges(boardsListCounter(), changes, applyOne)
+export function applyPush(
+  changes: DashboardChange[],
+  userId: string
+): Promise<void> {
+  return applyChanges(boardsListCounter(), changes, (tx, change, nextSeq) =>
+    applyOne(tx, change, nextSeq, userId)
+  )
 }

@@ -10,6 +10,12 @@ const clock = new HybridClock()
  * RPC router makes, one function call away instead of one HTTP hop.
  */
 export class DbStore implements BoardStore {
+  readonly userId: string
+
+  constructor(userId: string) {
+    this.userId = userId
+  }
+
   now(): number {
     return clock.now()
   }
@@ -28,7 +34,7 @@ export class DbStore implements BoardStore {
   }
 
   async pushDashboards(changes: DashboardChange[]): Promise<void> {
-    await boardsListSync.applyPush(changes)
+    await boardsListSync.applyPush(changes, this.userId)
   }
 
   async pushBoard(boardId: string, changes: Change[]): Promise<void> {

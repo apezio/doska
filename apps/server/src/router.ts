@@ -2,7 +2,7 @@ import { contract } from "@doska/contract"
 import { implement } from "@orpc/server"
 import { boardSync, boardsListSync } from "./db/sync"
 
-const os = implement(contract)
+const os = implement(contract).$context<{ userId: string }>()
 
 export const router = os.router({
   board: {
@@ -12,8 +12,8 @@ export const router = os.router({
     }),
   },
   dashboards: {
-    sync: os.dashboards.sync.handler(async ({ input }) => {
-      await boardsListSync.applyPush(input.changes)
+    sync: os.dashboards.sync.handler(async ({ input, context }) => {
+      await boardsListSync.applyPush(input.changes, context.userId)
       return boardsListSync.readSince(input.since)
     }),
   },

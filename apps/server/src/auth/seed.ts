@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm"
+import { eq, isNull } from "drizzle-orm"
 import { getDB } from "../db/get-db"
-import { user } from "../db/schema"
+import { dashboards, user } from "../db/schema"
 import { env } from "../env"
 import { auth } from "."
 
@@ -12,19 +12,37 @@ import { auth } from "."
  * today rather than by us. The account is the deploy's owner: `role: "admin"`,
  * so it can create the others.
  *
- * Runs on every boot and does nothing once an account exists: the credentials in
- * the env are the *seed*, not the source of truth, so rotating AUTH_PASSWORD on
- * an existing install does not silently reset the account.
+ * Runs on every boot and creates nothing once an account exists: the credentials
+ * in the env are the *seed*, not the source of truth, so rotating AUTH_PASSWORD
+ * on an existing install does not silently reset the account.
  */
 export async function seedAccount(): Promise<void> {
-  const { authLogin, authPassword } = env
-
-  if (!authLogin || !authPassword) {
+  if (!env.authLogin || !env.authPassword) {
     throw new Error("Auth misconfigured: set AUTH_LOGIN and AUTH_PASSWORD.")
   }
 
-  const existing = await getDB().select({ id: user.id }).from(user).limit(1)
-  if (existing.length > 0) return
+  const ownerId = (await findOwner()) ?? (await createOwner())
+
+  // Migrations run before this, so on a fresh install their backfill had no user
+  // to point at. Idempotent: a later boot finds nothing to adopt.
+  await getDB()
+    .update(dashboards)
+    .set({ ownerId })
+    .where(isNull(dashboards.ownerId))
+}
+
+/** The deploy's owner: the oldest account, matching the migrations' backfill. */
+async function findOwner(): Promise<string | null> {
+  const [existing] = await getDB()
+    .select({ id: user.id })
+    .from(user)
+    .orderBy(user.createdAt)
+    .limit(1)
+  return existing?.id ?? null
+}
+
+async function createOwner(): Promise<string> {
+  const { authLogin, authPassword } = env
 
   const created = await auth.api.signUpEmail({
     body: {
@@ -43,4 +61,6 @@ export async function seedAccount(): Promise<void> {
     .update(user)
     .set({ role: "admin" })
     .where(eq(user.id, created.user.id))
+
+  return created.user.id
 }

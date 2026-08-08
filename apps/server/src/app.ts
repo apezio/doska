@@ -18,6 +18,8 @@ export function buildApp(opts: BuildOptions = {}): FastifyInstance {
     trustProxy: true,
   })
 
+  app.decorateRequest("userId", "")
+
   // better-auth, oRPC and MCP each consume the raw request stream themselves, so
   // Fastify must not drain it into a parsed body first. Consequence: `req.body`
   // is undefined everywhere on this server — a new route wanting one must

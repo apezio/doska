@@ -7,9 +7,7 @@ order: 3
 updated: "2026-08-09"
 ---
 
-> **Beta.** Accounts aren't in a stable release yet. Set
-> `DOCKER_IMAGE_TAG=beta` in your `.env` to get them; `latest` is still one
-> account per server.
+> **Beta.** Accounts aren't in a stable release yet
 
 Your server can hold more than one account. Everyone signs in with their own
 login and password.
@@ -20,7 +18,7 @@ Sign in as the admin, open **Accounts** in the sidebar, and give them a login
 and a first password. Only the admin sees that button; there's no way for
 someone to sign themselves up.
 
-The admin is the account from `AUTH_LOGIN` / `AUTH_PASSWORD` — see
+The admin is the account from `AUTH_LOGIN` / `AUTH_PASSWORD`, see
 [Environment](/docs/self-hosting/environment).
 
 ## What they get

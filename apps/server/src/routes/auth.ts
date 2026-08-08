@@ -15,7 +15,8 @@ async function delegateToAuth(
 
 /** better-auth owns /api/auth/* — these are the public, pre-session routes. */
 export function registerAuthRoutes(app: FastifyInstance): void {
-  // The deploy has one account, seeded from AUTH_LOGIN/AUTH_PASSWORD for now
+  // Accounts only come from an admin: the first from AUTH_LOGIN/AUTH_PASSWORD,
+  // the rest through the admin plugin. Nobody signs themselves up.
   for (const url of ["/api/auth/sign-up", "/api/auth/sign-up/*"]) {
     app.all(url, async (_req, reply) =>
       reply.code(403).send({ error: "Sign-up is disabled" })

@@ -2,8 +2,8 @@
 title: MCP
 nav: MCP
 description: "Connect Claude Code, Claude Desktop or claude.ai to your Doska server so an agent can read and edit your boards."
-order: 3
-updated: "2026-08-07"
+order: 4
+updated: "2026-08-09"
 ---
 
 Your server exposes the board as MCP tools, so an agent can read and edit it.
@@ -22,7 +22,11 @@ claude mcp add --transport http doska https://your-server/mcp
 ```
 
 The first call opens a browser to sign in; the client registers itself and holds
-an access token from there on. 
+an access token from there on.
+
+The agent gets the boards of whichever account you signed in as, and nothing
+else. To point it at a different account, connect again and sign in as that one.
+See [Accounts](/docs/accounts).
 
 > MCP OAuth advertises absolute URLs, so your server needs `BASE_URL` set to its
 > public origin. See [Self-hosting](/docs/self-hosting).

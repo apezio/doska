@@ -14,6 +14,8 @@ export interface DocPage {
   order: number
   /** `YYYY-MM-DD`, the page's `<lastmod>` in the sitemap. */
   updated: string
+  /** Optional chip beside the sidebar label, e.g. "Beta". */
+  badge?: string
   body: string
 }
 

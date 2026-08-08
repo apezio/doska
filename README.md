@@ -87,7 +87,8 @@ docker compose -f docker-compose.selfhost.yml up -d
 </details>
 
 Open the web UI at `http://<your-host>:8080` and sign in with the `AUTH_LOGIN` /
-`AUTH_PASSWORD` from your `.env`. To sync the **desktop app**, open its sync
+`AUTH_PASSWORD` from your `.env` — that pair seeds the first admin account on
+first boot, and changing it later doesn't touch a running install. To sync the **desktop app**, open its sync
 settings and set the server URL to the same address.
 
 Postgres comes bundled and lives in a Docker volume. To run it elsewhere, point
@@ -102,7 +103,10 @@ Postgres comes bundled and lives in a Docker volume. To run it elsewhere, point
 Every variable is listed in
 [the docs](https://doska.sh/docs/self-hosting/environment).
 
-> **Single user per server:** the credentials in `.env` are the only account currently.
+> **Accounts (beta):** the credentials in `.env` seed the first *admin* account.
+> On the `beta` image tag the admin can add more accounts from the app's
+> **Accounts** screen; each gets its own private boards. Boards can't be shared
+> between accounts yet. See [the docs](https://doska.sh/docs/accounts).
 
 Deploying with [Dokploy](https://dokploy.com)? Use `docker-compose.dokploy.yml`.
 

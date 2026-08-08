@@ -2,7 +2,7 @@
 title: Development
 nav: Development
 description: "Run the Doska monorepo locally: requirements, commands, repository layout, and the self-host smoke tests."
-order: 6
+order: 7
 updated: "2026-08-07"
 ---
 

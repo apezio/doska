@@ -2,8 +2,8 @@
 title: Sync
 nav: Sync
 description: "How Doska keeps devices in sync"
-order: 5
-updated: "2026-08-07"
+order: 6
+updated: "2026-08-09"
 ---
 
 Doska is local-first. Every device holds a full copy of your boards and reads

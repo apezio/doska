@@ -8,9 +8,8 @@ export function useLogin() {
   return useMutation({
     mutationFn: ({ login, password }: { login: string; password: string }) =>
       authApi.login(login, password),
-    onSuccess: (_data, { login }) => {
-      qc.setQueryData(keys.session, { authed: true, login })
-      // Now authorized — flush whatever queued up while signed out.
+    onSuccess: (session) => {
+      qc.setQueryData(keys.session, session)
       void sync.reconcile()
     },
   })
@@ -20,7 +19,9 @@ export function useLogout() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: () => authApi.logout(),
-    onSuccess: () =>
-      qc.setQueryData(keys.session, { authed: false, login: null }),
+    onSuccess: () => {
+      qc.setQueryData(keys.session, authApi.SIGNED_OUT)
+      qc.removeQueries({ queryKey: keys.accounts })
+    },
   })
 }

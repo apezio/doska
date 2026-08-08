@@ -16,8 +16,10 @@ export async function requireSession(
 ): Promise<void> {
   const headers = fromNodeHeaders(req.headers)
 
-  // Browser (cookie) and desktop (bearer) alike: one session, one lookup.
-  const session = await auth.api.getSession({ headers })
+  const session = await auth.api.getSession({
+    headers,
+    query: { disableCookieCache: true },
+  })
   if (!session) {
     await reply.code(401).send({ error: "Unauthorized" })
   }

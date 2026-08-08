@@ -82,4 +82,47 @@ describe("admin accounts", () => {
       })
     ).rejects.toThrow()
   })
+
+  /**
+   * Last, because it leaves `second` deactivated. A session cookie carries a
+   * cached copy of itself (`session.cookieCache`), so a guard that trusts the
+   * cookie keeps a deactivated account working for the rest of its `maxAge` —
+   * a minute of access after the owner cut it off.
+   */
+  test("deactivating an account closes the private routes at once", async () => {
+    const signIn = await h.app.inject({
+      method: "POST",
+      url: "/api/auth/sign-in/username",
+      headers: { "content-type": "application/json" },
+      payload: JSON.stringify({
+        username: second.data.username,
+        password: second.password,
+      }),
+    })
+    const cookie = signIn.headers["set-cookie"] as string[]
+    const request = {
+      method: "POST",
+      // Any path under the guarded scope: what the procedure makes of the empty
+      // body is beside the point, only whether the request gets that far.
+      url: "/api/rpc/board/sync",
+      headers: { cookie: cookie.map((c) => c.split(";")[0]).join("; ") },
+    } as const
+
+    const before = await h.app.inject(request)
+    expect(before.statusCode).not.toBe(401)
+
+    const { users } = await auth.api.listUsers({
+      query: { searchField: "name", searchValue: second.name },
+      headers: asOwner(),
+    })
+    const target = users.find((u) => u.name === second.name)
+    expect(target).toBeDefined()
+    await auth.api.banUser({
+      body: { userId: target!.id },
+      headers: asOwner(),
+    })
+
+    const after = await h.app.inject(request)
+    expect(after.statusCode).toBe(401)
+  })
 })

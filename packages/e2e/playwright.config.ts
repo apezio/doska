@@ -57,6 +57,11 @@ export default defineConfig({
         // so the limiter comes off here rather than the production numbers being
         // widened to accommodate a test harness.
         AUTH_RATE_LIMIT: "off",
+        // The bundle is served from :4173 and the API answers on :3100, so every
+        // authenticated auth call is cross-origin here. A real deploy serves both
+        // from one origin (and desktop's `tauri://` origins are trusted in the
+        // auth config); only this harness needs the split spelled out.
+        AUTH_TRUSTED_ORIGINS: "http://localhost:4173",
         // Attachments are stored on disk at a path that only exists inside the
         // container image, so point them at a temp dir and the specs can upload
         // for real here too. Reused across runs — every key is a fresh UUID, so

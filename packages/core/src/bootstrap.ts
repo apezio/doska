@@ -1,4 +1,4 @@
-import { onSessionExpired } from "./api/auth"
+import { onSessionExpired, SIGNED_OUT } from "./api/auth"
 import { seed } from "./api/db/db"
 import { purgeExpired } from "./api/operations"
 import { seedClock, startBackgroundSync } from "./api/sync"
@@ -15,7 +15,7 @@ import { queryClient } from "./query-client"
  */
 export async function bootstrapClient(syncIntervalMs?: number): Promise<void> {
   onSessionExpired(() => {
-    queryClient.setQueryData(keys.session, { authed: false, login: null })
+    queryClient.setQueryData(keys.session, SIGNED_OUT)
   })
 
   // Restore the high-water mark before any stamp is issued, or a local edit can

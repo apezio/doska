@@ -2,7 +2,12 @@ import { runtime } from "../runtime"
 import { authClient } from "./auth-client"
 import { isSyncConfigured } from "./server"
 
-export type Session = { authed: boolean; login: string | null }
+export type Session = {
+  authed: boolean
+  login: string | null
+  userId: string | null
+  isAdmin: boolean
+}
 
 const expiryListeners = new Set<() => void>()
 
@@ -19,7 +24,12 @@ export function sessionExpired(): void {
   for (const listener of expiryListeners) listener()
 }
 
-const SIGNED_OUT: Session = { authed: false, login: null }
+export const SIGNED_OUT: Session = {
+  authed: false,
+  login: null,
+  userId: null,
+  isAdmin: false,
+}
 
 export async function fetchSession(): Promise<Session> {
   if (!isSyncConfigured()) return SIGNED_OUT
@@ -30,16 +40,32 @@ export async function fetchSession(): Promise<Session> {
     throw new Error(error.message ?? "Could not reach the server")
   }
   if (!data) return SIGNED_OUT
-  return { authed: true, login: data.user.username ?? null }
+  return toSession(data.user)
 }
 
-/** The one account is seeded with a login, not an email — hence `username`. */
-export async function login(login: string, password: string): Promise<void> {
-  const { error } = await authClient().signIn.username({
+function toSession(user: {
+  id: string
+  username?: string | null
+  role?: string | null
+}): Session {
+  return {
+    authed: true,
+    login: user.username ?? null,
+    userId: user.id,
+    isAdmin: user.role === "admin",
+  }
+}
+
+/** The first account is seeded with a login, not an email — hence `username`.
+ * Returns the session it opened, so the caller doesn't re-fetch to learn the
+ * role it just signed in with. */
+export async function login(login: string, password: string): Promise<Session> {
+  const { data, error } = await authClient().signIn.username({
     username: login,
     password,
   })
-  if (error) throw new Error(error.message ?? "Invalid credentials")
+  if (error || !data) throw new Error(error?.message ?? "Invalid credentials")
+  return toSession(data.user)
 }
 
 /** Drops this client's session: the cookie, and any token that was stored. */

@@ -18,3 +18,4 @@ apps/mobile/android
 **/.expo
 backups
 **/.DS_Store
+.claude

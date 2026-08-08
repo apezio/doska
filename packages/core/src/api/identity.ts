@@ -49,7 +49,7 @@ async function wipe(): Promise<void> {
 }
 
 export const UNCLAIMED_BOARDS_WARNING =
-  "The boards already on this device will become part of the account you sign."
+  "The boards already on this device will become part of the account you sign in with."
 
 /**
  * Whether this device holds board work that no account has claimed yet

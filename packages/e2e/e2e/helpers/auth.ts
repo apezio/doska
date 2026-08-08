@@ -13,6 +13,20 @@ export const TEST_CREDENTIALS = {
 }
 
 /**
+ * The sidebar's sign-in control. Scoped to the sidebar because an open board
+ * shows a second control with the same accessible name — the deck's sync
+ * indicator turns into one while signed out.
+ *
+ * `exact` so this picks the control, not the account row that wraps it (whose
+ * accessible name also ends in "Sign in to sync").
+ */
+function sidebarSignIn(page: Page) {
+  return page
+    .locator('[data-slot="sidebar"]')
+    .getByRole("button", { name: "Sign in to sync", exact: true })
+}
+
+/**
  * Signs the open page in through the UI so its background sync is authorized —
  * the same steps a user takes: the sidebar's sign-in control, then the modal.
  * The sign-in control only appears once the session check resolves to
@@ -23,11 +37,7 @@ export async function signIn(
   credentials: { login: string; password: string } = TEST_CREDENTIALS
 ): Promise<void> {
   await page.goto("/")
-  // `exact` so this picks the sign-in control, not the account row that wraps it
-  // (whose accessible name also ends in "Sign in to sync").
-  await page
-    .getByRole("button", { name: "Sign in to sync", exact: true })
-    .click()
+  await sidebarSignIn(page).click()
   await page.getByPlaceholder("Login").fill(credentials.login)
   await page.getByPlaceholder("Password").fill(credentials.password)
   await page.getByRole("button", { name: "Sign in", exact: true }).click()
@@ -44,9 +54,7 @@ export async function signIn(
  */
 export async function signOut(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Sign out" }).click()
-  await expect(
-    page.getByRole("button", { name: "Sign in to sync", exact: true })
-  ).toBeVisible()
+  await expect(sidebarSignIn(page)).toBeVisible()
 }
 
 /**

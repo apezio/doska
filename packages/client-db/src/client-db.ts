@@ -38,4 +38,6 @@ export interface ClientDB {
   set(store: string, key: string, value: unknown): Promise<void>
   delete(store: string, key: string): Promise<void>
   count(store: string): Promise<number>
+  keys(store: string, range?: KeyRange): Promise<string[]>
+  clear(store: string): Promise<void>
 }

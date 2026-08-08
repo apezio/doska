@@ -162,6 +162,14 @@ class DeckSync {
   }
 
   /**
+   * Drops both channels' pending refs
+   */
+  clearDirty() {
+    this.board.clearDirty()
+    this.list.clearDirty()
+  }
+
+  /**
    * The dashboard list always goes first. A board's tombstone cascades onto
    * anything pushed for it (see `applyPush`), so a restore whose card push
    * overtook its board push would come straight back dead. Serialising costs a

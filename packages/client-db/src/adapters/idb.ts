@@ -107,4 +107,14 @@ export class IDB implements ClientDB {
   count(store: string): Promise<number> {
     return this.run<number>(store, "readonly", (s) => s.count())
   }
+
+  keys(store: string, range?: KeyRange): Promise<string[]> {
+    return this.run<string[]>(store, "readonly", (s) =>
+      s.getAllKeys(toIDBRange(range))
+    )
+  }
+
+  clear(store: string): Promise<void> {
+    return this.run<void>(store, "readwrite", (s) => s.clear())
+  }
 }

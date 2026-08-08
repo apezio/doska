@@ -137,4 +137,18 @@ export class SQLiteDB implements ClientDB {
     )
     return row?.n ?? 0
   }
+
+  async keys(store: string, range?: KeyRange): Promise<string[]> {
+    const { clauses, params } = bounds("key", range)
+    const where = clauses.length ? ` WHERE ${clauses.join(" AND ")}` : ""
+    const rows = await this.db.getAllAsync<{ key: string }>(
+      `SELECT key FROM ${quote(store)}${where} ORDER BY key`,
+      params
+    )
+    return rows.map((row) => row.key)
+  }
+
+  async clear(store: string): Promise<void> {
+    await this.db.execAsync(`DELETE FROM ${quote(store)}`)
+  }
 }

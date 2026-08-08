@@ -88,6 +88,14 @@ export class DirtyStore {
     this.save()
   }
 
+  /**
+   * Forgets every ref without pushing it
+   */
+  clear() {
+    this.refs.clear()
+    this.save()
+  }
+
   /** Removes refs outright, for ones that turned out to be unsyncable. */
   drop(refs: string[]) {
     for (const ref of refs) this.refs.delete(ref)

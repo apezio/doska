@@ -108,6 +108,12 @@ export class SyncEngine<Scope, Change> {
     this.setState({ ...this.state, pending: this.dirty.size })
   }
 
+  /** Abandons every pending ref unpushed — see {@link DirtyStore.clear}. */
+  clearDirty() {
+    this.dirty.clear()
+    this.setState({ ...this.state, pending: 0 })
+  }
+
   /**
    * Points the engine at a newly opened scope and pulls it. The scope being left
    * needs no flush: its dirty refs surface through

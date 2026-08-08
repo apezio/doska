@@ -77,6 +77,22 @@ describe("SyncEngine", () => {
     expect(engine.getState().pending).toBe(0)
   })
 
+  it("forgets dirty refs on clearDirty, in memory and on disk", async () => {
+    const driver = new FakeDriver()
+    const key = freshKey()
+    const engine = new SyncEngine(driver, { kv, storageKey: key })
+
+    engine.mark("b1/c1")
+    engine.clearDirty()
+
+    expect(engine.getState().pending).toBe(0)
+    expect([...new DirtyStore(kv, key).all()]).toEqual([])
+
+    // Nothing left to find a scope from, so the reconcile pushes nothing.
+    await engine.reconcile()
+    expect(driver.pushes).toEqual([])
+  })
+
   it("restores dirty refs when the push rejects", async () => {
     const driver = new FakeDriver()
     const key = freshKey()

@@ -8,6 +8,10 @@ import {
 } from "@doska/ui-kit"
 import { useState } from "react"
 import { useLogin } from "@doska/core/mutations"
+import {
+  UNCLAIMED_BOARDS_WARNING,
+  useUnclaimedLocalBoards,
+} from "@doska/core/queries"
 import { getServerUrl, setServerUrl } from "@doska/core/server"
 import { isDesktop } from "@/lib/platform"
 
@@ -36,6 +40,7 @@ function SyncSetup({ onDone }: { onDone: () => void }) {
   const [login, setLogin] = useState("")
   const [password, setPassword] = useState("")
   const { mutate, isPending, isError, reset } = useLogin()
+  const { data: unclaimedBoards } = useUnclaimedLocalBoards()
 
   const desktop = isDesktop()
 
@@ -63,6 +68,10 @@ function SyncSetup({ onDone }: { onDone: () => void }) {
           Your boards stay on this device until you set up sync.
         </ModalDescription>
       </div>
+
+      {unclaimedBoards && (
+        <p className="text-muted-foreground">{UNCLAIMED_BOARDS_WARNING}</p>
+      )}
 
       <div className="flex flex-col gap-2">
         {desktop && (

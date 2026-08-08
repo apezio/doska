@@ -93,6 +93,25 @@ describe("SyncEngine", () => {
     expect(driver.pushes).toEqual([])
   })
 
+  it("syncs nothing after a reset until it is pointed somewhere again", async () => {
+    const driver = new FakeDriver()
+    const engine = new SyncEngine(driver, { kv, storageKey: freshKey() })
+
+    engine.setActiveScope("b1")
+    engine.watchScopes(["b2"])
+    engine.mark("b1/c1")
+    await engine.reconcileScopes(["b3"])
+    driver.pushes.length = 0
+
+    engine.reset()
+    await engine.reconcile()
+    expect(driver.pushes).toEqual([])
+
+    engine.setActiveScope("b9")
+    await engine.reconcile()
+    expect([...new Set(driver.pushedScopes)]).toEqual(["b9"])
+  })
+
   it("restores dirty refs when the push rejects", async () => {
     const driver = new FakeDriver()
     const key = freshKey()

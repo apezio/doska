@@ -19,8 +19,11 @@ export function useLogin() {
       return { session, wiped }
     },
     onSuccess: ({ session, wiped }) => {
-      if (wiped) qc.clear()
       qc.setQueryData(keys.session, session)
+      if (wiped)
+        void qc.resetQueries({
+          predicate: (query) => query.queryKey[0] !== keys.session[0],
+        })
       void sync.reconcile()
     },
   })

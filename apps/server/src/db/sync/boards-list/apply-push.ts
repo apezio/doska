@@ -8,10 +8,11 @@ import { boardsListCounter } from "../constants"
  * bumping the account-level dashboards counter once per accepted write.
  *
  * Mirrors {@link applyPush} but for the board-independent list channel: the
- * `seq` it stamps orders dashboards across every board, so any client can pull
- * the whole list past its cursor.
+ * `seq` it stamps orders dashboards across every board, so a client can pull
+ * its whole list past one cursor.
  *
- * `userId` owns any board this push creates.
+ * `userId` owns any board this push creates, and changes naming a board owned
+ * by anyone else are dropped (see {@link applyOne}).
  */
 export function applyPush(
   changes: DashboardChange[],

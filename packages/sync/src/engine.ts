@@ -115,6 +115,23 @@ export class SyncEngine<Scope, Change> {
   }
 
   /**
+   * Forgets everything that belonged to the previous identity
+   */
+  reset() {
+    this.activeScope = null
+    this.watchedScopes = []
+    this.extraScopes.clear()
+    this.dirty.clear()
+    this.setState({
+      status: "idle",
+      pending: 0,
+      failures: 0,
+      lastSyncedAt: null,
+      failure: null,
+    })
+  }
+
+  /**
    * Points the engine at a newly opened scope and pulls it. The scope being left
    * needs no flush: its dirty refs surface through
    * {@link SyncDriver.pendingScopes} on the very same reconcile.

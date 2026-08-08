@@ -31,6 +31,14 @@ export function setLastBoard(id: string): void {
   for (const listener of [...listeners]) listener()
 }
 
+/** Forgets the remembered board */
+export function clearLastBoard(): void {
+  if (snapshot() === null) return
+  selected = null
+  runtime().kv.remove(LAST_BOARD_KEY)
+  for (const listener of [...listeners]) listener()
+}
+
 /** The board that was open most recently, remembered across launches. */
 export function useLastBoard(): string | null {
   return useSyncExternalStore(subscribe, snapshot)

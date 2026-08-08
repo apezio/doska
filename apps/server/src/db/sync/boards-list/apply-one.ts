@@ -1,4 +1,5 @@
 import type { DashboardChange } from "@doska/contract"
+import { eq } from "drizzle-orm"
 import { type Tx } from "../core/counter"
 import { dashboards } from "../../schema"
 import { upsertLWW } from "../core/upsert-lww"
@@ -8,12 +9,24 @@ import { upsertLWW } from "../core/upsert-lww"
  * and, for a board this user is creating, `ownerId`. The board-list counterpart
  * to {@link applyOneBoard}.
  */
-export function applyOne(
+export async function applyOne(
   tx: Tx,
   { record }: DashboardChange,
   nextSeq: number,
   userId: string
 ): Promise<boolean> {
+  const [existing] = await tx
+    .select({ ownerId: dashboards.ownerId })
+    .from(dashboards)
+    .where(eq(dashboards.id, record.id))
+
+  if (existing && existing.ownerId !== null && existing.ownerId !== userId) {
+    console.warn(
+      `boards-list: dropped push for dashboard ${record.id}, owned by another account`
+    )
+    return false
+  }
+
   return upsertLWW(
     tx,
     dashboards,

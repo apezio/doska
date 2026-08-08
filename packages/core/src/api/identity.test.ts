@@ -50,11 +50,11 @@ const kv = {
   remove: (key: string) => void kvStore.delete(key),
 }
 
-const clearDirty = vi.fn()
+const reset = vi.fn()
 
 // The facade opens network connections on construction, and the wipe only ever
-// reaches it through `clearDirty`.
-vi.mock("./sync", () => ({ sync: { clearDirty: () => clearDirty() } }))
+// reaches it through `reset`.
+vi.mock("./sync", () => ({ sync: { reset: () => reset() } }))
 
 /** Records and bookkeeping as they stand after account A has synced. */
 function seedAccountA() {
@@ -76,7 +76,7 @@ const remaining = () => [...rows.keys()].sort()
 beforeEach(() => {
   rows.clear()
   kvStore.clear()
-  clearDirty.mockClear()
+  reset.mockClear()
   installRuntime({ db, kv } as unknown as Runtime)
 })
 
@@ -89,11 +89,12 @@ describe("reconcileIdentity", () => {
     expect(await reconcileIdentity("user-a")).toBe(false)
 
     expect(remaining()).toEqual(before)
-    expect(clearDirty).not.toHaveBeenCalled()
+    expect(reset).not.toHaveBeenCalled()
   })
 
   it("wipes records, cursors and dirty queues when a different user signs in", async () => {
     seedAccountA()
+    kvStore.set("doska:last-board", "board-a")
 
     const { reconcileIdentity } = await import("./identity")
     expect(await reconcileIdentity("user-b")).toBe(true)
@@ -106,7 +107,9 @@ describe("reconcileIdentity", () => {
     // The clock is this device's, not the account's — a regression here issues
     // timestamps that lose LWW silently.
     expect(rows.get(`${META_STORE}/hlc:last`)).toBe(9_000)
-    expect(clearDirty).toHaveBeenCalledOnce()
+    // The board Home would reopen was the previous account's.
+    expect(kvStore.has("doska:last-board")).toBe(false)
+    expect(reset).toHaveBeenCalledOnce()
   })
 
   it("destroys nothing when the user signs out", async () => {
@@ -117,7 +120,7 @@ describe("reconcileIdentity", () => {
     expect(await reconcileIdentity(null)).toBe(false)
 
     expect(remaining()).toEqual(before)
-    expect(clearDirty).not.toHaveBeenCalled()
+    expect(reset).not.toHaveBeenCalled()
   })
 
   it("adopts local boards on the first sign-in rather than wiping them", async () => {
@@ -132,7 +135,7 @@ describe("reconcileIdentity", () => {
 
     expect(inStore(DASHBOARDS)).toEqual(["local"])
     expect(rows.get(`${META_STORE}/deck:user-id`)).toBe("user-a")
-    expect(clearDirty).not.toHaveBeenCalled()
+    expect(reset).not.toHaveBeenCalled()
   })
 })
 

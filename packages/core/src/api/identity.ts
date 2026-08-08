@@ -1,4 +1,5 @@
 import { runtime } from "../runtime"
+import { clearLastBoard } from "../data/last-board"
 import { DASHBOARDS, META_STORE, STORES } from "./constants"
 import { live } from "./operations/live"
 import { sync } from "./sync"
@@ -41,7 +42,10 @@ async function wipe(): Promise<void> {
   const cursors = await runtime().db.keys(META_STORE, CURSOR_RANGE)
   for (const key of cursors) await runtime().db.delete(META_STORE, key)
 
-  sync.clearDirty()
+  clearLastBoard()
+
+  // Last, so the pull it kicks off finds the cursors already gone.
+  sync.reset()
 }
 
 export const UNCLAIMED_BOARDS_WARNING =

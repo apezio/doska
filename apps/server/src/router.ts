@@ -14,7 +14,7 @@ export const router = os.router({
   dashboards: {
     sync: os.dashboards.sync.handler(async ({ input, context }) => {
       await boardsListSync.applyPush(input.changes, context.userId)
-      return boardsListSync.readSince(input.since)
+      return boardsListSync.readSince(input.since, context.userId)
     }),
   },
 })

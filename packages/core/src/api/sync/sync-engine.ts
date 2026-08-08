@@ -170,6 +170,17 @@ class DeckSync {
   }
 
   /**
+   * Points both channels back at nothing
+   */
+  reset() {
+    this.currentBoard = null
+    this.watchedBoards = []
+    this.board.reset()
+    this.list.reset()
+    this.list.setActiveScope(DASHBOARDS_SCOPE)
+  }
+
+  /**
    * The dashboard list always goes first. A board's tombstone cascades onto
    * anything pushed for it (see `applyPush`), so a restore whose card push
    * overtook its board push would come straight back dead. Serialising costs a

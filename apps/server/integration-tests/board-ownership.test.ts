@@ -89,7 +89,7 @@ describe("board ownership", () => {
     expect(await ownerOf("b1")).toBe(secondId)
   })
 
-  test("another user's push does not move ownership", async () => {
+  test("another user's push is dropped, row and ownership intact", async () => {
     await second.dashboards.sync({ since: 0, changes: [push("Roadmap", now)] })
 
     await owner.dashboards.sync({
@@ -101,7 +101,7 @@ describe("board ownership", () => {
       .select()
       .from(dashboards)
       .where(eq(dashboards.id, "b1"))
-    expect(row.title).toBe("Renamed by the owner")
+    expect(row.title).toBe("Roadmap")
     expect(row.ownerId).toBe(secondId)
   })
 })

@@ -50,30 +50,26 @@ test.describe("switching accounts on one device", () => {
     await expect(page.getByText(WARNING)).toHaveCount(0)
   })
 
-  test.fixme(
-    "signing in as a second account leaves none of the first's boards",
-    async ({ page }) => {
-      // Blocked on stage 1 step 5: the wipe runs, but the sync pull that follows
-      // it hands every board to every account, so the first account's boards
-      // come straight back down. Unskip once boards are scoped server-side.
-      const second = { login: uniqueLogin("switch"), password: "created-pass" }
+  test("signing in as a second account leaves none of the first's boards", async ({
+    page,
+  }) => {
+    const second = { login: uniqueLogin("switch"), password: "created-pass" }
 
-      await signIn(page)
-      await page.getByRole("button", { name: "Accounts" }).click()
-      await page.getByPlaceholder("Login").fill(second.login)
-      await page.getByPlaceholder("Password").fill(second.password)
-      await page.getByRole("button", { name: "Add", exact: true }).click()
-      await page.keyboard.press("Escape")
+    await signIn(page)
+    await page.getByRole("button", { name: "Accounts" }).click()
+    await page.getByPlaceholder("Login").fill(second.login)
+    await page.getByPlaceholder("Password").fill(second.password)
+    await page.getByRole("button", { name: "Add", exact: true }).click()
+    await page.keyboard.press("Escape")
 
-      await createBoard(page)
-      const title = await page.getByRole("button", { name: /Untitled/ }).count()
-      expect(title).toBeGreaterThan(0)
+    await createBoard(page)
+    const title = await page.getByRole("button", { name: /Untitled/ }).count()
+    expect(title).toBeGreaterThan(0)
 
-      await signOut(page)
-      await signIn(page, second)
+    await signOut(page)
+    await signIn(page, second)
 
-      await page.goto("/")
-      await expect(page.getByRole("button", { name: /Untitled/ })).toHaveCount(0)
-    }
-  )
+    await page.goto("/")
+    await expect(page.getByRole("button", { name: /Untitled/ })).toHaveCount(0)
+  })
 })

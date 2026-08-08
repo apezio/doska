@@ -1,5 +1,6 @@
 import type { Change } from "@doska/contract"
 import { and, eq, gt } from "drizzle-orm"
+import { assertBoardAccess } from "../../access"
 import { db } from "../../client"
 import { cards, columns } from "../../schema"
 import { boardCounter } from "../constants"
@@ -8,11 +9,16 @@ import { boardCounter } from "../constants"
  * Returns every column and card changed past `since` for the board, plus the
  * board's current high-water mark to hand back as the next cursor. The
  * dashboard's own metadata travels on {@link readDashboardsSince}, not here.
+ *
+ * Throws 403 unless `userId` may read the board.
  */
 export async function readSince(
   boardId: string,
-  since: number
+  since: number,
+  userId: string
 ): Promise<{ cursor: number; changes: Change[] }> {
+  await assertBoardAccess(userId, boardId)
+
   const cursor = await boardCounter(boardId).read(db)
 
   const changes: Change[] = []

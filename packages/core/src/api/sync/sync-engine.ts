@@ -12,6 +12,7 @@ import {
   DashboardListDriver,
   DASHBOARDS_SCOPE,
 } from "./drivers/dashboard-list-driver"
+import { dropBoardLocally } from "../operations/drop-board-locally"
 import { isAuthed, subscribeAuthed } from "../../utils"
 import { runtime } from "../../runtime"
 import { isSyncConfigured, subscribeSyncConfig } from "../server"
@@ -24,11 +25,18 @@ const canSync = () => isSyncConfigured() && isAuthed()
 
 /**
  * Reads the reason for a failed reconcile out of the transport.
+ *
+ * 401 and 403 are deliberately different: 401 is the session, 403 is one board
+ * we may not have. Folding 403 into `auth` would tell a signed-in user they had
+ * been signed out because a single board turned them away.
  */
-const classify = (err: unknown): SyncFailure => {
+export const classify = (err: unknown): SyncFailure => {
   if (!runtime().net.online()) return "offline"
-  if (err instanceof ORPCError)
-    return err.status === 401 || err.status === 403 ? "auth" : "server"
+  if (err instanceof ORPCError) {
+    if (err.status === 401) return "auth"
+    if (err.status === 403) return "forbidden"
+    return "server"
+  }
   if (err instanceof TypeError) return "offline"
   return "server"
 }
@@ -98,6 +106,7 @@ class DeckSync {
       storageKey: "deck:sync:dirty",
       canSync,
       classify,
+      onForbidden: (boardId) => this.forget(boardId),
     }) as unknown as SyncEngine<string, never>
     this.list = new SyncEngine(list, {
       kv: runtime().kv,
@@ -159,6 +168,18 @@ class DeckSync {
 
   private engineFor(store: StoreName) {
     return store === DASHBOARDS ? this.list : this.board
+  }
+
+  /** Abandons these records' pending refs, routed to the channel that holds them. */
+  dropDirty(store: StoreName, ids: string[]) {
+    this.engineFor(store).dropDirty(ids.map((id) => `${store}/${id}`))
+  }
+
+  /** A board the server refuses */
+  private async forget(boardId: string): Promise<void> {
+    if (this.currentBoard === boardId) this.currentBoard = null
+    this.watchedBoards = this.watchedBoards.filter((id) => id !== boardId)
+    await dropBoardLocally(boardId)
   }
 
   /**

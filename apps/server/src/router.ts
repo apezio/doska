@@ -6,9 +6,9 @@ const os = implement(contract).$context<{ userId: string }>()
 
 export const router = os.router({
   board: {
-    sync: os.board.sync.handler(async ({ input }) => {
-      await boardSync.applyPush(input.boardId, input.changes)
-      return boardSync.readSince(input.boardId, input.since)
+    sync: os.board.sync.handler(async ({ input, context }) => {
+      await boardSync.applyPush(input.boardId, input.changes, context.userId)
+      return boardSync.readSince(input.boardId, input.since, context.userId)
     }),
   },
   dashboards: {

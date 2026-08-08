@@ -28,7 +28,7 @@ export class DbStore implements BoardStore {
   }
 
   async readBoard(boardId: string): Promise<Change[]> {
-    const { changes } = await boardSync.readSince(boardId, 0)
+    const { changes } = await boardSync.readSince(boardId, 0, this.userId)
     for (const change of changes) clock.receive(change.record.updatedAt)
     return changes
   }
@@ -38,6 +38,6 @@ export class DbStore implements BoardStore {
   }
 
   async pushBoard(boardId: string, changes: Change[]): Promise<void> {
-    await boardSync.applyPush(boardId, changes)
+    await boardSync.applyPush(boardId, changes, this.userId)
   }
 }

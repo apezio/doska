@@ -1,5 +1,6 @@
 import type { Change } from "@doska/contract"
 import { eq } from "drizzle-orm"
+import { assertBoardAccess } from "../../access"
 import { dashboards } from "../../schema"
 import { applyChanges } from "../core/apply-changes"
 import { applyOne } from "./apply-one"
@@ -18,8 +19,16 @@ import { boardCounter } from "../constants"
  *
  * A restore therefore depends on its board reaching the list channel first;
  * the client sequences the two channels for exactly this reason.
+ *
+ * Throws 403 unless `userId` may write to the board.
  */
-export function applyPush(boardId: string, changes: Change[]): Promise<void> {
+export async function applyPush(
+  boardId: string,
+  changes: Change[],
+  userId: string
+): Promise<void> {
+  await assertBoardAccess(userId, boardId)
+
   let boardDeletedAt: number | null | undefined
   return applyChanges(
     boardCounter(boardId),

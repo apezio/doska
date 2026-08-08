@@ -5,7 +5,12 @@ import type { PushResult, SyncDriver } from "./driver"
 /** `paused` is the gate being shut (signed out, no server) — not `idle`. */
 export type SyncStatus = "idle" | "syncing" | "error" | "paused"
 
-export type SyncFailure = "offline" | "auth" | "server"
+/**
+ * `forbidden` is about the scope, not the session: the server refuses this one
+ * scope while the sign-in is perfectly good. It never reaches {@link SyncState}
+ * — the engine drops the scope instead of failing the cycle.
+ */
+export type SyncFailure = "offline" | "auth" | "server" | "forbidden"
 
 export interface SyncState {
   readonly status: SyncStatus
@@ -19,7 +24,9 @@ export interface SyncState {
 
 /** What one cycle learned, accumulated across its scopes. */
 interface Attempt {
-  ran: boolean
+  /** Scopes actually synced; a refused scope subtracts itself back out, since
+   * being turned away is neither a success nor a failure to report. */
+  attempted: number
   failed: boolean
   failure: SyncFailure | null
 }
@@ -53,8 +60,9 @@ export class SyncEngine<Scope, Change> {
   private readonly driver: SyncDriver<Scope, Change>
   private readonly canSync: () => boolean
   private readonly classify: (err: unknown) => SyncFailure
+  private readonly onForbidden: (scope: Scope) => Promise<void> | void
 
-  private attempt: Attempt = { ran: false, failed: false, failure: null }
+  private attempt: Attempt = { attempted: 0, failed: false, failure: null }
 
   private state: SyncState
   private readonly listeners = new Set<() => void>()
@@ -66,6 +74,8 @@ export class SyncEngine<Scope, Change> {
       storageKey: string
       canSync?: () => boolean
       classify?: (err: unknown) => SyncFailure
+      /** Runs once per scope the server refuses, after the engine drops it. */
+      onForbidden?: (scope: Scope) => Promise<void> | void
     }
   ) {
     this.driver = driver
@@ -79,6 +89,7 @@ export class SyncEngine<Scope, Change> {
     }
     this.canSync = options.canSync ?? (() => true)
     this.classify = options.classify ?? defaultClassify
+    this.onForbidden = options.onForbidden ?? (() => {})
   }
 
   // Arrow to stay reference-stable for `useSyncExternalStore`.
@@ -112,6 +123,15 @@ export class SyncEngine<Scope, Change> {
   clearDirty() {
     this.dirty.clear()
     this.setState({ ...this.state, pending: 0 })
+  }
+
+  /**
+   * Abandons specific refs unpushed. For records that can no longer reach the
+   * server at all: left dirty they retry forever and `pending` never settles.
+   */
+  dropDirty(refs: string[]) {
+    this.dirty.drop(refs)
+    this.setState({ ...this.state, pending: this.dirty.size })
   }
 
   /**
@@ -171,7 +191,7 @@ export class SyncEngine<Scope, Change> {
   private async cycle(): Promise<void> {
     do {
       this.rerun = false
-      this.attempt = { ran: false, failed: false, failure: null }
+      this.attempt = { attempted: 0, failed: false, failure: null }
       await this.pass()
       this.settle()
     } while (this.rerun)
@@ -187,7 +207,7 @@ export class SyncEngine<Scope, Change> {
 
     // Nothing to sync: no news either way, so claim no fresh success but drop
     // any stale failure — this engine isn't the one that's broken.
-    if (!this.attempt.ran) {
+    if (this.attempt.attempted === 0) {
       this.setState({
         ...this.state,
         status: "idle",
@@ -245,7 +265,7 @@ export class SyncEngine<Scope, Change> {
   /** Returns whether the scope was actually attempted. */
   private async run(scope: Scope | null): Promise<boolean> {
     if (scope === null || !this.canSync()) return false
-    this.attempt.ran = true
+    this.attempt.attempted += 1
     this.setState({
       ...this.state,
       status: "syncing",
@@ -263,7 +283,7 @@ export class SyncEngine<Scope, Change> {
       try {
         result = await this.driver.push({ scope, since, changes })
       } catch (err) {
-        this.fail(err)
+        await this.fail(scope, err)
         return true
       }
 
@@ -280,14 +300,37 @@ export class SyncEngine<Scope, Change> {
         ...result.changes.map((c) => this.driver.refOf(c)),
       ])
     } catch (err) {
-      this.fail(err)
+      await this.fail(scope, err)
     }
     return true
   }
 
-  private fail(err: unknown) {
+  private async fail(scope: Scope, err: unknown) {
+    const failure = this.classify(err)
+    if (failure === "forbidden") {
+      await this.forbid(scope)
+      return
+    }
     this.attempt.failed = true
-    this.attempt.failure = this.classify(err)
+    this.attempt.failure = failure
     console.warn("[sync] reconcile failed; will retry next tick", err)
+  }
+
+  /**
+   * Stops syncing a scope the server refuses. Retrying it is pointless — access
+   * doesn't come back on its own — and counting it as a failure would report the
+   * whole connection as down over one scope.
+   */
+  private async forbid(scope: Scope) {
+    this.attempt.attempted -= 1
+    if (scope === this.activeScope) this.activeScope = null
+    this.watchedScopes = this.watchedScopes.filter((s) => s !== scope)
+    this.extraScopes.delete(scope)
+    console.warn("[sync] scope refused by the server; dropping it", scope)
+    try {
+      await this.onForbidden(scope)
+    } catch (err) {
+      console.warn("[sync] dropping the refused scope failed", err)
+    }
   }
 }

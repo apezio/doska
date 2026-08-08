@@ -14,6 +14,7 @@ export {
   validatePrefix,
 } from "./set-dashboard-prefix"
 export { deleteDashboard } from "./delete-dashboard"
+export { dropBoardLocally } from "./drop-board-locally"
 export { createColumn } from "./create-column"
 export { renameColumn } from "./rename-column"
 export { setColumnCollapsed } from "./set-column-collapsed"

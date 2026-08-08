@@ -6,6 +6,7 @@ const DROPPED = {
   offline: "Offline",
   auth: "Signed out on the server",
   server: "No server",
+  forbidden: "No access",
 } as const
 
 // `session` is undefined until the first check resolves; a neutral placeholder

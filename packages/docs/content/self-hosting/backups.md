@@ -44,8 +44,13 @@ dump would land on tables and rows that already exist:
 docker compose -f docker-compose.selfhost.yml down --volumes
 docker compose -f docker-compose.selfhost.yml up -d --wait db
 gunzip -c backups/doska-XXXX.sql.gz | \
-  docker compose -f docker-compose.selfhost.yml exec -T db psql -U doska doska
+  docker compose -f docker-compose.selfhost.yml exec -T db \
+    psql -v ON_ERROR_STOP=1 -U doska doska
 ```
+
+> **Keep `ON_ERROR_STOP=1`.** Without it `psql` exits 0 even when every
+> statement failed — restoring onto a database that isn't empty prints a wall of
+> errors and still looks like it succeeded.
 
 ### Attachments
 
@@ -60,7 +65,9 @@ docker compose -f docker-compose.selfhost.yml up -d
 ```
 
 `<project>` is the compose project name, by default the lowercased name of the
-directory you run from, or `COMPOSE_PROJECT_NAME` if you set one.
+directory you run from (with anything outside `a-z0-9_-` dropped, and any
+leading `-` or `_` stripped), or `COMPOSE_PROJECT_NAME` if you set one.
+`docker compose config | head -1` prints the one in effect.
 
 > **Restore both halves from the same timestamp.** The database holds the rows
 > that name the files, so a mismatched pair leaves cards pointing at blobs that
@@ -72,7 +79,8 @@ directory you run from, or `COMPOSE_PROJECT_NAME` if you set one.
    available, and that `docker-compose.selfhost.yml` sits in the current
    directory,  otherwise you are not in your Doska directory and it stops.
 2. Works out the compose project name (`COMPOSE_PROJECT_NAME`, or the lowercased
-   name of the directory),  that is the prefix on the volumes.
+   name of the directory, normalised the way compose normalises it),  that is
+   the prefix on the volumes. 
 3. Creates `./backups/` and takes one timestamp, shared by both files.
 4. **Database.** Skipped if `.env` sets `DATABASE_URL` (yours to back up through
    your provider), or if the `doska-pgdata` volume doesn't exist yet. Otherwise

@@ -9,10 +9,14 @@
 # server has already migrated the schema and seeded the admin account, and the
 # dump would land on tables and rows that exist:
 #
+# ON_ERROR_STOP=1 matters: without it psql reports success even when every
+# statement failed, so a restore onto a non-empty database looks like it worked.
+#
 #   docker compose -f docker-compose.selfhost.yml down --volumes
 #   docker compose -f docker-compose.selfhost.yml up -d --wait db
 #   gunzip -c backups/doska-XXXX.sql.gz | \
-#     docker compose -f docker-compose.selfhost.yml exec -T db psql -U doska doska
+#     docker compose -f docker-compose.selfhost.yml exec -T db \
+#       psql -v ON_ERROR_STOP=1 -U doska doska
 #
 # Restore the attachments into the (recreated, empty) volume before starting up.
 # Restore both halves from the same timestamp: the database holds the rows that
@@ -44,10 +48,16 @@ fi
 
 # Volume names are scoped to the compose project (default: lowercased dir
 # basename), so another Doska on the same host isn't mistaken for ours.
+# Compose also requires the name to start with a letter or digit and drops any
+# leading `-`/`_` — miss that and we'd look for a volume that doesn't exist and
+# cheerfully report there was nothing to back up.
 if [ -n "${COMPOSE_PROJECT_NAME:-}" ]; then
   PROJECT="$COMPOSE_PROJECT_NAME"
 else
-  PROJECT=$(basename "$PWD" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-')
+  PROJECT=$(basename "$PWD" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-' |
+    sed 's/^[^a-z0-9]*//')
+  [ -n "$PROJECT" ] ||
+    die "cannot derive a compose project name from this directory — set COMPOSE_PROJECT_NAME."
 fi
 has_volume() { docker volume ls -q 2>/dev/null | grep -qx "${PROJECT}_$1"; }
 
@@ -64,7 +74,10 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 SAVED=0
 
 backup_db() {
-  if [ -f "$ENV_FILE" ] && grep -q '^DATABASE_URL=..*' "$ENV_FILE" 2>/dev/null; then
+  # Leading whitespace and all: compose trims it, so a value it honours must not
+  # look unset to us, or we'd back up the idle bundled db and call it a backup.
+  if [ -f "$ENV_FILE" ] &&
+    grep -q '^[[:blank:]]*DATABASE_URL=..*' "$ENV_FILE" 2>/dev/null; then
     bold "Managed Postgres (DATABASE_URL is set) — back it up through your provider."
     return 0
   fi
@@ -86,14 +99,18 @@ backup_db() {
   _out="backups/doska-$STAMP.sql.gz"
   _tmp="backups/.dump.$$"
   # Dump to a temp file first so pg_dump's own exit status is what we check — a
-  # plain pipe into gzip would mask a failed dump behind gzip's success.
-  if $COMPOSE -f "$COMPOSE_FILE" exec -T db pg_dump -U doska doska > "$_tmp" 2>/dev/null; then
-    gzip < "$_tmp" > "$_out"
+  # plain pipe into gzip would mask a failed dump behind gzip's success. Gzip to
+  # a second temp and rename, so $_out only ever appears complete: two runs in
+  # the same second share a timestamp, and writing it in place interleaves them
+  # into a corrupt archive that still reports success.
+  if $COMPOSE -f "$COMPOSE_FILE" exec -T db pg_dump -U doska doska > "$_tmp" 2>/dev/null &&
+    gzip < "$_tmp" > "$_tmp.gz"; then
+    mv "$_tmp.gz" "$_out"
     rm -f "$_tmp"
     printf '  saved %s (%s)\n' "$_out" "$(du -h "$_out" | cut -f1)"
     SAVED=$((SAVED + 1))
   else
-    rm -f "$_tmp" "$_out"
+    rm -f "$_tmp" "$_tmp.gz"
     die "pg_dump failed — nothing written."
   fi
 }

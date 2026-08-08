@@ -138,11 +138,13 @@ gen_secret() {
 env_escape() { printf '%s' "$1" | sed 's/\$/$$/g'; }
 
 # Compose's default project name: the lowercased directory basename with any
-# character outside [a-z0-9_-] dropped. Scopes volume/container lookups to THIS
-# install so another Doska on the same host isn't mistaken for ours.
+# character outside [a-z0-9_-] dropped, then any leading `-`/`_` stripped —
+# compose requires the name to start with a letter or digit. Scopes
+# volume/container lookups to THIS install so another Doska on the same host
+# isn't mistaken for ours; get it wrong and an existing database looks absent.
 project_name() {
   if [ -n "${COMPOSE_PROJECT_NAME:-}" ]; then printf '%s' "$COMPOSE_PROJECT_NAME"; return; fi
-  basename "$PWD" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-'
+  basename "$PWD" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-' | sed 's/^[^a-z0-9]*//'
 }
 
 # Runs "$@" with a deadline, returning 124 if it outlives it. A daemon that has

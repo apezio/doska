@@ -1,10 +1,10 @@
 import { Avatar, AvatarFallback, Button, cn } from "@doska/ui-kit"
 import { initials } from "@doska/core/utils"
-import { KeyRound } from "lucide-react"
 import { useState } from "react"
 import { useSetAccountActive } from "@doska/core/mutations"
 import type { Account } from "@doska/core/queries"
 import { AccountTag } from "./account-tag"
+import { DeleteAccountModal } from "./delete-account-modal"
 import { ResetPasswordForm } from "./reset-password-form"
 
 interface IProps {
@@ -14,7 +14,10 @@ interface IProps {
 
 export function AccountRow({ account, isSelf }: IProps) {
   const [resetting, setResetting] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const setActive = useSetAccountActive()
+
+  const canDelete = !isSelf && !account.active
 
   return (
     <li className="flex flex-col gap-2 border-b border-border p-3 last:border-b-0">
@@ -55,6 +58,17 @@ export function AccountRow({ account, isSelf }: IProps) {
               {account.active ? "Deactivate" : "Activate"}
             </Button>
           )}
+          {canDelete && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-destructive"
+              onClick={() => setDeleting(true)}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       </div>
       {setActive.error && (
@@ -62,6 +76,13 @@ export function AccountRow({ account, isSelf }: IProps) {
       )}
       {resetting && (
         <ResetPasswordForm id={account.id} onDone={() => setResetting(false)} />
+      )}
+      {deleting && (
+        <DeleteAccountModal
+          account={account}
+          open={deleting}
+          onOpenChange={setDeleting}
+        />
       )}
     </li>
   )

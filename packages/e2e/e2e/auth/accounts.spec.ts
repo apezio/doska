@@ -6,8 +6,8 @@ import { signIn, signOut } from "../helpers"
  * their passwords, and the accounts it creates are ordinary users with no way
  * into the accounts modal at all.
  *
- * Every login is unique per run because accounts are deactivated, never deleted —
- * the server keeps every one this suite has ever made.
+ * Every login is unique per run because deactivating is the normal end of an
+ * account — the server keeps almost every one this suite has ever made.
  */
 
 function uniqueLogin(prefix: string): string {
@@ -88,7 +88,7 @@ test.describe("account management", () => {
 
     const own = accountRow(page, "e2e")
     await expect(
-      own.getByRole("button", { name: "Reset password" })
+      own.getByRole("button", { name: "Change password" })
     ).toBeVisible()
     await expect(own.getByRole("button", { name: "Deactivate" })).toHaveCount(0)
   })
@@ -129,6 +129,31 @@ test.describe("account management", () => {
     await signIn(page, account)
   })
 
+  test("an account can only be deleted once it is deactivated", async ({
+    page,
+  }) => {
+    const login = uniqueLogin("deleted")
+
+    await signIn(page)
+    await openAccounts(page)
+    await addAccount(page, login, "created-pass")
+
+    const row = accountRow(page, login)
+    // Deleting is offered only at the end of the deactivated path.
+    await expect(row.getByRole("button", { name: "Delete" })).toHaveCount(0)
+
+    await row.getByRole("button", { name: "Deactivate" }).click()
+    await expect(row).toContainText("Inactive")
+    await row.getByRole("button", { name: "Delete", exact: true }).click()
+
+    // The dialog reports what the account still holds before it offers the deed.
+    const dialog = page.getByRole("dialog").filter({ hasText: "Delete " })
+    await expect(dialog.getByText("owns no boards")).toBeVisible()
+    await dialog.getByRole("button", { name: "Delete account" }).click()
+
+    await expect(accountRow(page, login)).toHaveCount(0)
+  })
+
   test("resetting a password refuses the old one and accepts the new", async ({
     page,
   }) => {
@@ -139,7 +164,7 @@ test.describe("account management", () => {
     await addAccount(page, login, "first-pass")
 
     const row = accountRow(page, login)
-    await row.getByRole("button", { name: "Reset password" }).click()
+    await row.getByRole("button", { name: "Change password" }).click()
     await page.getByPlaceholder("New password").fill("second-pass")
     await row.getByRole("button", { name: "Save" }).click()
     // The form closes on success, which is how we know the write landed.

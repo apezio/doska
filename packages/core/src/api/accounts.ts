@@ -3,11 +3,10 @@
  * no oRPC procedures behind this: the plugin's own routes already enforce the
  * admin check server-side, so the UI is the only thing missing.
  *
- * Accounts are deactivated, never deleted — `owner_id` and `created_by`
- * references outlive the row. The plugin calls it a ban; we call it inactive.
  */
 
 import { authClient } from "./auth-client"
+import { orpc } from "./sync/orpc"
 
 export type Account = {
   id: string
@@ -84,6 +83,16 @@ export async function setAccountPassword(
     newPassword: password,
   })
   if (error) fail(error, "Could not set the password")
+}
+
+/** Live boards the account still owns; deleting it is refused while any remain. */
+export async function countOwnedBoards(id: string): Promise<number> {
+  const { boards } = await orpc.accounts.ownedBoards({ userId: id })
+  return boards
+}
+
+export function deleteAccount(id: string): Promise<void> {
+  return orpc.accounts.remove({ userId: id })
 }
 
 export async function setAccountActive(

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { listAccounts } from "../api/accounts"
+import { countOwnedBoards, listAccounts } from "../api/accounts"
 import { fetchSession } from "../api/auth"
 import { listDirectory, listMembers, listSharedBoards } from "../api/members"
 import {
@@ -37,6 +37,15 @@ export function useAccounts(enabled: boolean) {
   return useQuery({
     queryKey: keys.accounts,
     queryFn: listAccounts,
+    enabled,
+  })
+}
+
+/** What stands between one account and being deleted. */
+export function useOwnedBoards(userId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.ownedBoards(userId),
+    queryFn: () => countOwnedBoards(userId),
     enabled,
   })
 }

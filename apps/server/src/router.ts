@@ -1,11 +1,18 @@
 import { contract, type MemberRole } from "@doska/contract"
 import { implement, ORPCError } from "@orpc/server"
+import {
+  assertAdmin,
+  countOwnedBoards,
+  deleteAccount,
+  findAccount,
+} from "./db/accounts"
 import { assertBoardOwner, boardAccess } from "./db/access"
 import {
   boardSync,
   boardsListSync,
   listRoster,
   listSharedBoards,
+  revokeAllMemberships,
   writeMembers,
 } from "./db/sync"
 import { listUsers } from "./db/users"
@@ -87,5 +94,34 @@ export const router = os.router({
   },
   users: {
     list: os.users.list.handler(async () => ({ users: await listUsers() })),
+  },
+  accounts: {
+    ownedBoards: os.accounts.ownedBoards.handler(async ({ input, context }) => {
+      await assertAdmin(context.userId)
+      return { boards: await countOwnedBoards(input.userId) }
+    }),
+    remove: os.accounts.remove.handler(async ({ input, context }) => {
+      await assertAdmin(context.userId)
+      if (input.userId === context.userId)
+        throw new ORPCError("BAD_REQUEST", {
+          message: "An account cannot delete itself.",
+        })
+
+      const target = await findAccount(input.userId)
+      if (!target) throw new ORPCError("NOT_FOUND")
+      if (target.active)
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Deactivate the account before deleting it.",
+        })
+
+      const boards = await countOwnedBoards(input.userId)
+      if (boards > 0)
+        throw new ORPCError("BAD_REQUEST", {
+          message: `This account still owns ${boards} board${boards === 1 ? "" : "s"}. Move or delete them first.`,
+        })
+
+      await revokeAllMemberships(input.userId)
+      await deleteAccount(input.userId)
+    }),
   },
 })

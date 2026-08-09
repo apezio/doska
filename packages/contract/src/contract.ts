@@ -85,4 +85,14 @@ export const contract = {
   users: {
     list: oc.output(z.object({ users: z.array(DirectoryUserSchema) })),
   },
+  accounts: {
+    ownedBoards: oc
+      .input(z.object({ userId: z.string() }))
+      .output(z.object({ boards: z.number() })),
+    /**
+     * Deletes an account. Admin-only, and refused unless the account
+     * is already deactivated and owns no live board
+     */
+    remove: oc.input(z.object({ userId: z.string() })).output(z.void()),
+  },
 }

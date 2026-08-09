@@ -26,6 +26,14 @@ export function useSetAccountPassword() {
   })
 }
 
+export function useDeleteAccount() {
+  const refetch = useRefetchAccounts()
+  return useMutation({
+    mutationFn: (id: string) => accountsApi.deleteAccount(id),
+    onSuccess: refetch,
+  })
+}
+
 export function useSetAccountActive() {
   const refetch = useRefetchAccounts()
   return useMutation({

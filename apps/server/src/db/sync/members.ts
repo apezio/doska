@@ -45,13 +45,29 @@ export async function listSharedBoards(userId: string): Promise<string[]> {
     .where(
       and(
         isNull(boardMembers.revokedAt),
-        or(
-          eq(boardMembers.userId, userId),
-          eq(dashboards.ownerId, userId)
-        )
+        or(eq(boardMembers.userId, userId), eq(dashboards.ownerId, userId))
       )
     )
   return rows.map((r) => r.boardId)
+}
+
+/**
+ * Every board `userId` is still a member of.
+ */
+export async function revokeAllMemberships(
+  userId: string,
+  now = Date.now()
+): Promise<void> {
+  const rows = await db
+    .select({ boardId: boardMembers.boardId })
+    .from(boardMembers)
+    .where(and(eq(boardMembers.userId, userId), isNull(boardMembers.revokedAt)))
+
+  if (rows.length === 0) return
+  await writeMembers(
+    rows.map(({ boardId }) => ({ boardId, userId, revokedAt: now })),
+    now
+  )
 }
 
 /** A grant, a role change or a revocation — all of them rewrite the one row. */

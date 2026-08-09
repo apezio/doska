@@ -1,13 +1,17 @@
 import { Button, cn, useIsMobile } from "@doska/ui-kit"
 import { Eye, PencilLine, X } from "lucide-react"
-import { AddAttachmentButton } from "../card/attachments/add-attachment-button"
+import type { ReactNode } from "react"
 import { hasOverlayTitleBar } from "@/lib/platform"
 
 interface IProps {
   onClose: () => void
-  onTogglePreivew: () => void
+  /** Omit where the card cannot be edited — the toggle has nothing to toggle to. */
+  onTogglePreivew?: () => void
   isPreview: boolean
-  onSave: () => void
+  /** Omit where there is nothing to save. */
+  onSave?: () => void
+  /** Extra controls before the toggle — attaching a file, where that is possible. */
+  actions?: ReactNode
 }
 
 export function CardPanelHeader({
@@ -15,6 +19,7 @@ export function CardPanelHeader({
   isPreview,
   onSave,
   onTogglePreivew,
+  actions,
 }: IProps) {
   const isMobile = useIsMobile()
   const windowControlsInset = isMobile && hasOverlayTitleBar()
@@ -37,14 +42,18 @@ export function CardPanelHeader({
         </Button>
       </div>
       <div className="flex justify-end space-x-2">
-        <AddAttachmentButton />
-        <Button variant="ghost" size="sm" onClick={onTogglePreivew}>
-          {isPreview ? <PencilLine /> : <Eye />}
-          {isPreview ? "Edit" : "Preview"}
-        </Button>
-        <Button size="sm" onClick={onSave}>
-          Save
-        </Button>
+        {actions}
+        {onTogglePreivew && (
+          <Button variant="ghost" size="sm" onClick={onTogglePreivew}>
+            {isPreview ? <PencilLine /> : <Eye />}
+            {isPreview ? "Edit" : "Preview"}
+          </Button>
+        )}
+        {onSave && (
+          <Button size="sm" onClick={onSave}>
+            Save
+          </Button>
+        )}
       </div>
     </div>
   )

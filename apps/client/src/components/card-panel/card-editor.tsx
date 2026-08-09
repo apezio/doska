@@ -1,13 +1,13 @@
-import { CardContent, cn } from "@doska/ui-kit"
+import { Markdown, cn } from "@doska/ui-kit"
 import { useState } from "react"
-import { Markdown } from "@doska/ui-kit"
 import { MarkdownTextarea } from "../markdown"
-import { CardContentLayout } from "./card-content-layout"
+import { CardPaneLayout } from "./card-pane-layout"
 import { CardPanelHeader } from "./card-panel-header"
 import { CardBodyEditor } from "./card-body-editor"
-import { CardMeta } from "../card/card-meta"
+import { CardMetaLive } from "../card/card-meta-live"
 import { CardColumnPicker } from "./card-column-picker"
 import { CardAttachments } from "../card/attachments/card-attachments"
+import { AddAttachmentButton } from "../card/attachments/add-attachment-button"
 import { AttachmentDropZone } from "../card/attachments/attachment-drop-zone"
 import { AttachmentUploadProvider } from "../card/attachments/context/attachment-upload-provider"
 
@@ -53,39 +53,44 @@ export function CardEditor({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <AttachmentUploadProvider cardId={cardId}>
-        <CardPanelHeader
-          isPreview={isPreview}
-          onClose={onClose}
-          onSave={onClose}
-          onTogglePreivew={onTogglePreview}
-        />
         <AttachmentDropZone className="flex min-h-0 flex-1 flex-col">
           {/* Anchors the mobile slash button: inside the pane, outside the scroller. */}
           <div
             ref={setOverlay}
             className="relative flex min-h-0 flex-1 flex-col"
           >
-            <CardContentLayout>
-              <CardContent className="flex flex-wrap items-center gap-x-4 gap-y-2 py-2">
-                <CardMeta cardId={cardId} body={body} />
-                <CardColumnPicker cardId={cardId} />
-              </CardContent>
-              <CardAttachments
-                className="py-2"
-                cardId={cardId}
-                isReadonly={isPreview}
-              />
-              <CardContent
-                className="flex min-h-0 flex-1 flex-col px-4 pt-2"
-                onClick={
-                  isPreview
-                    ? (e) => {
-                        if (isImageClick(e.target)) return
-                        if (!hasTextSelection()) onEdit()
-                      }
-                    : undefined
-                }
-              >
+            <CardPaneLayout
+              header={
+                <CardPanelHeader
+                  isPreview={isPreview}
+                  onClose={onClose}
+                  onSave={onClose}
+                  onTogglePreivew={onTogglePreview}
+                  actions={<AddAttachmentButton />}
+                />
+              }
+              meta={
+                <>
+                  <CardMetaLive cardId={cardId} body={body} />
+                  <CardColumnPicker cardId={cardId} />
+                </>
+              }
+              attachments={
+                <CardAttachments
+                  className="py-2"
+                  cardId={cardId}
+                  isReadonly={isPreview}
+                />
+              }
+              onClickBody={
+                isPreview
+                  ? (e) => {
+                      if (isImageClick(e.target)) return
+                      if (!hasTextSelection()) onEdit()
+                    }
+                  : undefined
+              }
+              title={
                 <MarkdownTextarea
                   renderPreview={Markdown}
                   autoFocus
@@ -98,6 +103,8 @@ export function CardEditor({
                     !isPreview && "font-mono"
                   )}
                 />
+              }
+              body={
                 <CardBodyEditor
                   cardId={cardId}
                   body={body}
@@ -105,8 +112,8 @@ export function CardEditor({
                   onChangeBody={onChangeBody}
                   overlayContainer={overlay}
                 />
-              </CardContent>
-            </CardContentLayout>
+              }
+            />
           </div>
         </AttachmentDropZone>
       </AttachmentUploadProvider>

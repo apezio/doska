@@ -1,4 +1,5 @@
 import { CardContent, Modal, ModalContent, ModalHeader } from "@doska/ui-kit"
+import { PublicLink } from "./public-link"
 import { ShareRoster } from "./share-roster"
 
 interface IProps {
@@ -17,8 +18,9 @@ export function ShareModal({ open, onOpenChange, boardId, title }: IProps) {
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent className="md:max-w-lg">
         <ModalHeader onClose={() => onOpenChange(false)}>Share</ModalHeader>
-        <CardContent className="overflow-y-auto py-4">
+        <CardContent className="space-y-4 overflow-y-auto py-4">
           <ShareRoster boardId={boardId} title={title} />
+          <PublicLink boardId={boardId} />
         </CardContent>
       </ModalContent>
     </Modal>

@@ -8,6 +8,7 @@ import {
 import { isDesktop } from "@/lib/platform"
 import { runUpdateCheck, useUpdateState } from "@/lib/update-store"
 import { useAppVersion } from "@/lib/version"
+import { SettingsSection } from "../section"
 
 const CheckState = {
   idle: "idle",
@@ -36,9 +37,9 @@ export function UpdatesSection() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <SettingsSection>
       <div className="text-sm">
-        Version <span className="text-muted-foreground">{version}</span>
+        Doska version: <span className="text-muted-foreground">{version}</span>
       </div>
       {desktop && (
         <label className="flex items-start gap-2">
@@ -95,6 +96,6 @@ export function UpdatesSection() {
           </span>
         )}
       </div>
-    </div>
+    </SettingsSection>
   )
 }

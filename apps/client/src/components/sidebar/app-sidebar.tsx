@@ -16,10 +16,7 @@ import { AppSidebarHeader } from "./app-sidebar-header"
 import { DashboardsList } from "./dashboards-list"
 import { ThemeToggle } from "./theme-toggle"
 import { SidebarAccount } from "./sidebar-account"
-import { GitHubButton } from "./github-button"
-import { DocsButton } from "./docs-button"
 import { SettingsButton } from "@/components/settings/settings-button"
-import { AccountsButton } from "@/components/accounts/accounts-button"
 
 export function AppSidebar() {
   const [location, navigate] = useLocation()
@@ -74,9 +71,6 @@ export function AppSidebar() {
       <SidebarFooter>
         <ThemeToggle />
         <SettingsButton />
-        <AccountsButton />
-        <DocsButton />
-        <GitHubButton />
         <SidebarAccount />
       </SidebarFooter>
     </Sidebar>

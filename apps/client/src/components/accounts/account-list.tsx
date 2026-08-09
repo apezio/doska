@@ -11,23 +11,28 @@ export function AccountList() {
   const { data: accounts, isPending, error } = useAccounts(isAdmin)
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
+      <CreateAccountForm />
       {isPending && (
         <p className="text-xs text-muted-foreground">Loading accounts…</p>
       )}
       {error && <p className="text-xs text-destructive">{error.message}</p>}
       {accounts && (
-        <ul className="flex flex-col">
-          {accounts.map((account) => (
-            <AccountRow
-              key={account.id}
-              account={account}
-              isSelf={account.id === userId}
-            />
-          ))}
-        </ul>
+        <div className="flex flex-col gap-2">
+          <div className="text-xs text-muted-foreground">
+            {accounts.length} {accounts.length === 1 ? "account" : "accounts"}
+          </div>
+          <ul className="flex flex-col rounded-lg border border-border">
+            {accounts.map((account) => (
+              <AccountRow
+                key={account.id}
+                account={account}
+                isSelf={account.id === userId}
+              />
+            ))}
+          </ul>
+        </div>
       )}
-      <CreateAccountForm />
     </div>
   )
 }

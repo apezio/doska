@@ -14,8 +14,9 @@ function uniqueLogin(prefix: string): string {
   return `e2e-${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`
 }
 
-/** Opens the accounts modal from the sidebar entry only an owner has. */
+/** Opens the accounts modal from settings, where only an owner is offered it. */
 async function openAccounts(page: Page): Promise<void> {
+  await page.getByRole("button", { name: "Settings" }).click()
   await page.getByRole("button", { name: "Accounts" }).click()
   await expect(page.getByRole("heading", { name: "Accounts" })).toBeVisible()
 }
@@ -60,8 +61,9 @@ test.describe("account management", () => {
 
     await signIn(page, account)
 
-    // The sidebar offers it Settings, and no way into accounts at all.
-    await expect(page.getByRole("button", { name: "Settings" })).toBeVisible()
+    // Settings opens for it, with no way into accounts in it at all.
+    await page.getByRole("button", { name: "Settings" }).click()
+    await expect(page.getByRole("dialog")).toBeVisible()
     await expect(page.getByRole("button", { name: "Accounts" })).toHaveCount(0)
   })
 

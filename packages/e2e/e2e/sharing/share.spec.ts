@@ -34,6 +34,7 @@ async function createAccount(
   login: string,
   password: string
 ): Promise<void> {
+  await page.getByRole("button", { name: "Settings" }).click()
   await page.getByRole("button", { name: "Accounts" }).click()
   await page.getByPlaceholder("Login").fill(login)
   await page.getByPlaceholder("Password").fill(password)

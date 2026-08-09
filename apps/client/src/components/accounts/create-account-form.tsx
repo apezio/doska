@@ -1,4 +1,5 @@
 import { Button, Input } from "@doska/ui-kit"
+import { UserPlus } from "lucide-react"
 import { useState } from "react"
 import { useCreateAccount } from "@doska/core/mutations"
 
@@ -22,8 +23,14 @@ export function CreateAccountForm() {
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-2">
-      <div className="text-sm font-medium">Add an account</div>
+    <form
+      onSubmit={submit}
+      className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3"
+    >
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <UserPlus className="size-4 text-muted-foreground" />
+        Add an account
+      </div>
       <div className="flex items-center gap-2">
         <Input
           name="new-login"
@@ -46,6 +53,7 @@ export function CreateAccountForm() {
         <Button
           type="submit"
           size="sm"
+          className="shrink-0"
           disabled={isPending || !login.trim() || !password}
         >
           {isPending ? "Adding…" : "Add"}

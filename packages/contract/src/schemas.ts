@@ -75,6 +75,20 @@ export const DashboardSchema = z.object({
   deletedAt: z.number().nullable(),
 })
 
+/**
+ * The whole of a published board, as `GET /api/public/b/:token` returns it.
+ *
+ * Built out of the record schemas above on purpose: everything the sync tables
+ * carry beyond them — `seq`, `owner_id`, the share token itself — is internal,
+ * and reusing the wire shapes is what keeps it out. Tombstones are excluded by
+ * the query, so every record here is live.
+ */
+export const PublicBoardSchema = z.object({
+  dashboard: DashboardSchema,
+  columns: z.array(ColumnSchema),
+  cards: z.array(CardSchema),
+})
+
 /** Ship editors only; `'owner'` exists so widening roles needs no migration. */
 export const MemberRoleSchema = z.enum(["owner", "editor"])
 

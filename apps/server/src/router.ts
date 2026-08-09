@@ -8,6 +8,11 @@ import {
 } from "./db/accounts"
 import { assertBoardOwner, boardAccess } from "./db/access"
 import {
+  publicToken,
+  publishBoard,
+  unpublishBoard,
+} from "./db/public"
+import {
   boardSync,
   boardsListSync,
   listRoster,
@@ -54,6 +59,20 @@ export const router = os.router({
     sync: os.dashboards.sync.handler(async ({ input, context }) => {
       await boardsListSync.applyPush(input.changes, context.userId)
       return boardsListSync.readSince(input.since, context.userId)
+    }),
+  },
+  boards: {
+    publish: os.boards.publish.handler(async ({ input, context }) => {
+      await assertBoardOwner(context.userId, input.boardId)
+      return { token: await publishBoard(input.boardId) }
+    }),
+    unpublish: os.boards.unpublish.handler(async ({ input, context }) => {
+      await assertBoardOwner(context.userId, input.boardId)
+      await unpublishBoard(input.boardId)
+    }),
+    publicStatus: os.boards.publicStatus.handler(async ({ input, context }) => {
+      await assertBoardOwner(context.userId, input.boardId)
+      return { token: await publicToken(input.boardId) }
     }),
   },
   members: {

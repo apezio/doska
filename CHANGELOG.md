@@ -5,16 +5,24 @@
 ### Added
 
 - Accounts: a server holds more than one person. The admin adds them
-  from the sidebar's **Accounts** screen, sets anyone's password, and
+  from the **Accounts** screen in settings, sets anyone's password, and
   deactivates without deleting — a deactivated account can't sign in and its
   boards stay put. Nobody can sign themselves up.
-- Every board belongs to an account, and sync only ever serves the signed-in
-  one's. Someone else's board is a 403, and to an agent over MCP it simply
-  isn't there.
+- Every board belongs to an account, and sync only ever serves what the
+  signed-in one owns or has been given. 
+- Boards are shareable. **Share** in the board menu opens a roster: the owner
+  adds anyone with an account on the server, and takes them off again. A shared
+  board syncs to everyone on it and is marked in the sidebar.
+- Being taken off a board — or leaving one yourself — drops it and its cards
+  from your devices. 
+- An admin can delete a deactivated account outright, once it owns no board.
+  Boards it was a member of let go of it first.
 - Docs update, docs pages beta tags.
 
 ### Changed
 
+- **Accounts**, **Docs** and **GitHub** moved out of the sidebar and into the
+  Settings modal. The sidebar footer was collecting buttons.
 - `AUTH_LOGIN` / `AUTH_PASSWORD` seed the first admin account on first boot and
   do nothing after that. Editing them and restarting won't change a password;
   the Accounts screen will.

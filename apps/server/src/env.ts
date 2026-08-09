@@ -35,6 +35,12 @@ export const env = {
   authTrustedOrigins: list(process.env.AUTH_TRUSTED_ORIGINS),
   authRateLimit: process.env.AUTH_RATE_LIMIT !== "off",
 
+  // Public board links. Their route is the only unauthenticated data endpoint
+  // here, and better-auth's own limiter covers `/api/auth` alone, so it gets its
+  // own per-IP cap — with the same "off" escape hatch, for e2e and for a
+  // self-host sitting behind a proxy that already limits.
+  publicRateLimit: process.env.PUBLIC_RATE_LIMIT !== "off",
+
   // Logging
   logLevel: process.env.LOG_LEVEL,
   noColor: Boolean(process.env.NO_COLOR),

@@ -14,3 +14,5 @@ process.env.AUTH_PASSWORD ??= "test-password"
 // The per-route limiter buckets by IP; inject reuses one, so leave it off or the
 // suite trips its own rate limit.
 process.env.AUTH_RATE_LIMIT = "off"
+// Same story for the public board route: every inject arrives from one IP.
+process.env.PUBLIC_RATE_LIMIT = "off"

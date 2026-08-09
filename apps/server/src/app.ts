@@ -5,6 +5,7 @@ import { loggerOptions } from "./logger"
 import { registerAuthRoutes } from "./routes/auth"
 import { registerFileRoutes, type ServerStorage } from "./routes/files"
 import { registerMcpRoutes } from "./routes/mcp"
+import { registerPublicRoutes } from "./routes/public"
 import { registerRpcRoutes } from "./routes/rpc"
 import { registerUpdateRoutes } from "./routes/updates"
 
@@ -33,9 +34,12 @@ export function buildApp(opts: BuildOptions = {}): FastifyInstance {
     })
   }
 
-  // Public: login, OAuth discovery, version, desktop updates.
+  // Public: login, OAuth discovery, version, desktop updates, shared boards.
   registerAuthRoutes(app)
   registerUpdateRoutes(app)
+  // Must stay out here. Inside either scope below it inherits that scope's
+  // session check, and the one feature whose visitors have no session breaks.
+  registerPublicRoutes(app, opts.storage)
 
   // Everything private, behind one session check.
   app.register(async (scope) => {

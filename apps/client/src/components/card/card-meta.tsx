@@ -1,26 +1,30 @@
 import { CardId, TaskIndicator, cn } from "@doska/ui-kit"
 import { cardDisplayId } from "@doska/contract/prefix"
 import { taskProgress } from "@doska/markdown"
-import { fallbackCard } from "@doska/core/seed"
-import { useCard, useCardCol } from "@doska/core/queries"
-import { useUpdateCard } from "@doska/core/mutations"
-import { useDeckPrefix } from "../deck/deck-context"
+import type { Card, Column } from "@doska/core/types"
 import { CardDeadline } from "./deadline/card-deadline"
 
 interface IProps {
-  cardId: string
+  card: Card
+  /** The column the card sits in — a card in the done column reads as finished. */
+  column?: Column | null
+  prefix: string
   /** The unsaved body, for callers holding a draft — task progress tracks it live. */
   body?: string
+  /** Omit to show the deadline without a picker. */
+  onChangeDeadline?: (deadline: string | null) => void
   className?: string
 }
 
 /** A card's id, task progress and deadline — on the board card and in its panel. */
-export function CardMeta({ cardId, body, className }: IProps) {
-  const prefix = useDeckPrefix()
-  const { data: card = fallbackCard } = useCard(cardId)
-  const { data: column } = useCardCol(cardId)
-  const { mutate: updateCard } = useUpdateCard(cardId)
-
+export function CardMeta({
+  card,
+  column,
+  prefix,
+  body,
+  onChangeDeadline,
+  className,
+}: IProps) {
   const displayId = cardDisplayId(prefix, card.number)
   const { done, total } = taskProgress(body ?? card.body)
 
@@ -31,7 +35,7 @@ export function CardMeta({ cardId, body, className }: IProps) {
       <CardDeadline
         done={column?.done ?? false}
         value={card.deadline}
-        onChange={(deadline) => updateCard({ deadline })}
+        onChange={onChangeDeadline}
       />
     </div>
   )

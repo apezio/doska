@@ -41,6 +41,7 @@ class FakeDriver implements SyncDriver<string, Change> {
   }
 
   applyRemote = () => Promise.resolve()
+  applyRemoved?: (removed: string[]) => Promise<void>
   refOf = (change: Change) => change.ref
   compact = () => Promise.resolve()
 }
@@ -304,5 +305,89 @@ describe("a forbidden scope", () => {
 
     expect(engine.getState().pending).toBe(0)
     expect([...new DirtyStore(kv, key).all()]).toEqual([])
+  })
+})
+
+/**
+ * The other way a scope goes away: not refused on its own channel, but withdrawn
+ * by a reply on another one — access revoked while the client was reading it.
+ */
+describe("a removed scope", () => {
+  /** Withdraws `gone` on the first push, then reports nothing more. */
+  function withdrawing(driver: FakeDriver, gone: string): void {
+    let sent = false
+    driver.push = (input) => {
+      driver.record(input)
+      const removed = sent ? [] : [gone]
+      sent = true
+      return Promise.resolve({ cursor: 1, changes: [], removed })
+    }
+  }
+
+  it("is handed to the driver, and the cycle stays a success", async () => {
+    const driver = new FakeDriver()
+    const removed: string[][] = []
+    driver.applyRemoved = (ids) => {
+      removed.push(ids)
+      return Promise.resolve()
+    }
+    const engine = new SyncEngine(driver, { kv, storageKey: freshKey() })
+    withdrawing(driver, "b1")
+
+    engine.setActiveScope("list")
+    await engine.reconcile()
+
+    expect(removed).toEqual([["b1"]])
+    expect(engine.getState().status).toBe("idle")
+    expect(engine.getState().failure).toBeNull()
+  })
+
+  it("moves the cursor only once the removal has been applied", async () => {
+    const driver = new FakeDriver()
+    const order: string[] = []
+    driver.applyRemoved = () => {
+      order.push("removed")
+      return Promise.resolve()
+    }
+    driver.saveCursor = () => {
+      order.push("cursor")
+      return Promise.resolve()
+    }
+    const engine = new SyncEngine(driver, { kv, storageKey: freshKey() })
+    withdrawing(driver, "b1")
+
+    engine.setActiveScope("list")
+    await engine.reconcile()
+
+    expect(order.slice(0, 2)).toEqual(["removed", "cursor"])
+  })
+
+  it("takes a driver that cannot be told at all", async () => {
+    const driver = new FakeDriver()
+    const engine = new SyncEngine(driver, { kv, storageKey: freshKey() })
+    withdrawing(driver, "b1")
+
+    engine.setActiveScope("list")
+    await engine.reconcile()
+
+    expect(engine.getState().status).toBe("idle")
+  })
+
+  it("stops being pulled once it is gone", async () => {
+    const driver = new FakeDriver()
+    const engine = new SyncEngine(driver, { kv, storageKey: freshKey() })
+    driver.applyRemoved = (ids) => {
+      for (const id of ids) engine.dropScope(id)
+      return Promise.resolve()
+    }
+    withdrawing(driver, "b1")
+
+    engine.setActiveScope("b1")
+    engine.watchScopes(["b1", "b2"])
+    await engine.reconcile()
+    driver.pushes.length = 0
+
+    await engine.reconcile()
+    expect(driver.pushedScopes).toEqual(["b2"])
   })
 })

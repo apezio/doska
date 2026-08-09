@@ -14,6 +14,16 @@ export class DashboardListDriver implements SyncDriver<
   string,
   DashboardChange
 > {
+  private readonly onRemoved: (boardId: string) => Promise<void>
+
+  constructor(onRemoved: (boardId: string) => Promise<void>) {
+    this.onRemoved = onRemoved
+  }
+
+  async applyRemoved(removed: string[]): Promise<void> {
+    for (const boardId of removed) await this.onRemoved(boardId)
+  }
+
   push(
     input: PushInput<string, DashboardChange>
   ): Promise<PushResult<DashboardChange>> {

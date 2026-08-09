@@ -51,6 +51,8 @@ export const contract = {
         z.object({
           cursor: z.number(),
           changes: z.array(DashboardChangeSchema),
+          // Boards this account has lost access to
+          removed: z.array(z.string()).optional(),
         })
       ),
   },

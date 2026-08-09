@@ -41,9 +41,9 @@ export const classify = (err: unknown): SyncFailure => {
   return "server"
 }
 
-const createDrivers = () => ({
+const createDrivers = (onRemoved: (boardId: string) => Promise<void>) => ({
   board: new DeckSyncDriver(),
-  list: new DashboardListDriver(),
+  list: new DashboardListDriver(onRemoved),
 })
 
 /**
@@ -98,7 +98,7 @@ class DeckSync {
 
   // Safe to call repeatedly; the old engines are simply dropped.
   private rebuild() {
-    const { board, list } = createDrivers()
+    const { board, list } = createDrivers((boardId) => this.forget(boardId))
     // The generic engine is Change-shaped per channel; the facade only routes
     // dirty refs and reads status, so the change type is erased to `never`.
     this.board = new SyncEngine(board, {
@@ -175,10 +175,11 @@ class DeckSync {
     this.engineFor(store).dropDirty(ids.map((id) => `${store}/${id}`))
   }
 
-  /** A board the server refuses */
+  /** A board the server refuses, or has stopped sharing with us */
   private async forget(boardId: string): Promise<void> {
     if (this.currentBoard === boardId) this.currentBoard = null
     this.watchedBoards = this.watchedBoards.filter((id) => id !== boardId)
+    this.board.dropScope(boardId)
     await dropBoardLocally(boardId)
   }
 

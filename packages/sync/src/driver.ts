@@ -11,6 +11,7 @@ export interface PushInput<Scope, Change> {
 export interface PushResult<Change> {
   cursor: number
   changes: Change[]
+  removed?: string[]
 }
 
 export interface SyncDriver<Scope, Change> {
@@ -38,6 +39,8 @@ export interface SyncDriver<Scope, Change> {
   push(input: PushInput<Scope, Change>): Promise<PushResult<Change>>
   /** Applies pulled changes to local storage. */
   applyRemote(scope: Scope, changes: Change[]): Promise<void>
+  /** Erases what a {@link PushResult.removed} entry names  */
+  applyRemoved?(removed: string[]): Promise<void>
   /** The dirty ref a pulled change would occupy, used to build compaction candidates. */
   refOf(change: Change): string
   /** Hard-deletes local tombstones that have reached the server and aged out. */

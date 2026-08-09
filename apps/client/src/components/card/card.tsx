@@ -1,108 +1,63 @@
-import {
-  Card as CardBase,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@doska/ui-kit"
-import { cn } from "@doska/ui-kit"
 import { fallbackCard } from "@doska/core/seed"
-import { useLocation } from "wouter"
-import { routes } from "@/lib/routes"
-import { CardMeta } from "./card-meta"
-import { CardContextMenu, CardMenu } from "./menu/card-menu"
-import { useCard } from "@doska/core/queries"
+import { useCard, useCardCol } from "@doska/core/queries"
 import { useUpdateCard } from "@doska/core/mutations"
-import { cut, soleImage, useMarkers } from "@doska/markdown"
-import { MarkdownCardPreview } from "../markdown"
+import { useLocation } from "wouter"
 import type { DetailedHTMLProps, HTMLAttributes } from "react"
+import { routes } from "@/lib/routes"
+import { useDeckPrefix } from "../deck/deck-context"
 import { CardAttachments } from "./attachments/card-attachments"
+import { CardAttachmentImage } from "./attachments/card-attachment-image"
+import { CardContextMenu, CardMenu } from "./menu/card-menu"
 import { CardMarkdown } from "./card-markdown"
-import { ImageCard } from "./image-card"
-import { cardSoleImage } from "./sole-image"
-
-const BOARD_MARKERS = [cut]
+import { CardView } from "./card-view"
 
 interface IProps extends DetailedHTMLProps<
   HTMLAttributes<HTMLDivElement>,
   HTMLDivElement
 > {
   id: string
-  index: number
   showBody: boolean
   isDragging: boolean
 }
 
 export function Card({ id, showBody, isDragging, ...props }: IProps) {
   const [, navigate] = useLocation()
+  const prefix = useDeckPrefix()
   const { data: card = fallbackCard } = useCard(id)
+  const { data: column } = useCardCol(id)
   const { mutate: updateCard } = useUpdateCard(id)
-  const { title, body } = card
-  const { body: preview, applied } = useMarkers(body, BOARD_MARKERS, "card")
-  const hasBody = preview.trim().length > 0
-  const hasMore = applied.includes(cut.name)
-  const attachments = card.attachments ?? []
-  const bodyImage = hasBody && !hasMore ? soleImage(preview) : null
-  const image = cardSoleImage(hasBody, bodyImage, attachments)
+
+  const open = () => navigate(routes.card.to(id))
 
   return (
-    <div
-      {...props}
-      className={cn(
-        "group relative mb-3 w-full max-w-sm cursor-pointer rounded-lg",
-        "touch-manipulation select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none]"
-      )}
-    >
-      <CardContextMenu cardId={id} onEdit={() => navigate(routes.card.to(id))}>
-        {image ? (
-          <ImageCard
-            cardId={id}
-            title={title}
-            image={image}
-            isDragging={isDragging}
-          />
-        ) : (
-          <CardBase className={cn(isDragging && "shadow-shade/5 shadow-xl")}>
-            <CardHeader>
-              <CardTitle>{title || "Untitled card"}</CardTitle>
-              <CardAction className="flex items-center gap-1">
-                <CardMenu
-                  cardId={id}
-                  onEdit={() => navigate(routes.card.to(id))}
-                />
-              </CardAction>
-            </CardHeader>
-            <CardContent className={cn(!showBody && hasBody && "-mb-2")}>
-              <CardMeta cardId={id} className="mt-2" />
-            </CardContent>
-
-            {hasBody && (
-              <div
-                className={cn(
-                  "grid transition-[grid-template-rows] duration-200 ease-out",
-                  showBody ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-                )}
-              >
-                <div className="overflow-hidden">
-                  <CardContent className="space-y-3 pt-2">
-                    <CardMarkdown cardId={id}>
-                      <MarkdownCardPreview
-                        preview={preview}
-                        body={body}
-                        hasMore={hasMore}
-                        onChangeBody={(body) => updateCard({ body })}
-                      />
-                    </CardMarkdown>
-                  </CardContent>
-                </div>
-              </div>
-            )}
-            {attachments.length > 0 && showBody && (
-              <CardAttachments className="pt-2" cardId={id} isReadonly />
-            )}
-          </CardBase>
+    <CardMarkdown cardId={id}>
+      <CardView
+        {...props}
+        wrapCard={(inner) => (
+          <CardContextMenu cardId={id} onEdit={open}>
+            {inner}
+          </CardContextMenu>
         )}
-      </CardContextMenu>
-    </div>
+        card={card}
+        column={column}
+        prefix={prefix}
+        showBody={showBody}
+        isDragging={isDragging}
+        action={<CardMenu cardId={id} onEdit={open} />}
+        onChangeBody={(body) => updateCard({ body })}
+        onChangeDeadline={(deadline) => updateCard({ deadline })}
+        attachments={
+          <CardAttachments className="pt-2" cardId={id} isReadonly />
+        }
+        renderAttachmentImage={(key, alt, className) => (
+          <CardAttachmentImage
+            cardId={id}
+            attachmentKey={key}
+            alt={alt}
+            className={className}
+          />
+        )}
+      />
+    </CardMarkdown>
   )
 }

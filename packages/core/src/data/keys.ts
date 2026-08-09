@@ -19,6 +19,12 @@ export const keys = {
   /** Under the accounts prefix, so deleting an account clears its own count. */
   ownedBoards: (userId: string) => ["accounts", "owned-boards", userId] as const,
   members: (boardId: string) => ["members", boardId] as const,
+  /** The board's public share link. Not under `board`, which is the local
+   * record: this one only ever comes from the server. */
+  publicStatus: (boardId: string) => ["public-status", boardId] as const,
+  /** A published board's snapshot, addressed by share token — the visitor has no
+   * board id, and never learns one that would collide with the local keys. */
+  publicBoard: (token: string) => ["public-board", token] as const,
   sharedBoards: ["dashboards", "shared"] as const,
   directory: ["directory"] as const,
   unclaimedLocalBoards: ["unclaimed-local-boards"] as const,

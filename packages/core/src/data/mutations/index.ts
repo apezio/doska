@@ -1,5 +1,6 @@
 export * from "./accounts"
 export * from "./auth"
+export * from "./boards"
 export * from "./dashboard"
 export * from "./members"
 export * from "./column"

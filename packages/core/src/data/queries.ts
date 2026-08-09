@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { countOwnedBoards, listAccounts } from "../api/accounts"
+import { publicBoardToken } from "../api/boards"
 import { fetchSession } from "../api/auth"
+import { fetchPublicBoard } from "../api/public"
 import { listDirectory, listMembers, listSharedBoards } from "../api/members"
 import {
   hasUnclaimedLocalBoards,
@@ -57,6 +59,31 @@ export function useBoardMembers(boardId: string, enabled: boolean) {
     queryKey: keys.members(boardId),
     queryFn: () => listMembers(boardId),
     enabled,
+  })
+}
+
+/** The board's public link, or null while it has none. Owner-only server-side,
+ * so `enabled` keeps a member's share dialog from firing a request that would
+ * 403. */
+export function usePublicBoardStatus(boardId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.publicStatus(boardId),
+    queryFn: () => publicBoardToken(boardId),
+    enabled,
+  })
+}
+
+/**
+ * A published board, fetched whole from its share link. No retry: the one
+ * expected failure is a token that is not published, and retrying that just
+ * makes the visitor wait for the same answer.
+ */
+export function usePublicBoard(token: string) {
+  return useQuery({
+    queryKey: keys.publicBoard(token),
+    queryFn: () => fetchPublicBoard(token),
+    retry: false,
+    staleTime: Infinity,
   })
 }
 

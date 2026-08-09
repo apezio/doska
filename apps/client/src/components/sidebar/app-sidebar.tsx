@@ -9,8 +9,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@doska/ui-kit"
-import { useDashboards } from "@doska/core/queries"
-import { useDashboardNav } from "@/lib/hooks"
+import { useDashboards, useSharedBoards } from "@doska/core/queries"
+import { useAuth, useDashboardNav } from "@/lib/hooks"
 import { routes } from "@/lib/routes"
 import { AppSidebarHeader } from "./app-sidebar-header"
 import { DashboardsList } from "./dashboards-list"
@@ -25,6 +25,8 @@ export function AppSidebar() {
   const [location, navigate] = useLocation()
   const { data: dashboards = [] } = useDashboards()
   const { selectDashboard, createAndOpenDashboard } = useDashboardNav()
+  const { authed } = useAuth()
+  const { data: sharedIds = [] } = useSharedBoards(authed === true)
 
   const { base } = useRouter()
   const activeDashboardId = useParams().id ?? ""
@@ -65,6 +67,7 @@ export function AppSidebar() {
         <DashboardsList
           dashboards={dashboards}
           activeDashboardId={activeDashboardId}
+          sharedIds={sharedIds}
           onSelectDashboard={(d) => selectDashboard(d.id)}
         />
       </SidebarContent>

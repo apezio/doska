@@ -78,7 +78,8 @@ export const DashboardSchema = z.object({
 /** Ship editors only; `'owner'` exists so widening roles needs no migration. */
 export const MemberRoleSchema = z.enum(["owner", "editor"])
 
-/** A member of a shared board, as the member list renders them. */
+/** Someone with access to a board, as the share dialog's roster renders them.
+ * The owner is in there too, with `role: 'owner'` and no membership row. */
 export const MemberSchema = z.object({
   userId: z.string(),
   username: z.string(),

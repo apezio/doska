@@ -57,9 +57,17 @@ export const contract = {
       ),
   },
   members: {
-    list: oc
-      .input(z.object({ boardId: z.string() }))
-      .output(z.object({ members: z.array(MemberSchema) })),
+    /** Readable by anyone on the board; `viewerRole` is what the caller may do,
+     * so the UI never offers an action the handlers below would refuse. */
+    list: oc.input(z.object({ boardId: z.string() })).output(
+      z.object({
+        members: z.array(MemberSchema),
+        viewerRole: MemberRoleSchema,
+      })
+    ),
+    /** Board ids the session shares — owned and given away, or given to it.
+     * Sharing is not on the dashboard record, so the sidebar asks separately. */
+    sharedBoards: oc.output(z.object({ boardIds: z.array(z.string()) })),
     add: oc
       .input(
         z.object({
@@ -69,6 +77,7 @@ export const contract = {
         })
       )
       .output(z.void()),
+    /** Owner-only, except that a member may pass their own id to leave. */
     remove: oc
       .input(z.object({ boardId: z.string(), userId: z.string() }))
       .output(z.void()),

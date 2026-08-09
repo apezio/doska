@@ -60,6 +60,7 @@ export function Deck({
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <DeckHeader
+        boardId={dashboard.id}
         title={dashboard.title}
         prefix={dashboard.prefix ?? ""}
         takenPrefixes={takenPrefixes}

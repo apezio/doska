@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { listAccounts } from "../api/accounts"
 import { fetchSession } from "../api/auth"
-import { listDirectory, listMembers } from "../api/members"
+import { listDirectory, listMembers, listSharedBoards } from "../api/members"
 import {
   hasUnclaimedLocalBoards,
   UNCLAIMED_BOARDS_WARNING,
@@ -41,11 +41,21 @@ export function useAccounts(enabled: boolean) {
   })
 }
 
-/** Who a board is shared with. Owner-only server-side, hence `enabled`. */
+/** Who a board is shared with, and what the reader may change about it.
+ * Board-scoped server-side, so `enabled` keeps a signed-out session quiet. */
 export function useBoardMembers(boardId: string, enabled: boolean) {
   return useQuery({
     queryKey: keys.members(boardId),
     queryFn: () => listMembers(boardId),
+    enabled,
+  })
+}
+
+/** Which boards are shared, for the sidebar's marker. */
+export function useSharedBoards(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.sharedBoards,
+    queryFn: listSharedBoards,
     enabled,
   })
 }

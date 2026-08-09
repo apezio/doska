@@ -1,23 +1,57 @@
 import type { Member, MemberRole } from "@doska/contract"
-import { and, eq, isNull, sql } from "drizzle-orm"
+import { and, eq, isNull, or, sql } from "drizzle-orm"
 import { db } from "../client"
-import { boardMembers, user } from "../schema"
+import { boardMembers, dashboards, user } from "../schema"
 import { applyChanges } from "./core/apply-changes"
 import { boardsListCounter } from "./constants"
 
-/** Live members of `boardId`, the board's owner excluded — they have no row. */
-export function listMembers(boardId: string): Promise<Member[]> {
-  return db
+/** Accounts predate usernames, so fall back to the name they signed up with. */
+const displayName = sql<string>`coalesce(${user.username}, ${user.name})`
+
+/**
+ * Everyone with access to `boardId`: the owner first, then its live members.
+ * The owner has no membership row — they are read off the board itself, and a
+ * board with no owner yet (never pushed to this server) has no roster at all.
+ */
+export async function listRoster(boardId: string): Promise<Member[]> {
+  const [owner] = await db
+    .select({ userId: user.id, username: displayName })
+    .from(dashboards)
+    .innerJoin(user, eq(user.id, dashboards.ownerId))
+    .where(eq(dashboards.id, boardId))
+
+  const members = await db
     .select({
       userId: boardMembers.userId,
       role: boardMembers.role,
-      username: sql<string>`coalesce(${user.username}, ${user.name})`,
+      username: displayName,
     })
     .from(boardMembers)
     .innerJoin(user, eq(user.id, boardMembers.userId))
     .where(
       and(eq(boardMembers.boardId, boardId), isNull(boardMembers.revokedAt))
     )
+
+  return owner ? [{ ...owner, role: "owner" }, ...members] : members
+}
+
+/** Board ids `userId` shares with someone: owned and given away, or given to
+ * them. What the sidebar marks; it says nothing about who the others are. */
+export async function listSharedBoards(userId: string): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ boardId: boardMembers.boardId })
+    .from(boardMembers)
+    .innerJoin(dashboards, eq(dashboards.id, boardMembers.boardId))
+    .where(
+      and(
+        isNull(boardMembers.revokedAt),
+        or(
+          eq(boardMembers.userId, userId),
+          eq(dashboards.ownerId, userId)
+        )
+      )
+    )
+  return rows.map((r) => r.boardId)
 }
 
 /** A grant, a role change or a revocation — all of them rewrite the one row. */

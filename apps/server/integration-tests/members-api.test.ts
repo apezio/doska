@@ -82,11 +82,17 @@ beforeEach(async () => {
 })
 
 describe("members.add / remove / list", () => {
-  test("an added account shows up in the list", async () => {
+  test("the roster is the owner, then whoever has been added", async () => {
+    const before = await owner.members.list({ boardId: "b1" })
+    expect(before.members).toEqual([
+      { userId: ownerId, username: "tester", role: "owner" },
+    ])
+
     await owner.members.add({ boardId: "b1", userId: memberId })
 
     const { members } = await owner.members.list({ boardId: "b1" })
     expect(members).toEqual([
+      { userId: ownerId, username: "tester", role: "owner" },
       { userId: memberId, username: "member", role: "editor" },
     ])
   })
@@ -103,7 +109,7 @@ describe("members.add / remove / list", () => {
     expect(rows[0].seq).toBeGreaterThan(granted.seq)
 
     const { members } = await owner.members.list({ boardId: "b1" })
-    expect(members).toEqual([])
+    expect(members.map((m) => m.userId)).toEqual([ownerId])
   })
 
   test("re-adding revives the one row rather than inserting a second", async () => {
@@ -119,7 +125,7 @@ describe("members.add / remove / list", () => {
     expect(rows[0].seq).toBeGreaterThan(revoked.seq)
 
     const { members } = await owner.members.list({ boardId: "b1" })
-    expect(members.map((m) => m.userId)).toEqual([memberId])
+    expect(members.map((m) => m.userId)).toEqual([ownerId, memberId])
   })
 
   test("each membership write advances the board-list counter by exactly one", async () => {
@@ -137,26 +143,78 @@ describe("members.add / remove / list", () => {
   })
 })
 
-describe("every members procedure is owner-only", () => {
-  test("a member cannot list, add or remove", async () => {
+describe("a member reads the roster and changes nothing but their own place", () => {
+  test("a member lists the board, and is told it is not theirs to share", async () => {
     await owner.members.add({ boardId: "b1", userId: memberId })
 
-    expect(await statusOf(member.members.list({ boardId: "b1" }))).toBe(403)
+    const { members, viewerRole } = await member.members.list({ boardId: "b1" })
+    expect(viewerRole).toBe("editor")
+    expect(members.map((m) => m.userId)).toEqual([ownerId, memberId])
+
     expect(
       await statusOf(member.members.add({ boardId: "b1", userId: ownerId }))
     ).toBe(403)
-    expect(
-      await statusOf(member.members.remove({ boardId: "b1", userId: memberId }))
-    ).toBe(403)
-
     expect(await memberRows()).toHaveLength(1)
   })
 
-  test("a stranger's board is 403 too, member row or not", async () => {
+  test("the owner is told the board is theirs", async () => {
+    const { viewerRole } = await owner.members.list({ boardId: "b1" })
+    expect(viewerRole).toBe("owner")
+  })
+
+  test("a member leaves by removing themselves", async () => {
+    await owner.members.add({ boardId: "b1", userId: memberId })
+    const [granted] = await memberRows()
+
+    await member.members.remove({ boardId: "b1", userId: memberId })
+
+    const rows = await memberRows()
+    expect(rows).toHaveLength(1)
+    expect(rows[0].revokedAt).not.toBeNull()
+    expect(rows[0].seq).toBeGreaterThan(granted.seq)
+  })
+
+  test("a member cannot remove anyone else", async () => {
+    await owner.members.add({ boardId: "b1", userId: memberId })
+
+    expect(
+      await statusOf(member.members.remove({ boardId: "b1", userId: ownerId }))
+    ).toBe(403)
+    expect((await memberRows())[0].revokedAt).toBeNull()
+  })
+
+  test("a stranger's board is 403 whatever they ask of it", async () => {
+    expect(await statusOf(member.members.list({ boardId: "b1" }))).toBe(403)
     expect(
       await statusOf(member.members.add({ boardId: "b1", userId: memberId }))
     ).toBe(403)
+    // Including leaving a board they were never on, which would otherwise
+    // write a revoked row for someone with no access at all.
+    expect(
+      await statusOf(member.members.remove({ boardId: "b1", userId: memberId }))
+    ).toBe(403)
     expect(await memberRows()).toHaveLength(0)
+  })
+})
+
+describe("members.sharedBoards", () => {
+  beforeEach(async () => {
+    await owner.dashboards.sync({ since: 0, changes: [board("b2")] })
+  })
+
+  test("a board is shared for both sides, and for neither once revoked", async () => {
+    expect((await owner.members.sharedBoards()).boardIds).toEqual([])
+
+    await owner.members.add({ boardId: "b1", userId: memberId })
+
+    // b2 is the owner's alone, so only b1 is marked on either side.
+    expect((await owner.members.sharedBoards()).boardIds).toEqual(["b1"])
+    expect((await member.members.sharedBoards()).boardIds).toEqual(["b1"])
+
+    await owner.members.remove({ boardId: "b1", userId: memberId })
+
+    expect((await owner.members.sharedBoards()).boardIds).toEqual([])
+    expect((await member.members.sharedBoards()).boardIds).toEqual([])
   })
 })
 

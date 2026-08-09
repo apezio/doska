@@ -17,6 +17,7 @@ export const keys = {
   session: ["session"] as const,
   accounts: ["accounts"] as const,
   members: (boardId: string) => ["members", boardId] as const,
+  sharedBoards: ["dashboards", "shared"] as const,
   directory: ["directory"] as const,
   unclaimedLocalBoards: ["unclaimed-local-boards"] as const,
 }

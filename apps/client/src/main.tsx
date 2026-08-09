@@ -12,36 +12,57 @@ import { initExternalLinks } from "@/lib/external-links"
 import { initZoom } from "@/lib/zoom"
 import { requestPersistentStorage } from "@/lib/persist"
 import { queryClient } from "@doska/core/query-client"
+import { routes } from "@/lib/routes"
 import { Router } from "./router.tsx"
+import { PublicRouter } from "@/components/public/public-router"
 import { UpdateBanner } from "@/components/updates/update-banner"
 import { ConnectionBanner } from "@/components/sync/connection-banner"
 import { WindowDragRegion } from "@/components/window-drag-region"
 import "./index.css"
 
-await bootstrapClient(Number(import.meta.env.VITE_SYNC_INTERVAL_MS))
+const root = createRoot(document.getElementById("root")!)
+
+// A share link is a different application on the same bundle: its visitor has
+// no account, so seeding a local database and starting a sync loop for them
+// would be writing to a browser that never asked for any of it.
+const isPublicLink = routes.public.matches(window.location.pathname)
 
 trackAppHeight()
 
-blockEdgeSwipeNavigation()
+if (isPublicLink) {
+  root.render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <PublicRouter />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </StrictMode>
+  )
+} else {
+  await bootstrapClient(Number(import.meta.env.VITE_SYNC_INTERVAL_MS))
 
-initZoom()
+  blockEdgeSwipeNavigation()
 
-initExternalLinks()
+  initZoom()
 
-// Not awaited: the answer only affects eviction policy, never this render.
-if (!isDesktop()) void requestPersistentStorage()
+  initExternalLinks()
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <LoginPromptProvider>
-          <Router />
-          <UpdateBanner />
-          <ConnectionBanner />
-          <WindowDragRegion />
-        </LoginPromptProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  </StrictMode>
-)
+  // Not awaited: the answer only affects eviction policy, never this render.
+  if (!isDesktop()) void requestPersistentStorage()
+
+  root.render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <LoginPromptProvider>
+            <Router />
+            <UpdateBanner />
+            <ConnectionBanner />
+            <WindowDragRegion />
+          </LoginPromptProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </StrictMode>
+  )
+}

@@ -6,6 +6,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   text,
 } from "drizzle-orm/pg-core"
 
@@ -101,4 +102,36 @@ export const cards = pgTable(
     seq: integer("seq").notNull(),
   },
   (t) => [index("cards_board_seq").on(t.boardId, t.seq)]
+)
+
+/** Ship editors only; `'owner'` exists so widening roles needs no migration. */
+export type MemberRole = "owner" | "editor"
+
+/**
+ * Boards shared with an account other than the owner.
+ *
+ * `seq` is stamped from the *board-list* counter (`counters.id = 'boards-list'`,
+ * the same one dashboards use), not from a per-board counter, and it is the
+ * point of the table. A client's board-list cursor has usually already passed
+ * the shared board's own `dashboards.seq`, so nothing would ever reach it;
+ * stamping the membership row from the same global counter puts an event past
+ * that cursor. Re-stamp it on every change to the row, revocation included.
+ *
+ * Revoking sets `revoked_at` and never deletes: a deleted row carries no `seq`,
+ * so the client would never learn it lost access.
+ */
+export const boardMembers = pgTable(
+  "board_members",
+  {
+    boardId: text("board_id").notNull(),
+    userId: text("user_id").notNull(),
+    role: text("role").$type<MemberRole>().notNull().default("editor"),
+    seq: integer("seq").notNull(),
+    revokedAt: bigint("revoked_at", { mode: "number" }),
+    updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.boardId, t.userId] }),
+    index("board_members_user_seq").on(t.userId, t.seq),
+  ]
 )

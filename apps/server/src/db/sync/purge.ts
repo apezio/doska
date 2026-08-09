@@ -1,14 +1,15 @@
 import { RETENTION_MS } from "@doska/contract"
-import { and, isNotNull, lt } from "drizzle-orm"
+import { and, inArray, isNotNull, lt } from "drizzle-orm"
 import type { PgColumn } from "drizzle-orm/pg-core"
 import { db } from "../client"
-import { cards, columns, dashboards } from "../schema"
+import { boardMembers, cards, columns, dashboards } from "../schema"
 
 /** What one sweep removed, per table. */
 export interface PurgeResult {
   cards: number
   columns: number
   dashboards: number
+  members: number
   /** Attachment object keys freed with the cards that held them. */
   attachments: string[]
 }
@@ -44,10 +45,25 @@ export async function purgeExpired(now = Date.now()): Promise<PurgeResult> {
     .where(expired(dashboards.deletedAt))
     .returning({ id: dashboards.id })
 
+  // Membership rows are not tombstones — a revoked one is kept so its `seq`
+  // can still be pulled — so they go only with the board they point at.
+  const purgedMembers = purgedDashboards.length
+    ? await db
+        .delete(boardMembers)
+        .where(
+          inArray(
+            boardMembers.boardId,
+            purgedDashboards.map((d) => d.id)
+          )
+        )
+        .returning({ userId: boardMembers.userId })
+    : []
+
   return {
     cards: purgedCards.length,
     columns: purgedColumns.length,
     dashboards: purgedDashboards.length,
+    members: purgedMembers.length,
     attachments: purgedCards.flatMap((c) => c.attachments.map((a) => a.key)),
   }
 }

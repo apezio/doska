@@ -18,6 +18,7 @@
     "./last-board": "./src/data/last-board.ts",
     "./mutations": "./src/data/mutations/index.ts",
     "./operations": "./src/api/operations/index.ts",
+    "./public": "./src/api/public.ts",
     "./queries": "./src/data/queries.ts",
     "./query-client": "./src/query-client.ts",
     "./seed": "./src/seed.ts",

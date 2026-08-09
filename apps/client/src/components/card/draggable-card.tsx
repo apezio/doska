@@ -28,7 +28,6 @@ export function DraggableCard({ id, index, showBody }: IProps) {
             e.currentTarget.blur()
             navigate(routes.card.to(id))
           }}
-          index={index}
           isDragging={snapshot.isDragging}
           showBody={showBody}
           id={id}

@@ -15,10 +15,14 @@ import { z } from "zod"
  *  - `key`: opaque, backend-specific handle (an S3 object key, or a filename in
  *    the card's on-disk sidecar). Rewritten when files migrate between backends.
  */
+
+const ATTACHMENT_KEY =
+  /^att\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}(\.[a-z0-9]+)?$/
+
 export const AttachmentSchema = z.object({
   id: z.string(),
   name: z.string(),
-  key: z.string(),
+  key: z.string().regex(ATTACHMENT_KEY),
   mime: z.string(),
   size: z.number(),
 })
@@ -73,6 +77,20 @@ export const DashboardSchema = z.object({
   prefix: z.string().default(""),
   updatedAt: z.number(),
   deletedAt: z.number().nullable(),
+})
+
+/**
+ * The whole of a published board, as `GET /api/public/b/:token` returns it.
+ *
+ * Built out of the record schemas above on purpose: everything the sync tables
+ * carry beyond them — `seq`, `owner_id`, the share token itself — is internal,
+ * and reusing the wire shapes is what keeps it out. Tombstones are excluded by
+ * the query, so every record here is live.
+ */
+export const PublicBoardSchema = z.object({
+  dashboard: DashboardSchema,
+  columns: z.array(ColumnSchema),
+  cards: z.array(CardSchema),
 })
 
 /** Ship editors only; `'owner'` exists so widening roles needs no migration. */

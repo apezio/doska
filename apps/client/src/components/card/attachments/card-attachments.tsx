@@ -1,23 +1,15 @@
-import { CardContent, cn, InvisibleInput } from "@doska/ui-kit"
-import { Loader2, X } from "lucide-react"
+import { useState } from "react"
 import type { Attachment } from "@doska/core/types"
 import { useCard } from "@doska/core/queries"
 import { useUpdateCard } from "@doska/core/mutations"
 import { activeStorage } from "@doska/core/attachments"
 import { downloadBlob, revealInDownloads } from "@/lib/download"
 import { isDesktop } from "@/lib/platform"
-import { AttachmentTile } from "./attachment-tile"
+import { useAttachmentUrls } from "@/lib/hooks/use-attachment-url"
+import { AttachmentList } from "./attachment-list"
 import { AttachmentViewer } from "./attachment-viewer"
 import { isRenderableImage } from "./renderable-image"
-import { useState } from "react"
 import { usePendingUploads } from "./context/attachment-upload-context"
-
-function splitName(name: string): { base: string; ext: string } {
-  const dot = name.lastIndexOf(".")
-  return dot >= 0
-    ? { base: name.slice(0, dot), ext: name.slice(dot) }
-    : { base: name, ext: "" }
-}
 
 interface IProps {
   cardId: string
@@ -25,6 +17,9 @@ interface IProps {
   className: string
 }
 
+const NO_ATTACHMENTS: Attachment[] = []
+
+/** A card's attachments, backed by the storage adapter. */
 export function CardAttachments({ cardId, isReadonly, className }: IProps) {
   const { data: card } = useCard(cardId)
   const { mutate: save } = useUpdateCard(cardId)
@@ -33,8 +28,8 @@ export function CardAttachments({ cardId, isReadonly, className }: IProps) {
   const [viewing, setViewing] = useState<Attachment | null>(null)
   const pending = usePendingUploads()
 
-  const attachments = card?.attachments ?? []
-  if (!attachments.length && !pending.length) return null
+  const attachments = card?.attachments ?? NO_ATTACHMENTS
+  const urls = useAttachmentUrls(cardId, attachments)
 
   const persist = (next: Attachment[]) => save({ attachments: next })
 
@@ -72,90 +67,28 @@ export function CardAttachments({ cardId, isReadonly, className }: IProps) {
   }
 
   return (
-    <CardContent className={className}>
-      <div className="flex flex-col items-start">
-        {attachments.map((att) => {
-          const { base, ext } = splitName(att.name)
-          return (
-            <div
-              key={att.id}
-              className="group/item flex items-center gap-1 rounded-md py-0.5"
-            >
-              <div
-                className={cn("flex flex-1 cursor-pointer items-center")}
-                onClick={(e) => {
-                  if (!isReadonly) return
-                  void open(att)
-                  e.stopPropagation()
-                }}
-              >
-                <AttachmentTile
-                  cardId={cardId}
-                  attachment={att}
-                  className="size-6 shrink-0"
-                  onOpen={isReadonly ? undefined : () => void open(att)}
-                />
-                {isReadonly ? (
-                  <span className="line-clamp-1 px-2 text-sm text-muted-foreground group-hover/item:text-foreground">
-                    {att.name}
-                  </span>
-                ) : (
-                  <>
-                    <InvisibleInput
-                      value={base}
-                      onCommit={(next) => rename(att.id, next + ext)}
-                      label="Attachment name"
-                      placeholder="name"
-                      title="Click to rename"
-                      allowEmpty
-                      className="ml-1 block shrink-0 text-sm"
-                    />
-                    {ext && (
-                      <span className="shrink-0 text-sm text-muted-foreground">
-                        {ext}
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-              {error && (
-                <div className="ml-2 text-sm text-destructive">{error}</div>
-              )}
-              {!isReadonly && (
-                <button
-                  type="button"
-                  aria-label="Remove attachment"
-                  onClick={() => void remove(att)}
-                  className={cn(
-                    "mt-0.5 ml-2 shrink-0 rounded p-1 text-muted-foreground",
-                    "hover:text-destructive"
-                  )}
-                >
-                  <X className="size-4" />
-                </button>
-              )}
-            </div>
-          )
-        })}
-        {pending.map((p) => (
-          <div
-            key={p.id}
-            className="flex items-center gap-1 rounded-md py-0.5 opacity-60"
-          >
-            <div className="flex size-6 shrink-0 items-center justify-center rounded-sm border">
-              <Loader2 className="size-3 animate-spin text-muted-foreground" />
-            </div>
-            <span className="ml-1 truncate text-sm text-muted-foreground">
-              {p.name}
-            </span>
-          </div>
-        ))}
-      </div>
-      <AttachmentViewer
-        cardId={cardId}
-        attachment={viewing}
-        onClose={() => setViewing(null)}
+    <>
+      <AttachmentList
+        attachments={attachments}
+        urls={urls}
+        pending={pending}
+        error={error}
+        className={className}
+        onOpen={(att) => void open(att)}
+        onRename={isReadonly ? undefined : rename}
+        onRemove={isReadonly ? undefined : (att) => void remove(att)}
       />
-    </CardContent>
+      <AttachmentViewer
+        attachment={viewing}
+        src={viewing ? (urls[viewing.key] ?? null) : null}
+        onClose={() => setViewing(null)}
+        onDownload={() =>
+          viewing &&
+          void activeStorage()
+            .get(cardId, viewing.key)
+            .then((blob) => downloadBlob(blob, viewing.name))
+        }
+      />
+    </>
   )
 }

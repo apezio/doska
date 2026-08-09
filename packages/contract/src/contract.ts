@@ -56,6 +56,25 @@ export const contract = {
         })
       ),
   },
+  boards: {
+    /**
+     * The public share link, which is a different mechanism from `members`:
+     * `members` shares with accounts on this deploy, this shares with anyone at
+     * all, read-only and with no sign-in.
+     *
+     * The token lives only here — it is deliberately not on the dashboard
+     * record, so no client push can carry it (see `dashboards.public_token`).
+     */
+    publish: oc
+      .input(z.object({ boardId: z.string() }))
+      .output(z.object({ token: z.string() })),
+    unpublish: oc.input(z.object({ boardId: z.string() })).output(z.void()),
+    publicStatus: oc
+      .input(z.object({ boardId: z.string() }))
+      .output(z.object({ token: z.string().nullable() })),
+    /** Which of the caller's boards are published, for the list's marker. */
+    published: oc.output(z.object({ boardIds: z.array(z.string()) })),
+  },
   members: {
     /** Readable by anyone on the board; `viewerRole` is what the caller may do,
      * so the UI never offers an action the handlers below would refuse. */

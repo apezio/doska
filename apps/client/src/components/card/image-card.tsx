@@ -3,34 +3,23 @@ import {
   CardAction,
   CardHeader,
   CardTitle,
-  MdImage,
   cn,
 } from "@doska/ui-kit"
-import { useLocation } from "wouter"
-import { routes } from "@/lib/routes"
-import type { SoleImage } from "@doska/markdown"
-import { CardMenu } from "./menu/card-menu"
-import { AttachmentImage } from "./attachments/attachment-image"
-
-/** Cancels `MdImage`'s standalone-image spacing so the image can fill the card. */
-const FULL_BLEED = "my-0 w-full rounded-none"
+import type { ReactNode } from "react"
 
 interface IProps {
-  cardId: string
   title: string
-  image: SoleImage
-  isDragging: boolean
+  isDragging?: boolean
+  /** Top-right slot: the card menu where there is one. */
+  action?: ReactNode
+  /** The image, already resolved by the caller. */
+  children: ReactNode
 }
 
 /**
  * A card whose whole content is one image
  */
-export function ImageCard({ cardId, title, image, isDragging }: IProps) {
-  const [, navigate] = useLocation()
-  const menu = (
-    <CardMenu cardId={cardId} onEdit={() => navigate(routes.card.to(cardId))} />
-  )
-
+export function ImageCard({ title, isDragging, action, children }: IProps) {
   return (
     <CardBase
       className={cn(
@@ -42,27 +31,20 @@ export function ImageCard({ cardId, title, image, isDragging }: IProps) {
       {title ? (
         <CardHeader className="pb-2">
           <CardTitle>{title}</CardTitle>
-          <CardAction className="flex items-center gap-1">{menu}</CardAction>
+          {action && (
+            <CardAction className="flex items-center gap-1">
+              {action}
+            </CardAction>
+          )}
         </CardHeader>
       ) : (
-        <div className="absolute top-1 right-1 z-10 rounded-md bg-card/70 backdrop-blur-sm">
-          {menu}
-        </div>
+        action && (
+          <div className="absolute top-1 right-1 z-10 rounded-md bg-card/70 backdrop-blur-sm">
+            {action}
+          </div>
+        )
       )}
-      {image.source.kind === "attachment" ? (
-        <AttachmentImage
-          cardId={cardId}
-          attachmentKey={image.source.key}
-          alt={image.alt}
-          className={FULL_BLEED}
-        />
-      ) : (
-        <MdImage
-          src={image.source.url}
-          alt={image.alt}
-          className={FULL_BLEED}
-        />
-      )}
+      {children}
     </CardBase>
   )
 }

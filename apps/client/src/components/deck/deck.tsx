@@ -5,9 +5,10 @@ import { byPosition } from "@doska/core/utils"
 import { Column } from "../column/column"
 import { AddColumn } from "../column/add-column"
 import { DraggableCard } from "../card/draggable-card"
+import { BoardView } from "./board-view"
 import { DeckHeader } from "./deck-header"
+import { groupCardsByColumn } from "./group-cards"
 import { SyncIndicator } from "./sync-indicator"
-import { cn } from "@doska/ui-kit"
 
 interface IProps {
   dashboard: Dashboard
@@ -48,80 +49,64 @@ export function Deck({
 }: IProps) {
   const [isDragging, setIsDragging] = useState(false)
 
-  // Cards grouped by column, ordered by position.
-  const cardsByColumn = new Map<string, typeof board.cards>(
-    board.columns.map((c) => [c.id, []])
-  )
-  for (const card of [...board.cards].sort(byPosition)) {
-    cardsByColumn.get(card.columnId)?.push(card)
-  }
-  const columns = [...board.columns].sort(byPosition)
+  const grouped = groupCardsByColumn(board)
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col">
-      <DeckHeader
-        boardId={dashboard.id}
-        title={dashboard.title}
-        prefix={dashboard.prefix ?? ""}
-        takenPrefixes={takenPrefixes}
-        onRename={onRenameDashboard}
-        onRenamePrefix={onRenameDashboardPrefix}
-        onDelete={onDeleteDashboard}
-        columns={columns}
-        onReorderColumns={onReorderColumns}
-      />
-      <DragDropContext
-        onDragStart={() => setIsDragging(true)}
-        onDragEnd={(result) => {
-          setIsDragging(false)
-          onDragEnd(result)
-        }}
+    <DragDropContext
+      onDragStart={() => setIsDragging(true)}
+      onDragEnd={(result) => {
+        setIsDragging(false)
+        onDragEnd(result)
+      }}
+    >
+      <BoardView
+        isLoading={isLoading}
+        isDragging={isDragging}
+        footer={<SyncIndicator />}
+        header={
+          <DeckHeader
+            boardId={dashboard.id}
+            title={dashboard.title}
+            prefix={dashboard.prefix ?? ""}
+            takenPrefixes={takenPrefixes}
+            onRename={onRenameDashboard}
+            onRenamePrefix={onRenameDashboardPrefix}
+            onDelete={onDeleteDashboard}
+            columns={[...board.columns].sort(byPosition)}
+            onReorderColumns={onReorderColumns}
+          />
+        }
       >
-        <div
-          className={cn(
-            "flex min-h-0 w-full flex-1 items-stretch gap-0 overflow-x-auto overflow-y-hidden overscroll-x-contain px-0 xs:gap-6 xs:px-6",
-            !isDragging &&
-              !isLoading &&
-              "snap-x snap-mandatory scroll-px-0 xs:scroll-px-6 md:snap-none",
-            "transition-opacity duration-1000",
-            isLoading ? "opacity-0" : "opacity-100"
-          )}
-        >
-          {columns.map((column) => {
-            const cards = cardsByColumn.get(column.id) ?? []
-            const showBody = !column.collapsed
-            return (
-              <Column
-                key={column.id}
-                id={column.id}
-                title={column.title}
-                color={column.color}
-                showBody={showBody}
-                onToggleBody={() => onToggleBody(column.id, showBody)}
-                onAddCard={() => onAddCard(column.id)}
-                onRename={(title) => onRenameColumn(column.id, title)}
-                onChangeColor={(color) => onChangeColumnColor(column.id, color)}
-                done={column.done}
-                onChangeDone={(done) => onChangeColumnDone(column.id, done)}
-                onDelete={() => onDeleteColumn(column.id)}
-              >
-                {cards.map((card, index) => (
-                  <DraggableCard
-                    key={card.id}
-                    id={card.id}
-                    index={index}
-                    showBody={showBody}
-                  />
-                ))}
-              </Column>
-            )
-          })}
-          <AddColumn onAdd={onAddColumn} />
-        </div>
-      </DragDropContext>
-      <div className="absolute right-4 bottom-4 z-50">
-        <SyncIndicator />
-      </div>
-    </div>
+        {grouped.map(({ column, cards }) => {
+          const showBody = !column.collapsed
+          return (
+            <Column
+              key={column.id}
+              id={column.id}
+              title={column.title}
+              color={column.color}
+              showBody={showBody}
+              onToggleBody={() => onToggleBody(column.id, showBody)}
+              onAddCard={() => onAddCard(column.id)}
+              onRename={(title) => onRenameColumn(column.id, title)}
+              onChangeColor={(color) => onChangeColumnColor(column.id, color)}
+              done={column.done}
+              onChangeDone={(done) => onChangeColumnDone(column.id, done)}
+              onDelete={() => onDeleteColumn(column.id)}
+            >
+              {cards.map((card, index) => (
+                <DraggableCard
+                  key={card.id}
+                  id={card.id}
+                  index={index}
+                  showBody={showBody}
+                />
+              ))}
+            </Column>
+          )
+        })}
+        <AddColumn onAdd={onAddColumn} />
+      </BoardView>
+    </DragDropContext>
   )
 }

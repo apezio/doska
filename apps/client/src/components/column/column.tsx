@@ -1,8 +1,8 @@
 import { Droppable } from "@hello-pangea/dnd"
-import type { ReactNode } from "react"
-import { Button, cn } from "@doska/ui-kit"
-import { Plus } from "lucide-react"
-import { ColumnHead } from "./column-head"
+import { useState, type ReactNode } from "react"
+import { ConfirmDialog } from "../confirm-dialog"
+import { ColumnMenu } from "./column-menu"
+import { ColumnView } from "./column-view"
 
 interface IProps {
   children: ReactNode
@@ -20,43 +20,61 @@ interface IProps {
   onDelete: () => void
 }
 
-export function Column({ children, onAddCard, ...props }: IProps) {
+export function Column({
+  children,
+  id,
+  title,
+  color,
+  showBody,
+  onToggleBody,
+  onAddCard,
+  onRename,
+  onChangeColor,
+  done,
+  onChangeDone,
+  onDelete,
+}: IProps) {
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
   return (
-    <div
-      role="group"
-      aria-label={props.title}
-      className="xs:max-w-sm flex w-full max-w-none shrink-0 snap-center flex-col overflow-y-auto overscroll-y-contain pb-6"
-    >
-      <ColumnHead {...props} />
-      <Droppable droppableId={props.id}>
-        {(provided, snapshot) => (
-          <div
-            className={cn(
-              "flex min-h-40 w-full shrink-0 flex-col rounded-3xl bg-background p-4 transition-colors",
-              "border border-sidebar-primary-foreground",
-              "shadow-[inset_0_1px_3px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)]",
-              snapshot.isDraggingOver && "bg-primary/5 dark:bg-sidebar/50"
-            )}
-          >
-            <Button
-              variant="muted"
-              onClick={onAddCard}
-              aria-label={`Add card to ${props.title}`}
-              className="mb-3 w-full"
-            >
-              <Plus />
-            </Button>
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className="flex flex-1 flex-col"
-            >
-              {children}
-              {provided.placeholder}
-            </div>
-          </div>
-        )}
-      </Droppable>
-    </div>
+    <Droppable droppableId={id}>
+      {(provided, snapshot) => (
+        <ColumnView
+          title={title}
+          color={color}
+          done={done}
+          showBody={showBody}
+          onToggleBody={onToggleBody}
+          onRename={onRename}
+          onAddCard={onAddCard}
+          isDraggingOver={snapshot.isDraggingOver}
+          listRef={provided.innerRef}
+          listProps={provided.droppableProps}
+          menu={
+            <>
+              <ColumnMenu
+                title={title}
+                color={color}
+                onChangeColor={onChangeColor}
+                done={done}
+                onChangeDone={onChangeDone}
+                onDelete={() => setConfirmOpen(true)}
+              />
+              <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete column?"
+                description={`"${title}" and all of its cards move to the trash, where they stay restorable for 14 days.`}
+                confirmLabel="Delete column"
+                onConfirm={onDelete}
+              />
+            </>
+          }
+        >
+          {children}
+          {provided.placeholder}
+        </ColumnView>
+      )}
+    </Droppable>
   )
 }

@@ -6,7 +6,13 @@ import {
   deleteAccount,
   findAccount,
 } from "./db/accounts"
-import { assertBoardOwner, boardAccess } from "./db/access"
+import { assertBoardAccess, assertBoardOwner, boardAccess } from "./db/access"
+import {
+  listPublishedBoards,
+  publicToken,
+  publishBoard,
+  unpublishBoard,
+} from "./db/public"
 import {
   boardSync,
   boardsListSync,
@@ -55,6 +61,23 @@ export const router = os.router({
       await boardsListSync.applyPush(input.changes, context.userId)
       return boardsListSync.readSince(input.since, context.userId)
     }),
+  },
+  boards: {
+    publish: os.boards.publish.handler(async ({ input, context }) => {
+      await assertBoardOwner(context.userId, input.boardId)
+      return { token: await publishBoard(input.boardId) }
+    }),
+    unpublish: os.boards.unpublish.handler(async ({ input, context }) => {
+      await assertBoardOwner(context.userId, input.boardId)
+      await unpublishBoard(input.boardId)
+    }),
+    publicStatus: os.boards.publicStatus.handler(async ({ input, context }) => {
+      await assertBoardAccess(context.userId, input.boardId)
+      return { token: await publicToken(input.boardId) }
+    }),
+    published: os.boards.published.handler(async ({ context }) => ({
+      boardIds: await listPublishedBoards(context.userId),
+    })),
   },
   members: {
     list: os.members.list.handler(async ({ input, context }) => {

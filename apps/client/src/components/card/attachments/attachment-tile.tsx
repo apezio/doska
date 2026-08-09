@@ -2,24 +2,18 @@ import { cn } from "@doska/ui-kit"
 import { FileText } from "lucide-react"
 import { useState } from "react"
 import type { Attachment } from "@doska/core/types"
-import { useAttachmentUrl } from "@/lib/hooks/use-attachment-url"
 import { isRenderableImage } from "./renderable-image"
 
 interface IProps {
-  cardId: string
   attachment: Attachment
+  /** Resolved by the caller; null while it is still resolving or on failure. */
+  src: string | null
   className?: string
   onOpen?: () => void
 }
 
 /** A small square preview: image thumbnail, or a file icon with its extension. */
-export function AttachmentTile({
-  cardId,
-  attachment,
-  className,
-  onOpen,
-}: IProps) {
-  const url = useAttachmentUrl(cardId, attachment)
+export function AttachmentTile({ attachment, src, className, onOpen }: IProps) {
   const [failed, setFailed] = useState(false)
   const image = isRenderableImage(attachment.mime) && !failed
 
@@ -37,9 +31,9 @@ export function AttachmentTile({
         className
       )}
     >
-      {image && url ? (
+      {image && src ? (
         <img
-          src={url}
+          src={src}
           alt={attachment.name}
           className="size-full border object-cover"
           draggable={false}

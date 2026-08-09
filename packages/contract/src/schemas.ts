@@ -15,10 +15,14 @@ import { z } from "zod"
  *  - `key`: opaque, backend-specific handle (an S3 object key, or a filename in
  *    the card's on-disk sidecar). Rewritten when files migrate between backends.
  */
+
+const ATTACHMENT_KEY =
+  /^att\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}(\.[a-z0-9]+)?$/
+
 export const AttachmentSchema = z.object({
   id: z.string(),
   name: z.string(),
-  key: z.string(),
+  key: z.string().regex(ATTACHMENT_KEY),
   mime: z.string(),
   size: z.number(),
 })

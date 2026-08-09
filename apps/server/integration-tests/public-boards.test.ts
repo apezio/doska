@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm"
 import { beforeAll, beforeEach, describe, expect, test } from "vitest"
 import { auth } from "../src/auth"
 import { getDB } from "../src/db/get-db"
+import { user } from "../src/db/auth-schema"
 import { dashboards } from "../src/db/schema"
 import type { ServerStorage } from "../src/routes/files"
 import { rpcClient, resetTables, startServer, type Harness } from "./harness"
@@ -81,7 +82,13 @@ const card = (
   extra: Partial<{
     position: string
     deletedAt: number | null
-    attachments: { id: string; name: string; key: string; mime: string; size: number }[]
+    attachments: {
+      id: string
+      name: string
+      key: string
+      mime: string
+      size: number
+    }[]
   }> = {}
 ) => ({
   store: "cards" as const,
@@ -179,13 +186,19 @@ describe("publish / unpublish", () => {
   })
 
   test("publicStatus reports the link, before and after", async () => {
-    expect((await owner.boards.publicStatus({ boardId: "b1" })).token).toBeNull()
+    expect(
+      (await owner.boards.publicStatus({ boardId: "b1" })).token
+    ).toBeNull()
 
     const { token } = await owner.boards.publish({ boardId: "b1" })
-    expect((await owner.boards.publicStatus({ boardId: "b1" })).token).toBe(token)
+    expect((await owner.boards.publicStatus({ boardId: "b1" })).token).toBe(
+      token
+    )
 
     await owner.boards.unpublish({ boardId: "b1" })
-    expect((await owner.boards.publicStatus({ boardId: "b1" })).token).toBeNull()
+    expect(
+      (await owner.boards.publicStatus({ boardId: "b1" })).token
+    ).toBeNull()
   })
 
   test("unpublishing kills the link it had already handed out", async () => {
@@ -212,15 +225,59 @@ describe("publish / unpublish", () => {
 
     expect(await statusOf(member.boards.publish({ boardId: "b1" }))).toBe(403)
     expect(await statusOf(member.boards.unpublish({ boardId: "b1" }))).toBe(403)
-    expect(await statusOf(member.boards.publicStatus({ boardId: "b1" }))).toBe(
-      403
-    )
 
     const [row] = await getDB()
       .select({ token: dashboards.publicToken })
       .from(dashboards)
       .where(eq(dashboards.id, "b1"))
     expect(row.token).toBeNull()
+  })
+
+  test("a member may read the status of the board they work on", async () => {
+    await owner.members.add({ boardId: "b1", userId: memberId })
+    const { token } = await owner.boards.publish({ boardId: "b1" })
+
+    expect((await member.boards.publicStatus({ boardId: "b1" })).token).toBe(
+      token
+    )
+  })
+
+  test("an outsider may not read the status", async () => {
+    expect(await statusOf(member.boards.publicStatus({ boardId: "b1" }))).toBe(
+      403
+    )
+  })
+
+  test("published lists the boards, and only for those on them", async () => {
+    await owner.boards.publish({ boardId: "b1" })
+
+    expect((await owner.boards.published()).boardIds).toEqual(["b1"])
+    expect((await member.boards.published()).boardIds).toEqual([])
+
+    await owner.members.add({ boardId: "b1", userId: memberId })
+    expect((await member.boards.published()).boardIds).toEqual(["b1"])
+  })
+
+  test("a banned owner's link stops resolving", async () => {
+    const { token } = await owner.boards.publish({ boardId: "b1" })
+    const [row] = await getDB()
+      .select({ ownerId: dashboards.ownerId })
+      .from(dashboards)
+      .where(eq(dashboards.id, "b1"))
+    const ban = (banned: boolean) =>
+      getDB()
+        .update(user)
+        .set({ banned })
+        .where(eq(user.id, row.ownerId as string))
+
+    await ban(true)
+    try {
+      expect((await anon(`/api/public/b/${token}`)).statusCode).toBe(404)
+    } finally {
+      // The account outlives `resetTables`, and it is the one every other test
+      // signs in as.
+      await ban(false)
+    }
   })
 })
 
@@ -239,7 +296,11 @@ describe("a token that addresses nothing", () => {
       changes: [
         {
           store: "dashboards",
-          record: { ...board("b1").record, updatedAt: now + 1, deletedAt: now + 1 },
+          record: {
+            ...board("b1").record,
+            updatedAt: now + 1,
+            deletedAt: now + 1,
+          },
         },
       ],
     })
@@ -256,8 +317,22 @@ describe("the payload", () => {
       changes: [
         column("col2", "b1", "b"),
         card("card2", "col2"),
-        { ...card("card1", "col1"), record: { ...card("card1", "col1").record, updatedAt: now + 1, deletedAt: now + 1 } },
-        { ...column("col2", "b1", "b"), record: { ...column("col2", "b1", "b").record, updatedAt: now + 1, deletedAt: now + 1 } },
+        {
+          ...card("card1", "col1"),
+          record: {
+            ...card("card1", "col1").record,
+            updatedAt: now + 1,
+            deletedAt: now + 1,
+          },
+        },
+        {
+          ...column("col2", "b1", "b"),
+          record: {
+            ...column("col2", "b1", "b").record,
+            updatedAt: now + 1,
+            deletedAt: now + 1,
+          },
+        },
       ],
     })
     const { token } = await owner.boards.publish({ boardId: "b1" })
@@ -321,6 +396,11 @@ describe("the payload", () => {
 })
 
 describe("attachments", () => {
+  // The contract only accepts keys of the shape the upload endpoint mints, so
+  // these have to look minted.
+  const MINE = "att/11111111-1111-1111-1111-111111111111.txt"
+  const THEIRS = "att/22222222-2222-2222-2222-222222222222.txt"
+
   const attachment = (key: string) => ({
     id: `att-${key}`,
     name: key,
@@ -330,8 +410,8 @@ describe("attachments", () => {
   })
 
   beforeEach(async () => {
-    storage.blobs.set("att/mine", Buffer.from("abc"))
-    storage.blobs.set("att/theirs", Buffer.from("xyz"))
+    storage.blobs.set(MINE, Buffer.from("abc"))
+    storage.blobs.set(THEIRS, Buffer.from("xyz"))
     await owner.board.sync({
       boardId: "b1",
       since: 0,
@@ -341,7 +421,7 @@ describe("attachments", () => {
           record: {
             ...card("card1", "col1").record,
             updatedAt: now + 1,
-            attachments: [attachment("att/mine")],
+            attachments: [attachment(MINE)],
           },
         },
       ],
@@ -351,7 +431,9 @@ describe("attachments", () => {
   test("an attachment of a card on this board streams to an anonymous reader", async () => {
     const { token } = await owner.boards.publish({ boardId: "b1" })
 
-    const res = await anon(`/api/public/b/${token}/files/att%2Fmine`)
+    const res = await anon(
+      `/api/public/b/${token}/files/${encodeURIComponent(MINE)}`
+    )
 
     expect(res.statusCode).toBe(200)
     expect(res.body).toBe("abc")
@@ -368,14 +450,16 @@ describe("attachments", () => {
           ...card("card9", "col9"),
           record: {
             ...card("card9", "col9").record,
-            attachments: [attachment("att/theirs")],
+            attachments: [attachment(THEIRS)],
           },
         },
       ],
     })
     const { token } = await owner.boards.publish({ boardId: "b1" })
 
-    const res = await anon(`/api/public/b/${token}/files/att%2Ftheirs`)
+    const res = await anon(
+      `/api/public/b/${token}/files/${encodeURIComponent(THEIRS)}`
+    )
 
     expect(res.statusCode).toBe(404)
   })
@@ -383,7 +467,8 @@ describe("attachments", () => {
   test("an attachment of a deleted card stops resolving", async () => {
     const { token } = await owner.boards.publish({ boardId: "b1" })
     expect(
-      (await anon(`/api/public/b/${token}/files/att%2Fmine`)).statusCode
+      (await anon(`/api/public/b/${token}/files/${encodeURIComponent(MINE)}`))
+        .statusCode
     ).toBe(200)
 
     await owner.board.sync({
@@ -396,15 +481,34 @@ describe("attachments", () => {
             ...card("card1", "col1").record,
             updatedAt: now + 2,
             deletedAt: now + 2,
-            attachments: [attachment("att/mine")],
+            attachments: [attachment(MINE)],
           },
         },
       ],
     })
 
     expect(
-      (await anon(`/api/public/b/${token}/files/att%2Fmine`)).statusCode
+      (await anon(`/api/public/b/${token}/files/${encodeURIComponent(MINE)}`))
+        .statusCode
     ).toBe(404)
+  })
+
+  test("a hand-written key never reaches the bucket", async () => {
+    storage.blobs.set("secrets/keys.txt", Buffer.from("shh"))
+
+    const status = await statusOf(
+      owner.board.sync({
+        boardId: "b1",
+        since: 0,
+        changes: [
+          card("card2", "col1", {
+            attachments: [attachment("secrets/keys.txt")],
+          }),
+        ],
+      })
+    )
+
+    expect(status).toBe(400)
   })
 
   test("traversal in the key is refused", async () => {
@@ -420,7 +524,8 @@ describe("attachments", () => {
     await owner.boards.unpublish({ boardId: "b1" })
 
     expect(
-      (await anon(`/api/public/b/${token}/files/att%2Fmine`)).statusCode
+      (await anon(`/api/public/b/${token}/files/${encodeURIComponent(MINE)}`))
+        .statusCode
     ).toBe(404)
   })
 })

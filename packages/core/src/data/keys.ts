@@ -25,6 +25,7 @@ export const keys = {
   /** A published board's snapshot, addressed by share token — the visitor has no
    * board id, and never learns one that would collide with the local keys. */
   publicBoard: (token: string) => ["public-board", token] as const,
+  publishedBoards: ["public-status", "published"] as const,
   sharedBoards: ["dashboards", "shared"] as const,
   directory: ["directory"] as const,
   unclaimedLocalBoards: ["unclaimed-local-boards"] as const,

@@ -1,4 +1,5 @@
 import { cn } from "@doska/ui-kit"
+import { Anchor } from "lucide-react"
 
 interface IProps {
   title: string
@@ -19,10 +20,13 @@ export function PublicHeader({ title }: IProps) {
     >
       <span className="min-w-0 truncate text-base font-semibold">{title}</span>
       <a
-        href="/"
-        className="ml-auto shrink-0 text-sm font-semibold tracking-tight text-muted-foreground hover:text-foreground"
+        href="https://doska.sh"
+        target="_blank"
+        className="ml-auto flex shrink-0 items-center gap-1 text-muted-foreground hover:text-foreground"
       >
-        Doska
+        <span className="pr-1 text-[12px]">made with</span>
+        <Anchor className="size-4 shrink-0" />
+        <span className="font-semibold">Doska</span>
       </a>
     </header>
   )

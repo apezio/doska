@@ -18,34 +18,47 @@ import type { ServerStorage } from "./files"
  */
 
 const WINDOW_MS = 60_000
-const MAX_PER_WINDOW = 120
+/** A reader loads a link once and re-reads it rarely; this is already generous. */
+const MAX_PER_WINDOW = 30
+/** Attachments are per-image, so one honest visit is a whole board's worth. */
+const MAX_FILES_PER_WINDOW = 300
+const MAX_TRACKED_IPS = 20_000
 
 /** Fixed-window per-IP counter. In-process, like better-auth's own default:
  * one node is the deployment shape, and a limiter is not worth a round trip. */
 const hits = new Map<string, { count: number; resetAt: number }>()
 
-function overLimit(ip: string, now: number): boolean {
-  const bucket = hits.get(ip)
+/** `kind` keeps the two routes' budgets apart: a board with twenty images is one
+ * honest visit, and it must not spend the snapshot's allowance. */
+function overLimit(
+  kind: "board" | "file",
+  ip: string,
+  max: number,
+  now: number
+): boolean {
+  const key = `${kind}:${ip}`
+  const bucket = hits.get(key)
   if (!bucket || now >= bucket.resetAt) {
-    hits.set(ip, { count: 1, resetAt: now + WINDOW_MS })
-    // Expired buckets are only ever dropped here, so a burst of one-off IPs
-    // cannot leave the map growing without bound.
-    if (hits.size > 10_000) {
-      for (const [key, value] of hits) if (now >= value.resetAt) hits.delete(key)
+    if (hits.size >= MAX_TRACKED_IPS) {
+      const oldest = hits.keys().next().value
+      if (oldest !== undefined) hits.delete(oldest)
     }
+    hits.set(key, { count: 1, resetAt: now + WINDOW_MS })
     return false
   }
   bucket.count += 1
-  return bucket.count > MAX_PER_WINDOW
+  return bucket.count > max
 }
 
 /** True when the request was turned away; the reply is already sent. */
 async function rateLimited(
+  kind: "board" | "file",
   req: FastifyRequest,
   reply: FastifyReply
 ): Promise<boolean> {
   if (!env.publicRateLimit) return false
-  if (!overLimit(req.ip, Date.now())) return false
+  const max = kind === "board" ? MAX_PER_WINDOW : MAX_FILES_PER_WINDOW
+  if (!overLimit(kind, req.ip, max, Date.now())) return false
 
   await reply.code(429).send({ error: "Too many requests" })
   return true
@@ -66,7 +79,7 @@ export function registerPublicRoutes(
   app.get<{ Params: { token: string } }>(
     "/api/public/b/:token",
     async (req, reply) => {
-      if (await rateLimited(req, reply)) return
+      if (await rateLimited("board", req, reply)) return
 
       const board = await readPublicBoard(req.params.token)
       if (!board) return reply.code(404).send({ error: "Not found" })
@@ -85,7 +98,7 @@ export function registerPublicRoutes(
   app.get<{ Params: { token: string } }>(
     "/api/public/b/:token/files/*",
     async (req, reply) => {
-      if (await rateLimited(req, reply)) return
+      if (await rateLimited("file", req, reply)) return
       if (!storage)
         return reply.code(503).send({ error: "File storage not configured" })
 
@@ -102,8 +115,7 @@ export function registerPublicRoutes(
           reply.header("content-length", String(file.contentLength))
         reply.header("x-content-type-options", "nosniff")
         reply.header("content-disposition", file.disposition)
-        // Unpublishing must kill the image too, so no shared cache holds it.
-        reply.header("cache-control", "no-store")
+        reply.header("cache-control", "private, max-age=60")
         return reply.send(file.body)
       } catch {
         return reply.code(404).send({ error: "Not found" })

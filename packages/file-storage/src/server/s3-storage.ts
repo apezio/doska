@@ -6,7 +6,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3"
 import { dispositionFor, resolveType, safeMime } from "./content-type"
-import { newKey } from "./key"
+import { isValidKey, newKey } from "./key"
 
 const DEFAULT_MAX_BYTES = 25 * 1024 * 1024
 
@@ -73,8 +73,11 @@ export class S3ServerStorage {
     return { key, mime, size: bytes.length }
   }
 
-  /** Fetches an object and resolves how it should be served. Throws if missing. */
+  /**
+   * Fetches an object and resolves how it should be served. Throws if missing.
+   */
   async fetch(key: string): Promise<FetchedFile> {
+    if (!isValidKey(key)) throw new Error("not found")
     const obj = await this.client.send(
       new GetObjectCommand({ Bucket: this.bucket, Key: key })
     )
@@ -88,6 +91,7 @@ export class S3ServerStorage {
   }
 
   async remove(key: string): Promise<void> {
+    if (!isValidKey(key)) return
     await this.client.send(
       new DeleteObjectCommand({ Bucket: this.bucket, Key: key })
     )

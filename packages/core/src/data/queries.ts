@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { countOwnedBoards, listAccounts } from "../api/accounts"
-import { publicBoardToken } from "../api/boards"
+import { publicBoardToken, publishedBoards } from "../api/boards"
 import { fetchSession } from "../api/auth"
 import { fetchPublicBoard } from "../api/public"
 import { listDirectory, listMembers, listSharedBoards } from "../api/members"
@@ -62,9 +62,8 @@ export function useBoardMembers(boardId: string, enabled: boolean) {
   })
 }
 
-/** The board's public link, or null while it has none. Owner-only server-side,
- * so `enabled` keeps a member's share dialog from firing a request that would
- * 403. */
+/** The board's public link, or null while it has none. Readable by anyone on the
+ * board; `enabled` keeps a signed-out client from asking at all. */
 export function usePublicBoardStatus(boardId: string, enabled: boolean) {
   return useQuery({
     queryKey: keys.publicStatus(boardId),
@@ -84,6 +83,15 @@ export function usePublicBoard(token: string) {
     queryFn: () => fetchPublicBoard(token),
     retry: false,
     staleTime: Infinity,
+  })
+}
+
+/** Which boards are published, for the sidebar's marker. */
+export function usePublishedBoards(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.publishedBoards,
+    queryFn: publishedBoards,
+    enabled,
   })
 }
 

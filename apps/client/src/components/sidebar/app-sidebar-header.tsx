@@ -21,9 +21,9 @@ export function AppSidebarHeader() {
       <SidebarMenu>
         <SidebarMenuItem>
           <Link to="~/">
-            <div className="flex items-center space-x-2">
-              <Anchor className="size-4" />
-              <span className="cn-font-heading text-base font-semibold">
+            <div className="flex items-center space-x-1">
+              <Anchor className="size-4 shrink-0" />
+              <span className="cn-font-heading pr-2 text-base font-semibold">
                 Doska
               </span>
               {!isDesktop() && versionBadge}

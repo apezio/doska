@@ -2,11 +2,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { publishBoard, unpublishBoard } from "../../api/boards"
 import { keys } from "../keys"
 
-/** Both writes change what `usePublicBoardStatus` would answer, and nothing
- * else — the board record itself does not carry the token. */
+/** Both writes change what `usePublicBoardStatus` would answer, and the list's
+ * marker with it, and nothing else — the board record does not carry the token. */
 function useRefetchStatus(boardId: string) {
   const qc = useQueryClient()
-  return () => qc.invalidateQueries({ queryKey: keys.publicStatus(boardId) })
+  return async () => {
+    await qc.invalidateQueries({ queryKey: keys.publicStatus(boardId) })
+    await qc.invalidateQueries({ queryKey: keys.publishedBoards })
+  }
 }
 
 export function usePublishBoard(boardId: string) {

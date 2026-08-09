@@ -46,3 +46,12 @@ export async function assertBoardAccess(
   if ((await boardAccess(userId, boardId)) === "denied")
     throw new ORPCError("FORBIDDEN")
 }
+
+/** Sharing is the owner's alone — a member cannot pass their access on. */
+export async function assertBoardOwner(
+  userId: string,
+  boardId: string
+): Promise<void> {
+  if ((await boardAccess(userId, boardId)) !== "owner")
+    throw new ORPCError("FORBIDDEN")
+}

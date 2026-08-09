@@ -1,4 +1,4 @@
-import type { Attachment } from "@doska/contract"
+import type { Attachment, MemberRole } from "@doska/contract"
 import {
   bigint,
   boolean,
@@ -103,9 +103,6 @@ export const cards = pgTable(
   },
   (t) => [index("cards_board_seq").on(t.boardId, t.seq)]
 )
-
-/** Ship editors only; `'owner'` exists so widening roles needs no migration. */
-export type MemberRole = "owner" | "editor"
 
 /**
  * Boards shared with an account other than the owner.

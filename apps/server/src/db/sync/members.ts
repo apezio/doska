@@ -1,7 +1,24 @@
-import type { MemberRole } from "../schema"
-import { boardMembers } from "../schema"
+import type { Member, MemberRole } from "@doska/contract"
+import { and, eq, isNull, sql } from "drizzle-orm"
+import { db } from "../client"
+import { boardMembers, user } from "../schema"
 import { applyChanges } from "./core/apply-changes"
 import { boardsListCounter } from "./constants"
+
+/** Live members of `boardId`, the board's owner excluded — they have no row. */
+export function listMembers(boardId: string): Promise<Member[]> {
+  return db
+    .select({
+      userId: boardMembers.userId,
+      role: boardMembers.role,
+      username: sql<string>`coalesce(${user.username}, ${user.name})`,
+    })
+    .from(boardMembers)
+    .innerJoin(user, eq(user.id, boardMembers.userId))
+    .where(
+      and(eq(boardMembers.boardId, boardId), isNull(boardMembers.revokedAt))
+    )
+}
 
 /** A grant, a role change or a revocation — all of them rewrite the one row. */
 export interface MemberWrite {

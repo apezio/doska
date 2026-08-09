@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { listAccounts } from "../api/accounts"
 import { fetchSession } from "../api/auth"
+import { listDirectory, listMembers } from "../api/members"
 import {
   hasUnclaimedLocalBoards,
   UNCLAIMED_BOARDS_WARNING,
@@ -36,6 +37,24 @@ export function useAccounts(enabled: boolean) {
   return useQuery({
     queryKey: keys.accounts,
     queryFn: listAccounts,
+    enabled,
+  })
+}
+
+/** Who a board is shared with. Owner-only server-side, hence `enabled`. */
+export function useBoardMembers(boardId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.members(boardId),
+    queryFn: () => listMembers(boardId),
+    enabled,
+  })
+}
+
+/** Every active account, for the member picker. Any session may read it. */
+export function useDirectory(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.directory,
+    queryFn: listDirectory,
     enabled,
   })
 }

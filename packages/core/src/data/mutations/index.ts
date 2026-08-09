@@ -1,6 +1,7 @@
 export * from "./accounts"
 export * from "./auth"
 export * from "./dashboard"
+export * from "./members"
 export * from "./column"
 export * from "./card"
 export * from "./use-card-save"

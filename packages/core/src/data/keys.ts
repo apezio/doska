@@ -16,6 +16,8 @@ export const keys = {
   cardCol: (id: string) => ["card-col", id] as const,
   session: ["session"] as const,
   accounts: ["accounts"] as const,
+  members: (boardId: string) => ["members", boardId] as const,
+  directory: ["directory"] as const,
   unclaimedLocalBoards: ["unclaimed-local-boards"] as const,
 }
 

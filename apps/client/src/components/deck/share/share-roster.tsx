@@ -39,22 +39,27 @@ export function ShareRoster({ boardId, title }: IProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <ul className="flex flex-col">
-        {members.map((member) => (
-          <MemberRow
-            key={member.userId}
-            member={member}
-            board={title}
-            isSelf={member.userId === userId}
-            isOwner={isOwner}
-            onRemove={() => remove.mutate(member.userId)}
-          />
-        ))}
-      </ul>
+      {isOwner && <AddMember boardId={boardId} members={members} />}
+      <div className="flex flex-col gap-2">
+        <div className="text-xs text-muted-foreground">
+          {members.length} {members.length === 1 ? "member" : "members"}
+        </div>
+        <ul className="flex flex-col rounded-lg border border-border">
+          {members.map((member) => (
+            <MemberRow
+              key={member.userId}
+              member={member}
+              board={title}
+              isSelf={member.userId === userId}
+              isOwner={isOwner}
+              onRemove={() => remove.mutate(member.userId)}
+            />
+          ))}
+        </ul>
+      </div>
       {remove.error && (
         <p className="text-xs text-destructive">{remove.error.message}</p>
       )}
-      {isOwner && <AddMember boardId={boardId} members={members} />}
     </div>
   )
 }

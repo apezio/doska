@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { UserPlus } from "lucide-react"
 import { Button, Input } from "@doska/ui-kit"
 import { useAddMember } from "@doska/core/mutations"
 import { useDirectory } from "@doska/core/queries"
@@ -30,8 +31,11 @@ export function AddMember({ boardId, members }: IProps) {
     : candidates
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="text-sm font-medium">Add someone</div>
+    <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <UserPlus className="size-4 text-muted-foreground" />
+        Add someone
+      </div>
       {directory.isPending && (
         <p className="text-xs text-muted-foreground">Loading accounts…</p>
       )}

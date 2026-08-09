@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { Button } from "@doska/ui-kit"
+import { Avatar, AvatarFallback, Button } from "@doska/ui-kit"
+import { initials } from "@doska/core/utils"
 import type { Member } from "@doska/core/types"
 import { AccountTag } from "../../accounts/account-tag"
 
@@ -24,21 +25,34 @@ export function MemberRow({ member, board, isSelf, isOwner, onRemove }: IProps) 
   const canRemove = leaving || (isOwner && member.role !== "owner")
 
   return (
-    <li className="flex flex-col gap-2 border-b border-muted py-2 last:border-b-0">
-      <div className="flex items-center gap-2">
-        <span className="truncate text-sm">{member.username}</span>
-        {member.role === "owner" && <AccountTag>Owner</AccountTag>}
-        {isSelf && <AccountTag>You</AccountTag>}
+    <li className="flex flex-col gap-2 border-b border-border p-3 last:border-b-0">
+      <div className="flex items-center gap-3">
+        <Avatar className="size-8">
+          <AvatarFallback className="text-xs">
+            {initials(member.username)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-sm font-medium">
+            {member.username}
+          </span>
+          <div className="flex items-center gap-1">
+            {member.role === "owner" && <AccountTag>Owner</AccountTag>}
+            {isSelf && <AccountTag>You</AccountTag>}
+          </div>
+        </div>
         {canRemove && !confirming && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="ml-auto shrink-0"
-            onClick={() => setConfirming(true)}
-          >
-            {leaving ? "Leave" : "Remove"}
-          </Button>
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-destructive"
+              onClick={() => setConfirming(true)}
+            >
+              {leaving ? "Leave" : "Remove"}
+            </Button>
+          </div>
         )}
       </div>
       {confirming && (

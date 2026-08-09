@@ -9,9 +9,26 @@ import type { Change, DashboardChange } from "@doska/contract"
 /* -------------------------------------------------------------------------- */
 
 /**
- * Calls the per-board sync RPC. oRPC wraps payloads in a `{ json }` envelope on
- * the wire; this hides that. The relative URL resolves against the config
- * baseURL, which proxies `/api/rpc` to the e2e sync server.
+ * Calls a procedure by its contract path ("members/remove"). oRPC wraps
+ * payloads in a `{ json }` envelope on the wire; this hides that. The relative
+ * URL resolves against the config baseURL, which proxies `/api/rpc` to the e2e
+ * sync server.
+ */
+export async function rpc<T>(
+  request: APIRequestContext,
+  path: string,
+  body: unknown = {}
+): Promise<T> {
+  const res = await request.post(`/api/rpc/${path}`, { data: { json: body } })
+  if (!res.ok())
+    throw new Error(`${path} failed (${res.status()}): ${await res.text()}`)
+  const payload = (await res.json()) as { json: T }
+  return payload.json
+}
+
+/**
+ * Calls the per-board sync RPC. The channels keep their own wrappers: their
+ * failures are the ones worth naming in a stack trace.
  */
 export async function sync(
   request: APIRequestContext,

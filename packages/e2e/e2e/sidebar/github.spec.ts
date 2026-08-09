@@ -1,10 +1,11 @@
 import { test, expect } from "@playwright/test"
 
-// The footer entry is a plain external link — assert where it points and that it
-// opens in a new tab, rather than actually navigating off to GitHub.
+// The settings entry is a plain external link — assert where it points and that
+// it opens in a new tab, rather than actually navigating off to GitHub.
 test.describe("GitHub link", () => {
   test("points at the repository and opens in a new tab", async ({ page }) => {
     await page.goto("/")
+    await page.getByRole("button", { name: "Settings" }).click()
 
     const link = page.getByRole("link", { name: "GitHub" })
     await expect(link).toHaveAttribute(

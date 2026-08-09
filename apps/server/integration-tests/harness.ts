@@ -86,6 +86,6 @@ export function rpcClient(h: Harness): RpcClient {
 /** Clears the sync tables; leaves the auth tables (and thus the session) intact. */
 export async function resetTables(): Promise<void> {
   await getDB().execute(
-    sql`TRUNCATE cards, columns, dashboards, counters RESTART IDENTITY`
+    sql`TRUNCATE cards, columns, dashboards, board_members, counters RESTART IDENTITY`
   )
 }

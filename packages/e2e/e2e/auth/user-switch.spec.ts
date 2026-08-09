@@ -56,6 +56,7 @@ test.describe("switching accounts on one device", () => {
     const second = { login: uniqueLogin("switch"), password: "created-pass" }
 
     await signIn(page)
+    await page.getByRole("button", { name: "Settings" }).click()
     await page.getByRole("button", { name: "Accounts" }).click()
     await page.getByPlaceholder("Login").fill(second.login)
     await page.getByPlaceholder("Password").fill(second.password)

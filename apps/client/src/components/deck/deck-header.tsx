@@ -8,14 +8,23 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from "@doska/ui-kit"
-import { ArrowRightLeft, Hash, MoreHorizontal, Trash2 } from "lucide-react"
+import {
+  ArrowRightLeft,
+  Hash,
+  MoreHorizontal,
+  Trash2,
+  Users,
+} from "lucide-react"
 import { PageHeader } from "../app/page-header"
 import { ConfirmDialog } from "../confirm-dialog"
 import { ReorderColumnsModal } from "./reorder-columns/reorder-columns-modal"
 import { PrefixModal } from "./prefix-modal"
+import { ShareModal } from "./share/share-modal"
+import { useAuth } from "@/lib/hooks"
 import type { Column } from "@doska/core/types"
 
 interface IProps {
+  boardId: string
   title: string
   prefix: string
   takenPrefixes: string[]
@@ -27,6 +36,7 @@ interface IProps {
 }
 
 export function DeckHeader({
+  boardId,
   title,
   prefix,
   takenPrefixes,
@@ -39,6 +49,9 @@ export function DeckHeader({
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [reorderOpen, setReorderOpen] = useState(false)
   const [prefixOpen, setPrefixOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+
+  const { authed } = useAuth()
 
   return (
     <PageHeader>
@@ -64,6 +77,12 @@ export function DeckHeader({
             <MoreHorizontal />
           </MenuTrigger>
           <MenuContent>
+            {authed && (
+              <MenuItem onClick={() => setShareOpen(true)}>
+                <Users />
+                Share
+              </MenuItem>
+            )}
             <MenuItem onClick={() => setPrefixOpen(true)}>
               <Hash />
               Card prefix
@@ -104,6 +123,12 @@ export function DeckHeader({
         onOpenChange={setReorderOpen}
         columns={columns}
         onReorder={onReorderColumns}
+      />
+      <ShareModal
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        boardId={boardId}
+        title={title}
       />
       <PrefixModal
         open={prefixOpen}

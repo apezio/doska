@@ -25,4 +25,4 @@ COPY --from=build /app /app
 WORKDIR /app/apps/server
 EXPOSE 3000
 # Migrations run on boot (see src/index.ts) before the server accepts traffic.
-CMD ["pnpm", "start"]
+CMD ["node", "--import", "tsx", "src/index.ts"]

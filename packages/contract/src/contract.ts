@@ -1,6 +1,12 @@
-import { oc } from "@orpc/contract";
-import { z } from "zod";
-import { ChangeSchema, DashboardChangeSchema } from "./schemas";
+import { oc } from "@orpc/contract"
+import { z } from "zod"
+import {
+  ChangeSchema,
+  DashboardChangeSchema,
+  DirectoryUserSchema,
+  MemberRoleSchema,
+  MemberSchema,
+} from "./schemas"
 
 /**
  * The sync contract. Two channels, each push-then-pull with a `since` cursor:
@@ -11,6 +17,10 @@ import { ChangeSchema, DashboardChangeSchema } from "./schemas";
  *
  * In both: push the client's locally-changed records in `changes`; pull every
  * record changed past the client's `since` cursor, plus the new high-water `cursor`.
+ *
+ * `members` and `users` are not channels. They are ordinary request/response
+ * RPCs with no cursor: a membership write shows up on a client through the
+ * `dashboards.sync` channel, which is why the row carries a board-list `seq`.
  */
 export const contract = {
   board: {
@@ -20,13 +30,13 @@ export const contract = {
           boardId: z.string(),
           since: z.number(),
           changes: z.array(ChangeSchema),
-        }),
+        })
       )
       .output(
         z.object({
           cursor: z.number(),
           changes: z.array(ChangeSchema),
-        }),
+        })
       ),
   },
   dashboards: {
@@ -35,13 +45,54 @@ export const contract = {
         z.object({
           since: z.number(),
           changes: z.array(DashboardChangeSchema),
-        }),
+        })
       )
       .output(
         z.object({
           cursor: z.number(),
           changes: z.array(DashboardChangeSchema),
-        }),
+          // Boards this account has lost access to
+          removed: z.array(z.string()).optional(),
+        })
       ),
   },
-};
+  members: {
+    /** Readable by anyone on the board; `viewerRole` is what the caller may do,
+     * so the UI never offers an action the handlers below would refuse. */
+    list: oc.input(z.object({ boardId: z.string() })).output(
+      z.object({
+        members: z.array(MemberSchema),
+        viewerRole: MemberRoleSchema,
+      })
+    ),
+    /** Board ids the session shares — owned and given away, or given to it.
+     * Sharing is not on the dashboard record, so the sidebar asks separately. */
+    sharedBoards: oc.output(z.object({ boardIds: z.array(z.string()) })),
+    add: oc
+      .input(
+        z.object({
+          boardId: z.string(),
+          userId: z.string(),
+          role: MemberRoleSchema.default("editor"),
+        })
+      )
+      .output(z.void()),
+    /** Owner-only, except that a member may pass their own id to leave. */
+    remove: oc
+      .input(z.object({ boardId: z.string(), userId: z.string() }))
+      .output(z.void()),
+  },
+  users: {
+    list: oc.output(z.object({ users: z.array(DirectoryUserSchema) })),
+  },
+  accounts: {
+    ownedBoards: oc
+      .input(z.object({ userId: z.string() }))
+      .output(z.object({ boards: z.number() })),
+    /**
+     * Deletes an account. Admin-only, and refused unless the account
+     * is already deactivated and owns no live board
+     */
+    remove: oc.input(z.object({ userId: z.string() })).output(z.void()),
+  },
+}

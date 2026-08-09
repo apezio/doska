@@ -12,7 +12,7 @@ test.describe("settings updates", () => {
     await page.getByRole("button", { name: "Settings" }).click()
 
     const modal = page.getByRole("dialog")
-    await expect(modal.getByText(/^Version/)).toBeVisible()
+    await expect(modal.getByText(/^Doska version:/)).toBeVisible()
     await expect(modal.getByText("Automatic updates")).toHaveCount(0)
 
     await modal.getByRole("button", { name: "Check for updates" }).click()

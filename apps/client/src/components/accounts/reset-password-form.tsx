@@ -18,7 +18,10 @@ export function ResetPasswordForm({ id, onDone }: IProps) {
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-1">
+    <form
+      onSubmit={submit}
+      className="flex flex-col gap-1 rounded-md bg-muted/40 p-2"
+    >
       <div className="flex items-center gap-2">
         <Input
           autoFocus

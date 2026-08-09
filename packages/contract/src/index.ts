@@ -6,6 +6,9 @@ import type {
   ColumnSchema,
   DashboardChangeSchema,
   DashboardSchema,
+  DirectoryUserSchema,
+  MemberRoleSchema,
+  MemberSchema,
 } from "./schemas"
 
 export * from "./schemas"
@@ -19,3 +22,6 @@ export type Column = z.infer<typeof ColumnSchema>
 export type Dashboard = z.infer<typeof DashboardSchema>
 export type Change = z.infer<typeof ChangeSchema>
 export type DashboardChange = z.infer<typeof DashboardChangeSchema>
+export type Member = z.infer<typeof MemberSchema>
+export type MemberRole = z.infer<typeof MemberRoleSchema>
+export type DirectoryUser = z.infer<typeof DirectoryUserSchema>

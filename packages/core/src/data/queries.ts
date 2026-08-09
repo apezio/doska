@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
-import { listAccounts } from "../api/accounts"
+import { countOwnedBoards, listAccounts } from "../api/accounts"
 import { fetchSession } from "../api/auth"
+import { listDirectory, listMembers, listSharedBoards } from "../api/members"
 import {
   hasUnclaimedLocalBoards,
   UNCLAIMED_BOARDS_WARNING,
@@ -36,6 +37,43 @@ export function useAccounts(enabled: boolean) {
   return useQuery({
     queryKey: keys.accounts,
     queryFn: listAccounts,
+    enabled,
+  })
+}
+
+/** What stands between one account and being deleted. */
+export function useOwnedBoards(userId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.ownedBoards(userId),
+    queryFn: () => countOwnedBoards(userId),
+    enabled,
+  })
+}
+
+/** Who a board is shared with, and what the reader may change about it.
+ * Board-scoped server-side, so `enabled` keeps a signed-out session quiet. */
+export function useBoardMembers(boardId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.members(boardId),
+    queryFn: () => listMembers(boardId),
+    enabled,
+  })
+}
+
+/** Which boards are shared, for the sidebar's marker. */
+export function useSharedBoards(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.sharedBoards,
+    queryFn: listSharedBoards,
+    enabled,
+  })
+}
+
+/** Every active account, for the member picker. Any session may read it. */
+export function useDirectory(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.directory,
+    queryFn: listDirectory,
     enabled,
   })
 }

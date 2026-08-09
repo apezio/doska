@@ -188,6 +188,13 @@ export class SyncEngine<Scope, Change> {
     this.watchedScopes = [...scopes]
   }
 
+  /** Stops pulling a scope that is no longer ours to sync. Idempotent. */
+  dropScope(scope: Scope) {
+    if (scope === this.activeScope) this.activeScope = null
+    this.watchedScopes = this.watchedScopes.filter((s) => s !== scope)
+    this.extraScopes.delete(scope)
+  }
+
   private async cycle(): Promise<void> {
     do {
       this.rerun = false
@@ -293,6 +300,9 @@ export class SyncEngine<Scope, Change> {
       this.dirty.clearPushed(pushed)
 
       await this.driver.applyRemote(scope, result.changes)
+
+      if (result.removed?.length)
+        await this.driver.applyRemoved?.(result.removed)
       await this.driver.saveCursor(scope, result.cursor)
 
       await this.driver.compact(this.dirty, [
@@ -323,9 +333,7 @@ export class SyncEngine<Scope, Change> {
    */
   private async forbid(scope: Scope) {
     this.attempt.attempted -= 1
-    if (scope === this.activeScope) this.activeScope = null
-    this.watchedScopes = this.watchedScopes.filter((s) => s !== scope)
-    this.extraScopes.delete(scope)
+    this.dropScope(scope)
     console.warn("[sync] scope refused by the server; dropping it", scope)
     try {
       await this.onForbidden(scope)

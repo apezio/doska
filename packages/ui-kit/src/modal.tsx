@@ -16,6 +16,7 @@ function ModalContent({
     <DialogPrimitive.Portal>
       <DialogPrimitive.Backdrop
         data-slot="modal-overlay"
+        forceRender
         className={cn(
           "fixed inset-0 z-50 bg-background/40 supports-backdrop-filter:backdrop-blur-xs",
           "transition-opacity duration-200",

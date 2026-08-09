@@ -75,6 +75,23 @@ export const DashboardSchema = z.object({
   deletedAt: z.number().nullable(),
 })
 
+/** Ship editors only; `'owner'` exists so widening roles needs no migration. */
+export const MemberRoleSchema = z.enum(["owner", "editor"])
+
+/** Someone with access to a board, as the share dialog's roster renders them.
+ * The owner is in there too, with `role: 'owner'` and no membership row. */
+export const MemberSchema = z.object({
+  userId: z.string(),
+  username: z.string(),
+  role: MemberRoleSchema,
+})
+
+/** An account in the server's directory — everything the member picker gets. */
+export const DirectoryUserSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+})
+
 /** A dashboard list change. The dashboard list syncs on its own account-level
  * channel (see `dashboards.sync`), independent of any open board, so it carries
  * only dashboard records. */

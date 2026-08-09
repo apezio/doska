@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from "react"
 import { MarkdownRenderersProvider } from "@doska/markdown"
-import { AttachmentImage } from "./attachments/attachment-image"
+import { CardAttachmentImage } from "./attachments/card-attachment-image"
 import { CardRefLink } from "./refs/card-ref-link"
 
 /**
@@ -18,7 +18,7 @@ export function CardMarkdown({
   const renderers = useMemo(
     () => ({
       renderImage: (key: string, alt: string) => (
-        <AttachmentImage cardId={cardId} attachmentKey={key} alt={alt} />
+        <CardAttachmentImage cardId={cardId} attachmentKey={key} alt={alt} />
       ),
       renderWikilink: (target: string, alias?: string) => (
         <CardRefLink displayId={target} alias={alias} />

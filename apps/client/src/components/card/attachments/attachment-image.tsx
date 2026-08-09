@@ -1,37 +1,36 @@
 import { useState } from "react"
-import { useCard } from "@doska/core/queries"
 import { cn, MdImage } from "@doska/ui-kit"
-import { useAttachmentUrlByKey } from "@/lib/hooks/use-attachment-url"
+import type { Attachment } from "@doska/core/types"
 import { AttachmentViewer } from "./attachment-viewer"
 
 interface IProps {
-  cardId: string
-  attachmentKey: string
+  /** Resolved by the caller; nothing renders until it is. */
+  src: string | null
   alt: string
   className?: string
+  /** The attachment behind `src`, when known — it is what opens the lightbox. */
+  attachment?: Attachment
+  onDownload?: () => void
 }
 
-/** Renders a body image ref by resolving its storage URL; nothing until resolved. */
+/** A body image ref, rendered from an already-resolved URL. */
 export function AttachmentImage({
-  cardId,
-  attachmentKey,
+  src,
   alt,
   className,
+  attachment,
+  onDownload,
 }: IProps) {
-  const url = useAttachmentUrlByKey(cardId, attachmentKey)
-  const { data: card } = useCard(cardId)
   const [viewing, setViewing] = useState(false)
 
-  if (!url) return null
-
-  const attachment = card?.attachments?.find((a) => a.key === attachmentKey)
+  if (!src) return null
 
   return (
     <>
       <MdImage
-        src={url}
+        src={src}
         alt={alt}
-        className={cn("cursor-zoom-in", className)}
+        className={cn(attachment && "cursor-zoom-in", className)}
         onClick={(e) => {
           if (!attachment) return
           e.stopPropagation()
@@ -40,9 +39,10 @@ export function AttachmentImage({
       />
       {attachment && (
         <AttachmentViewer
-          cardId={cardId}
           attachment={viewing ? attachment : null}
+          src={src}
           onClose={() => setViewing(false)}
+          onDownload={() => onDownload?.()}
         />
       )}
     </>

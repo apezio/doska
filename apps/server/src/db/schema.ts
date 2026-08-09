@@ -58,6 +58,16 @@ export const dashboards = pgTable(
     position: text("position").notNull(),
     prefix: text("prefix").notNull().default(""),
     ownerId: text("owner_id"),
+    /**
+     * The public share link's capability, or null while unpublished. Server-
+     * minted and server-owned: it is deliberately absent from `DashboardSchema`,
+     * and that absence is the whole protection — `upsertLWW` writes every column
+     * present in the row it is handed, so a token that never appears in a pushed
+     * record can never be overwritten by a client. Do not add it to the wire
+     * shape.
+     */
+    publicToken: text("public_token").unique(),
+    publishedAt: bigint("published_at", { mode: "number" }),
     updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
     deletedAt: bigint("deleted_at", { mode: "number" }),
     seq: integer("seq").notNull(),

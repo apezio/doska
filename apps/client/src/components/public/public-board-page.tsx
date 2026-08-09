@@ -19,14 +19,14 @@ export function PublicBoardPage({ token, closeHref }: IProps) {
 
   if (isPending)
     return (
-      <div className="flex h-svh items-center justify-center">
+      <div className="flex h-(--app-height,100svh) items-center justify-center">
         <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     )
 
   if (error || !snapshot)
     return (
-      <div className="flex h-svh items-center justify-center px-6">
+      <div className="flex h-(--app-height,100svh) items-center justify-center px-6">
         <p className="max-w-sm text-center text-muted-foreground">
           {error instanceof PublicBoardNotFound
             ? "This board is not shared, or the link has been turned off."
@@ -36,8 +36,10 @@ export function PublicBoardPage({ token, closeHref }: IProps) {
     )
 
   return (
-    <div className="flex h-svh w-full overflow-hidden">
-      <PublicBoard token={token} snapshot={snapshot} />
+    <div className="flex h-(--app-height,100svh) w-full overflow-hidden">
+      <main className="relative flex w-full min-w-0 flex-1 flex-col overflow-hidden">
+        <PublicBoard token={token} snapshot={snapshot} />
+      </main>
       <PublicCardPanel
         token={token}
         snapshot={snapshot}

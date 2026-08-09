@@ -18,7 +18,7 @@ import { useAuth, useDashboardNav } from "@/lib/hooks"
 import { routes } from "@/lib/routes"
 import { AppSidebarHeader } from "./app-sidebar-header"
 import { DashboardsList } from "./dashboards-list"
-import { ThemeToggle } from "./theme-toggle"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { SidebarAccount } from "./sidebar-account"
 import { SettingsButton } from "@/components/settings/settings-button"
 

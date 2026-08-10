@@ -26,7 +26,7 @@ These create one account, once, on the server's first boot. It's the admin, so
 it can add everyone else from the app's [Accounts](/docs/accounts) screen.
 
 After that they do nothing. Editing `AUTH_PASSWORD` and restarting won't change
-the password — use Accounts, where the admin can set anyone's, its own
+the password. Use Accounts, where the admin can set anyone's, its own
 included. Leave the pair in `.env` regardless: the server won't start without
 it.
 

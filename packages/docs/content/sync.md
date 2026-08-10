@@ -2,7 +2,7 @@
 title: Sync
 nav: Sync
 description: "How Doska keeps devices in sync"
-order: 6
+order: 7
 updated: "2026-08-09"
 ---
 

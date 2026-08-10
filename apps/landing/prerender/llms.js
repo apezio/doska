@@ -9,7 +9,8 @@ export function llms(site, { outline, links }) {
     "",
     "> An open-source, local-first Kanban board where every card is Markdown." +
       " Boards live in the browser and work offline, sync through a server you" +
-      " host yourself, and are exposed over MCP so agents can edit them.",
+      " host yourself, share with the other accounts on it or publish as a" +
+      " read-only link, and are exposed over MCP so agents can edit them.",
     "",
     "Doska is free and MIT licensed.",
     "",

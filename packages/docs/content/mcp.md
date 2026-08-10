@@ -2,7 +2,7 @@
 title: MCP
 nav: MCP
 description: "Connect Claude Code, Claude Desktop or claude.ai to your Doska server so an agent can read and edit your boards."
-order: 4
+order: 5
 updated: "2026-08-09"
 ---
 

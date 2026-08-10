@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.17.0] - 2026-08-11
 
 ### Added
 
@@ -17,7 +17,9 @@
   from your devices. 
 - An admin can delete a deactivated account outright, once it owns no board.
   Boards it was a member of let go of it first.
-- Docs update, docs pages beta tags.
+- A board can be published to a read-only link anyone can open without an
+  account. **Share** → **Create link**, owner only. 
+- Docs update, docs pages beta tags, and a page on public sharing.
 
 ### Changed
 
@@ -31,6 +33,16 @@
   it's still the same person's.
 - A board the server stops serving is dropped locally, rows, cursor and pending
   writes together, instead of being retried forever.
+- Card, column and board rendering split into presentational views, so the
+  public board draws the same components as the app rather than a second set.
+
+### Fixed
+
+- Share tokens leaked in the `Referer` header when a visitor followed a link out
+  of a public board.
+- `/p/` is disallowed in `robots.txt`, so share links stay out of search
+  results.
+- Server start script.
 
 ## [0.17.0] - 2026-08-08
 

@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+# Share links
+Disallow: /p/

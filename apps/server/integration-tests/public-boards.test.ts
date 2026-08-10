@@ -181,7 +181,7 @@ describe("publish / unpublish", () => {
   test("the token is not a board id, and is long enough to be a capability", async () => {
     const { token } = await owner.boards.publish({ boardId: "b1" })
 
-    expect(token).not.toContain("b1")
+    expect(token).not.toBe("b1")
     expect(token).toMatch(/^[0-9a-f]{32}$/)
   })
 

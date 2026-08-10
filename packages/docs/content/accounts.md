@@ -1,22 +1,19 @@
 ---
 title: Accounts
 nav: Accounts
-badge: Beta
-description: "More than one person on your Doska server: adding accounts, what each one gets, and what isn't shared yet."
+description: "More than one person on your Doska server: adding accounts, what each one gets, and how boards are shared."
 order: 3
-updated: "2026-08-09"
+updated: "2026-08-11"
 ---
-
-> **Beta.** Accounts aren't in a stable release yet
 
 Your server can hold more than one account. Everyone signs in with their own
 login and password.
 
 ## Add someone
 
-Sign in as the admin, open **Accounts** in the sidebar, and give them a login
-and a first password. Only the admin sees that button; there's no way for
-someone to sign themselves up.
+Sign in as the admin, open **Accounts** in settings, and give them a login and a
+first password. Only the admin sees that screen; there's no way for someone to
+sign themselves up.
 
 The admin is the account from `AUTH_LOGIN` / `AUTH_PASSWORD`, see
 [Environment](/docs/self-hosting/environment).
@@ -24,7 +21,24 @@ The admin is the account from `AUTH_LOGIN` / `AUTH_PASSWORD`, see
 ## What they get
 
 Their own boards, private to them. Nothing is copied over from you, so they
-start empty.
+start empty. Sync only ever serves the boards an account owns or has been added
+to.
+
+## Sharing a board
+
+**Share** in the board menu opens its roster. The owner adds anyone who has an
+account on this server, and takes them off again. There are no invites to send,
+because everyone is already on the server.
+
+A shared board syncs to everyone on it and is marked as shared in the sidebar.
+Leaving a board, or being taken off one, drops it and its cards from your
+devices.
+
+Sharing is the one part of the app that needs the server there and then: with
+the server unreachable, the roster won't open and nothing changes.
+
+A board can also be opened up to people with no account at all. See
+[Public sharing](/docs/public-sharing).
 
 ## Passwords
 
@@ -34,5 +48,4 @@ Changing `AUTH_PASSWORD` in `.env` does nothing once the server is running.
 ## Turning someone off
 
 Deactivate them: they can't sign in, and their boards stay exactly where they
-are. Reactivate any time and everything is back. Accounts aren't deleted, and
-you can't deactivate yourself.
+are. Reactivate any time and everything is back.

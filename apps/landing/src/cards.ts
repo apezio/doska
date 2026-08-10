@@ -1,4 +1,4 @@
-import { app, repo } from "./links"
+import { app, repo, roadmap } from "./links"
 
 /**
  * The page's copy, written the way a real card body is written — the same
@@ -9,53 +9,55 @@ import { app, repo } from "./links"
 export const cards = {
   markdown: `GitHub-flavored Markdown:\\
 **bold**, \`code\`, [links](${repo}), ==highlights==.\\
-Task lists carry a live count, up in the header (try clicking):
+Task lists carry a live count (try clicking):
 
 - [x] Written in Markdown
-- [x] Rendered by the app's own renderer
+- [x] Rendered by the app
 - [ ] Ticked from the board
 
-I tried to make Markdown editing more bearable: slash commands, suggestions.`,
+Slash commands and suggestions, to make writing it bearable.`,
 
-  attachments: `File attachments, inline images, support for dragging files
-into a card or pasting from the buffer:
+  attachments: `Drag a file into a card, or paste one. Inline images too:
 
 ![board-preview.png](attachment:board-preview)`,
 
-  deadlines: `Set a due date and the chip shifts color as it nears.\\
-Like this one, which has been overdue for a while.`,
+  deadlines: `A due date gets a chip that shifts color as it nears.\\
+This one has been overdue for a while.`,
 
-  refs: `Type \`[[\` and pick a card. The reference (wikilink) carries its title
-and the column it's in: both read live, so a rename or a move updates every
-mention:
+  refs: `Type \`[[\` and pick a card. The reference carries its title and column,
+both live, so a rename or a move updates every mention:
 
 [[CARD-3]]`,
 
   localFirst: `Boards live in the browser. Reads and writes hit your device, not
-the network, so it's fast, and it works offline.`,
+the network: fast, and offline.`,
 
-  sync: `Point it at a server you run and boards replicate to every device in
-the background. Sync happens every couple of seconds, or on \`⌘\`+\`S\`.`,
+  sync: `Point it at a server you run and boards reach every device, every couple
+of seconds or on \`⌘\`+\`S\`.`,
 
-  trash: `\`⌘\`+\`Z\` takes back the last delete. Everything else waits in the
-trash, where one click puts it back: a column returns with its cards, a board
-with its columns.
+  share: `The owner adds people from the accounts on your server, and takes them
+off. A shared board syncs to everyone on it.`,
 
-After 14 days it's permanently deleted, on your device and on your server.`,
+  publicLink: `Publish a board to a read-only link: no account, nothing kept in
+the visitor's browser. Turn it off and the link is dead.\\
+[This project's roadmap](${roadmap}) is one of them.`,
 
-  selfHost: `Comes with an install script.\\
-The script backs up your data, and bundles all you need to run the app. Re-run
-any time to pull newer images. It keeps your config. There's a
-[self-hosting guide](${repo}#self-hosting).`,
+  accounts: `The admin adds accounts, sets passwords, deactivates. Nobody signs
+themselves up.`,
 
-  platforms: `[In the browser](${app}), installed as a PWA, or a Tauri macOS app
-that reuses the same client and auto-updates.`,
+  trash: `\`⌘\`+\`Z\` takes back the last delete; the rest waits in the trash, one
+click from returning. Gone for good after 14 days.`,
 
-  phone: `Add it to your home screen and it runs fullscreen and offline, like a
-real app.`,
+  selfHost: `One script: it backs your data up, pulls the images, keeps your
+config. There's a [self-hosting guide](${repo}#self-hosting).`,
 
-  agents: `The server exposes your boards over MCP, so Claude or other agents
-can read and edit them: create cards, tick task lists, move things.`,
+  platforms: `[In the browser](${app}), as a PWA, or a macOS app that
+auto-updates.`,
+
+  phone: `Add it to your home screen: fullscreen and offline, like a real app.`,
+
+  agents: `Boards over MCP, so Claude can read and edit them: create cards, tick
+tasks, move things.`,
 }
 
 /** What the demo's `[[CARD-3]]` resolves to — the app reads this off the card. */

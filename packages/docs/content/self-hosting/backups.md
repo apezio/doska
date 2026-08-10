@@ -49,7 +49,7 @@ gunzip -c backups/doska-XXXX.sql.gz | \
 ```
 
 > **Keep `ON_ERROR_STOP=1`.** Without it `psql` exits 0 even when every
-> statement failed — restoring onto a database that isn't empty prints a wall of
+> statement failed. Restoring onto a database that isn't empty prints a wall of
 > errors and still looks like it succeeded.
 
 ### Attachments

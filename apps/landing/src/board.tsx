@@ -39,7 +39,7 @@ export function Board() {
       >
         <MarkdownRenderersProvider value={renderers}>
           <div className="mx-auto flex max-w-6xl items-start gap-5 px-4 py-8 sm:px-6">
-            <Column title="Cards" color="violet" count={4}>
+            <Column title="Cards" color="violet" count={3}>
               <BoardCard
                 id="CARD-1"
                 title="Cards are Markdown"
@@ -51,19 +51,13 @@ export function Board() {
                 body={cards.attachments}
               />
               <BoardCard
-                id="CARD-3"
-                title="Deadlines"
-                deadline="2020-04-01"
-                body={cards.deadlines}
-              />
-              <BoardCard
                 id="CARD-4"
                 title="Cards link to cards"
                 body={cards.refs}
               />
             </Column>
 
-            <Column title="Where it lives" color="green" count={3}>
+            <Column title="Where it lives" color="green" count={5}>
               <BoardCard
                 id="DATA-1"
                 title="Local-first"
@@ -72,12 +66,22 @@ export function Board() {
               <BoardCard id="DATA-2" title="Sync is opt-in" body={cards.sync} />
               <BoardCard
                 id="DATA-3"
+                title="Share a board with other users"
+                body={cards.share}
+              />
+              <BoardCard
+                id="DATA-4"
+                title="Public sharing"
+                body={cards.publicLink}
+              />
+              <BoardCard
+                id="DATA-5"
                 title="Deleting is reversible"
                 body={cards.trash}
               />
             </Column>
 
-            <Column title="Run it" color="amber" count={4}>
+            <Column title="Run it" color="amber" count={5}>
               <BoardCard
                 id="RUN-1"
                 title="Self-host in one line"
@@ -86,17 +90,22 @@ export function Board() {
               />
               <BoardCard
                 id="RUN-2"
+                title="Multiple accounts on one server"
+                body={cards.accounts}
+              />
+              <BoardCard
+                id="RUN-3"
                 title="Runs where you do"
                 body={cards.platforms}
               />
               <BoardCard
-                id="RUN-3"
+                id="RUN-4"
                 title="Works on a phone"
                 body={cards.phone}
               />
               <BoardCard
-                id="RUN-4"
-                title="Agents can edit it too"
+                id="RUN-5"
+                title="MCP server"
                 body={cards.agents}
               >
                 <McpTerminal />

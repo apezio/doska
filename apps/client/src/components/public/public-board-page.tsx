@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { Loader2 } from "lucide-react"
 import { usePublicBoard } from "@doska/core/queries"
 import { PublicBoardNotFound } from "@doska/core/public"
@@ -16,6 +17,11 @@ interface IProps {
  */
 export function PublicBoardPage({ token, closeHref }: IProps) {
   const { data: snapshot, isPending, error } = usePublicBoard(token)
+  const title = snapshot?.dashboard.title
+
+  useEffect(() => {
+    document.title = title ? `${title} · Doska` : "Doska"
+  }, [title])
 
   if (isPending)
     return (

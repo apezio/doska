@@ -2,7 +2,7 @@
 title: Desktop and mobile
 nav: Desktop & mobile
 description: "The Doska macOS app, installing the client as a PWA"
-order: 5
+order: 6
 updated: "2026-08-07"
 ---
 

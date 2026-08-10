@@ -41,7 +41,7 @@ export function BoardCard({
   return (
     <Card className="mb-3">
       <CardHeader>
-        <CardTitle className="font-bold">
+        <CardTitle className="font-bold text-balance">
           <h3>{title}</h3>
         </CardTitle>
         <CardAction>
@@ -58,7 +58,7 @@ export function BoardCard({
           </div>
         </CardContent>
       )}
-      <CardContent className="pt-2">
+      <CardContent className="pt-2 text-pretty">
         {lead}
         <Markdown
           onToggleTask={(index) =>

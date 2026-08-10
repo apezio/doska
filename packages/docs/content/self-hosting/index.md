@@ -41,9 +41,8 @@ Open the web UI at `http://<your-host>:8080` and sign in with the `AUTH_LOGIN` /
 `AUTH_PASSWORD` from your `.env`.
 
 Those credentials create the **first admin** account on first boot. The admin
-can add more accounts from the app — see [Accounts](/docs/accounts), currently
-in beta. Boards are private to the account that made them and can't be shared
-yet.
+can add more accounts from the app, and a board's owner can share it with them
+or publish it as a read-only link. See [Accounts](/docs/accounts).
 
 ## Configuration
 

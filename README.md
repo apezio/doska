@@ -14,7 +14,11 @@ Runs in the browser, installs as a PWA, or ships as a native macOS app.
 [HTTPS](https://doska.sh/docs/self-hosting/https),
 [attachments](https://doska.sh/docs/self-hosting/attachments),
 [backups](https://doska.sh/docs/self-hosting/backups),
-[sync](https://doska.sh/docs/sync), [MCP](https://doska.sh/docs/mcp).
+[sync](https://doska.sh/docs/sync), [accounts](https://doska.sh/docs/accounts),
+[public sharing](https://doska.sh/docs/public-sharing),
+[MCP](https://doska.sh/docs/mcp).
+
+🗺️ **[Roadmap](https://app.doska.sh/p/2af2848df270cb5b8a4e73e7a362b19b)**
 
 > Browser storage isn't permanent. The app asks the browser not to evict it, but
 > that's best-effort: the browser can still clear it, and "clear site data"
@@ -31,9 +35,10 @@ Runs in the browser, installs as a PWA, or ships as a native macOS app.
   highlights, and task lists that carry a live count in the card header. A slash
   menu and inline suggestions for formatting.
 - **Attach files** by dropping them on a card or pasting from the clipboard;
-  images preview inline (requires S3 compatible bucket).
-- **Tags**: bracketed words become colored pills.
-- **Cards link to cards** (wikilink): type `[[` and pick one.
+  images preview inline. They land in a local volume, and an S3-compatible
+  bucket is the alternative.
+- **Cards link to cards** (wikilink): type `[[` and pick one. The reference
+  carries that card's live title and column color.
 - **Deadlines**: set one and the card shows a chip that shifts color as the date
   nears, turning red once it's overdue.
 - An **Upcoming** view gathers cards from every board by deadline: overdue ones
@@ -47,7 +52,14 @@ Runs in the browser, installs as a PWA, or ships as a native macOS app.
   devices in the background, every couple of seconds or on `⌘`+`S`. How it works:
   [doska.sh/docs/sync](https://doska.sh/docs/sync).
 - **Deleting is reversible**. `⌘`+`Z` takes back the last delete; everything
-  else waits in the trash.
+  else waits in the trash for 14 days.
+- **More than one account per server.** The admin adds accounts from the
+  **Accounts** screen, sets passwords and deactivates; Each account's boards are its own:
+  [doska.sh/docs/accounts](https://doska.sh/docs/accounts).
+- **Share a board** with other accounts on your server, and the board syncs to everyone on it.
+- **Publish a board** to a read-only link that needs no account and keeps
+  nothing in the visitor's browser. Turn it off and the link is dead:
+  [doska.sh/docs/public-sharing](https://doska.sh/docs/public-sharing).
 
 ### Run it
 
@@ -95,7 +107,7 @@ Postgres comes bundled and lives in a Docker volume. To run it elsewhere, point
 `DATABASE_URL` at a managed instance instead.
 
 - `WEB_PORT` — host port for the web UI (default `8080`).
-- `DOCKER_IMAGE_TAG` — pin a release (e.g. `0.4.0`) instead of `latest`.
+- `DOCKER_IMAGE_TAG` — pin a release (e.g. `0.18.0`) instead of `latest`.
 - `DATABASE_URL` — point at your own managed Postgres (optional).
 - `BASE_URL` — this server's public origin. Cookie sync works without it; MCP
   OAuth needs it.
@@ -103,10 +115,11 @@ Postgres comes bundled and lives in a Docker volume. To run it elsewhere, point
 Every variable is listed in
 [the docs](https://doska.sh/docs/self-hosting/environment).
 
-> **Accounts (beta):** the credentials in `.env` seed the first *admin* account.
-> On the `beta` image tag the admin can add more accounts from the app's
-> **Accounts** screen; each gets its own private boards. Boards can't be shared
-> between accounts yet. See [the docs](https://doska.sh/docs/accounts).
+> **Accounts:** the credentials in `.env` seed the first *admin* account, and
+> only on first boot — editing them later won't change a password. The admin adds
+> everyone else from the app's **Accounts** screen, and boards can be shared
+> between accounts or published to a link. See
+> [the docs](https://doska.sh/docs/accounts).
 
 Deploying with [Dokploy](https://dokploy.com)? Use `docker-compose.dokploy.yml`.
 

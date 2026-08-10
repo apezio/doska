@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.17.0] - 2026-08-11
+## [0.18.0] - 2026-08-11
 
 ### Added
 
@@ -119,6 +119,7 @@
 
 - Trash: deleted boards, columns and cards are recoverable until retention
   expires.
+- `⌘`+`Z` takes back the last delete without a trip to the trash.
 - Ticking a row in the upcoming view moves the card to its board's done column.
 - Board and column actions collapsed into overflow menus.
 - Help modal explaining how to mark a card done from the upcoming view when the

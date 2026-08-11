@@ -1,17 +1,25 @@
 import { cn } from "@doska/ui-kit"
 import type { Attachment } from "@doska/core/types"
+import type { AttachmentSource } from "@doska/core/attachment-labels"
 import { AttachmentPreview } from "./attachment-preview"
 
 interface IProps {
   attachment: Attachment
   /** Resolved by the caller; null while it is still resolving or on failure. */
   src: string | null
+  source?: AttachmentSource
   className?: string
   onOpen?: () => void
 }
 
 /** A small square preview: image thumbnail, or a file icon with its extension. */
-export function AttachmentTile({ attachment, src, className, onOpen }: IProps) {
+export function AttachmentTile({
+  attachment,
+  src,
+  source,
+  className,
+  onOpen,
+}: IProps) {
   return (
     <div
       role={onOpen ? "button" : undefined}
@@ -26,7 +34,7 @@ export function AttachmentTile({ attachment, src, className, onOpen }: IProps) {
         className
       )}
     >
-      <AttachmentPreview attachment={attachment} src={src} />
+      <AttachmentPreview attachment={attachment} src={src} source={source} />
     </div>
   )
 }

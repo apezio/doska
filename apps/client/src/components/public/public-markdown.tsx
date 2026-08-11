@@ -35,6 +35,7 @@ export function PublicMarkdown({
         <AttachmentImage
           src={publicAttachmentUrl(token, key)}
           alt={alt}
+          source="token"
           attachment={attachments?.find((a) => a.key === key)}
         />
       ),

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { cn, MdImage } from "@doska/ui-kit"
 import type { Attachment } from "@doska/core/types"
+import type { AttachmentSource } from "@doska/core/attachment-labels"
 import { AttachmentViewer } from "./attachment-viewer"
 import { AttachmentUnavailable } from "./attachment-unavailable"
 import { useImageFailure } from "./use-image-failure"
@@ -12,6 +13,7 @@ interface IProps {
   className?: string
   /** The attachment behind `src`, when known — it is what opens the lightbox. */
   attachment?: Attachment
+  source?: AttachmentSource
   onDownload?: () => void | Promise<void>
 }
 
@@ -21,14 +23,18 @@ export function AttachmentImage({
   alt,
   className,
   attachment,
+  source,
   onDownload,
 }: IProps) {
   const [viewing, setViewing] = useState(false)
-  const { failed, status, onError } = useImageFailure()
+  const { failed, onError } = useImageFailure(!!src, source)
 
-  if (failed || (!src && status !== "ok")) {
+  if (failed) {
     return (
-      <AttachmentUnavailable className={cn("my-4 aspect-video", className)} />
+      <AttachmentUnavailable
+        source={source}
+        className={cn("my-4 aspect-video", className)}
+      />
     )
   }
 
@@ -51,6 +57,7 @@ export function AttachmentImage({
         <AttachmentViewer
           attachment={viewing ? attachment : null}
           src={src}
+          source={source}
           onClose={() => setViewing(false)}
           onDownload={() => onDownload?.()}
         />

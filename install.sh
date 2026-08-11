@@ -131,19 +131,19 @@ ask_yn() {
 pinned_tag() {
   if [ -n "${DOCKER_IMAGE_TAG:-}" ]; then printf '%s' "$DOCKER_IMAGE_TAG"; return; fi
   [ -f "$ENV_FILE" ] || return 0
-  sed -n 's/^DOCKER_IMAGE_TAG=//p' "$ENV_FILE" | head -1
+  sed -n 's/^DOCKER_IMAGE_TAG=[[:space:]]*\([^[:space:]#]*\).*/\1/p' "$ENV_FILE" | head -1
 }
 
-# Newest tag_name from a releases API path
-release_tag() {
+# Every tag_name from a releases API path, newest first
+release_tags() {
   curl -fsSL "https://api.github.com/repos/${REPO}$1" 2>/dev/null \
-    | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1
+    | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'
 }
 
 source_ref() {
   case "$1" in
-    ''|latest) release_tag "/releases/latest" ;;
-    beta)      release_tag "/releases?per_page=1" ;;
+    ''|latest) release_tags "/releases/latest" | head -1 ;;
+    beta)      release_tags "/releases?per_page=30" | grep '[-]' | head -1 ;;
     *)         printf 'v%s' "${1#v}" ;;
   esac
 }
@@ -285,10 +285,14 @@ if curl -fsSL "$RAW/$COMPOSE_FILE" -o "$COMPOSE_FILE.new"; then
     rm -f "$COMPOSE_FILE.new"
     ok "$COMPOSE_FILE already up to date"
   else
-    cp "$COMPOSE_FILE" "$COMPOSE_FILE.bak"
+    # An earlier .bak may hold the only copy of the user's edits, creating another one
+    BAK="$COMPOSE_FILE.bak"
+    _n=1
+    while [ -f "$BAK" ]; do BAK="$COMPOSE_FILE.bak.$_n"; _n=$((_n + 1)); done
+    cp "$COMPOSE_FILE" "$BAK"
     mv "$COMPOSE_FILE.new" "$COMPOSE_FILE"
     ok "$COMPOSE_FILE updated"
-    warn "your previous $COMPOSE_FILE is saved as $COMPOSE_FILE.bak — re-apply any edits you had made to it."
+    warn "your previous $COMPOSE_FILE is saved as $BAK — re-apply any edits you had made to it."
   fi
 else
   rm -f "$COMPOSE_FILE.new"

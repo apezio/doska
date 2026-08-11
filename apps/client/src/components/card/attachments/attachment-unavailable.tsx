@@ -1,17 +1,21 @@
 import { cn } from "@doska/ui-kit"
-import { attachmentUnavailable } from "@doska/core/attachment-labels"
+import {
+  attachmentUnavailable,
+  type AttachmentSource,
+} from "@doska/core/attachment-labels"
 import { useConnection } from "@doska/core/sync"
 
 interface IProps {
   className?: string
   /** Drops the text, for thumbnails too small to read it. */
   compact?: boolean
+  source?: AttachmentSource
 }
 
 /** Stands in for an image that didn't load, and says why. */
-export function AttachmentUnavailable({ className, compact }: IProps) {
+export function AttachmentUnavailable({ className, compact, source }: IProps) {
   const connection = useConnection()
-  const message = attachmentUnavailable(connection)
+  const message = attachmentUnavailable(connection, source)
 
   return (
     <div

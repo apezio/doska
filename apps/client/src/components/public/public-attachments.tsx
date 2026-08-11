@@ -24,6 +24,7 @@ export function PublicAttachments({ attachments, token, className }: IProps) {
       <AttachmentList
         attachments={attachments}
         urls={urls}
+        source="token"
         className={className}
         onOpen={(att) => {
           if (isRenderableImage(att.mime)) setViewing(att)
@@ -33,6 +34,7 @@ export function PublicAttachments({ attachments, token, className }: IProps) {
       <AttachmentViewer
         attachment={viewing}
         src={viewing ? urls[viewing.key] : null}
+        source="token"
         onClose={() => setViewing(null)}
         onDownload={() => {
           if (viewing) window.open(urls[viewing.key], "_blank")

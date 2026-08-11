@@ -68,6 +68,7 @@ export function PublicBoard({ token, snapshot }: IProps) {
                     <AttachmentImage
                       src={publicAttachmentUrl(token, key)}
                       alt={alt}
+                      source="token"
                       className={className}
                     />
                   )}

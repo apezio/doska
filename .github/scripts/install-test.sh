@@ -44,7 +44,13 @@ echo "\$url" >> "\${CURL_LOG:-/dev/null}"
 case "\$url" in
   file://*) exec $REAL_CURL "\$@" ;;
   *releases/latest) printf '{"tag_name": "%s"}\n' "\${CURL_LATEST:-v0.18.0}" ;;
-  *releases*per_page*) printf '[{"tag_name": "%s"}]\n' "\${CURL_BETA:-v0.19.0-beta.1}" ;;
+  # Newest first, as the API returns them. install.sh reads tag_name line by
+  # line, so the surrounding array punctuation is left off deliberately.
+  *releases*per_page*)
+    for t in \${CURL_RELEASES:-v0.19.0-beta.1}; do
+      printf '  {"tag_name": "%s"}\n' "\$t"
+    done
+    ;;
   *) [ -n "\$out" ] && cp "\$CURL_SERVE" "\$out" || cat "\$CURL_SERVE" ;;
 esac
 exit 0
@@ -273,6 +279,23 @@ run current AUTH_PASSWORD=x -- --yes --no-start
   fail "backed up an identical file" || pass "no .bak churn"
 
 # ---------------------------------------------------------------------------
+# The .bak from the first upgrade is the only copy of whatever the user had
+# edited; a later upgrade must not overwrite it with a stock release file.
+case_name="a second update keeps the first .bak"
+printf '\n%s\n' "$case_name"
+mkdir -p "$WORK/twobak"
+printf 'services:\n  server:\n    # my own edits\n' > "$WORK/twobak/docker-compose.selfhost.yml"
+run twobak AUTH_PASSWORD=x -- --yes --no-start
+printf 'services:\n  server:\n    # a later release\n' > "$WORK/twobak/docker-compose.selfhost.yml"
+run twobak -- --yes --no-start
+grep -q "my own edits" "$WORK/twobak/docker-compose.selfhost.yml.bak" 2>/dev/null &&
+  pass "the original .bak still holds the user's edits" ||
+  fail "the second update clobbered the .bak: $(cat "$WORK/twobak/docker-compose.selfhost.yml.bak" 2>/dev/null)"
+grep -q "a later release" "$WORK/twobak/docker-compose.selfhost.yml.bak.1" 2>/dev/null &&
+  pass "the second copy is kept alongside it" ||
+  fail "the second update saved no backup at all"
+
+# ---------------------------------------------------------------------------
 # Continuing offline would pull new images onto whatever old stack is on disk.
 case_name="an unreachable source stops the install"
 printf '\n%s\n' "$case_name"
@@ -326,6 +349,17 @@ run chanbeta AUTH_PASSWORD=x DOCKER_IMAGE_TAG=beta -- --yes --no-start
 fetched_from chanbeta "/doska/v0.19.0-beta.1/docker-compose" && pass "fetched from the prerelease" ||
   fail "wrong source: $(cat "$WORK/chanbeta/curl.log")"
 
+# A stable release published after a prerelease is newer, but the `beta` image
+# tag is only ever pushed for prerelease tags — taking the stable compose file
+# would pair it with older images.
+case_name="the beta channel skips a newer stable release"
+printf '\n%s\n' "$case_name"
+run betastable AUTH_PASSWORD=x DOCKER_IMAGE_TAG=beta \
+  "CURL_RELEASES=v0.19.0 v0.19.0-beta.1 v0.18.0" -- --yes --no-start
+fetched_from betastable "/doska/v0.19.0-beta.1/docker-compose" &&
+  pass "fetched from the newest prerelease" ||
+  fail "wrong source: $(cat "$WORK/betastable/curl.log")"
+
 case_name="a tag pinned in an existing .env is honoured"
 printf '\n%s\n' "$case_name"
 mkdir -p "$WORK/envpin"
@@ -334,6 +368,18 @@ printf 'AUTH_LOGIN=admin\nAUTH_PASSWORD=x\nAUTH_SECRET=s\nBASE_URL=http://x\nDOC
 run envpin -- --yes --no-start
 fetched_from envpin "/doska/v0.16.2/docker-compose" && pass "read the pin out of .env" ||
   fail "ignored the .env pin: $(cat "$WORK/envpin/curl.log")"
+
+# install.sh writes that pin as a commented hint with a trailing comment of its
+# own; uncommenting it as instructed must not put the comment in the URL.
+case_name="a pin with a trailing comment resolves to the version"
+printf '\n%s\n' "$case_name"
+mkdir -p "$WORK/envpincomment"
+printf 'AUTH_LOGIN=admin\nAUTH_PASSWORD=x\nAUTH_SECRET=s\nBASE_URL=http://x\nDOCKER_IMAGE_TAG=0.4.0  # pin a release instead of latest\n' \
+  > "$WORK/envpincomment/.env"
+run envpincomment -- --yes --no-start
+[ "$(exit_code envpincomment)" = 0 ] || fail "exit $(exit_code envpincomment): $(cat "$WORK/envpincomment/out.log")"
+fetched_from envpincomment "/doska/v0.4.0/docker-compose" && pass "ignored the trailing comment" ||
+  fail "wrong source: $(cat "$WORK/envpincomment/curl.log")"
 unset CASE_RAW
 
 # ---------------------------------------------------------------------------

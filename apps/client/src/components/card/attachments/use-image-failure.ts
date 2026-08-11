@@ -14,6 +14,8 @@ export function useImageFailure(
   const { status } = useConnection()
   const [failedAt, setFailedAt] = useState<Status | null>(null)
 
+  if (failedAt === "ok" && status === "dropped") setFailedAt(null)
+
   return {
     failed: imageUnavailable({ source, hasUrl, failedAt, status }),
     onError: () => setFailedAt(status),

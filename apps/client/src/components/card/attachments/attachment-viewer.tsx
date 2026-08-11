@@ -7,6 +7,7 @@ import {
   type AttachmentSource,
 } from "@doska/core/attachment-labels"
 import { useConnection } from "@doska/core/sync"
+import { AttachmentUnavailable } from "./attachment-unavailable"
 
 interface IProps {
   attachment: Attachment | null
@@ -95,12 +96,14 @@ function ViewerContent({
         </div>
       )}
       <div className="flex flex-1 items-center justify-center overflow-auto">
-        {src && (
+        {src ? (
           <img
             src={src}
             alt={attachment.name}
             className="max-h-full overflow-hidden"
           />
+        ) : (
+          <AttachmentUnavailable source={source} className="m-4 aspect-video" />
         )}
       </div>
     </ModalContent>

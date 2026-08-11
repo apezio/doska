@@ -20,7 +20,11 @@ export { UNCLAIMED_BOARDS_WARNING }
  * only gates sync, so this never blocks the app — it just drives the sign-in UI.
  */
 export function useSession() {
-  return useQuery({ queryKey: keys.session, queryFn: fetchSession })
+  return useQuery({
+    queryKey: keys.session,
+    queryFn: fetchSession,
+    networkMode: "always",
+  })
 }
 
 /** Whether the sign-in form should warn that the boards on this device are

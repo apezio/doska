@@ -42,6 +42,9 @@ for a in "\$@"; do
 done
 echo "\$url" >> "\${CURL_LOG:-/dev/null}"
 case "\$url" in
+  *api.github.com*) [ -z "\${CURL_API_FAIL:-}" ] || exit "\$CURL_API_FAIL" ;;
+esac
+case "\$url" in
   file://*) exec $REAL_CURL "\$@" ;;
   *releases/latest) printf '{"tag_name": "%s"}\n' "\${CURL_LATEST:-v0.18.0}" ;;
   # Newest first, as the API returns them. install.sh reads tag_name line by
@@ -51,6 +54,7 @@ case "\$url" in
       printf '  {"tag_name": "%s"}\n' "\$t"
     done
     ;;
+  *backup.sh) [ -n "\$out" ] && cp "$REPO_ROOT/backup.sh" "\$out" || cat "$REPO_ROOT/backup.sh" ;;
   *) [ -n "\$out" ] && cp "\$CURL_SERVE" "\$out" || cat "\$CURL_SERVE" ;;
 esac
 exit 0
@@ -81,16 +85,16 @@ run() {
     esac
   done
   mkdir -p "$dir"
-  # backup.sh is only fetched when absent, so this keeps that download offline.
-  # The compose file is refreshed on every run, so it comes from CASE_RAW instead
-  # — the checkout by default, which is both offline and the version under test.
-  cp "$REPO_ROOT/backup.sh" "$dir/"
+  # Both files are refreshed on every run, from CASE_RAW — the checkout by
+  # default, which is both offline and the version under test. A case that
+  # planted its own backup.sh keeps it.
+  [ -f "$dir/backup.sh" ] || cp "$REPO_ROOT/backup.sh" "$dir/"
 
   step "running install.sh ${args[*]-}"
   local started=$SECONDS
   # bash 3.2 (macOS) treats "${arr[@]}" on an empty array as unbound under set -u.
   ( cd "$dir" && env "PATH=$WORK/bin:$PATH" "DOCKER_LOG=$dir/docker.log" \
-      "RAW=${CASE_RAW-file://$REPO_ROOT}" \
+      "DOSKA_RAW=${CASE_RAW-file://$REPO_ROOT}" \
       "CURL_LOG=$dir/curl.log" "CURL_SERVE=$COMPOSE_SRC" \
       ${envs[@]+"${envs[@]}"} sh "$INSTALL" ${args[@]+"${args[@]}"} ) \
     < /dev/null > "$dir/out.log" 2>&1 &
@@ -207,7 +211,7 @@ case_name="re-run keeps the existing .env"
 printf '\n%s\n' "$case_name"
 run rerun AUTH_PASSWORD=first -- --yes --no-start
 cp "$WORK/rerun/.env" "$WORK/rerun/.env.before"
-( cd "$WORK/rerun" && env "RAW=file://$REPO_ROOT" AUTH_PASSWORD=second sh "$INSTALL" --yes --no-start ) \
+( cd "$WORK/rerun" && env "DOSKA_RAW=file://$REPO_ROOT" AUTH_PASSWORD=second sh "$INSTALL" --yes --no-start ) \
   < /dev/null > "$WORK/rerun/out2.log" 2>&1
 if diff -q "$WORK/rerun/.env.before" "$WORK/rerun/.env" > /dev/null; then
   pass "second run left .env untouched"
@@ -296,6 +300,43 @@ grep -q "a later release" "$WORK/twobak/docker-compose.selfhost.yml.bak.1" 2>/de
   fail "the second update saved no backup at all"
 
 # ---------------------------------------------------------------------------
+# backup.sh drives the pre-redeploy dump, so it drifts with the stack just like
+# the compose file does.
+case_name="a stale backup.sh is refreshed"
+printf '\n%s\n' "$case_name"
+mkdir -p "$WORK/staleback"
+printf '#!/bin/sh\n# the helper from an old release\n' > "$WORK/staleback/backup.sh"
+run staleback AUTH_PASSWORD=x -- --yes --no-start
+if diff -q "$REPO_ROOT/backup.sh" "$WORK/staleback/backup.sh" > /dev/null 2>&1; then
+  pass "replaced with the current one"
+else
+  fail "kept the stale backup.sh — it guards the database on every redeploy"
+fi
+grep -q "from an old release" "$WORK/staleback/backup.sh.bak" 2>/dev/null &&
+  pass "previous copy kept as .bak" || fail "the previous backup.sh was lost"
+[ -x "$WORK/staleback/backup.sh" ] && pass "still executable" || fail "lost the +x bit"
+
+# ---------------------------------------------------------------------------
+# The backup has to be taken with the compose file that created the running
+# data; swapping first can point pg_dump at a service the old stack never had.
+case_name="the backup runs before the compose file is replaced"
+printf '\n%s\n' "$case_name"
+mkdir -p "$WORK/order"
+printf 'services:\n  server:\n    # the old shape\n' > "$WORK/order/docker-compose.selfhost.yml"
+printf 'AUTH_LOGIN=admin\nAUTH_PASSWORD=x\nAUTH_SECRET=s\nBASE_URL=http://localhost:8080\n' \
+  > "$WORK/order/.env"
+cat > "$WORK/order/backup.sh" <<'FAKE'
+#!/bin/sh
+cp docker-compose.selfhost.yml backup-saw.yml
+FAKE
+run order -- --yes
+grep -q "the old shape" "$WORK/order/backup-saw.yml" 2>/dev/null &&
+  pass "backed up against the stack that is actually running" ||
+  fail "backup saw the new compose file: $(cat "$WORK/order/backup-saw.yml" 2>/dev/null)"
+diff -q "$COMPOSE_SRC" "$WORK/order/docker-compose.selfhost.yml" > /dev/null 2>&1 &&
+  pass "the update still landed afterwards" || fail "the compose file was never updated"
+
+# ---------------------------------------------------------------------------
 # Continuing offline would pull new images onto whatever old stack is on disk.
 case_name="an unreachable source stops the install"
 printf '\n%s\n' "$case_name"
@@ -380,6 +421,24 @@ run envpincomment -- --yes --no-start
 [ "$(exit_code envpincomment)" = 0 ] || fail "exit $(exit_code envpincomment): $(cat "$WORK/envpincomment/out.log")"
 fetched_from envpincomment "/doska/v0.4.0/docker-compose" && pass "ignored the trailing comment" ||
   fail "wrong source: $(cat "$WORK/envpincomment/curl.log")"
+
+# Unauthenticated api.github.com allows 60 requests an hour per IP, which a
+# shared address reaches. Only the lookup failed, so what is on disk still runs.
+case_name="a rate-limited API falls back to the compose file on disk"
+printf '\n%s\n' "$case_name"
+mkdir -p "$WORK/ratelimit"
+cp "$COMPOSE_SRC" "$WORK/ratelimit/"
+run ratelimit AUTH_PASSWORD=x CURL_API_FAIL=22 -- --yes --no-start
+[ "$(exit_code ratelimit)" = 0 ] && pass "carried on with the existing compose file" ||
+  fail "exit $(exit_code ratelimit): $(cat "$WORK/ratelimit/out.log")"
+grep -qi "rate limited" "$WORK/ratelimit/out.log" && pass "names the rate limit" ||
+  fail "blamed something else: $(cat "$WORK/ratelimit/out.log")"
+
+case_name="a rate-limited API with nothing on disk still stops"
+printf '\n%s\n' "$case_name"
+run ratelimitbare AUTH_PASSWORD=x CURL_API_FAIL=22 -- --yes --no-start
+[ "$(exit_code ratelimitbare)" != 0 ] && pass "refused to install without a compose file" ||
+  fail "installed with no stack definition"
 unset CASE_RAW
 
 # ---------------------------------------------------------------------------

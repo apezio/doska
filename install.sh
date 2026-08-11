@@ -1,8 +1,8 @@
 #!/bin/sh
 # Doska self-host bootstrapper. Downloads the compose file, scaffolds a .env
 # (generating secrets for you), and brings the stack up. Safe to re-run: it never
-# overwrites an existing .env, so a second run refreshes the compose file (keeping
-# a .bak of yours if it differed) and pulls newer images.
+# overwrites an existing .env, so a second run refreshes the compose file and the
+# backup helper (keeping a .bak of yours if they differed) and pulls newer images.
 # Before redeploying over an existing bundled database it takes a backup first
 # (see backup.sh), and it refuses to write a fresh .env on top of one — new
 # secrets wouldn't match the old data.
@@ -19,7 +19,7 @@ set -eu
 REPO="romenkova/doska"
 # Where the compose file and backup helper come from. Empty means "work it out
 # from the release being installed" (see source_ref);
-RAW="${RAW:-}"
+RAW="${DOSKA_RAW:-}"
 COMPOSE_FILE="docker-compose.selfhost.yml"
 BACKUP_FILE="backup.sh"
 ENV_FILE=".env"
@@ -136,16 +136,21 @@ pinned_tag() {
 
 # Every tag_name from a releases API path, newest first
 release_tags() {
-  curl -fsSL "https://api.github.com/repos/${REPO}$1" 2>/dev/null \
+  _body=$(curl -fsSL "https://api.github.com/repos/${REPO}$1" 2>/dev/null) || return $?
+  printf '%s\n' "$_body" \
     | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'
 }
 
+# Echoes the git ref to fetch release files from; returns curl's status when the
+# API is what failed.
 source_ref() {
   case "$1" in
-    ''|latest) release_tags "/releases/latest" | head -1 ;;
-    beta)      release_tags "/releases?per_page=30" | grep '[-]' | head -1 ;;
-    *)         printf 'v%s' "${1#v}" ;;
+    ''|latest) _tags=$(release_tags "/releases/latest") || return $? ;;
+    beta)      _tags=$(release_tags "/releases?per_page=30") || return $?
+               _tags=$(printf '%s\n' "$_tags" | grep '[-]') || _tags="" ;;
+    *)         printf 'v%s' "${1#v}"; return 0 ;;
   esac
+  printf '%s\n' "$_tags" | head -1
 }
 
 gen_secret() {
@@ -221,6 +226,42 @@ backup_first() {
   sh "$BACKUP_FILE" || die "backup failed — aborting before touching anything."
 }
 
+PENDING=""
+trap 'for _f in $PENDING; do rm -f "$_f.new"; done' EXIT
+fetch_file() {
+  info "Downloading $1"
+  curl -fsSL "$RAW/$1" -o "$1.new" || { rm -f "$1.new"; return 1; }
+  if [ ! -f "$1" ]; then
+    mv "$1.new" "$1"
+    [ "$1" = "$BACKUP_FILE" ] && chmod +x "$1"
+    ok "$1 downloaded"
+  elif cmp -s "$1" "$1.new"; then
+    rm -f "$1.new"
+    ok "$1 already up to date"
+  else
+    PENDING="$PENDING $1"
+    ok "$1 update downloaded"
+  fi
+  return 0
+}
+
+# Swap in everything fetch_file held back. Only safe once the existing stack has
+# been backed up (and torn down, where that happens).
+apply_updates() {
+  for _f in $PENDING; do
+    # An earlier .bak may hold the only copy of the user's edits, creating another one
+    _bak="$_f.bak"
+    _n=1
+    while [ -f "$_bak" ]; do _bak="$_f.bak.$_n"; _n=$((_n + 1)); done
+    cp "$_f" "$_bak"
+    mv "$_f.new" "$_f"
+    [ "$_f" = "$BACKUP_FILE" ] && chmod +x "$_f"
+    ok "$_f updated"
+    warn "your previous $_f is saved as $_bak — re-apply any edits you had made to it."
+  done
+  PENDING=""
+}
+
 usage() {
   cat <<'EOF'
 Usage: sh install.sh [--yes] [--no-start]
@@ -268,47 +309,41 @@ step "Fetching files" "Downloads the compose file that defines the stack, plus t
 
 TAG=""
 REF=""
+FETCH=1
 if [ -z "$RAW" ]; then
   TAG=$(pinned_tag)
-  REF=$(source_ref "$TAG")
-  [ -n "$REF" ] || die "couldn't work out which release to fetch $COMPOSE_FILE from${TAG:+ for DOCKER_IMAGE_TAG=$TAG}. Check your connection, or pin an exact version like DOCKER_IMAGE_TAG=0.18.0."
-  RAW="https://raw.githubusercontent.com/${REPO}/${REF}"
-  info "Using the $REF stack definition"
-fi
-
-info "Downloading $COMPOSE_FILE"
-if curl -fsSL "$RAW/$COMPOSE_FILE" -o "$COMPOSE_FILE.new"; then
-  if [ ! -f "$COMPOSE_FILE" ]; then
-    mv "$COMPOSE_FILE.new" "$COMPOSE_FILE"
-    ok "$COMPOSE_FILE downloaded"
-  elif cmp -s "$COMPOSE_FILE" "$COMPOSE_FILE.new"; then
-    rm -f "$COMPOSE_FILE.new"
-    ok "$COMPOSE_FILE already up to date"
+  RC=0
+  REF=$(source_ref "$TAG") || RC=$?
+  if [ -z "$REF" ]; then
+    # curl -f reports every HTTP error as 22
+    if [ "$RC" = 22 ]; then
+      WHY="GitHub's release API refused the request${TAG:+ for DOCKER_IMAGE_TAG=$TAG} — rate limited, or no such release"
+    else
+      WHY="couldn't reach GitHub's release API${TAG:+ to resolve DOCKER_IMAGE_TAG=$TAG}"
+    fi
+    # Only the release lookup failed, so an existing compose file is still the
+    # last known-good one — better than refusing to run at all.
+    [ -f "$COMPOSE_FILE" ] || die "$WHY. Check your connection, or pin an exact version like DOCKER_IMAGE_TAG=0.18.0."
+    warn "$WHY — keeping the $COMPOSE_FILE already in this directory."
+    FETCH=""
   else
-    # An earlier .bak may hold the only copy of the user's edits, creating another one
-    BAK="$COMPOSE_FILE.bak"
-    _n=1
-    while [ -f "$BAK" ]; do BAK="$COMPOSE_FILE.bak.$_n"; _n=$((_n + 1)); done
-    cp "$COMPOSE_FILE" "$BAK"
-    mv "$COMPOSE_FILE.new" "$COMPOSE_FILE"
-    ok "$COMPOSE_FILE updated"
-    warn "your previous $COMPOSE_FILE is saved as $BAK — re-apply any edits you had made to it."
+    RAW="https://raw.githubusercontent.com/${REPO}/${REF}"
+    info "Using the $REF stack definition"
   fi
-else
-  rm -f "$COMPOSE_FILE.new"
-  die "failed to download $COMPOSE_FILE from ${REF:-$RAW}. Running with an outdated $COMPOSE_FILE might break the server. Check your connection${TAG:+, and that DOCKER_IMAGE_TAG=$TAG is a real release}, then re-run."
 fi
 
-if [ ! -f "$BACKUP_FILE" ]; then
-  info "Downloading $BACKUP_FILE"
-  if curl -fsSL "$RAW/$BACKUP_FILE" -o "$BACKUP_FILE"; then
-    chmod +x "$BACKUP_FILE"
-    ok "$BACKUP_FILE downloaded"
-  else
-    # Drop any half-written file so a truncated script never gets run, and warn
-    # loudly — without it the pre-redeploy backup silently no-ops.
-    rm -f "$BACKUP_FILE"
-    warn "couldn't download $BACKUP_FILE — pre-redeploy backups will be skipped."
+if [ -n "$FETCH" ]; then
+  fetch_file "$COMPOSE_FILE" ||
+    die "failed to download $COMPOSE_FILE from ${REF:-$RAW}. Running with an outdated $COMPOSE_FILE might break the server. Check your connection${TAG:+, and that DOCKER_IMAGE_TAG=$TAG is a real release}, then re-run."
+
+  # A stale helper is what would guard the database before every redeploy, so it
+  # is refreshed too. Losing it only matters when there's nothing on disk.
+  if ! fetch_file "$BACKUP_FILE"; then
+    if [ -f "$BACKUP_FILE" ]; then
+      warn "couldn't refresh $BACKUP_FILE — keeping the copy already here."
+    else
+      warn "couldn't download $BACKUP_FILE — pre-redeploy backups will be skipped."
+    fi
   fi
 fi
 
@@ -338,6 +373,7 @@ else
       # shellcheck disable=SC2086
       env $DOWN_ENV $COMPOSE -f "$COMPOSE_FILE" $PROFILE down -v || die "couldn't remove the old volume."
       ok "Old database discarded — continuing with fresh setup"
+      apply_updates
     else
       die "Kept the old database. Restore your previous .env here and re-run, or discard it manually with:
       $DOWN_ENV $COMPOSE -f $COMPOSE_FILE down -v"
@@ -437,12 +473,14 @@ fi
 # --- 4. launch ---------------------------------------------------------------
 if [ -z "$START" ]; then
   step "Not launching" "--no-start: everything is configured, nothing is running."
+  apply_updates
   printf '\n  Start it when ready:\n    %s -f %s %s up -d\n\n' "$COMPOSE" "$COMPOSE_FILE" "$PROFILE"
   exit 0
 fi
 
 step "Launching" "Backs up any existing data, pulls the latest images, and starts the stack."
 backup_first  # no-op on first install and for managed Postgres
+apply_updates
 
 info "Pulling images"
 # shellcheck disable=SC2086

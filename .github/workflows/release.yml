@@ -1,15 +1,16 @@
 name: Release Desktop
 
-# Builds + signs the Tauri desktop app for macOS, Windows and Linux and publishes
-# the bundles plus latest.json to a GitHub Release. The repo is public, so these
-# assets are directly downloadable; the desktop app still fetches them through the
-# apps/server proxy (see src/updates.ts) because that endpoint is baked into every
-# installed binary and stays stable across releases.
+# Builds + signs the Tauri desktop app
 #
 # Required repo secrets:
 #   TAURI_SIGNING_PRIVATE_KEY           output of `tauri signer generate`
 #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  the password chosen for that key
-# (Apple notarization / Windows code-signing secrets are optional, add later.)
+#   APPLE_CERTIFICATE                   base64 of the Developer ID Application .p12
+#   APPLE_CERTIFICATE_PASSWORD          password set when exporting that .p12
+#   APPLE_SIGNING_IDENTITY              "Developer ID Application: Name (K8DARP5MT7)"
+#   APPLE_API_KEY                       App Store Connect key id, e.g. ABC123DEF4
+#   APPLE_API_ISSUER                    the issuer uuid from the same Keys page
+#   APPLE_API_KEY_P8                    base64 of the AuthKey_<id>.p8 file
 
 on:
   push:
@@ -28,7 +29,7 @@ jobs:
         include:
           - platform: macos-latest
             args: "--target universal-apple-darwin"
-          # Windows and Linux are disabled for now — macOS only.
+          # Windows and Linux are disabled for now, macOS only.
           # - platform: ubuntu-latest
           #   args: ""
           # - platform: windows-latest
@@ -38,7 +39,6 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          # Fetch tags so `git describe` (client version stamp) resolves.
           fetch-depth: 0
 
       - name: Install Linux build deps
@@ -57,28 +57,31 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
         with:
-          # This action reads the channel from the ref name, so pinning to a SHA
-          # means the toolchain has to be passed explicitly.
           toolchain: stable
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: Cache cargo
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+
+      - name: Restore cargo registry
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            apps/desktop/src-tauri/target
-          key: ${{ matrix.platform }}-cargo-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock') }}
-          restore-keys: ${{ matrix.platform }}-cargo-
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: cargo-registry-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock') }}
+          restore-keys: cargo-registry-
+
+      - name: Cache build artifacts
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: apps/desktop/src-tauri/target
+          key: ${{ matrix.platform }}-target-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock') }}
+          restore-keys: ${{ matrix.platform }}-target-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # The git tag is the single source of truth for the version. Stamp it into
-      # tauri.conf.json so the built app, latest.json and the updater comparison
-      # all match the tag — no hand-maintained version field. (Local edit on the
-      # runner only; not committed.)
+      # The git tag is the single source of truth for the version
       - name: Stamp version from tag
         if: github.ref_type == 'tag'
         shell: bash
@@ -87,11 +90,24 @@ jobs:
           node -e "const f='apps/desktop/src-tauri/tauri.conf.json';const fs=require('fs');const j=JSON.parse(fs.readFileSync(f,'utf8'));j.version='$VERSION';fs.writeFileSync(f,JSON.stringify(j,null,2)+'\n')"
           echo "Stamped tauri.conf.json version = $VERSION"
 
+      - name: Write App Store Connect API key
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        run: |
+          KEY_PATH="$RUNNER_TEMP/apple-api-key.p8"
+          echo "${{ secrets.APPLE_API_KEY_P8 }}" | base64 --decode > "$KEY_PATH"
+          echo "APPLE_API_KEY_PATH=$KEY_PATH" >> "$GITHUB_ENV"
+
       - uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
         with:
           projectPath: apps/desktop
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}', github.run_number) }}

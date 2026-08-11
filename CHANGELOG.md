@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- macOS builds are signed with a Developer ID certificate and notarized by
+  Apple
+
+## [0.18.1] - 2026-08-11
+
+### Added
+
+- The installer now fetches the compose file and the backup helper for the
+  release it is installing
+
+### Fixed
+
+- Offline / server is down reflects at UI
+
 ## [0.18.0] - 2026-08-11
 
 ### Added

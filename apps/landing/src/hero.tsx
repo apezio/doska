@@ -1,7 +1,8 @@
 import { Button } from "@doska/ui-kit"
-import { Download, ExternalLink } from "lucide-react"
+import { ExternalLink } from "lucide-react"
 import { SiGithub } from "react-icons/si"
-import { app, author, releases, repo } from "./links"
+import { DownloadMenu } from "./download-menu"
+import { app, author, repo } from "./links"
 import { Typewriter } from "./typewriter"
 
 // Each reads as the tail of "A Kanban board …". The first is what SSR and
@@ -56,15 +57,7 @@ export function Hero() {
             <SiGithub className="size-4" />
             View on GitHub
           </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="plausible-event-name=CTA+Download+macOS h-11 w-full gap-2 px-5 text-base sm:w-auto"
-            render={<a href={releases} target="_blank" rel="noreferrer" />}
-          >
-            <Download className="size-4" />
-            Download for macOS
-          </Button>
+          <DownloadMenu />
         </div>
         <p className="mt-8 font-mono text-xs text-muted-foreground">
           ↓ this is a demo, not a real board. "Open in browser" runs the whole

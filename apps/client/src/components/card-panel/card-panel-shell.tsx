@@ -34,9 +34,9 @@ export function CardPanelShell({
       style={{ "--card-panel-width": `${width}px` } as CSSProperties}
       className={cn(
         "relative shrink-0 overflow-hidden",
-        // Covers the whole layout viewport so nothing shows through beside the
-        // keyboard; only the region inside stops at the visible edge.
-        "max-md:fixed max-md:inset-0 max-md:z-50 max-md:w-full max-md:bg-card",
+        // Pinned to the *visual* viewport, not the layout one
+        "max-md:fixed max-md:inset-x-0 max-md:z-50 max-md:w-full max-md:bg-card",
+        "max-md:top-(--app-offset,0px) max-md:h-(--app-height,100svh)",
         "md:box-border",
         // Resizing must track the pointer, so only the open/close sweep animates.
         !isResizing && "md:transition-[width] md:duration-200 md:ease-linear",
@@ -60,8 +60,7 @@ export function CardPanelShell({
       <div
         role="region"
         aria-label="Card"
-        // Stops at the keyboard's top edge; the wrapper paints whatever is left.
-        className="flex h-full w-full flex-col overflow-hidden bg-card text-sm text-card-foreground max-md:h-(--app-height,100svh) md:w-(--card-panel-width) md:rounded-xl md:ring-1 md:ring-foreground/10 md:ring-inset"
+        className="flex h-full w-full flex-col overflow-hidden bg-card text-sm text-card-foreground md:w-(--card-panel-width) md:rounded-xl md:ring-1 md:ring-foreground/10 md:ring-inset"
       >
         {children}
       </div>

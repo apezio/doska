@@ -1,8 +1,6 @@
 import { cn } from "@doska/ui-kit"
-import { FileText } from "lucide-react"
-import { useState } from "react"
 import type { Attachment } from "@doska/core/types"
-import { isRenderableImage } from "./renderable-image"
+import { AttachmentPreview } from "./attachment-preview"
 
 interface IProps {
   attachment: Attachment
@@ -14,9 +12,6 @@ interface IProps {
 
 /** A small square preview: image thumbnail, or a file icon with its extension. */
 export function AttachmentTile({ attachment, src, className, onOpen }: IProps) {
-  const [failed, setFailed] = useState(false)
-  const image = isRenderableImage(attachment.mime) && !failed
-
   return (
     <div
       role={onOpen ? "button" : undefined}
@@ -31,17 +26,7 @@ export function AttachmentTile({ attachment, src, className, onOpen }: IProps) {
         className
       )}
     >
-      {image && src ? (
-        <img
-          src={src}
-          alt={attachment.name}
-          className="size-full border object-cover"
-          draggable={false}
-          onError={() => setFailed(true)}
-        />
-      ) : (
-        <FileText className="rounded-sm border p-1 text-muted-foreground" />
-      )}
+      <AttachmentPreview attachment={attachment} src={src} />
     </div>
   )
 }

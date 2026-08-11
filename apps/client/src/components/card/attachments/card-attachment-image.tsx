@@ -30,7 +30,7 @@ export function CardAttachmentImage({
       attachment={attachment}
       onDownload={() =>
         attachment &&
-        void activeStorage()
+        activeStorage()
           .get(cardId, attachmentKey)
           .then((blob) => downloadBlob(blob, attachment.name))
       }

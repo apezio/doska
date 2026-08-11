@@ -34,7 +34,9 @@ export function PublicAttachments({ attachments, token, className }: IProps) {
         attachment={viewing}
         src={viewing ? urls[viewing.key] : null}
         onClose={() => setViewing(null)}
-        onDownload={() => viewing && window.open(urls[viewing.key], "_blank")}
+        onDownload={() => {
+          if (viewing) window.open(urls[viewing.key], "_blank")
+        }}
       />
     </>
   )

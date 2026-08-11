@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./account": "./src/data/account.ts",
+    "./attachment-labels": "./src/data/attachment-labels.ts",
     "./attachments": "./src/api/attachments/index.ts",
     "./auth": "./src/api/auth.ts",
     "./auth-client": "./src/api/auth-client.ts",

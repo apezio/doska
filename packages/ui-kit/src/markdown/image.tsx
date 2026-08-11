@@ -6,11 +6,13 @@ export function MdImage({
   alt,
   className,
   onClick,
+  onError,
 }: {
   src: string
   alt: string
   className?: string
   onClick?: (event: MouseEvent<HTMLImageElement>) => void
+  onError?: () => void
 }) {
   return (
     <img
@@ -18,6 +20,7 @@ export function MdImage({
       alt={alt}
       loading="lazy"
       onClick={onClick}
+      onError={onError}
       className={cn("my-4 block h-auto max-w-full rounded-lg", className)}
     />
   )

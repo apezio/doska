@@ -87,9 +87,6 @@ export function AttachmentList({
                   </span>
                 )}
               </div>
-              {error && (
-                <div className="ml-2 text-sm text-destructive">{error}</div>
-              )}
               {onRemove && (
                 <button
                   type="button"
@@ -120,6 +117,7 @@ export function AttachmentList({
           </div>
         ))}
       </div>
+      {error && <div className="mt-1 text-sm text-destructive">{error}</div>}
     </CardContent>
   )
 }

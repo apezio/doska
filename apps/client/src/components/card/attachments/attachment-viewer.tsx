@@ -1,13 +1,16 @@
 import { Modal, ModalContent, ModalTitle } from "@doska/ui-kit"
 import { Download, X } from "lucide-react"
+import { useState } from "react"
 import type { Attachment } from "@doska/core/types"
+import { attachmentUnavailable } from "@doska/core/attachment-labels"
+import { useConnection } from "@doska/core/sync"
 
 interface IProps {
   attachment: Attachment | null
   /** Resolved by the caller: storage-backed in the app, token-backed on a public board. */
   src: string | null
   onClose: () => void
-  onDownload: () => void
+  onDownload: () => void | Promise<void>
 }
 
 /** Full-screen image preview with an explicit close, so a standalone PWA window never navigates away from the board. */
@@ -17,6 +20,18 @@ export function AttachmentViewer({
   onClose,
   onDownload,
 }: IProps) {
+  const connection = useConnection()
+  const [error, setError] = useState("")
+
+  async function download() {
+    setError("")
+    try {
+      await onDownload()
+    } catch {
+      setError(attachmentUnavailable(connection))
+    }
+  }
+
   return (
     <Modal open={!!attachment} onOpenChange={(open) => !open && onClose()}>
       {attachment && (
@@ -34,7 +49,7 @@ export function AttachmentViewer({
               type="button"
               aria-label="Download"
               disabled={!src}
-              onClick={onDownload}
+              onClick={() => void download()}
               className="rounded p-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
             >
               <Download className="size-4" />
@@ -48,6 +63,11 @@ export function AttachmentViewer({
               <X className="size-4" />
             </button>
           </div>
+          {error && (
+            <div className="shrink-0 border-b px-3 py-2 text-sm text-destructive">
+              {error}
+            </div>
+          )}
           <div className="flex flex-1 items-center justify-center overflow-auto">
             {src && (
               <img

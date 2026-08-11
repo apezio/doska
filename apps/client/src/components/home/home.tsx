@@ -19,7 +19,7 @@ export function Home({
 }: IProps) {
   return (
     <div className="flex h-full flex-1 flex-col">
-      <PageHeader className="h-14" />
+      <PageHeader className="min-h-14" />
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <Anchor className="size-8" />
         <div className="space-y-1">

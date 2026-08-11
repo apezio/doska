@@ -17,7 +17,8 @@ export function PageHeader({ className, children }: IProps) {
   return (
     <header
       className={cn(
-        "flex h-11.5 shrink-0 items-center gap-2 border-b px-4",
+        "flex min-h-11.5 shrink-0 items-center gap-2 border-b px-4",
+        "pt-[env(safe-area-inset-top)]",
         windowControlsInset && "pl-24",
         className
       )}

@@ -1,11 +1,9 @@
 /**
- * Publishes the *visual* viewport height as `--app-height`.
+ * Publishes the visual viewport's height as `--app-height` and its offset from
+ * the layout viewport as `--app-offset`.
  *
- * iOS never shrinks the layout viewport for the on-screen keyboard, so `svh`
- * and `100%` both leave the shell taller than the screen. iOS then lets the user
- * pan that overhang, and everything positioned against the layout viewport —
- * every `position: fixed` element, the full-screen card panel — slides with it.
- * Sizing the shell to what is actually visible leaves nothing to pan.
+ * On iOS `height: 100%` resolves against the *large* viewport, so with the
+ * keyboard up the document stays taller than the screen.
  *
  * Touch only: on desktop `visualViewport.height` also tracks pinch-zoom, where
  * shrinking the app is exactly wrong.
@@ -14,12 +12,13 @@ export function trackAppHeight(): void {
   const viewport = window.visualViewport
   if (!viewport || !window.matchMedia("(pointer: coarse)").matches) return
 
-  const apply = () =>
-    document.documentElement.style.setProperty(
-      "--app-height",
-      `${viewport.height}px`
-    )
+  const apply = () => {
+    const { style } = document.documentElement
+    style.setProperty("--app-height", `${viewport.height}px`)
+    style.setProperty("--app-offset", `${viewport.offsetTop}px`)
+  }
 
   apply()
   viewport.addEventListener("resize", apply)
+  viewport.addEventListener("scroll", apply)
 }

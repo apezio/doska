@@ -1,7 +1,8 @@
 #!/bin/sh
 # Doska self-host bootstrapper. Downloads the compose file, scaffolds a .env
-# (generating secrets for you), and brings the stack up. Safe to re-run: it
-# never overwrites an existing .env, so a second run just pulls newer images.
+# (generating secrets for you), and brings the stack up. Safe to re-run: it never
+# overwrites an existing .env, so a second run refreshes the compose file (keeping
+# a .bak of yours if it differed) and pulls newer images.
 # Before redeploying over an existing bundled database it takes a backup first
 # (see backup.sh), and it refuses to write a fresh .env on top of one — new
 # secrets wouldn't match the old data.
@@ -16,7 +17,8 @@
 set -eu
 
 REPO="romenkova/doska"
-RAW="https://raw.githubusercontent.com/${REPO}/main"
+# Overridable so the test suite can point at a local checkout and stay offline.
+RAW="${RAW:-https://raw.githubusercontent.com/${REPO}/main}"
 COMPOSE_FILE="docker-compose.selfhost.yml"
 BACKUP_FILE="backup.sh"
 ENV_FILE=".env"
@@ -240,13 +242,26 @@ ok "docker, $COMPOSE and curl found"
 
 # --- 2. fetch compose file and backup helper --------------------------------
 step "Fetching files" "Downloads the compose file that defines the stack, plus the backup helper."
-if [ ! -f "$COMPOSE_FILE" ]; then
-  info "Downloading $COMPOSE_FILE"
-  curl -fsSL "$RAW/$COMPOSE_FILE" -o "$COMPOSE_FILE" || die "failed to download $COMPOSE_FILE"
-  ok "$COMPOSE_FILE downloaded"
+
+info "Downloading $COMPOSE_FILE"
+if curl -fsSL "$RAW/$COMPOSE_FILE" -o "$COMPOSE_FILE.new"; then
+  if [ ! -f "$COMPOSE_FILE" ]; then
+    mv "$COMPOSE_FILE.new" "$COMPOSE_FILE"
+    ok "$COMPOSE_FILE downloaded"
+  elif cmp -s "$COMPOSE_FILE" "$COMPOSE_FILE.new"; then
+    rm -f "$COMPOSE_FILE.new"
+    ok "$COMPOSE_FILE already up to date"
+  else
+    cp "$COMPOSE_FILE" "$COMPOSE_FILE.bak"
+    mv "$COMPOSE_FILE.new" "$COMPOSE_FILE"
+    ok "$COMPOSE_FILE updated"
+    warn "your previous $COMPOSE_FILE is saved as $COMPOSE_FILE.bak — re-apply any edits you had made to it."
+  fi
 else
-  ok "$COMPOSE_FILE already present"
+  rm -f "$COMPOSE_FILE.new"
+  die "failed to download $COMPOSE_FILE. Running with an outdated $COMPOSE_FILE might break the server. Fix the connection and re-run."
 fi
+
 if [ ! -f "$BACKUP_FILE" ]; then
   info "Downloading $BACKUP_FILE"
   if curl -fsSL "$RAW/$BACKUP_FILE" -o "$BACKUP_FILE"; then

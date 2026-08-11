@@ -54,13 +54,16 @@ run() {
     esac
   done
   mkdir -p "$dir"
-  # Present up front, so step 2 downloads nothing and the run stays offline.
-  cp "$COMPOSE_SRC" "$REPO_ROOT/backup.sh" "$dir/"
+  # backup.sh is only fetched when absent, so this keeps that download offline.
+  # The compose file is refreshed on every run, so it comes from CASE_RAW instead
+  # — the checkout by default, which is both offline and the version under test.
+  cp "$REPO_ROOT/backup.sh" "$dir/"
 
   step "running install.sh ${args[*]-}"
   local started=$SECONDS
   # bash 3.2 (macOS) treats "${arr[@]}" on an empty array as unbound under set -u.
   ( cd "$dir" && env "PATH=$WORK/bin:$PATH" "DOCKER_LOG=$dir/docker.log" \
+      "RAW=${CASE_RAW:-file://$REPO_ROOT}" \
       ${envs[@]+"${envs[@]}"} sh "$INSTALL" ${args[@]+"${args[@]}"} ) \
     < /dev/null > "$dir/out.log" 2>&1 &
   local pid=$! code=0
@@ -176,7 +179,7 @@ case_name="re-run keeps the existing .env"
 printf '\n%s\n' "$case_name"
 run rerun AUTH_PASSWORD=first -- --yes --no-start
 cp "$WORK/rerun/.env" "$WORK/rerun/.env.before"
-( cd "$WORK/rerun" && env AUTH_PASSWORD=second sh "$INSTALL" --yes --no-start ) \
+( cd "$WORK/rerun" && env "RAW=file://$REPO_ROOT" AUTH_PASSWORD=second sh "$INSTALL" --yes --no-start ) \
   < /dev/null > "$WORK/rerun/out2.log" 2>&1
 if diff -q "$WORK/rerun/.env.before" "$WORK/rerun/.env" > /dev/null; then
   pass "second run left .env untouched"
@@ -208,6 +211,62 @@ printf '\n%s\n' "$case_name"
 run badflag AUTH_PASSWORD=x -- --frobnicate
 [ "$(exit_code badflag)" = 2 ] && pass "exits 2" || fail "exit $(exit_code badflag), want 2"
 grep -q "unknown option" "$WORK/badflag/out.log" && pass "explains why" || fail "no explanation"
+
+# ---------------------------------------------------------------------------
+case_name="compose file is fetched when absent"
+printf '\n%s\n' "$case_name"
+run getcompose AUTH_PASSWORD=x -- --yes --no-start
+if diff -q "$COMPOSE_SRC" "$WORK/getcompose/docker-compose.selfhost.yml" > /dev/null 2>&1; then
+  pass "matches the source compose file"
+else
+  fail "compose file missing or wrong after a fresh install"
+fi
+[ -f "$WORK/getcompose/docker-compose.selfhost.yml.bak" ] &&
+  fail "wrote a .bak on a fresh install" || pass "no .bak"
+
+# ---------------------------------------------------------------------------
+# The 0.18.0 regression: images moved to an nginx upstream whose network alias
+# only existed in the newer compose file, and the installer kept the old one.
+case_name="a stale compose file is refreshed"
+printf '\n%s\n' "$case_name"
+mkdir -p "$WORK/stale"
+printf 'services:\n  server:\n    # the old shape, no doska-api alias\n' \
+  > "$WORK/stale/docker-compose.selfhost.yml"
+run stale AUTH_PASSWORD=x -- --yes --no-start
+if diff -q "$COMPOSE_SRC" "$WORK/stale/docker-compose.selfhost.yml" > /dev/null 2>&1; then
+  pass "replaced with the current one"
+else
+  fail "kept the stale compose file — new images would boot an old stack"
+fi
+grep -q "no doska-api alias" "$WORK/stale/docker-compose.selfhost.yml.bak" 2>/dev/null &&
+  pass "previous copy kept as .bak" || fail "the user's compose file was lost"
+
+# ---------------------------------------------------------------------------
+case_name="an up-to-date compose file is left alone"
+printf '\n%s\n' "$case_name"
+mkdir -p "$WORK/current"
+cp "$COMPOSE_SRC" "$WORK/current/"
+run current AUTH_PASSWORD=x -- --yes --no-start
+[ -f "$WORK/current/docker-compose.selfhost.yml.bak" ] &&
+  fail "backed up an identical file" || pass "no .bak churn"
+
+# ---------------------------------------------------------------------------
+# Continuing offline would pull new images onto whatever old stack is on disk.
+case_name="an unreachable source stops the install"
+printf '\n%s\n' "$case_name"
+mkdir -p "$WORK/offline"
+cp "$COMPOSE_SRC" "$WORK/offline/"
+CASE_RAW="file:///nonexistent-doska-source"
+run offline AUTH_PASSWORD=x -- --yes --no-start
+CASE_RAW=""
+[ "$(exit_code offline)" != 0 ] && pass "refused to continue" ||
+  fail "installed against a compose file it could not verify"
+grep -q "might break the server" "$WORK/offline/out.log" && pass "explains the risk" ||
+  fail "unhelpful error: $(cat "$WORK/offline/out.log")"
+diff -q "$COMPOSE_SRC" "$WORK/offline/docker-compose.selfhost.yml" > /dev/null 2>&1 &&
+  pass "left the existing compose file intact" || fail "damaged the compose file on the way out"
+[ -f "$WORK/offline/docker-compose.selfhost.yml.new" ] &&
+  fail "left a .new temp file behind" || pass "no temp file left behind"
 
 # ---------------------------------------------------------------------------
 printf '\n'

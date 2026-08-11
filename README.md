@@ -82,8 +82,9 @@ curl -fsSL https://raw.githubusercontent.com/romenkova/doska/main/install.sh -o 
 ```
 
 The installer asks for a login, password, and (optionally) a domain, generates
-the secrets for you, and brings the stack up. Re-run it any time to pull newer
-images — it keeps your existing `.env`.
+the secrets for you, and brings the stack up. To upgrade, run the whole command
+again rather than the `install.sh` you already have. The script might change
+between releases. It keeps your existing `.env`.
 
 <details>
 <summary>Or set it up by hand</summary>

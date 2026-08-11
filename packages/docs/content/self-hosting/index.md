@@ -3,7 +3,7 @@ title: Self-hosting
 nav: Self-hosting
 description: "Run the Doska with Docker: the one-line installer, the environment variables, and connecting your devices to it."
 order: 2
-updated: "2026-08-09"
+updated: "2026-08-11"
 ---
 
 ## Prerequisites
@@ -18,7 +18,8 @@ curl -fsSL https://raw.githubusercontent.com/romenkova/doska/main/install.sh -o 
 
 This command downloads and launches an [install script](https://raw.githubusercontent.com/romenkova/doska/main/install.sh). The script backs up data if any data is present, helps to fill in env variables, and launches containers.
 
-Re-run it any time to pull newer images. It keeps your existing `.env`, and
+To upgrade, run the whole command above again rather than the `install.sh` you
+already have. The script might change between releases. It keeps your existing `.env`, and
 takes a database and files volume backup first if it's redeploying over an existing database.
 
 ## By hand

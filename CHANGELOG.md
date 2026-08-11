@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- macOS builds are signed with a Developer ID certificate and notarized by
+  Apple
+
 ## [0.18.1] - 2026-08-11
 
 ### Added

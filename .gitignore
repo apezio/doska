@@ -49,3 +49,5 @@ apps/desktop/src-tauri/gen/schemas
 
 .claude
 plan
+
+.selfhost-prev-compose.yml

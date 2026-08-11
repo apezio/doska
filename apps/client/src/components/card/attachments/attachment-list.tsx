@@ -1,6 +1,7 @@
 import { CardContent, cn, InvisibleInput } from "@doska/ui-kit"
 import { Loader2, X } from "lucide-react"
 import type { Attachment } from "@doska/core/types"
+import type { AttachmentSource } from "@doska/core/attachment-labels"
 import { AttachmentTile } from "./attachment-tile"
 
 function splitName(name: string): { base: string; ext: string } {
@@ -14,6 +15,7 @@ interface IProps {
   attachments: Attachment[]
   /** Resolved URLs by attachment key; a missing entry just shows the file icon. */
   urls: Record<string, string>
+  source?: AttachmentSource
   onOpen: (attachment: Attachment) => void
   /** Omit to make the list read-only — the name stops being editable. */
   onRename?: (id: string, name: string) => void
@@ -31,6 +33,7 @@ const NO_PENDING: { id: string; name: string }[] = []
 export function AttachmentList({
   attachments,
   urls,
+  source,
   onOpen,
   onRename,
   onRemove,
@@ -61,6 +64,7 @@ export function AttachmentList({
                 <AttachmentTile
                   attachment={att}
                   src={urls[att.key] ?? null}
+                  source={source}
                   className="size-6 shrink-0"
                   onOpen={onRename ? () => onOpen(att) : undefined}
                 />
@@ -87,9 +91,6 @@ export function AttachmentList({
                   </span>
                 )}
               </div>
-              {error && (
-                <div className="ml-2 text-sm text-destructive">{error}</div>
-              )}
               {onRemove && (
                 <button
                   type="button"
@@ -120,6 +121,7 @@ export function AttachmentList({
           </div>
         ))}
       </div>
+      {error && <div className="mt-1 text-sm text-destructive">{error}</div>}
     </CardContent>
   )
 }

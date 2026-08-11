@@ -13,11 +13,10 @@ import { useLoginPrompt } from "@/components/login/login-prompt-context"
 import { useLogout } from "@doska/core/mutations"
 
 export function SidebarAccount() {
-  const { session, name, subtitle, dropped } = useAccount()
+  const { session, name, subtitle, dropped, authed, pending } = useAccount()
   const openLogin = useLoginPrompt()
   const { mutate: logout } = useLogout()
 
-  const authed = session?.authed ?? null
   const login = session?.login ?? null
 
   return (
@@ -44,7 +43,7 @@ export function SidebarAccount() {
               {subtitle}
             </span>
           </div>
-          {authed === true && (
+          {authed && (
             <Button
               variant="ghost"
               size="icon-sm"
@@ -56,7 +55,7 @@ export function SidebarAccount() {
               <LogOut />
             </Button>
           )}
-          {authed === false && (
+          {!authed && !pending && (
             <Button
               variant="ghost"
               size="icon-sm"

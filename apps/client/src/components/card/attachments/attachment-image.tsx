@@ -1,7 +1,10 @@
 import { useState } from "react"
 import { cn, MdImage } from "@doska/ui-kit"
 import type { Attachment } from "@doska/core/types"
+import type { AttachmentSource } from "@doska/core/attachment-labels"
 import { AttachmentViewer } from "./attachment-viewer"
+import { AttachmentUnavailable } from "./attachment-unavailable"
+import { useImageFailure } from "./use-image-failure"
 
 interface IProps {
   /** Resolved by the caller; nothing renders until it is. */
@@ -10,7 +13,8 @@ interface IProps {
   className?: string
   /** The attachment behind `src`, when known — it is what opens the lightbox. */
   attachment?: Attachment
-  onDownload?: () => void
+  source?: AttachmentSource
+  onDownload?: () => void | Promise<void>
 }
 
 /** A body image ref, rendered from an already-resolved URL. */
@@ -19,9 +23,20 @@ export function AttachmentImage({
   alt,
   className,
   attachment,
+  source,
   onDownload,
 }: IProps) {
   const [viewing, setViewing] = useState(false)
+  const { failed, onError } = useImageFailure(src, source)
+
+  if (failed) {
+    return (
+      <AttachmentUnavailable
+        source={source}
+        className={cn("my-4 aspect-video", className)}
+      />
+    )
+  }
 
   if (!src) return null
 
@@ -30,6 +45,7 @@ export function AttachmentImage({
       <MdImage
         src={src}
         alt={alt}
+        onError={onError}
         className={cn(attachment && "cursor-zoom-in", className)}
         onClick={(e) => {
           if (!attachment) return
@@ -41,6 +57,7 @@ export function AttachmentImage({
         <AttachmentViewer
           attachment={viewing ? attachment : null}
           src={src}
+          source={source}
           onClose={() => setViewing(false)}
           onDownload={() => onDownload?.()}
         />

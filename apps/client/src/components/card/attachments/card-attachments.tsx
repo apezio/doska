@@ -3,6 +3,8 @@ import type { Attachment } from "@doska/core/types"
 import { useCard } from "@doska/core/queries"
 import { useUpdateCard } from "@doska/core/mutations"
 import { activeStorage } from "@doska/core/attachments"
+import { attachmentUnavailable } from "@doska/core/attachment-labels"
+import { useConnection } from "@doska/core/sync"
 import { downloadBlob, revealInDownloads } from "@/lib/download"
 import { isDesktop } from "@/lib/platform"
 import { useAttachmentUrls } from "@/lib/hooks/use-attachment-url"
@@ -24,6 +26,7 @@ export function CardAttachments({ cardId, isReadonly, className }: IProps) {
   const { data: card } = useCard(cardId)
   const { mutate: save } = useUpdateCard(cardId)
 
+  const connection = useConnection()
   const [error, setError] = useState("")
   const [viewing, setViewing] = useState<Attachment | null>(null)
   const pending = usePendingUploads()
@@ -46,6 +49,7 @@ export function CardAttachments({ cardId, isReadonly, className }: IProps) {
   }
 
   async function open(att: Attachment) {
+    setError("")
     try {
       const storage = activeStorage()
       if (isDesktop()) {
@@ -62,7 +66,7 @@ export function CardAttachments({ cardId, isReadonly, className }: IProps) {
       }
       await downloadBlob(await storage.get(cardId, att.key), att.name)
     } catch {
-      setError("Could not open file")
+      setError(attachmentUnavailable(connection))
     }
   }
 
@@ -82,12 +86,11 @@ export function CardAttachments({ cardId, isReadonly, className }: IProps) {
         attachment={viewing}
         src={viewing ? (urls[viewing.key] ?? null) : null}
         onClose={() => setViewing(null)}
-        onDownload={() =>
-          viewing &&
-          void activeStorage()
-            .get(cardId, viewing.key)
-            .then((blob) => downloadBlob(blob, viewing.name))
-        }
+        onDownload={async () => {
+          if (!viewing) return
+          const blob = await activeStorage().get(cardId, viewing.key)
+          await downloadBlob(blob, viewing.name)
+        }}
       />
     </>
   )

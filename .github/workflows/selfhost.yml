@@ -150,9 +150,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # No CI overlay: pull_policy stays `always` and the released images pull.
-      COMPOSE_OLD: docker compose -f docker-compose.selfhost.yml
+      # The file itself is the previous release's, written by the step below.
+      COMPOSE_OLD: docker compose -f .selfhost-prev-compose.yml
     steps:
       - uses: actions/checkout@v4
+        # Tags are how the previous release's compose file is recovered.
+        with: { fetch-depth: 0 }
       - uses: actions/download-artifact@v4
         with: { name: selfhost-images, path: /tmp }
       - name: Load images
@@ -161,6 +164,16 @@ jobs:
       - name: Write .env
         run: ./.github/ci/write-env.sh http://127.0.0.1:8080
 
+      - name: Recover the previous release's compose file
+        run: |
+          for tag in $(git tag -l 'v*' --sort=-v:refname); do
+            case "$tag" in *-*) continue ;; esac # skip prereleases
+            PREV="$tag"; break
+          done
+          [ -n "${PREV:-}" ] || { echo "no release tag found"; exit 1; }
+          echo "upgrading from $PREV"
+          git show "$PREV:docker-compose.selfhost.yml" > .selfhost-prev-compose.yml
+
       - name: Start the last released version
         env:
           DOCKER_IMAGE_TAG: latest
@@ -168,8 +181,19 @@ jobs:
 
       - name: Seed data on the old version
         env:
-          COMPOSE: docker compose -f docker-compose.selfhost.yml
+          COMPOSE: docker compose -f .selfhost-prev-compose.yml
         run: ./.github/scripts/selfhost-data.sh seed
+
+      - name: New images still run on the old compose file
+        env:
+          DOCKER_IMAGE_TAG: ci
+          BASE: http://127.0.0.1:8080
+          AUTH_LOGIN: smoke
+          AUTH_PASSWORD: smoke-secret
+        run: |
+          docker compose -f .selfhost-prev-compose.yml \
+            -f .github/ci/selfhost.override.yml up -d --wait
+          ./.github/scripts/selfhost-smoke.sh
 
       - name: Upgrade to this checkout
         run: $COMPOSE up -d --wait

@@ -62,7 +62,7 @@ export function DownloadMenu() {
         </MenuItem>
         <MenuItem
           className="plausible-event-name=CTA+Download+GitHub"
-          render={<a href={releases} target="_blank" rel="noreferrer" />}
+          render={<a href={releasesLatest} target="_blank" rel="noreferrer" />}
         >
           <SiGithub />
           Download from GitHub Releases

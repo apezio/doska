@@ -99,7 +99,7 @@ export default defineConfig({
         name: "Doska",
         short_name: "Doska",
         description:
-          "A fast, keyboard-friendly Kanban board for organizing tasks across columns.",
+          "A local-first Kanban board where every card is Markdown. Works offline and syncs through a server you host.",
         start_url: "/",
         scope: "/",
         display: "standalone",

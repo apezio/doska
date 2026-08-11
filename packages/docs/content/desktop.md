@@ -3,7 +3,7 @@ title: Desktop and mobile
 nav: Desktop & mobile
 description: "The Doska macOS app, installing the client as a PWA"
 order: 6
-updated: "2026-08-07"
+updated: "2026-08-12"
 ---
 
 The same client runs in three places: a browser tab, a phone home screen, and a
@@ -12,14 +12,10 @@ Tauri macOS app.
 ## macOS app
 
 Download the latest build from
-[Releases](https://github.com/romenkova/doska/releases). It wraps the client
+[Releases](https://github.com/romenkova/doska/releases/latest). It wraps the client
 with [Tauri](https://tauri.app) and auto-updates.
 
-Builds aren't notarized yet, so on first launch clear the quarantine flag:
-
-```sh
-xattr -dr com.apple.quarantine /Applications/Doska.app
-```
+Builds are signed with a Developer ID certificate and notarized by Apple.
 
 To sync, open the app's sync settings and set the server URL to your server's
 address, the same one you open the web UI at. Sign in with the `AUTH_LOGIN` /

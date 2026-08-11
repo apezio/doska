@@ -37,7 +37,10 @@ export function PublicAttachments({ attachments, token, className }: IProps) {
         source="token"
         onClose={() => setViewing(null)}
         onDownload={() => {
-          if (viewing) window.open(urls[viewing.key], "_blank")
+          if (!viewing) return
+          const url = urls[viewing.key]
+          if (!url) throw new Error("no url for this attachment")
+          window.open(url, "_blank")
         }}
       />
     </>

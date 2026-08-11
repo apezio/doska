@@ -8,16 +8,18 @@ import { useConnection, type Connection } from "@doska/core/sync"
 type Status = Connection["status"]
 
 export function useImageFailure(
-  hasUrl: boolean,
+  src: string | null,
   source: AttachmentSource = "sync"
 ): { failed: boolean; onError: () => void } {
   const { status } = useConnection()
-  const [failedAt, setFailedAt] = useState<Status | null>(null)
+  const [failure, setFailure] = useState<{ src: string; at: Status } | null>(
+    null
+  )
 
-  if (failedAt === "ok" && status === "dropped") setFailedAt(null)
+  const failedAt = failure && failure.src === src ? failure.at : null
 
   return {
-    failed: imageUnavailable({ source, hasUrl, failedAt, status }),
-    onError: () => setFailedAt(status),
+    failed: imageUnavailable({ source, hasUrl: !!src, failedAt, status }),
+    onError: () => src && setFailure({ src, at: status }),
   }
 }

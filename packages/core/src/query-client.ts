@@ -7,8 +7,7 @@ import { QueryClient } from "@tanstack/react-query"
  *
  * Writes hit IndexedDB, not the network (the server is reached only by the
  * separate sync engine), so mutations run "always" — the default "online" pauses
- * every local edit until reconnect. Local reads opt in per-query; the session
- * check stays "online" so going offline can't re-run it and flip to signed-out.
+ * every local edit until reconnect. Reads opt in per-query.
  */
 export const queryClient = new QueryClient({
   defaultOptions: {

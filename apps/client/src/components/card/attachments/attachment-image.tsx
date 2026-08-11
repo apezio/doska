@@ -27,7 +27,7 @@ export function AttachmentImage({
   onDownload,
 }: IProps) {
   const [viewing, setViewing] = useState(false)
-  const { failed, onError } = useImageFailure(!!src, source)
+  const { failed, onError } = useImageFailure(src, source)
 
   if (failed) {
     return (

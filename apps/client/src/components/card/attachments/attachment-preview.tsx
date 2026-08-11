@@ -12,7 +12,7 @@ interface IProps {
 }
 
 export function AttachmentPreview({ attachment, src, source }: IProps) {
-  const { failed, onError } = useImageFailure(!!src, source)
+  const { failed, onError } = useImageFailure(src, source)
 
   if (isRenderableImage(attachment.mime)) {
     if (failed)

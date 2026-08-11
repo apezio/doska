@@ -473,7 +473,11 @@ fi
 # --- 4. launch ---------------------------------------------------------------
 if [ -z "$START" ]; then
   step "Not launching" "--no-start: everything is configured, nothing is running."
+  _had_pending="$PENDING"
   apply_updates
+  if [ -n "$_had_pending" ]; then
+    warn "the compose file changed. Run 'sh $BACKUP_FILE' before the up -d below — it redeploys a new stack shape over your existing volume."
+  fi
   printf '\n  Start it when ready:\n    %s -f %s %s up -d\n\n' "$COMPOSE" "$COMPOSE_FILE" "$PROFILE"
   exit 0
 fi

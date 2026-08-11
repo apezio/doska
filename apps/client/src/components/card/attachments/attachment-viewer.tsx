@@ -75,7 +75,6 @@ function ViewerContent({
         <button
           type="button"
           aria-label="Download"
-          disabled={!src}
           onClick={() => void download()}
           className="rounded p-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
         >

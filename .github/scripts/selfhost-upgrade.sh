@@ -18,7 +18,6 @@ done
 [ -n "$PREV" ] || { echo "no release tag found, run 'git fetch --tags'" >&2; exit 1; }
 
 PREV_FILE=.selfhost-prev-compose.yml
-trap 'rm -f "$PREV_FILE"' EXIT
 git show "$PREV:docker-compose.selfhost.yml" > "$PREV_FILE"
 
 # Same directory, so all three stages keep the same compose project and its volumes.
@@ -50,3 +49,5 @@ COMPOSE="$NEW" ./.github/scripts/selfhost-data.sh verify
 
 printf '\n== smoke test ==\n'
 smoke
+
+rm -f "$PREV_FILE"

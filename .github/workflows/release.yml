@@ -1,10 +1,6 @@
 name: Release Desktop
 
-# Builds + signs the Tauri desktop app for macOS, Windows and Linux and publishes
-# the bundles plus latest.json to a GitHub Release. The repo is public, so these
-# assets are directly downloadable; the desktop app still fetches them through the
-# apps/server proxy (see src/updates.ts) because that endpoint is baked into every
-# installed binary and stays stable across releases.
+# Builds + signs the Tauri desktop app
 #
 # Required repo secrets:
 #   TAURI_SIGNING_PRIVATE_KEY           output of `tauri signer generate`
@@ -15,7 +11,7 @@ name: Release Desktop
 #   APPLE_API_KEY                       App Store Connect key id, e.g. ABC123DEF4
 #   APPLE_API_ISSUER                    the issuer uuid from the same Keys page
 #   APPLE_API_KEY_P8                    base64 of the AuthKey_<id>.p8 file
-# (Windows code-signing secrets are optional, add later.)
+
 on:
   push:
     tags:
@@ -33,7 +29,7 @@ jobs:
         include:
           - platform: macos-latest
             args: "--target universal-apple-darwin"
-          # Windows and Linux are disabled for now — macOS only.
+          # Windows and Linux are disabled for now, macOS only.
           # - platform: ubuntu-latest
           #   args: ""
           # - platform: windows-latest
@@ -43,7 +39,6 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          # Fetch tags so `git describe` (client version stamp) resolves.
           fetch-depth: 0
 
       - name: Install Linux build deps
@@ -62,8 +57,6 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
         with:
-          # This action reads the channel from the ref name, so pinning to a SHA
-          # means the toolchain has to be passed explicitly.
           toolchain: stable
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
@@ -80,10 +73,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # The git tag is the single source of truth for the version. Stamp it into
-      # tauri.conf.json so the built app, latest.json and the updater comparison
-      # all match the tag — no hand-maintained version field. (Local edit on the
-      # runner only; not committed.)
+      # The git tag is the single source of truth for the version
       - name: Stamp version from tag
         if: github.ref_type == 'tag'
         shell: bash
@@ -92,9 +82,6 @@ jobs:
           node -e "const f='apps/desktop/src-tauri/tauri.conf.json';const fs=require('fs');const j=JSON.parse(fs.readFileSync(f,'utf8'));j.version='$VERSION';fs.writeFileSync(f,JSON.stringify(j,null,2)+'\n')"
           echo "Stamped tauri.conf.json version = $VERSION"
 
-      # notarytool needs the App Store Connect key as a file on disk, so the
-      # secret holds it base64'd and it's materialised here. The runner is
-      # ephemeral, so the file dies with the job.
       - name: Write App Store Connect API key
         if: matrix.platform == 'macos-latest'
         shell: bash
@@ -108,8 +95,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          # Presence of these switches tauri-action from an ad-hoc build to a
-          # signed + notarized + stapled one.
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { Button, Menu, MenuContent, MenuItem, MenuTrigger } from "@doska/ui-kit"
 import { ChevronDown } from "lucide-react"
 import { SiApple, SiGithub } from "react-icons/si"
-import { releases, releasesLatest, repoApi } from "./links"
+import { releasesLatest, repoApi } from "./links"
 
 type GhRelease = { assets?: { name: string; browser_download_url: string }[] }
 

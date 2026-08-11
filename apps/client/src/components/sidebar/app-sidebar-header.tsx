@@ -14,7 +14,12 @@ export function AppSidebarHeader() {
   )
 
   return (
-    <SidebarHeader className={cn("relative", isDesktop() && "pt-10")}>
+    <SidebarHeader
+      className={cn(
+        "relative pt-[calc(--spacing(2)+env(safe-area-inset-top))]",
+        isDesktop() && "pt-10"
+      )}
+    >
       {isDesktop() && (
         <div className="absolute top-0 right-4 text-xs">{versionBadge}</div>
       )}

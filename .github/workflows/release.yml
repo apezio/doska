@@ -9,8 +9,13 @@ name: Release Desktop
 # Required repo secrets:
 #   TAURI_SIGNING_PRIVATE_KEY           output of `tauri signer generate`
 #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  the password chosen for that key
-# (Apple notarization / Windows code-signing secrets are optional, add later.)
-
+#   APPLE_CERTIFICATE                   base64 of the Developer ID Application .p12
+#   APPLE_CERTIFICATE_PASSWORD          password set when exporting that .p12
+#   APPLE_SIGNING_IDENTITY              "Developer ID Application: Name (K8DARP5MT7)"
+#   APPLE_API_KEY                       App Store Connect key id, e.g. ABC123DEF4
+#   APPLE_API_ISSUER                    the issuer uuid from the same Keys page
+#   APPLE_API_KEY_P8                    base64 of the AuthKey_<id>.p8 file
+# (Windows code-signing secrets are optional, add later.)
 on:
   push:
     tags:
@@ -87,11 +92,29 @@ jobs:
           node -e "const f='apps/desktop/src-tauri/tauri.conf.json';const fs=require('fs');const j=JSON.parse(fs.readFileSync(f,'utf8'));j.version='$VERSION';fs.writeFileSync(f,JSON.stringify(j,null,2)+'\n')"
           echo "Stamped tauri.conf.json version = $VERSION"
 
+      # notarytool needs the App Store Connect key as a file on disk, so the
+      # secret holds it base64'd and it's materialised here. The runner is
+      # ephemeral, so the file dies with the job.
+      - name: Write App Store Connect API key
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        run: |
+          KEY_PATH="$RUNNER_TEMP/apple-api-key.p8"
+          echo "${{ secrets.APPLE_API_KEY_P8 }}" | base64 --decode > "$KEY_PATH"
+          echo "APPLE_API_KEY_PATH=$KEY_PATH" >> "$GITHUB_ENV"
+
       - uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # Presence of these switches tauri-action from an ad-hoc build to a
+          # signed + notarized + stapled one.
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
         with:
           projectPath: apps/desktop
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}', github.run_number) }}

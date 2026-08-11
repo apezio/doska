@@ -30,6 +30,27 @@ exit 0
 STUB
 chmod +x "$WORK/bin/docker"
 
+# Stub curl: records every URL asked for
+REAL_CURL=$(command -v curl)
+cat > "$WORK/bin/curl" <<STUB
+#!/bin/sh
+url=""; out=""; prev=""
+for a in "\$@"; do
+  case "\$a" in http*|file*) url="\$a" ;; esac
+  [ "\$prev" = "-o" ] && out="\$a"
+  prev="\$a"
+done
+echo "\$url" >> "\${CURL_LOG:-/dev/null}"
+case "\$url" in
+  file://*) exec $REAL_CURL "\$@" ;;
+  *releases/latest) printf '{"tag_name": "%s"}\n' "\${CURL_LATEST:-v0.18.0}" ;;
+  *releases*per_page*) printf '[{"tag_name": "%s"}]\n' "\${CURL_BETA:-v0.19.0-beta.1}" ;;
+  *) [ -n "\$out" ] && cp "\$CURL_SERVE" "\$out" || cat "\$CURL_SERVE" ;;
+esac
+exit 0
+STUB
+chmod +x "$WORK/bin/curl"
+
 failures=0
 case_name=""
 
@@ -63,7 +84,8 @@ run() {
   local started=$SECONDS
   # bash 3.2 (macOS) treats "${arr[@]}" on an empty array as unbound under set -u.
   ( cd "$dir" && env "PATH=$WORK/bin:$PATH" "DOCKER_LOG=$dir/docker.log" \
-      "RAW=${CASE_RAW:-file://$REPO_ROOT}" \
+      "RAW=${CASE_RAW-file://$REPO_ROOT}" \
+      "CURL_LOG=$dir/curl.log" "CURL_SERVE=$COMPOSE_SRC" \
       ${envs[@]+"${envs[@]}"} sh "$INSTALL" ${args[@]+"${args[@]}"} ) \
     < /dev/null > "$dir/out.log" 2>&1 &
   local pid=$! code=0
@@ -258,7 +280,7 @@ mkdir -p "$WORK/offline"
 cp "$COMPOSE_SRC" "$WORK/offline/"
 CASE_RAW="file:///nonexistent-doska-source"
 run offline AUTH_PASSWORD=x -- --yes --no-start
-CASE_RAW=""
+unset CASE_RAW
 [ "$(exit_code offline)" != 0 ] && pass "refused to continue" ||
   fail "installed against a compose file it could not verify"
 grep -q "might break the server" "$WORK/offline/out.log" && pass "explains the risk" ||
@@ -267,6 +289,52 @@ diff -q "$COMPOSE_SRC" "$WORK/offline/docker-compose.selfhost.yml" > /dev/null 2
   pass "left the existing compose file intact" || fail "damaged the compose file on the way out"
 [ -f "$WORK/offline/docker-compose.selfhost.yml.new" ] &&
   fail "left a .new temp file behind" || pass "no temp file left behind"
+
+# ---------------------------------------------------------------------------
+# The compose file has to come from the same release as the images
+fetched_from() { grep -qF "$2" "$WORK/$1/curl.log" 2> /dev/null; }
+CASE_RAW=""
+
+case_name="a pinned version fetches that version's compose file"
+printf '\n%s\n' "$case_name"
+run pinned AUTH_PASSWORD=x DOCKER_IMAGE_TAG=0.17.0 -- --yes --no-start
+fetched_from pinned "/romenkova/doska/v0.17.0/docker-compose.selfhost.yml" &&
+  pass "fetched from v0.17.0" ||
+  fail "wrong source: $(cat "$WORK/pinned/curl.log")"
+grep -q "v0.17.0 stack definition" "$WORK/pinned/out.log" && pass "says which release it used" ||
+  fail "did not report the release"
+
+case_name="a version pinned with a leading v still resolves"
+printf '\n%s\n' "$case_name"
+run pinnedv AUTH_PASSWORD=x DOCKER_IMAGE_TAG=v0.17.0 -- --yes --no-start
+fetched_from pinnedv "/doska/v0.17.0/docker-compose" && pass "no doubled v" ||
+  fail "wrong source: $(cat "$WORK/pinnedv/curl.log")"
+
+case_name="the latest channel resolves to the newest release"
+printf '\n%s\n' "$case_name"
+run chanlatest AUTH_PASSWORD=x -- --yes --no-start
+fetched_from chanlatest "api.github.com/repos/romenkova/doska/releases/latest" &&
+  pass "asked the API which release is latest" ||
+  fail "did not resolve the channel: $(cat "$WORK/chanlatest/curl.log")"
+fetched_from chanlatest "/doska/v0.18.0/docker-compose" && pass "fetched from that release" ||
+  fail "wrong source: $(cat "$WORK/chanlatest/curl.log")"
+fetched_from chanlatest "/doska/main/" && fail "still fetching from main" || pass "not from main"
+
+case_name="the beta channel resolves to the newest prerelease"
+printf '\n%s\n' "$case_name"
+run chanbeta AUTH_PASSWORD=x DOCKER_IMAGE_TAG=beta -- --yes --no-start
+fetched_from chanbeta "/doska/v0.19.0-beta.1/docker-compose" && pass "fetched from the prerelease" ||
+  fail "wrong source: $(cat "$WORK/chanbeta/curl.log")"
+
+case_name="a tag pinned in an existing .env is honoured"
+printf '\n%s\n' "$case_name"
+mkdir -p "$WORK/envpin"
+printf 'AUTH_LOGIN=admin\nAUTH_PASSWORD=x\nAUTH_SECRET=s\nBASE_URL=http://x\nDOCKER_IMAGE_TAG=0.16.2\n' \
+  > "$WORK/envpin/.env"
+run envpin -- --yes --no-start
+fetched_from envpin "/doska/v0.16.2/docker-compose" && pass "read the pin out of .env" ||
+  fail "ignored the .env pin: $(cat "$WORK/envpin/curl.log")"
+unset CASE_RAW
 
 # ---------------------------------------------------------------------------
 printf '\n'

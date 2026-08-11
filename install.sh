@@ -17,8 +17,9 @@
 set -eu
 
 REPO="romenkova/doska"
-# Overridable so the test suite can point at a local checkout and stay offline.
-RAW="${RAW:-https://raw.githubusercontent.com/${REPO}/main}"
+# Where the compose file and backup helper come from. Empty means "work it out
+# from the release being installed" (see source_ref);
+RAW="${RAW:-}"
 COMPOSE_FILE="docker-compose.selfhost.yml"
 BACKUP_FILE="backup.sh"
 ENV_FILE=".env"
@@ -123,6 +124,28 @@ ask_yn() {
   printf '%b?%b %s %b[y/N]%b: ' "$C_BLUE" "$C_RESET" "$1" "$C_DIM" "$C_RESET" > /dev/tty
   IFS= read -r _ans < /dev/tty || _ans=""
   case "$_ans" in [Yy]*) return 0 ;; *) return 1 ;; esac
+}
+
+# Which release the images will come from: an explicit DOCKER_IMAGE_TAG wins,
+# otherwise whatever a previous run's .env pins. Empty means the default channel.
+pinned_tag() {
+  if [ -n "${DOCKER_IMAGE_TAG:-}" ]; then printf '%s' "$DOCKER_IMAGE_TAG"; return; fi
+  [ -f "$ENV_FILE" ] || return 0
+  sed -n 's/^DOCKER_IMAGE_TAG=//p' "$ENV_FILE" | head -1
+}
+
+# Newest tag_name from a releases API path
+release_tag() {
+  curl -fsSL "https://api.github.com/repos/${REPO}$1" 2>/dev/null \
+    | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1
+}
+
+source_ref() {
+  case "$1" in
+    ''|latest) release_tag "/releases/latest" ;;
+    beta)      release_tag "/releases?per_page=1" ;;
+    *)         printf 'v%s' "${1#v}" ;;
+  esac
 }
 
 gen_secret() {
@@ -243,6 +266,16 @@ ok "docker, $COMPOSE and curl found"
 # --- 2. fetch compose file and backup helper --------------------------------
 step "Fetching files" "Downloads the compose file that defines the stack, plus the backup helper."
 
+TAG=""
+REF=""
+if [ -z "$RAW" ]; then
+  TAG=$(pinned_tag)
+  REF=$(source_ref "$TAG")
+  [ -n "$REF" ] || die "couldn't work out which release to fetch $COMPOSE_FILE from${TAG:+ for DOCKER_IMAGE_TAG=$TAG}. Check your connection, or pin an exact version like DOCKER_IMAGE_TAG=0.18.0."
+  RAW="https://raw.githubusercontent.com/${REPO}/${REF}"
+  info "Using the $REF stack definition"
+fi
+
 info "Downloading $COMPOSE_FILE"
 if curl -fsSL "$RAW/$COMPOSE_FILE" -o "$COMPOSE_FILE.new"; then
   if [ ! -f "$COMPOSE_FILE" ]; then
@@ -259,7 +292,7 @@ if curl -fsSL "$RAW/$COMPOSE_FILE" -o "$COMPOSE_FILE.new"; then
   fi
 else
   rm -f "$COMPOSE_FILE.new"
-  die "failed to download $COMPOSE_FILE. Running with an outdated $COMPOSE_FILE might break the server. Fix the connection and re-run."
+  die "failed to download $COMPOSE_FILE from ${REF:-$RAW}. Running with an outdated $COMPOSE_FILE might break the server. Check your connection${TAG:+, and that DOCKER_IMAGE_TAG=$TAG is a real release}, then re-run."
 fi
 
 if [ ! -f "$BACKUP_FILE" ]; then

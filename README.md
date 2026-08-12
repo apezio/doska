@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <strong><a href="https://app.doska.sh/d/welcome">Open in browser</a></strong> ·
+  <strong><a href="https://app.doska.sh/d/welcome">Open demo</a></strong> ·
   <a href="https://doska.sh/docs">Documentation</a> ·
   <a href="https://github.com/romenkova/doska/releases/latest">Download for macOS</a> ·
   <a href="https://app.doska.sh/p/2af2848df270cb5b8a4e73e7a362b19b">Roadmap</a> ·

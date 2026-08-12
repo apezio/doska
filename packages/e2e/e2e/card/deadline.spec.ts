@@ -6,6 +6,19 @@ function deadlineInput(page: Page) {
   return card(page, "Untitled card").locator('input[type="date"]')
 }
 
+// Anything within 3 days reads as a relative label instead of a date, so an
+// "upcoming" date has to be computed from today rather than hardcoded.
+const UPCOMING = upcomingDate()
+
+function upcomingDate() {
+  const d = new Date()
+  d.setDate(d.getDate() + 30)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return { iso: `${year}-${month}-${day}`, formatted: `${day}.${month}.${year}` }
+}
+
 // DateInput only renders the native input below the 768px breakpoint; above it the calendar popover is harder to drive.
 test.describe("card deadline", () => {
   test.use({ viewport: { width: 500, height: 800 } })
@@ -16,9 +29,9 @@ test.describe("card deadline", () => {
     await createBoard(page)
     await addCard(page, "To Do")
 
-    await deadlineInput(page).fill("2026-08-15")
+    await deadlineInput(page).fill(UPCOMING.iso)
 
-    await expect(card(page, "Untitled card").getByText("15.08.2026")).toBeVisible()
+    await expect(card(page, "Untitled card").getByText(UPCOMING.formatted)).toBeVisible()
   })
 
   test("an overdue deadline is colour-coded distinctly from an upcoming one", async ({
@@ -34,8 +47,8 @@ test.describe("card deadline", () => {
     await expect(overdueChip).toBeVisible()
     await expect(overdueChip).toHaveClass(/text-destructive/)
 
-    await deadlineInput(page).fill("2026-08-15")
-    const upcomingChip = card(page, "Untitled card").getByText("15.08.2026")
+    await deadlineInput(page).fill(UPCOMING.iso)
+    const upcomingChip = card(page, "Untitled card").getByText(UPCOMING.formatted)
     await expect(upcomingChip).not.toHaveClass(/text-destructive/)
   })
 
@@ -43,10 +56,10 @@ test.describe("card deadline", () => {
     await createBoard(page)
     await addCard(page, "To Do")
 
-    await deadlineInput(page).fill("2026-08-15")
-    await expect(card(page, "Untitled card").getByText("15.08.2026")).toBeVisible()
+    await deadlineInput(page).fill(UPCOMING.iso)
+    await expect(card(page, "Untitled card").getByText(UPCOMING.formatted)).toBeVisible()
 
     await page.reload()
-    await expect(card(page, "Untitled card").getByText("15.08.2026")).toBeVisible()
+    await expect(card(page, "Untitled card").getByText(UPCOMING.formatted)).toBeVisible()
   })
 })

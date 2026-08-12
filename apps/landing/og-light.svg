@@ -13,11 +13,11 @@
   <text x="571.5" y="131" font-family="Avenir Next, Helvetica, sans-serif" font-weight="600" font-size="36" fill="#343c54">Doska</text>
 
   <g text-anchor="middle" font-family="Avenir Next, Helvetica, sans-serif" font-weight="800" font-size="88" letter-spacing="-2">
-    <text x="600" y="292" fill="#343c54">A Kanban board</text>
-    <text x="600" y="390" fill="#725cff">made of Markdown</text>
+    <text x="600" y="292" fill="#343c54">Kanban for</text>
+    <text x="600" y="390" fill="#725cff">your own projects</text>
   </g>
 
   <text x="600" y="458" text-anchor="middle" font-family="Avenir Next, Helvetica, sans-serif" font-weight="600" font-size="30" fill="#676d7f">Local-first. Works offline. Self-host the sync.</text>
 
-  <text x="600" y="524" text-anchor="middle" font-family="Geist Mono, Menlo, monospace" font-size="22" fill="#7b8199">Open source · self-hosted · MCP-ready</text>
+  <text x="600" y="524" text-anchor="middle" font-family="Geist Mono, Menlo, monospace" font-size="22" fill="#7b8199">Open source · self-hosted · Markdown cards</text>
 </svg>

@@ -1,9 +1,9 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-hero-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset=".github/assets/banner-hero-light.png">
-  <img alt="Doska: a Kanban board made of Markdown" src=".github/assets/banner-hero-light.png" width="820">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/hero-dark-v2.png">
+  <source media="(prefers-color-scheme: light)" srcset=".github/assets/hero-light-v2.png">
+  <img alt="Doska: Kanban for your own projects" src=".github/assets/hero-light-v2.png" width="820">
 </picture>
 
 <p align="center">
@@ -20,7 +20,8 @@
   <strong><a href="https://app.doska.sh/d/welcome">Open demo</a></strong> ·
   <a href="https://doska.sh/docs">Documentation</a> ·
   <a href="https://github.com/romenkova/doska/releases/latest">Download for macOS</a> ·
-  <a href="https://app.doska.sh/p/2af2848df270cb5b8a4e73e7a362b19b">Roadmap</a>
+  <a href="https://app.doska.sh/p/2af2848df270cb5b8a4e73e7a362b19b">Roadmap</a> ·
+  <a href="https://doska.sh/docs/mcp">MCP</a>
 </p>
 
 <picture>

@@ -1,4 +1,5 @@
 import { Board } from "./board"
+import { BottomBadges } from "./bottom-badges"
 import { DocsPage } from "./docs/docs-page"
 import { findDoc } from "./docs/pages"
 import { Hero } from "./hero"
@@ -22,6 +23,7 @@ export function App({ path }: { path: string }) {
         )}
       </main>
       <SiteFooter />
+      {!doc && <BottomBadges />}
     </div>
   )
 }

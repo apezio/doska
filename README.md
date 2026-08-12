@@ -1,6 +1,33 @@
-# Doska
+<div align="center">
 
-<img width="1496" height="847" alt="image" src="https://github.com/user-attachments/assets/3ae8bde7-b546-45e3-87a4-060f02007c34" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset=".github/assets/banner-light.png">
+  <img alt="Doska: a Kanban board made of Markdown" src=".github/assets/banner-light.png" width="820">
+</picture>
+
+<p align="center">
+  <a href="https://github.com/romenkova/doska/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/romenkova/doska?color=9585ff&label=release"></a>
+  <a href="https://github.com/romenkova/doska/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/romenkova/doska/build.yml?branch=main&label=build"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/romenkova/doska?color=7b8199"></a>
+  <a href="https://github.com/romenkova?tab=packages&repo_name=doska"><img alt="Container" src="https://img.shields.io/badge/ghcr.io-doska--web%20%7C%20doska--server-7b8199"></a>
+</p>
+
+<p align="center">
+  <strong><a href="https://app.doska.sh/d/welcome">Open in browser</a></strong> ·
+  <a href="https://doska.sh/docs">Documentation</a> ·
+  <a href="https://github.com/romenkova/doska/releases/latest">Download for macOS</a> ·
+  <a href="https://app.doska.sh/p/2af2848df270cb5b8a4e73e7a362b19b">Roadmap</a> ·
+  <a href="https://doska.sh/docs/mcp">MCP</a>
+</p>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/board-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset=".github/assets/board-light.png">
+  <img alt="A Doska board with a card open in the editor" src=".github/assets/board-light.png" width="900">
+</picture>
+
+</div>
 
 A Kanban board where the cards are Markdown. It's local-first: your boards live
 in the browser (IndexedDB), so it's fast and works without an account. Sync is
@@ -17,8 +44,6 @@ Runs in the browser, installs as a PWA, or ships as a native macOS app.
 [sync](https://doska.sh/docs/sync), [accounts](https://doska.sh/docs/accounts),
 [public sharing](https://doska.sh/docs/public-sharing),
 [MCP](https://doska.sh/docs/mcp).
-
-🗺️ **[Roadmap](https://app.doska.sh/p/2af2848df270cb5b8a4e73e7a362b19b)**
 
 ## Features
 

@@ -1,24 +1,26 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset=".github/assets/banner-light.png">
-  <img alt="Doska: a Kanban board made of Markdown" src=".github/assets/banner-light.png" width="820">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-hero-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset=".github/assets/banner-hero-light.png">
+  <img alt="Doska: a Kanban board made of Markdown" src=".github/assets/banner-hero-light.png" width="820">
 </picture>
 
 <p align="center">
   <a href="https://github.com/romenkova/doska/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/romenkova/doska?color=9585ff&label=release"></a>
-  <a href="https://github.com/romenkova/doska/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/romenkova/doska/build.yml?branch=main&label=build"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/romenkova/doska?color=7b8199"></a>
-  <a href="https://github.com/romenkova?tab=packages&repo_name=doska"><img alt="Container" src="https://img.shields.io/badge/ghcr.io-doska--web%20%7C%20doska--server-7b8199"></a>
+  <br>
+  <a href="https://github.com/romenkova/doska/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/romenkova/doska/build.yml?branch=main&label=build"></a>
+  <a href="https://github.com/romenkova/doska/actions/workflows/test.yml"><img alt="Unit tests" src="https://img.shields.io/github/actions/workflow/status/romenkova/doska/test.yml?branch=main&label=tests"></a>
+  <a href="https://github.com/romenkova/doska/actions/workflows/e2e.yml"><img alt="End-to-end tests" src="https://img.shields.io/github/actions/workflow/status/romenkova/doska/e2e.yml?branch=main&label=e2e"></a>
+  <a href="https://github.com/romenkova/doska/actions/workflows/selfhost.yml"><img alt="Self-host stack" src="https://img.shields.io/github/actions/workflow/status/romenkova/doska/selfhost.yml?branch=main&label=self-host%20smoke"></a>
 </p>
 
 <p align="center">
   <strong><a href="https://app.doska.sh/d/welcome">Open demo</a></strong> ·
   <a href="https://doska.sh/docs">Documentation</a> ·
   <a href="https://github.com/romenkova/doska/releases/latest">Download for macOS</a> ·
-  <a href="https://app.doska.sh/p/2af2848df270cb5b8a4e73e7a362b19b">Roadmap</a> ·
-  <a href="https://doska.sh/docs/mcp">MCP</a>
+  <a href="https://app.doska.sh/p/2af2848df270cb5b8a4e73e7a362b19b">Roadmap</a>
 </p>
 
 <picture>

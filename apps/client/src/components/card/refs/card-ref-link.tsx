@@ -2,7 +2,7 @@ import { useLocation } from "wouter"
 import { useCardRef } from "@doska/core/card-refs"
 import { columnHue, MdWikilink } from "@doska/ui-kit"
 import { routes } from "@/lib/routes"
-import { useDeck } from "../../deck/deck-context"
+import { useDeck } from "@/providers/deck/deck-context"
 
 /**
  * A `[[ROAD-12]]` reference rendered inside a card body: the card's id, then

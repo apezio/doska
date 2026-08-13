@@ -4,11 +4,12 @@ import { useUpdateCard } from "@doska/core/mutations"
 import { useLocation } from "wouter"
 import type { DetailedHTMLProps, HTMLAttributes } from "react"
 import { routes } from "@/lib/routes"
-import { useDeckPrefix } from "../deck/deck-context"
+import { useDeckPrefix } from "@/providers/deck/deck-context"
 import { CardAttachments } from "./attachments/card-attachments"
 import { CardAttachmentImage } from "./attachments/card-attachment-image"
 import { CardContextMenu, CardMenu } from "./menu/card-menu"
 import { CardMarkdown } from "./card-markdown"
+import { useIsRevealed } from "@/providers/card-reveal/card-reveal-context"
 import { CardView } from "./card-view"
 
 interface IProps extends DetailedHTMLProps<
@@ -26,6 +27,7 @@ export function Card({ id, showBody, isDragging, ...props }: IProps) {
   const { data: card = fallbackCard } = useCard(id)
   const { data: column } = useCardCol(id)
   const { mutate: updateCard } = useUpdateCard(id)
+  const isRevealed = useIsRevealed(id)
 
   const open = () => navigate(routes.card.to(id))
 
@@ -43,6 +45,7 @@ export function Card({ id, showBody, isDragging, ...props }: IProps) {
         prefix={prefix}
         showBody={showBody}
         isDragging={isDragging}
+        isRevealed={isRevealed}
         action={<CardMenu cardId={id} onEdit={open} />}
         onChangeBody={(body) => updateCard({ body })}
         onChangeDeadline={(deadline) => updateCard({ deadline })}

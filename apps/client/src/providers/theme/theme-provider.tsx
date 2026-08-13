@@ -1,15 +1,11 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react"
-
-/* eslint-disable react-refresh/only-export-components */
-type Theme = "dark" | "light"
+import { ThemeCtx, type Theme } from "./theme-context"
 
 type ThemeProviderProps = {
   children: ReactNode
@@ -17,16 +13,7 @@ type ThemeProviderProps = {
   storageKey?: string
 }
 
-type ThemeProviderState = {
-  theme: Theme
-  setTheme: (theme: Theme) => void
-}
-
 const THEME_VALUES: Theme[] = ["dark", "light"]
-
-const ThemeProviderContext = createContext<ThemeProviderState | undefined>(
-  undefined
-)
 
 function isTheme(value: string | null): value is Theme {
   return !!value && THEME_VALUES.includes(value as Theme)
@@ -96,16 +83,8 @@ export function ThemeProvider({
   )
 
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <ThemeCtx.Provider {...props} value={value}>
       {children}
-    </ThemeProviderContext.Provider>
+    </ThemeCtx.Provider>
   )
-}
-
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext)
-  if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider")
-  }
-  return context
 }

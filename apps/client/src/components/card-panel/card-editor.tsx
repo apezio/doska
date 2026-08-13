@@ -9,7 +9,7 @@ import { CardColumnPicker } from "./card-column-picker"
 import { CardAttachments } from "../card/attachments/card-attachments"
 import { AddAttachmentButton } from "../card/attachments/add-attachment-button"
 import { AttachmentDropZone } from "../card/attachments/attachment-drop-zone"
-import { AttachmentUploadProvider } from "../card/attachments/context/attachment-upload-provider"
+import { AttachmentUploadProvider } from "@/providers/attachment-upload/attachment-upload-provider"
 
 interface IProps {
   cardId: string

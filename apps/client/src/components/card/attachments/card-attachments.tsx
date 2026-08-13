@@ -11,7 +11,7 @@ import { useAttachmentUrls } from "@/lib/hooks/use-attachment-url"
 import { AttachmentList } from "./attachment-list"
 import { AttachmentViewer } from "./attachment-viewer"
 import { isRenderableImage } from "./renderable-image"
-import { usePendingUploads } from "./context/attachment-upload-context"
+import { usePendingUploads } from "@/providers/attachment-upload/attachment-upload-context"
 
 interface IProps {
   cardId: string

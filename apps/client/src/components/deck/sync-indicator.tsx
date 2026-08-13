@@ -8,7 +8,7 @@ import {
   PencilLine,
   TriangleAlert,
 } from "lucide-react"
-import { useLoginPrompt } from "@/components/login/login-prompt-context"
+import { useLoginPrompt } from "@/providers/login-prompt/login-prompt-context"
 import { sync, useConnection, type Connection } from "@doska/core/sync"
 import { useAuth, useSyncStatus } from "@/lib/hooks"
 

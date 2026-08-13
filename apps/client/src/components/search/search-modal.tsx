@@ -4,6 +4,7 @@ import { Modal, ModalContent, ModalTitle } from "@doska/ui-kit"
 import { Search } from "lucide-react"
 import { useMemo, useState } from "react"
 import { useLocation } from "wouter"
+import { useRevealCard } from "@/providers/card-reveal/card-reveal-context"
 import { routes } from "@/lib/routes"
 import { SearchResultRow } from "./search-result-row"
 
@@ -20,6 +21,7 @@ interface IProps {
 export function SearchModal({ open, onOpenChange, boardId, prefix }: IProps) {
   const [, navigate] = useLocation()
   const { data: board } = useBoard(boardId)
+  const reveal = useRevealCard()
 
   const [query, setQuery] = useState("")
   const [activeIndex, setActiveIndex] = useState(0)
@@ -51,6 +53,7 @@ export function SearchModal({ open, onOpenChange, boardId, prefix }: IProps) {
 
   function select(hit: SearchHit) {
     onOpenChange(false)
+    reveal(hit.card.id)
     navigate(routes.card.to(hit.card.id))
   }
 

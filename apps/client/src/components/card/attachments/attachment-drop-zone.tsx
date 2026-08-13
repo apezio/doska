@@ -1,7 +1,7 @@
 import { cn } from "@doska/ui-kit"
 import { Upload, TriangleAlert } from "lucide-react"
 import { useRef, useState, type ReactNode } from "react"
-import { useUploads } from "./context/attachment-upload-context"
+import { useUploads } from "@/providers/attachment-upload/attachment-upload-context"
 
 /** True when a drag carries files (not text or an internal element drag). */
 function hasFiles(e: React.DragEvent): boolean {

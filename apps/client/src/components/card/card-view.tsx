@@ -29,6 +29,8 @@ interface IProps extends DetailedHTMLProps<
   prefix: string
   showBody: boolean
   isDragging?: boolean
+  /** Flashes a ring, to point out the card a search result led to. */
+  isRevealed?: boolean
   /** Top-right slot: the card menu where the viewer can act on the card. */
   action?: ReactNode
   /** Omit to leave the body's task checkboxes inert. */
@@ -56,6 +58,7 @@ export function CardView({
   prefix,
   showBody,
   isDragging,
+  isRevealed,
   action,
   onChangeBody,
   onChangeDeadline,
@@ -83,8 +86,10 @@ export function CardView({
     <div
       {...props}
       className={cn(
-        "group relative mb-3 w-full max-w-sm cursor-pointer rounded-lg",
-        "touch-manipulation select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none]"
+        "group relative mb-3 w-full max-w-sm cursor-pointer scroll-mt-[calc(--spacing(15)+10px)] rounded-lg",
+        "touch-manipulation select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none]",
+        isRevealed &&
+          "ring-2 ring-primary ring-offset-2 ring-offset-background transition-shadow"
       )}
     >
       {wrapCard(

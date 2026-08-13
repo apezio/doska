@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { LoginPromptContext } from "./login-prompt-context"
-import { LoginModal } from "./login-modal"
+import { LoginModal } from "@/components/login/login-modal"
 
 /**
  * Owns the sign-in modal's open-state and mounts the modal once, so any

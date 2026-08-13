@@ -6,6 +6,12 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
     <InputPrimitive
       type={type}
       data-slot="input"
+      // Board and card text is not a name or an address; the browser's autofill
+      // has nothing useful to offer it. The sign-in forms opt back in.
+      autoComplete="off"
+      autoCorrect="off"
+      autoCapitalize="off"
+      spellCheck={false}
       className={cn(
         "h-8 w-full min-w-0 rounded-lg border border-input px-2.5 py-1",
         "bg-transparent text-base transition-colors outline-none md:text-sm dark:bg-input/30",

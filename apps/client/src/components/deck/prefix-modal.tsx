@@ -64,6 +64,10 @@ export function PrefixModal({
           <input
             value={draft}
             autoFocus
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             maxLength={6}
             aria-label="Board prefix"
             aria-invalid={!!error}

@@ -24,7 +24,9 @@ function inBoardOrder(cards: Card[], columns: Column[]): Card[] {
 
 /** The raw body, markup and all, plus the names of the files hanging off it. */
 function searchable(card: Card): string {
-  const names = card.attachments.map((attachment) => attachment.name)
+  // Cards predating the attachments field come back from IndexedDB without it —
+  // reads are raw casts, so the schema's `.default([])` never runs.
+  const names = (card.attachments ?? []).map((attachment) => attachment.name)
   return [card.body, ...names].join("\n")
 }
 

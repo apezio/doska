@@ -75,6 +75,10 @@ export function InvisibleInput({
         ref={inputRef}
         value={draft}
         autoFocus
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
         placeholder={placeholder}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}

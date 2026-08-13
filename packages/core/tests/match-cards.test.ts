@@ -125,6 +125,13 @@ describe("searchCards", () => {
     ])
   })
 
+  it("searches a card stored before attachments existed", () => {
+    const legacy = card({ id: "a", title: "sync" })
+    delete (legacy as Partial<Card>).attachments
+
+    expect(hitIds([legacy], "sync")).toEqual(["a"])
+  })
+
   it("truncates to limit", () => {
     const cards = [
       card({ id: "a", title: "sync" }),

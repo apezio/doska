@@ -4,6 +4,10 @@ function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
     <textarea
       data-slot="textarea"
+      autoComplete="off"
+      autoCorrect="off"
+      autoCapitalize="off"
+      spellCheck={false}
       className={cn(
         "flex field-sizing-content min-h-16 w-full rounded-lg border border-input px-2.5 py-2",
         "bg-transparent text-base transition-colors outline-none md:text-sm dark:bg-input/30",

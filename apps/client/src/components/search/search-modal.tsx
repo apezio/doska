@@ -84,6 +84,10 @@ export function SearchModal({ open, onOpenChange, boardId, prefix }: IProps) {
           <input
             value={query}
             autoFocus
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             placeholder="Search cards"
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}

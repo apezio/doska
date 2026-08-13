@@ -140,6 +140,9 @@ export function MarkdownTextarea({
         {...props}
         ref={textareaRef}
         onPaste={handlePaste}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
         spellCheck={false}
         className={cn(
           "relative resize-none bg-transparent outline-none",

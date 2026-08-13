@@ -51,7 +51,13 @@ export function SearchResultRow({
       role="option"
       aria-selected={active}
       onClick={onSelect}
-      onMouseEnter={onHighlight}
+      // Move, not enter: as the list shrinks under a still cursor the rows slide
+      // up into it, and `mouseenter` would hand the highlight to whichever row
+      // happened to land there — usually the last one, which then scrolls into
+      // view. Only a cursor that actually moved gets to steal it from the keyboard.
+      onMouseMove={() => {
+        if (!active) onHighlight()
+      }}
       className={cn(
         "flex w-full items-center gap-3 px-3 py-2 text-left",
         "md:last:rounded-b-xl",

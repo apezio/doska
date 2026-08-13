@@ -14,6 +14,7 @@ import { requestPersistentStorage } from "@/lib/persist"
 import { queryClient } from "@doska/core/query-client"
 import { routes } from "@/lib/routes"
 import { Router } from "./router.tsx"
+import { ErrorBoundary } from "@/components/error-boundary"
 import { PublicRouter } from "@/components/public/public-router"
 import { UpdateBanner } from "@/components/updates/update-banner"
 import { ConnectionBanner } from "@/components/sync/connection-banner"
@@ -32,11 +33,13 @@ trackAppHeight()
 if (isPublicLink) {
   root.render(
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <PublicRouter />
-        </ThemeProvider>
-      </QueryClientProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <PublicRouter />
+          </ThemeProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
     </StrictMode>
   )
 } else {
@@ -53,16 +56,18 @@ if (isPublicLink) {
 
   root.render(
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <LoginPromptProvider>
-            <Router />
-            <UpdateBanner />
-            <ConnectionBanner />
-            <WindowDragRegion />
-          </LoginPromptProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <LoginPromptProvider>
+              <Router />
+              <UpdateBanner />
+              <ConnectionBanner />
+              <WindowDragRegion />
+            </LoginPromptProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
     </StrictMode>
   )
 }

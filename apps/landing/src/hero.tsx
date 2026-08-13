@@ -2,7 +2,7 @@ import { Button } from "@doska/ui-kit"
 import { ExternalLink } from "lucide-react"
 import { SiGithub } from "react-icons/si"
 import { DownloadMenu } from "./download-menu"
-import { app, author, repo } from "./links"
+import { app, repo } from "./links"
 import { Typewriter } from "./typewriter"
 
 // Each reads as the tail of "A Kanban board …". The first is what SSR and

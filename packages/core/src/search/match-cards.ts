@@ -22,6 +22,12 @@ function inBoardOrder(cards: Card[], columns: Column[]): Card[] {
   return [...ordered, ...cards.filter((card) => !placed.has(card.id))]
 }
 
+/** The raw body, markup and all, plus the names of the files hanging off it. */
+function searchable(card: Card): string {
+  const names = card.attachments.map((attachment) => attachment.name)
+  return [card.body, ...names].join("\n")
+}
+
 function snippetFor(body: string, terms: string[]): Segment[] | null {
   for (const raw of body.split("\n")) {
     const line = raw.replace(/\s+/g, " ").trim()
@@ -52,7 +58,7 @@ export function searchCards(input: {
   const ranked = rankBy(inBoardOrder(cards, columns), query, (card) => ({
     number: card.number == null ? undefined : String(card.number),
     title: card.title,
-    body: card.body,
+    body: searchable(card),
   }))
 
   return ranked.slice(0, limit).map(({ item: card, score }) => ({
@@ -60,6 +66,6 @@ export function searchCards(input: {
     column: byId.get(card.columnId),
     score,
     title: segment(card.title, terms),
-    snippet: snippetFor(card.body, terms),
+    snippet: snippetFor(searchable(card), terms),
   }))
 }

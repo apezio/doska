@@ -90,6 +90,41 @@ describe("searchCards", () => {
     ])
   })
 
+  it("matches the body's markup, not just its prose", () => {
+    const cards = [
+      card({ id: "link", title: "x", body: "see [the docs](https://sync.dev)" }),
+      card({ id: "ref", title: "y", body: "blocked by [[ROAD-12]]" }),
+    ]
+
+    expect(hitIds(cards, "sync.dev")).toEqual(["link"])
+    expect(hitIds(cards, "road-12")).toEqual(["ref"])
+  })
+
+  it("matches attachment names", () => {
+    const cards = [
+      card({
+        id: "a",
+        title: "x",
+        attachments: [
+          {
+            id: "att",
+            name: "sync-notes.pdf",
+            key: "att/00000000-0000-0000-0000-000000000000.pdf",
+            mime: "application/pdf",
+            size: 1,
+          },
+        ],
+      }),
+    ]
+    const [hit] = searchCards({ cards, columns, query: "sync-notes" })
+
+    expect(hit.card.id).toBe("a")
+    expect(hit.snippet).toEqual([
+      { text: "sync-notes", hit: true },
+      { text: ".pdf", hit: false },
+    ])
+  })
+
   it("truncates to limit", () => {
     const cards = [
       card({ id: "a", title: "sync" }),

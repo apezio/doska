@@ -1,13 +1,12 @@
 import { useState } from "react"
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd"
 import type { Board, Dashboard } from "@doska/core/types"
-import { byPosition } from "@doska/core/utils"
+import { byPosition, groupCardsByColumn } from "@doska/core/utils"
 import { Column } from "../column/column"
 import { AddColumn } from "../column/add-column"
 import { DraggableCard } from "../card/draggable-card"
 import { BoardView } from "./board-view"
 import { DeckHeader } from "./deck-header"
-import { groupCardsByColumn } from "./group-cards"
 import { SyncIndicator } from "./sync-indicator"
 
 interface IProps {

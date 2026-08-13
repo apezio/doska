@@ -1,4 +1,4 @@
-import { useTheme } from "@/components/theme-provider"
+import { useTheme } from "@/providers/theme/theme-context"
 import { Button, cn } from "@doska/ui-kit"
 import { Moon, Sun } from "lucide-react"
 

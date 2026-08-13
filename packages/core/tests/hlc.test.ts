@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import type { Runtime } from "../../runtime"
+import type { Runtime } from "../src/runtime"
 
 /** A DB whose writes only land on `flush`, so a test can drop the ones a killed
  * app would never have committed. */
@@ -35,9 +35,9 @@ const flush = () => {
 /** A cold start: fresh module state, seeded from whatever actually committed. */
 async function relaunch() {
   vi.resetModules()
-  const { installRuntime } = await import("../../runtime")
+  const { installRuntime } = await import("../src/runtime")
   installRuntime({ db, kv } as unknown as Runtime)
-  const hlc = await import("./hlc")
+  const hlc = await import("../src/api/sync/hlc")
   await hlc.seedClock()
   return hlc
 }

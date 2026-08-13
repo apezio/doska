@@ -1,7 +1,7 @@
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@doska/ui-kit"
 import { Paperclip } from "lucide-react"
 import { useRef } from "react"
-import { useUploads } from "./context/attachment-upload-context"
+import { useUploads } from "@/providers/attachment-upload/attachment-upload-context"
 
 /**
  * Header control that uploads files to the card via the shared upload context.

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { extname } from "./file-storage"
+import { extname } from "../src/file-storage"
 
 describe("extname", () => {
   test.each([

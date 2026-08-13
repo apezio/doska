@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { isValidKey, newKey } from "./key"
+import { isValidKey, newKey } from "../src/server/key"
 
 describe("newKey", () => {
   test("keeps a plain lowercase extension", () => {

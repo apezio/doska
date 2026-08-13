@@ -2,8 +2,9 @@ import { SidebarInset, SidebarProvider, cn } from "@doska/ui-kit"
 import type { ReactNode } from "react"
 import { useRoute } from "wouter"
 import { AppSidebar } from "@/components"
+import { CardRevealProvider } from "@/providers/card-reveal/card-reveal-provider"
 import { CardPanel } from "@/components/card-panel/card-panel"
-import { DeckProvider } from "@/components/deck/deck-context"
+import { DeckProvider } from "@/providers/deck/deck-context"
 import { useUndoShortcut } from "@/lib/hooks"
 import { routes } from "@/lib/routes"
 
@@ -21,20 +22,22 @@ export function AppShell({ deck, cardCloseHref, children }: IProps) {
 
   return (
     <DeckProvider value={deck}>
-      {/* `--app-height` tracks the keyboard on touch devices; `svh` elsewhere. */}
-      <SidebarProvider className="h-(--app-height,100svh)">
-        <AppSidebar />
-        <SidebarInset
-          className={cn(
-            "min-w-0 overflow-hidden border border-border",
-            "md:transition-[margin] md:duration-200 md:ease-linear",
-            isCardOpen && "md:mr-0"
-          )}
-        >
-          {children}
-        </SidebarInset>
-        {cardCloseHref && <CardPanel closeHref={cardCloseHref} />}
-      </SidebarProvider>
+      <CardRevealProvider>
+        {/* `--app-height` tracks the keyboard on touch devices; `svh` elsewhere. */}
+        <SidebarProvider className="h-(--app-height,100svh)">
+          <AppSidebar />
+          <SidebarInset
+            className={cn(
+              "min-w-0 overflow-hidden border border-border",
+              "md:transition-[margin] md:duration-200 md:ease-linear",
+              isCardOpen && "md:mr-0"
+            )}
+          >
+            {children}
+          </SidebarInset>
+          {cardCloseHref && <CardPanel closeHref={cardCloseHref} />}
+        </SidebarProvider>
+      </CardRevealProvider>
     </DeckProvider>
   )
 }

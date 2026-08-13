@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { nameFor, subtitleFor } from "./account-labels"
-import type { Session } from "../api/auth"
+import { nameFor, subtitleFor } from "../src/data/account-labels"
+import type { Session } from "../src/api/auth"
 
 const SIGNED_IN: Session = {
   authed: true,

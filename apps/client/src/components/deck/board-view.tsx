@@ -2,7 +2,8 @@ import type { ReactNode } from "react"
 import { cn } from "@doska/ui-kit"
 
 interface IProps {
-  header: ReactNode
+  /** Omitted where the page around the board owns its top bar. */
+  header?: ReactNode
   /** The columns. */
   children: ReactNode
   isLoading?: boolean

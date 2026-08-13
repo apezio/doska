@@ -1,10 +1,7 @@
 import { useCallback } from "react"
 import { AnchoredMenu, useTriggerMenu } from "./menu"
-import {
-  filterWikilinks,
-  toWikilink,
-  type WikilinkOption,
-} from "@doska/markdown"
+import { toWikilink, type WikilinkOption } from "@doska/markdown"
+import { rankBy } from "@doska/core/search"
 
 // `[[` followed by the query up to the caret. The query may contain spaces —
 // card titles do — but stops at a bracket or line break.
@@ -36,7 +33,12 @@ export function WikilinkMenu({
   enabled = true,
 }: IProps) {
   const getItems = useCallback(
-    (query: string) => filterWikilinks(options, query),
+    (query: string) =>
+      rankBy(options, query, (o) => ({
+        // `target` is the display id; the core matches on the number alone.
+        number: o.target.slice(o.target.lastIndexOf("-") + 1),
+        title: o.title,
+      })).map((r) => r.item),
     [options]
   )
 

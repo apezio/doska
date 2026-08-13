@@ -2,7 +2,7 @@ import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { FILES_DIR, FsServerStorage, fsStorageFromEnv } from "./fs-storage"
+import { FILES_DIR, FsServerStorage, fsStorageFromEnv } from "../src/server/fs-storage"
 
 let dir: string
 let storage: FsServerStorage

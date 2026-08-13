@@ -4,7 +4,7 @@ import { Menu, MenuContent, MenuItem, MenuTrigger, cn } from "@doska/ui-kit"
 import { useMoveCard } from "@doska/core/mutations"
 import { useBoard, useCard } from "@doska/core/queries"
 import { byPosition } from "@doska/core/utils"
-import { useDeck } from "../deck/deck-context"
+import { useDeck } from "@/providers/deck/deck-context"
 import { ColumnTag } from "../column/column-tag"
 
 /**

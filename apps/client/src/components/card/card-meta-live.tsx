@@ -1,7 +1,7 @@
 import { fallbackCard } from "@doska/core/seed"
 import { useCard, useCardCol } from "@doska/core/queries"
 import { useUpdateCard } from "@doska/core/mutations"
-import { useDeckPrefix } from "../deck/deck-context"
+import { useDeckPrefix } from "@/providers/deck/deck-context"
 import { CardMeta } from "./card-meta"
 
 interface IProps {

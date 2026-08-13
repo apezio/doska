@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import type { KeyRange } from "@doska/ports"
-import type { Runtime } from "../../runtime"
-import { installRuntime } from "../../runtime"
-import { CARDS, COLUMNS, DASHBOARDS, META_STORE } from "../constants"
+import type { Runtime } from "../src/runtime"
+import { installRuntime } from "../src/runtime"
+import { CARDS, COLUMNS, DASHBOARDS, META_STORE } from "../src/api/constants"
 
 /** An in-memory `ClientDB`, keyed `store/key`, honouring the cards-by-column index. */
 const rows = new Map<string, unknown>()
@@ -89,7 +89,7 @@ describe("dropBoardLocally", () => {
   it("removes the board's row, contents and cursor, and nothing else", async () => {
     seedBoards()
 
-    const { dropBoardLocally } = await import("./drop-board-locally")
+    const { dropBoardLocally } = await import("../src/api/operations/drop-board-locally")
     await dropBoardLocally("gone")
 
     expect(keysIn(DASHBOARDS)).toEqual(["mine"])
@@ -103,13 +103,13 @@ describe("dropBoardLocally", () => {
   it("leaves pending at zero when the board had unpushed edits", async () => {
     seedBoards()
 
-    const { sync } = await import("../sync/sync-engine")
+    const { sync } = await import("../src/api/sync/sync-engine")
     sync.markDirty(DASHBOARDS, "gone")
     sync.markDirty(COLUMNS, "col-gone")
     sync.markDirty(CARDS, "card-gone")
     expect(sync.getState().pending).toBe(3)
 
-    const { dropBoardLocally } = await import("./drop-board-locally")
+    const { dropBoardLocally } = await import("../src/api/operations/drop-board-locally")
     await dropBoardLocally("gone")
 
     expect(sync.getState().pending).toBe(0)
@@ -118,11 +118,11 @@ describe("dropBoardLocally", () => {
   it("keeps another board's pending edits", async () => {
     seedBoards()
 
-    const { sync } = await import("../sync/sync-engine")
+    const { sync } = await import("../src/api/sync/sync-engine")
     sync.markDirty(CARDS, "card-gone")
     sync.markDirty(CARDS, "card-mine")
 
-    const { dropBoardLocally } = await import("./drop-board-locally")
+    const { dropBoardLocally } = await import("../src/api/operations/drop-board-locally")
     await dropBoardLocally("gone")
 
     expect(sync.isDirty(CARDS, "card-mine")).toBe(true)

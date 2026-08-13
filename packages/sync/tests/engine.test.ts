@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { KeyValue } from "@doska/ports"
-import { DirtyStore } from "./dirty"
-import type { PushInput, PushResult, SyncDriver } from "./driver"
-import { SyncEngine, type SyncFailure } from "./engine"
+import { DirtyStore } from "../src/dirty"
+import type { PushInput, PushResult, SyncDriver } from "../src/driver"
+import { SyncEngine, type SyncFailure } from "../src/engine"
 
 /** A change is just the ref it occupies; enough to drive the engine. */
 type Change = { ref: string }

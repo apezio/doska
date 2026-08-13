@@ -1,15 +1,14 @@
 import { useState } from "react"
 import { useLocation } from "wouter"
 import { publicAttachmentUrl } from "@doska/core/public"
+import { groupCardsByColumn } from "@doska/core/utils"
 import type { PublicBoard as Snapshot } from "@doska/contract"
 import { AttachmentImage } from "../card/attachments/attachment-image"
 import { CardView } from "../card/card-view"
 import { ColumnView } from "../column/column-view"
 import { BoardView } from "../deck/board-view"
-import { groupCardsByColumn } from "../deck/group-cards"
 import { routes } from "@/lib/routes"
 import { PublicAttachments } from "./public-attachments"
-import { PublicHeader } from "./public-header"
 import { PublicMarkdown } from "./public-markdown"
 
 interface IProps {
@@ -28,7 +27,7 @@ export function PublicBoard({ token, snapshot }: IProps) {
   const grouped = groupCardsByColumn({ columns, cards })
 
   return (
-    <BoardView header={<PublicHeader title={dashboard.title} />}>
+    <BoardView>
       {grouped.map(({ column, cards: columnCards }) => {
         const showBody = expanded[column.id] ?? !column.collapsed
         return (

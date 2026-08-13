@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { tokenStyles, tokenizeMarkdown, type Token, type TokenKind } from "."
+import { tokenStyles, tokenizeMarkdown, type Token, type TokenKind } from "../src"
 
 /** The kinds on the first token whose text matches exactly. */
 function kindsOf(tokens: Token[], text: string): TokenKind[] {

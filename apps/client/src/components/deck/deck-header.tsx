@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import {
   Button,
   InvisibleInput,
@@ -12,15 +12,17 @@ import {
   ArrowRightLeft,
   Hash,
   MoreHorizontal,
+  Search,
   Trash2,
   Users,
 } from "lucide-react"
 import { PageHeader } from "../app/page-header"
 import { ConfirmDialog } from "../confirm-dialog"
+import { SearchModal } from "../search"
 import { ReorderColumnsModal } from "./reorder-columns/reorder-columns-modal"
 import { PrefixModal } from "./prefix-modal"
 import { ShareModal } from "./share/share-modal"
-import { useAuth } from "@/lib/hooks"
+import { useAuth, useSearchShortcut } from "@/lib/hooks"
 import type { Column } from "@doska/core/types"
 
 interface IProps {
@@ -50,8 +52,10 @@ export function DeckHeader({
   const [reorderOpen, setReorderOpen] = useState(false)
   const [prefixOpen, setPrefixOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   const { authed } = useAuth()
+  useSearchShortcut(useCallback(() => setSearchOpen(true), []))
 
   return (
     <PageHeader>
@@ -63,6 +67,15 @@ export function DeckHeader({
       />
 
       <div className="ml-auto flex items-center">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Search cards"
+          className="text-muted-foreground"
+          onClick={() => setSearchOpen(true)}
+        >
+          <Search />
+        </Button>
         <Menu>
           <MenuTrigger
             render={
@@ -129,6 +142,12 @@ export function DeckHeader({
         onOpenChange={setShareOpen}
         boardId={boardId}
         title={title}
+      />
+      <SearchModal
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        boardId={boardId}
+        prefix={prefix}
       />
       <PrefixModal
         open={prefixOpen}

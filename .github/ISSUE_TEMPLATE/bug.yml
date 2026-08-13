@@ -1,0 +1,62 @@
+name: Bug report
+description: Something works, but not the way it should.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, and what the app did back.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a board
+        2. Drag a card to another column
+        3. Reload
+    validations:
+      required: false
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where
+      options:
+        - Desktop app
+        - Web
+        - Self-hosted
+        - MCP
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: >
+        Settings shows it. On a self-hosted server, the server version too.
+      placeholder: 0.1.0
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: >
+        Screenshots, console output, whether it survives a reload. Sync bugs are
+        much easier to chase if you say how many devices were involved.
+    validations:
+      required: false

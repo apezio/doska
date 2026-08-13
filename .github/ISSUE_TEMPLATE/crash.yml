@@ -1,0 +1,47 @@
+name: Crash report
+description: The app went blank or showed the "Something broke" screen.
+title: "Crash: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If you got here from the "Report an issue" button, the error and
+        environment boxes are already filled in. Just describe what you were
+        doing and send it.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What you were doing
+      description: The last thing you did before the screen went blank.
+      placeholder: Typed "roadmap" into the search box on my main board.
+    validations:
+      required: true
+
+  - type: textarea
+    id: stack
+    attributes:
+      label: Error
+      description: Copied from the crash screen. Leave as is.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Version, platform and browser. Leave as is.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: >
+        Does it happen every time, or did it happen once? Screenshots help.
+    validations:
+      required: false

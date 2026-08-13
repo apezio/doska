@@ -40,25 +40,17 @@ export class ErrorBoundary extends Component<IProps, IState> {
   }
 
   private issueHref(error: Error): string {
-    const stack = (error.stack ?? "").slice(0, STACK_BUDGET)
-    const body = [
-      "### What I was doing",
-      "",
-      "",
-      "### Error",
-      "",
-      "```",
-      stack || error.message,
-      "```",
-      "",
-      `Version: ${this.state.version}`,
-      `Platform: ${isDesktop() ? "desktop" : "web"}`,
-      `User agent: ${navigator.userAgent}`,
-    ].join("\n")
-
+    // Keys match the field ids in .github/ISSUE_TEMPLATE/crash.yml — that is
+    // how an issue form takes a prefill. Renaming one there breaks it here.
     const params = new URLSearchParams({
+      template: "crash.yml",
       title: `Crash: ${error.message}`,
-      body,
+      stack: (error.stack ?? "").slice(0, STACK_BUDGET) || error.message,
+      environment: [
+        `Version: ${this.state.version}`,
+        `Platform: ${isDesktop() ? "desktop" : "web"}`,
+        `User agent: ${navigator.userAgent}`,
+      ].join("\n"),
     })
     return `${ISSUE_URL}?${params}`
   }

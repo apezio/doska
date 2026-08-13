@@ -74,10 +74,7 @@ function DateInput({
 
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
-      <PopoverPrimitive.Trigger
-        className={cn("inline-flex", className)}
-        render={<span />}
-      >
+      <PopoverPrimitive.Trigger className={cn("inline-flex", className)}>
         {children}
       </PopoverPrimitive.Trigger>
       {open && (

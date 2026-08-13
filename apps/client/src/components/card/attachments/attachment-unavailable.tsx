@@ -18,7 +18,7 @@ export function AttachmentUnavailable({ className, compact, source }: IProps) {
   const message = attachmentUnavailable(connection, source)
 
   return (
-    <div
+    <span
       role="img"
       aria-label={message}
       title={compact ? message : undefined}
@@ -28,6 +28,6 @@ export function AttachmentUnavailable({ className, compact, source }: IProps) {
       )}
     >
       {!compact && <span className="text-xs">{message}</span>}
-    </div>
+    </span>
   )
 }

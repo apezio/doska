@@ -86,7 +86,7 @@ export function CardView({
     <div
       {...props}
       className={cn(
-        "group relative mb-3 w-full max-w-sm cursor-pointer scroll-mt-[calc(--spacing(15)+10px)] rounded-lg",
+        "group relative mb-3 w-full max-w-sm cursor-pointer scroll-mx-6 scroll-mt-[calc(--spacing(15)+10px)] rounded-lg",
         "touch-manipulation select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none]",
         isRevealed &&
           "ring-2 ring-primary ring-offset-2 ring-offset-background transition-shadow"

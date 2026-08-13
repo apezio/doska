@@ -7,4 +7,4 @@ body:
     attributes:
       label: What you have in mind
     validations:
-      required: true
+      required: false

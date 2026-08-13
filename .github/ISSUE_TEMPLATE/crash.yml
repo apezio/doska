@@ -17,7 +17,7 @@ body:
       description: The last thing you did before the screen went blank.
       placeholder: Typed "roadmap" into the search box on my main board.
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: stack
@@ -26,7 +26,7 @@ body:
       description: Copied from the crash screen. Leave as is.
       render: text
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: environment
@@ -35,7 +35,7 @@ body:
       description: Version, platform and browser. Leave as is.
       render: text
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: extra

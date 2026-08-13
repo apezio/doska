@@ -8,14 +8,14 @@ body:
       label: What happened
       description: What you did, and what the app did back.
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: expected
     attributes:
       label: What you expected instead
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: steps
@@ -39,7 +39,7 @@ body:
         - MCP
         - Not sure
     validations:
-      required: true
+      required: false
 
   - type: input
     id: version

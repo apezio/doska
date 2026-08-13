@@ -6,9 +6,11 @@ import type { JSHandle, Locator, Page } from "@playwright/test"
 /*  container run — so nothing here stubs the backend.                          */
 /* -------------------------------------------------------------------------- */
 
-/** A 1×1 PNG, small enough to inline as base64. */
+/**
+ * A 1×1 PNG, small enough to inline as base64. Must decode in every browser
+ */
 export const PNG_BASE64 =
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M8AAAMBAQDJ/pLvAAAAAElFTkSuQmCC"
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII="
 
 export const PNG = Buffer.from(PNG_BASE64, "base64")
 

@@ -99,7 +99,9 @@ test.describe("dropping and pasting files", { tag: "@container" }, () => {
     const notes = page.getByPlaceholder("Notes")
     const transfer = await pngDataTransfer(page, "chart.png")
     await notes.dispatchEvent("drop", { dataTransfer: transfer })
-    await expect(cardPanel(page).getByText("chart")).toBeVisible()
+    await expect(
+      cardPanel(page).getByRole("button", { name: "chart.png" })
+    ).toBeVisible()
 
     await notes.click()
     await notes.pressSequentially("/chart")

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { DashboardListDriver } from "./dashboard-list-driver"
+import { DashboardListDriver } from "../src/api/sync/drivers/dashboard-list-driver"
 
 describe("DashboardListDriver.applyRemoved", () => {
   it("forgets every withdrawn board, one at a time", async () => {

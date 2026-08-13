@@ -1,5 +1,5 @@
-import type { Board } from "@doska/core/types"
-import { byPosition } from "@doska/core/utils"
+import type { Board } from "../types"
+import { byPosition } from "./position"
 
 /** Columns in board order, each with its cards in theirs. */
 export function groupCardsByColumn(

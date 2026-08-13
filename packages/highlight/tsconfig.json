@@ -5,5 +5,5 @@
     // decides what a token looks like.
     "lib": ["ES2023"]
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }

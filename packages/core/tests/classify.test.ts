@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/client"
 import { beforeEach, describe, expect, it } from "vitest"
-import type { Runtime } from "../../runtime"
-import { installRuntime } from "../../runtime"
+import type { Runtime } from "../src/runtime"
+import { installRuntime } from "../src/runtime"
 
 let online = true
 
@@ -19,7 +19,7 @@ beforeEach(() => {
 
 describe("classify", () => {
   it("tells a dead session from a board we may not have", async () => {
-    const { classify } = await import("./sync-engine")
+    const { classify } = await import("../src/api/sync/sync-engine")
 
     expect(classify(new ORPCError("UNAUTHORIZED", { status: 401 }))).toBe(
       "auth"
@@ -31,7 +31,7 @@ describe("classify", () => {
   })
 
   it("calls anything offline while the device is offline", async () => {
-    const { classify } = await import("./sync-engine")
+    const { classify } = await import("../src/api/sync/sync-engine")
     online = false
 
     expect(classify(new ORPCError("FORBIDDEN", { status: 403 }))).toBe(

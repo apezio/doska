@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { KeyRange } from "@doska/ports"
-import type { Runtime } from "../runtime"
-import { installRuntime } from "../runtime"
-import { CARDS, COLUMNS, DASHBOARDS, META_STORE } from "./constants"
+import type { Runtime } from "../src/runtime"
+import { installRuntime } from "../src/runtime"
+import { CARDS, COLUMNS, DASHBOARDS, META_STORE } from "../src/api/constants"
 
 /** An in-memory `ClientDB`, keyed `store/key` like the hlc test's. */
 const rows = new Map<string, unknown>()
@@ -54,7 +54,7 @@ const reset = vi.fn()
 
 // The facade opens network connections on construction, and the wipe only ever
 // reaches it through `reset`.
-vi.mock("./sync", () => ({ sync: { reset: () => reset() } }))
+vi.mock("../src/api/sync", () => ({ sync: { reset: () => reset() } }))
 
 /** Records and bookkeeping as they stand after account A has synced. */
 function seedAccountA() {
@@ -85,7 +85,7 @@ describe("reconcileIdentity", () => {
     seedAccountA()
     const before = remaining()
 
-    const { reconcileIdentity } = await import("./identity")
+    const { reconcileIdentity } = await import("../src/api/identity")
     expect(await reconcileIdentity("user-a")).toBe(false)
 
     expect(remaining()).toEqual(before)
@@ -96,7 +96,7 @@ describe("reconcileIdentity", () => {
     seedAccountA()
     kvStore.set("doska:last-board", "board-a")
 
-    const { reconcileIdentity } = await import("./identity")
+    const { reconcileIdentity } = await import("../src/api/identity")
     expect(await reconcileIdentity("user-b")).toBe(true)
 
     expect(inStore(CARDS)).toEqual([])
@@ -116,7 +116,7 @@ describe("reconcileIdentity", () => {
     seedAccountA()
     const before = remaining()
 
-    const { reconcileIdentity } = await import("./identity")
+    const { reconcileIdentity } = await import("../src/api/identity")
     expect(await reconcileIdentity(null)).toBe(false)
 
     expect(remaining()).toEqual(before)
@@ -130,7 +130,7 @@ describe("reconcileIdentity", () => {
       deletedAt: null,
     })
 
-    const { reconcileIdentity } = await import("./identity")
+    const { reconcileIdentity } = await import("../src/api/identity")
     expect(await reconcileIdentity("user-a")).toBe(false)
 
     expect(inStore(DASHBOARDS)).toEqual(["local"])
@@ -143,7 +143,7 @@ describe("hasUnclaimedLocalBoards", () => {
   it("is false once an account owns this device", async () => {
     seedAccountA()
 
-    const { hasUnclaimedLocalBoards } = await import("./identity")
+    const { hasUnclaimedLocalBoards } = await import("../src/api/identity")
     expect(await hasUnclaimedLocalBoards()).toBe(false)
   })
 
@@ -154,7 +154,7 @@ describe("hasUnclaimedLocalBoards", () => {
       deletedAt: null,
     })
 
-    const { hasUnclaimedLocalBoards } = await import("./identity")
+    const { hasUnclaimedLocalBoards } = await import("../src/api/identity")
     expect(await hasUnclaimedLocalBoards()).toBe(false)
   })
 
@@ -165,7 +165,7 @@ describe("hasUnclaimedLocalBoards", () => {
       deletedAt: 6,
     })
 
-    const { hasUnclaimedLocalBoards } = await import("./identity")
+    const { hasUnclaimedLocalBoards } = await import("../src/api/identity")
     expect(await hasUnclaimedLocalBoards()).toBe(false)
   })
 
@@ -176,7 +176,7 @@ describe("hasUnclaimedLocalBoards", () => {
       deletedAt: null,
     })
 
-    const { hasUnclaimedLocalBoards } = await import("./identity")
+    const { hasUnclaimedLocalBoards } = await import("../src/api/identity")
     expect(await hasUnclaimedLocalBoards()).toBe(true)
   })
 })

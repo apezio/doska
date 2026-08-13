@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest"
-import { FsServerStorage } from "./fs-storage"
-import { S3ServerStorage, s3StorageFromEnv } from "./s3-storage"
-import { storageFromEnv } from "./storage-from-env"
+import { FsServerStorage } from "../src/server/fs-storage"
+import { S3ServerStorage, s3StorageFromEnv } from "../src/server/s3-storage"
+import { storageFromEnv } from "../src/server/storage-from-env"
 
 describe("storageFromEnv", () => {
   test("no bucket → the local volume, with nothing configured", () => {

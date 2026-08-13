@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { attachmentUnavailable, imageUnavailable } from "./attachment-labels"
+import { attachmentUnavailable, imageUnavailable } from "../src/data/attachment-labels"
 
 describe("attachmentUnavailable", () => {
   it("blames the connection when sync has dropped", () => {

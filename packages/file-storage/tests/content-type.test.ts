@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { dispositionFor, resolveType, safeMime } from "./content-type"
+import { dispositionFor, resolveType, safeMime } from "../src/server/content-type"
 
 describe("safeMime", () => {
   test.each([

@@ -20,15 +20,7 @@ export function Hero() {
     <div className="mx-auto max-w-6xl px-4 sm:px-6">
       <section className="pt-10 pb-10 sm:pt-16">
         <p className="mb-4 font-mono text-sm tracking-tight text-muted-foreground">
-          Open source · local-first · by{" "}
-          <a
-            href={author}
-            target="_blank"
-            rel="noreferrer"
-            className="underline underline-offset-2 hover:text-foreground"
-          >
-            romenkova
-          </a>
+          Open source · local-first
         </p>
         <h1 className="max-w-2xl text-4xl font-black tracking-tight sm:text-5xl">
           A Kanban board <Typewriter phrases={phrases} />

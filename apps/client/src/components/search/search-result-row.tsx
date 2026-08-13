@@ -54,26 +54,22 @@ export function SearchResultRow({
       onMouseEnter={onHighlight}
       className={cn(
         "flex w-full items-center gap-3 px-3 py-2 text-left",
-        // The last row sits on the modal's rounded bottom edge, so its active
-        // background has to follow it.
         "md:last:rounded-b-xl",
         active && "bg-accent text-accent-foreground"
       )}
     >
-      {displayId && (
-        // Plain text, not `CardId` — that one is a click-to-copy button and
-        // would swallow the row's click.
-        <span className="shrink-0 font-mono text-xs text-muted-foreground">
-          {displayId}
-        </span>
-      )}
       <span className="min-w-0 flex-1">
-        <span className="line-clamp-1">
+        <span className="line-clamp-1 text-base">
           <Segments segments={hit.title} />
         </span>
         {hit.snippet && (
-          <span className="line-clamp-1 text-xs text-muted-foreground">
+          <span className="line-clamp-1 text-muted-foreground">
             <Segments segments={hit.snippet} />
+          </span>
+        )}
+        {displayId && (
+          <span className="shrink-0 font-mono text-xs text-muted-foreground">
+            #{displayId}
           </span>
         )}
       </span>

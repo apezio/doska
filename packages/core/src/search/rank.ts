@@ -37,8 +37,11 @@ const FIELDS = Object.keys(WEIGHTS) as (keyof Fields)[]
  * card-id prefix is the same for every card and carries no information.
  */
 function numberTerm(term: string): string | null {
-  const stripped = term.replace(/^[a-z]+-?/, "")
-  return /\d/.test(stripped) ? stripped : null
+  // A prefix can hold digits of its own ("UB5-12"), so cut at the dash rather
+  // than at the letters; without a dash, only leading letters can be prefix.
+  const dash = term.indexOf("-")
+  const tail = dash === -1 ? term.replace(/^[a-z]+/, "") : term.slice(dash + 1)
+  return /^\d+$/.test(tail) ? tail : null
 }
 
 export function queryTerms(query: string): string[] {

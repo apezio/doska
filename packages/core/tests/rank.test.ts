@@ -56,6 +56,8 @@ describe("rankBy", () => {
       const bare = rank(items, "12")
       expect(rank(items, "road-12")).toEqual(bare)
       expect(rank(items, "ROAD-12")).toEqual(bare)
+      // A prefix carrying digits, which a board derives from a name like "UB5".
+      expect(rank(items, "UB5-12")).toEqual(bare)
     })
 
     it("puts a partial number below an exact one", () => {

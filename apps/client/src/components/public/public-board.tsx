@@ -9,7 +9,6 @@ import { ColumnView } from "../column/column-view"
 import { BoardView } from "../deck/board-view"
 import { routes } from "@/lib/routes"
 import { PublicAttachments } from "./public-attachments"
-import { PublicHeader } from "./public-header"
 import { PublicMarkdown } from "./public-markdown"
 
 interface IProps {
@@ -28,7 +27,7 @@ export function PublicBoard({ token, snapshot }: IProps) {
   const grouped = groupCardsByColumn({ columns, cards })
 
   return (
-    <BoardView header={<PublicHeader title={dashboard.title} />}>
+    <BoardView>
       {grouped.map(({ column, cards: columnCards }) => {
         const showBody = expanded[column.id] ?? !column.collapsed
         return (

@@ -1,0 +1,1 @@
+ALTER TABLE "dashboards" ADD COLUMN "sort" jsonb DEFAULT '[]'::jsonb NOT NULL;

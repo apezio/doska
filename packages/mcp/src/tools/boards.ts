@@ -102,6 +102,7 @@ export function registerBoardTools(server: McpServer, board: Board): void {
           title,
           existing.map((d) => d.prefix)
         ),
+        sort: [],
         updatedAt: board.now(),
         deletedAt: null,
       }

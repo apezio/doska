@@ -57,6 +57,7 @@ export const dashboards = pgTable(
     title: text("title").notNull(),
     position: text("position").notNull(),
     prefix: text("prefix").notNull().default(""),
+    sort: jsonb("sort").$type<string[]>().notNull().default([]),
     ownerId: text("owner_id"),
     publicToken: text("public_token").unique(),
     publishedAt: bigint("published_at", { mode: "number" }),
@@ -95,6 +96,7 @@ export const cards = pgTable(
     position: text("position").notNull(),
     number: integer("number"),
     deadline: text("deadline"),
+    priority: text("priority").notNull().default(""),
     attachments: jsonb("attachments")
       .$type<Attachment[]>()
       .notNull()

@@ -2,6 +2,7 @@ import "@/lib/adapters/install" // must stay first
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { QueryClientProvider } from "@tanstack/react-query"
+import { MotionConfig } from "motion/react"
 import { LoginPromptProvider } from "@/providers/login-prompt/login-prompt-provider"
 import { ThemeProvider } from "@/providers/theme/theme-provider"
 import { isDesktop } from "@/lib/platform"
@@ -60,7 +61,9 @@ if (isPublicLink) {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <LoginPromptProvider>
-              <Router />
+              <MotionConfig reducedMotion="user">
+                <Router />
+              </MotionConfig>
               <UpdateBanner />
               <ConnectionBanner />
               <WindowDragRegion />

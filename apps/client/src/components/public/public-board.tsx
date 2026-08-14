@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useLocation } from "wouter"
 import { publicAttachmentUrl } from "@doska/core/public"
-import { groupCardsByColumn } from "@doska/core/utils"
+import { groupCardsByColumn, sortCards } from "@doska/core/utils"
 import type { PublicBoard as Snapshot } from "@doska/contract"
 import { AttachmentImage } from "../card/attachments/attachment-image"
 import { CardView } from "../card/card-view"
@@ -25,10 +25,12 @@ export function PublicBoard({ token, snapshot }: IProps) {
   const prefix = dashboard.prefix ?? ""
 
   const grouped = groupCardsByColumn({ columns, cards })
+  const sort = dashboard.sort ?? []
 
   return (
     <BoardView>
       {grouped.map(({ column, cards: columnCards }) => {
+        const ordered = sortCards(columnCards, sort)
         const showBody = expanded[column.id] ?? !column.collapsed
         return (
           <ColumnView
@@ -41,7 +43,7 @@ export function PublicBoard({ token, snapshot }: IProps) {
               setExpanded((state) => ({ ...state, [column.id]: !showBody }))
             }
           >
-            {columnCards.map((card) => (
+            {ordered.map((card) => (
               <PublicMarkdown
                 key={card.id}
                 cardId={card.id}

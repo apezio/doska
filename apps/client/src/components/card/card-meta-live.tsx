@@ -11,7 +11,7 @@ interface IProps {
   className?: string
 }
 
-/** `CardMeta` for a card the viewer can edit: reads it live, writes the deadline back. */
+/** `CardMeta` for a card the viewer can edit: reads it live, writes edits back. */
 export function CardMetaLive({ cardId, body, className }: IProps) {
   const prefix = useDeckPrefix()
   const { data: card = fallbackCard } = useCard(cardId)
@@ -25,6 +25,7 @@ export function CardMetaLive({ cardId, body, className }: IProps) {
       prefix={prefix}
       body={body}
       onChangeDeadline={(deadline) => updateCard({ deadline })}
+      onChangePriority={(priority) => updateCard({ priority })}
       className={className}
     />
   )

@@ -13,6 +13,7 @@ export {
   prefixTaken,
   validatePrefix,
 } from "./set-dashboard-prefix"
+export { setDashboardSort } from "./set-dashboard-sort"
 export { deleteDashboard } from "./delete-dashboard"
 export { dropBoardLocally } from "./drop-board-locally"
 export { createColumn } from "./create-column"

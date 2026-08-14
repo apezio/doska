@@ -105,6 +105,39 @@ describe("dashboards.sync", () => {
     expect(rows).toHaveLength(1)
     expect(rows[0].prefix).toBe("ROAD")
   })
+
+  test("a board's sort choice survives push and pull, on the boards-list channel", async () => {
+    const res = await client.dashboards.sync({
+      since: 0,
+      changes: [
+        { store: "dashboards", record: {
+          id: "b1", title: "Roadmap", position: "a",
+          prefix: "ROAD", sort: ["priority"], updatedAt: now, deletedAt: null,
+        } },
+      ],
+    })
+
+    const pulled = res.changes.find((c) => c.record.id === "b1")
+    expect((pulled?.record as { sort: string[] }).sort).toEqual(["priority"])
+
+    const rows = await getDB().select().from(dashboards)
+    expect(rows[0].sort).toEqual(["priority"])
+  })
+
+  test("a board pushed without a sort defaults to empty", async () => {
+    const res = await client.dashboards.sync({
+      since: 0,
+      changes: [
+        { store: "dashboards", record: {
+          id: "b1", title: "Roadmap", position: "a",
+          prefix: "ROAD", updatedAt: now, deletedAt: null,
+        } },
+      ],
+    })
+
+    const pulled = res.changes.find((c) => c.record.id === "b1")
+    expect((pulled?.record as { sort: string[] }).sort).toEqual([])
+  })
 })
 
 describe("guard", () => {

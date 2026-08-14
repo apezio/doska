@@ -70,23 +70,10 @@ export function MdWikilink({
         onOpen && "cursor-pointer"
       )}
     >
-      {/* The target and the label share a background, so the padding facing
-          each other reads as one wide gap — both sides of that seam are
-          tightened so all three segments look evenly set. */}
       <span
         className={cn(
           SEGMENT,
-          "wikilink-target rounded-l-[0.5em] pr-[0.3em] whitespace-nowrap"
-        )}
-      >
-        {target}
-      </span>
-      {/* The label is the reference's subject, so it gets the readable
-          foreground — the target and the badge stay muted around it. */}
-      <span
-        className={cn(
-          SEGMENT,
-          "wikilink-label pl-[0.3em] font-semibold text-card-foreground",
+          "wikilink-label rounded-l-[0.5em] pl-[0.5em] font-semibold text-card-foreground",
           !badge && "rounded-r-[0.5em]"
         )}
       >

@@ -139,6 +139,32 @@ export async function editCardBody(
   await waitForPanelToClose(page)
 }
 
+/** The priority trigger/chip on the board card titled `title`. */
+export function cardPriorityButton(page: Page, title: string) {
+  return card(page, title).getByRole("button", { name: "Card priority" })
+}
+
+/** The priority chip's accessible label ("Priority: high"), or null when unset. */
+export function cardPriorityLabel(page: Page, title: string) {
+  return card(page, title).locator('[aria-label^="Priority:"]')
+}
+
+/**
+ * Sets the card titled `title`'s priority from its board card meta row.
+ * `label` is one of the picker's option labels: "high", "med.", "low", or
+ * "No priority" to clear it.
+ */
+export async function setCardPriority(
+  page: Page,
+  title: string,
+  label: string
+): Promise<void> {
+  await cardPriorityButton(page, title).click()
+  await page.getByRole("menuitem", { name: label }).click()
+  // The menu stays open on click (closeOnClick={false}); dismiss it.
+  await page.keyboard.press("Escape")
+}
+
 /**
  * Keyboard-drags the card titled `title`: focus it, Space to lift, the given
  * moves (e.g. "ArrowDown"/"ArrowRight"), Space to drop. The card element is its
@@ -187,6 +213,7 @@ export async function remoteAddCard(
           columnId: col.record.id,
           number: null,
           deadline: null,
+          priority: "",
           attachments: [],
           updatedAt: Date.now(),
           deletedAt: null,

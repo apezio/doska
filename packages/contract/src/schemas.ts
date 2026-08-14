@@ -41,6 +41,8 @@ export const CardSchema = z.object({
   number: z.number().nullable().default(null),
   /** Optional deadline as an ISO date string (`YYYY-MM-DD`); `null` when unset. */
   deadline: z.string().nullable().default(null),
+  /** Importance: `high` / `medium` / `low`, empty for none. See `PRIORITIES`. */
+  priority: z.string().default(""),
   /** Attached files; travels with the card's last-writer-wins record. */
   attachments: z.array(AttachmentSchema).default([]),
   updatedAt: z.number(),
@@ -75,6 +77,7 @@ export const DashboardSchema = z.object({
    * editable in board settings. Empty only for boards created before card ids.
    */
   prefix: z.string().default(""),
+  sort: z.array(z.string()).default([]),
   updatedAt: z.number(),
   deletedAt: z.number().nullable(),
 })

@@ -4,6 +4,7 @@ import { X } from "lucide-react"
 import { Button } from "./button"
 import { Calendar } from "./calendar"
 import { cn } from "./lib/cn"
+import { focusTriggerOnKeyboardClose } from "./lib/final-focus"
 
 const ISO = "yyyy-MM-dd"
 
@@ -45,6 +46,7 @@ export default function DateInputCalendar({
       >
         <PopoverPrimitive.Popup
           data-slot="date-input-popup"
+          finalFocus={focusTriggerOnKeyboardClose}
           className={cn(
             "overflow-hidden rounded-lg border bg-popover",
             "text-popover-foreground shadow-md outline-none",

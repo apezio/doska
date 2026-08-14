@@ -28,6 +28,12 @@ Deadlines
 - The app has an upcoming view across every board: overdue cards first, then
   today, then the next 60 days. list_upcoming returns exactly that set.
 
+Priority
+- A card may carry one of high, medium or low, or none at all. Pass null on
+  create_card or update_card for none; search_cards filters by it.
+- It is an ordering hint, not a deadline: a board can be sorted by priority, and
+  nothing expires when one is set.
+
 Card bodies: GitHub-flavored Markdown, plus these
 - Task lists (- [ ] / - [x]) are first class: the card shows a done/total count
   and the boxes are clickable. Use check_task to tick one instead of rewriting

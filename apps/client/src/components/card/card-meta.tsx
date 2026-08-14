@@ -3,6 +3,7 @@ import { cardDisplayId } from "@doska/contract/prefix"
 import { taskProgress } from "@doska/markdown"
 import type { Card, Column } from "@doska/core/types"
 import { CardDeadline } from "./deadline/card-deadline"
+import { CardPriority } from "./priority/card-priority"
 
 interface IProps {
   card: Card
@@ -13,16 +14,19 @@ interface IProps {
   body?: string
   /** Omit to show the deadline without a picker. */
   onChangeDeadline?: (deadline: string | null) => void
+  /** Omit to show the priority without a picker. */
+  onChangePriority?: (priority: string) => void
   className?: string
 }
 
-/** A card's id, task progress and deadline — on the board card and in its panel. */
+/** A card's id, task progress, deadline and priority — on the board card and in its panel. */
 export function CardMeta({
   card,
   column,
   prefix,
   body,
   onChangeDeadline,
+  onChangePriority,
   className,
 }: IProps) {
   const displayId = cardDisplayId(prefix, card.number)
@@ -37,6 +41,7 @@ export function CardMeta({
         value={card.deadline}
         onChange={onChangeDeadline}
       />
+      <CardPriority value={card.priority} onChange={onChangePriority} />
     </div>
   )
 }

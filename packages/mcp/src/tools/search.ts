@@ -4,6 +4,7 @@ import { cardDisplayId } from "@doska/contract/prefix"
 import { z } from "zod"
 import type { Board } from "../board"
 import { addDays, todayIso, UPCOMING_DAYS } from "@doska/utils/dates"
+import { PRIORITY_IDS } from "./cards"
 import { reply } from "./reply"
 import { shapeCard } from "./shape"
 
@@ -61,7 +62,8 @@ export function registerSearchTools(server: McpServer, board: Board): void {
     {
       title: "Search cards",
       description:
-        "Find cards across every board by text, deadline range, or column. " +
+        "Find cards across every board by text, deadline range, priority, " +
+        "or column. " +
         "Searches titles and Markdown bodies, so it also finds " +
         "[[card]] links. Cheaper than reading whole boards when you " +
         "know roughly what you're after, and the way to turn a ROAD-12 into " +
@@ -80,6 +82,10 @@ export function registerSearchTools(server: McpServer, board: Board): void {
         deadlineFrom: z.string().optional().describe("Inclusive YYYY-MM-DD"),
         deadlineTo: z.string().optional().describe("Inclusive YYYY-MM-DD"),
         hasDeadline: z.boolean().optional(),
+        priority: z
+          .enum(PRIORITY_IDS)
+          .optional()
+          .describe("Only cards carrying this priority"),
         includeDone: z
           .boolean()
           .default(true)
@@ -94,6 +100,7 @@ export function registerSearchTools(server: McpServer, board: Board): void {
       deadlineFrom,
       deadlineTo,
       hasDeadline,
+      priority,
       includeDone,
       bodies,
       limit,
@@ -117,6 +124,8 @@ export function registerSearchTools(server: McpServer, board: Board): void {
         criteria.push(
           ({ card }) => card.deadline !== null && card.deadline <= deadlineTo
         )
+
+      if (priority) criteria.push(({ card }) => card.priority === priority)
 
       const needle = query?.trim().toLowerCase()
       if (needle) criteria.push((entry) => haystack(entry).includes(needle))

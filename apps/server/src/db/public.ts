@@ -155,6 +155,7 @@ export async function readPublicBoard(
       title: dashboards.title,
       position: dashboards.position,
       prefix: dashboards.prefix,
+      sort: dashboards.sort,
       updatedAt: dashboards.updatedAt,
       deletedAt: dashboards.deletedAt,
     })
@@ -185,6 +186,7 @@ export async function readPublicBoard(
         columnId: cards.columnId,
         number: cards.number,
         deadline: cards.deadline,
+        priority: cards.priority,
         attachments: cards.attachments,
         updatedAt: cards.updatedAt,
         deletedAt: cards.deletedAt,

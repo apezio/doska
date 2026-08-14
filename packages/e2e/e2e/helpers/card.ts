@@ -187,6 +187,7 @@ export async function remoteAddCard(
           columnId: col.record.id,
           number: null,
           deadline: null,
+          priority: "",
           attachments: [],
           updatedAt: Date.now(),
           deletedAt: null,

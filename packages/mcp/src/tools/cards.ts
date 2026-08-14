@@ -66,6 +66,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
         columnId,
         number: null,
         deadline: deadline ?? null,
+        priority: "",
         attachments: [],
         updatedAt: board.now(),
         deletedAt: null,

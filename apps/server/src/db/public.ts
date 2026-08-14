@@ -185,6 +185,7 @@ export async function readPublicBoard(
         columnId: cards.columnId,
         number: cards.number,
         deadline: cards.deadline,
+        priority: cards.priority,
         attachments: cards.attachments,
         updatedAt: cards.updatedAt,
         deletedAt: cards.deletedAt,

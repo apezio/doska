@@ -36,6 +36,7 @@ interface IProps extends DetailedHTMLProps<
   /** Omit to leave the body's task checkboxes inert. */
   onChangeBody?: (body: string) => void
   onChangeDeadline?: (deadline: string | null) => void
+  onChangePriority?: (priority: string) => void
   /** The card's attachments, drawn by whoever can resolve their URLs. */
   attachments?: ReactNode
   /** Draws an `attachment:<key>` image; the app and a public board find it differently. */
@@ -62,6 +63,7 @@ export function CardView({
   action,
   onChangeBody,
   onChangeDeadline,
+  onChangePriority,
   attachments,
   renderAttachmentImage,
   wrapCard = (card) => card,
@@ -113,6 +115,7 @@ export function CardView({
                 column={column}
                 prefix={prefix}
                 onChangeDeadline={onChangeDeadline}
+                onChangePriority={onChangePriority}
                 className="mt-2"
               />
             </CardContent>

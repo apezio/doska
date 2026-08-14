@@ -49,7 +49,11 @@ export function CardColumnPicker({ cardId }: { cardId: string }) {
           "hover:opacity-80 data-popup-open:opacity-80"
         )}
       >
-        <ColumnTag title={current.title} color={current.color} />
+        <ColumnTag
+          title={current.title}
+          color={current.color}
+          isTinted={false}
+        />
         <ChevronDown className="size-3.5 text-muted-foreground" />
       </MenuTrigger>
       <MenuContent>

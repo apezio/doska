@@ -29,6 +29,15 @@ export function useUpdateDashboardPrefix() {
   })
 }
 
+export function useSetDashboardSort() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, sort }: { id: string; sort: string[] }) =>
+      api.setDashboardSort(id, sort),
+    onSettled: () => qc.invalidateQueries({ queryKey: keys.dashboards }),
+  })
+}
+
 export function useDeleteDashboard() {
   const qc = useQueryClient()
   return useMutation({

@@ -273,6 +273,7 @@ export const seedDashboards: Dashboard[] = [
     title: "Welcome",
     position: "a0",
     prefix: "DECK",
+    sort: [],
     updatedAt: 0,
     deletedAt: null,
   },

@@ -106,6 +106,13 @@
       "when": 1786724418279,
       "tag": "0014_shocking_sister_grimm",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1786727319136,
+      "tag": "0015_clever_magneto",
+      "breakpoints": true
     }
   ]
 }

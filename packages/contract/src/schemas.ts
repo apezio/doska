@@ -77,6 +77,7 @@ export const DashboardSchema = z.object({
    * editable in board settings. Empty only for boards created before card ids.
    */
   prefix: z.string().default(""),
+  sort: z.array(z.string()).default([]),
   updatedAt: z.number(),
   deletedAt: z.number().nullable(),
 })

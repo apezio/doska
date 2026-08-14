@@ -24,6 +24,7 @@ export async function createDashboard(name: string): Promise<Dashboard> {
       name,
       list.map((d) => d.prefix)
     ),
+    sort: [],
     updatedAt: stamp(),
     deletedAt: null,
   }

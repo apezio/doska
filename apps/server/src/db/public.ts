@@ -155,6 +155,7 @@ export async function readPublicBoard(
       title: dashboards.title,
       position: dashboards.position,
       prefix: dashboards.prefix,
+      sort: dashboards.sort,
       updatedAt: dashboards.updatedAt,
       deletedAt: dashboards.deletedAt,
     })

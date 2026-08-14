@@ -6,7 +6,7 @@ import { Column } from "../column/column"
 import { AddColumn } from "../column/add-column"
 import { DraggableCard } from "../card/draggable-card"
 import { BoardView } from "./board-view"
-import { DeckHeader } from "./deck-header"
+import { DeckHeader } from "./deck-header/deck-header"
 import { SyncIndicator } from "./sync-indicator"
 
 interface IProps {
@@ -25,6 +25,7 @@ interface IProps {
   onRenameDashboardPrefix: (prefix: string) => void
   takenPrefixes: string[]
   onDeleteDashboard: () => void
+  onChangeSort: (sort: string[]) => void
   onDragEnd: (result: DropResult) => void
 }
 
@@ -44,6 +45,7 @@ export function Deck({
   onRenameDashboardPrefix,
   takenPrefixes,
   onDeleteDashboard,
+  onChangeSort,
   onDragEnd,
 }: IProps) {
   const [isDragging, setIsDragging] = useState(false)
@@ -73,6 +75,8 @@ export function Deck({
             onDelete={onDeleteDashboard}
             columns={[...board.columns].sort(byPosition)}
             onReorderColumns={onReorderColumns}
+            sort={dashboard.sort ?? []}
+            onChangeSort={onChangeSort}
           />
         }
       >

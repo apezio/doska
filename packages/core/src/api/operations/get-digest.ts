@@ -1,3 +1,4 @@
+import { priorityRank } from "@doska/tokens/priority"
 import { UPCOMING_DAYS } from "@doska/utils/dates"
 import type { Card, Column } from "../../types"
 import { addDays, byPosition, todayIso } from "../../utils"
@@ -102,11 +103,23 @@ export interface DigestGroup {
   entries: DigestCard[]
 }
 
+/** Priority first, then deadline — which only breaks ties in the overdue pile,
+ * the one group spanning several dates. */
+function byPriorityThenDeadline(a: DigestCard, b: DigestCard): number {
+  const rank = priorityRank(a.card.priority) - priorityRank(b.card.priority)
+  if (rank !== 0) return rank
+  const dateA = a.card.deadline ?? ""
+  const dateB = b.card.deadline ?? ""
+  if (dateA === dateB) return 0
+  return dateA < dateB ? -1 : 1
+}
+
 /**
  * Consecutive runs of one date, with everything dated before `today` swept
  * into a single overdue group ahead of them. `getDigest` returns deadline
  * order, so a plain pass groups them — no sort, and no map keyed by date. Done
  * cards never enter the overdue pile: a finished card isn't a missed deadline.
+ * Each group is then ordered by priority.
  */
 export function groupByDeadline(
   entries: DigestCard[],
@@ -125,5 +138,6 @@ export function groupByDeadline(
     else groups.push({ date, entries: [entry] })
   }
   if (overdue.length) groups.unshift({ date: "", entries: overdue })
+  for (const group of groups) group.entries.sort(byPriorityThenDeadline)
   return groups
 }

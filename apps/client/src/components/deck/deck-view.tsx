@@ -10,6 +10,7 @@ import {
   useSetColumnCollapsed,
   useSetColumnColor,
   useSetColumnDone,
+  useSetDashboardSort,
   useUpdateDashboardPrefix,
 } from "@doska/core/mutations"
 import { useBoard, useDashboards } from "@doska/core/queries"
@@ -34,6 +35,7 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
   const { mutate: renameDashboard } = useRenameDashboard()
   const { mutate: updateDashboardPrefix } = useUpdateDashboardPrefix()
   const { mutate: deleteDashboard } = useDeleteDashboard()
+  const { mutate: setDashboardSort } = useSetDashboardSort()
 
   // Every other live board's prefix, for the uniqueness check when editing.
   const { data: dashboards = [] } = useDashboards()
@@ -78,6 +80,7 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
       }
       takenPrefixes={takenPrefixes}
       onDeleteDashboard={() => deleteDashboard(id)}
+      onChangeSort={(sort) => setDashboardSort({ id, sort })}
       onDragEnd={handleDragEnd}
     />
   )

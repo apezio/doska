@@ -12,7 +12,7 @@ export async function setDashboardSort(
   sort: string[]
 ): Promise<void> {
   const dashboard = (await db.getDashboards()).find((d) => d.id === id)
-  if (!dashboard || sameKeys(dashboard.sort, sort)) return
+  if (!dashboard || sameKeys(dashboard.sort ?? [], sort)) return
   await db.setDashboard({ ...dashboard, sort, updatedAt: stamp() })
   sync.markDirty("dashboards", id)
 }

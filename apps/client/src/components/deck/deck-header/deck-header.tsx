@@ -1,0 +1,60 @@
+import { InvisibleInput } from "@doska/ui-kit"
+import { PageHeader } from "../../app/page-header"
+import { BoardActionsMenu } from "./board-actions-menu"
+import { SearchButton } from "./search-button"
+import { SortMenu } from "./sort-menu"
+import type { Column } from "@doska/core/types"
+
+interface IProps {
+  boardId: string
+  title: string
+  prefix: string
+  takenPrefixes: string[]
+  columns: Column[]
+  sort: string[]
+  onRename: (name: string) => void
+  onRenamePrefix: (prefix: string) => void
+  onDelete: () => void
+  onReorderColumns: (changed: Column[]) => void
+  onChangeSort: (sort: string[]) => void
+}
+
+export function DeckHeader({
+  boardId,
+  title,
+  prefix,
+  takenPrefixes,
+  columns,
+  sort,
+  onRename,
+  onRenamePrefix,
+  onDelete,
+  onReorderColumns,
+  onChangeSort,
+}: IProps) {
+  return (
+    <PageHeader>
+      <InvisibleInput
+        value={title}
+        onCommit={onRename}
+        label="Board name"
+        className="min-w-40 text-base font-semibold sm:min-w-68"
+      />
+
+      <div className="ml-auto flex items-center gap-1">
+        <SearchButton boardId={boardId} prefix={prefix} />
+        <SortMenu sort={sort} onChangeSort={onChangeSort} />
+        <BoardActionsMenu
+          boardId={boardId}
+          title={title}
+          prefix={prefix}
+          takenPrefixes={takenPrefixes}
+          columns={columns}
+          onRenamePrefix={onRenamePrefix}
+          onDelete={onDelete}
+          onReorderColumns={onReorderColumns}
+        />
+      </div>
+    </PageHeader>
+  )
+}

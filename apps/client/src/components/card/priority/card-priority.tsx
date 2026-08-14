@@ -26,7 +26,9 @@ export function CardPriority({ value, onChange, className }: IProps) {
       <Menu>
         <MenuTrigger
           render={
-            <span
+            <button
+              type="button"
+              aria-label="Card priority"
               className={cn(
                 "inline-flex cursor-pointer items-center",
                 className

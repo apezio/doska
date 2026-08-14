@@ -51,7 +51,7 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
   const { mutate: moveColumn } = useMoveColumn(id)
   const { mutate: renameColumn } = useRenameColumn(id)
   const { mutate: deleteColumn } = useDeleteColumn(id)
-  const handleDragEnd = useDragEnd(board, moveCard)
+  const handleDragEnd = useDragEnd(board, moveCard, dashboard.sort ?? [])
 
   return (
     <Deck

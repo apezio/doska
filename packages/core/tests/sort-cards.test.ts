@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { Card } from "../src/types"
-import { sortCards } from "../src/utils"
+import { sameSortGroup, sortCards } from "../src/utils"
 
 const card = (id: string, fields: Partial<Card> = {}): Card =>
   ({
@@ -66,5 +66,25 @@ describe("sortCards", () => {
 
     expect(ids(cards, ["colour"])).toEqual(["b", "a"])
     expect(ids(cards, ["colour", "priority"])).toEqual(["a", "b"])
+  })
+})
+
+describe("sameSortGroup", () => {
+  const high = card("a", { priority: "high", deadline: "2026-09-01" })
+  const alsoHigh = card("b", { priority: "high", deadline: "2026-08-15" })
+  const low = card("c", { priority: "low" })
+
+  it("groups cards no key can separate", () => {
+    expect(sameSortGroup(high, alsoHigh, ["priority"])).toBe(true)
+    expect(sameSortGroup(high, low, ["priority"])).toBe(false)
+  })
+
+  it("separates them once a later key looks at them", () => {
+    expect(sameSortGroup(high, alsoHigh, ["priority", "deadline"])).toBe(false)
+  })
+
+  it("groups everything when nothing sorts", () => {
+    expect(sameSortGroup(high, low, [])).toBe(true)
+    expect(sameSortGroup(high, low, ["colour"])).toBe(true)
   })
 })

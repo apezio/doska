@@ -2,6 +2,7 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu"
 import { ChevronRight } from "lucide-react"
 import { cn } from "./lib/cn"
+import { focusTriggerOnKeyboardClose } from "./lib/final-focus"
 
 function Menu({ ...props }: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="menu" {...props} />
@@ -42,6 +43,7 @@ function MenuContent({
       >
         <MenuPrimitive.Popup
           data-slot="menu-content"
+          finalFocus={focusTriggerOnKeyboardClose}
           className={cn(
             "min-w-36 overflow-hidden rounded-lg border bg-popover",
             "text-sm text-popover-foreground shadow-md outline-none",

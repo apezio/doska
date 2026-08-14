@@ -28,7 +28,9 @@ function preloadFonts(): Plugin {
       order: "post",
       handler(_html, ctx) {
         return Object.keys(ctx.bundle ?? {})
-          .filter((file) => /-(latin|cyrillic)-wght-normal-[^/]+\.woff2$/.test(file))
+          .filter((file) =>
+            /-(latin|cyrillic)-wght-normal-[^/]+\.woff2$/.test(file)
+          )
           .map((file) => ({
             tag: "link",
             attrs: {
@@ -161,6 +163,8 @@ export default defineConfig({
             return "markdown"
           }
           if (id.includes("@hello-pangea/dnd")) return "dnd"
+          if (/[\\/](motion|motion-dom|motion-utils)[\\/]/.test(id))
+            return "motion"
           if (id.includes("@base-ui")) return "base-ui"
           if (/[\\/](react|react-dom|scheduler)[\\/]/.test(id)) return "react"
           return "vendor"

@@ -1,6 +1,11 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import type { Board, Card } from "@doska/core/types"
-import { byPosition, keyBetween } from "@doska/core/utils"
+import {
+  byPosition,
+  keyBetween,
+  sameSortGroup,
+  sortCards,
+} from "@doska/core/utils"
 
 /**
  * Builds the drop handler for the board: translates a drag result into the
@@ -8,7 +13,8 @@ import { byPosition, keyBetween } from "@doska/core/utils"
  */
 export function useDragEnd(
   board: Board | undefined,
-  moveCard: (changed: Card[]) => void
+  moveCard: (changed: Card[]) => void,
+  sort: string[]
 ) {
   return function handleDragEnd({
     source,
@@ -27,18 +33,22 @@ export function useDragEnd(
 
     // The destination column as rendered, minus the card being dropped, so the
     // insertion index lines up with the neighbors at the drop site.
-    const destCards = board.cards
-      .filter(
-        (c) => c.columnId === destination.droppableId && c.id !== moved.id
-      )
-      .sort(byPosition)
-
-    // Mint a key strictly between the neighbors — only the moved card changes,
-    // so concurrent reorders of other cards never collide with this write.
-    const position = keyBetween(
-      destCards[destination.index - 1],
-      destCards[destination.index]
+    const destCards = sortCards(
+      board.cards
+        .filter(
+          (c) => c.columnId === destination.droppableId && c.id !== moved.id
+        )
+        .sort(byPosition),
+      sort
     )
+
+    const tied = destCards
+      .map((card, index) => ({ card, index }))
+      .filter((entry) => sameSortGroup(entry.card, moved, sort))
+    const prev = tied.filter((e) => e.index < destination.index).at(-1)?.card
+    const next = tied.find((e) => e.index >= destination.index)?.card
+
+    const position = keyBetween(prev, next)
     if (position === null) return
 
     moveCard([{ ...moved, columnId: destination.droppableId, position }])

@@ -20,6 +20,11 @@ function isSortKey(key: string): key is SortKey {
   return key in comparators
 }
 
+/** Two cards the sort cannot tell apart, so their order is theirs to pick. */
+export function sameSortGroup(a: Card, b: Card, keys: string[]): boolean {
+  return keys.filter(isSortKey).every((key) => comparators[key](a, b) === 0)
+}
+
 export function sortCards(cards: Card[], keys: string[]): Card[] {
   const active = keys.filter(isSortKey)
   if (active.length === 0) return cards

@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd"
 import type { Board, Dashboard } from "@doska/core/types"
-import { byPosition, groupCardsByColumn } from "@doska/core/utils"
+import { byPosition, groupCardsByColumn, sortCards } from "@doska/core/utils"
+import { useLandingSlot } from "@/lib/hooks"
 import { Column } from "../column/column"
 import { AddColumn } from "../column/add-column"
 import { DraggableCard } from "../card/draggable-card"
@@ -51,12 +52,15 @@ export function Deck({
   const [isDragging, setIsDragging] = useState(false)
 
   const grouped = groupCardsByColumn(board)
+  const sort = dashboard.sort ?? []
+  const { hold, release, place } = useLandingSlot(sort.length > 0)
 
   return (
     <DragDropContext
       onDragStart={() => setIsDragging(true)}
       onDragEnd={(result) => {
         setIsDragging(false)
+        hold(result)
         onDragEnd(result)
       }}
     >
@@ -75,12 +79,13 @@ export function Deck({
             onDelete={onDeleteDashboard}
             columns={[...board.columns].sort(byPosition)}
             onReorderColumns={onReorderColumns}
-            sort={dashboard.sort ?? []}
+            sort={sort}
             onChangeSort={onChangeSort}
           />
         }
       >
         {grouped.map(({ column, cards }) => {
+          const ordered = place(sortCards(cards, sort), column.id)
           const showBody = !column.collapsed
           return (
             <Column
@@ -97,12 +102,14 @@ export function Deck({
               onChangeDone={(done) => onChangeColumnDone(column.id, done)}
               onDelete={() => onDeleteColumn(column.id)}
             >
-              {cards.map((card, index) => (
+              {ordered.map((card, index) => (
                 <DraggableCard
                   key={card.id}
                   id={card.id}
                   index={index}
                   showBody={showBody}
+                  animateOrder={!isDragging}
+                  onDropSettled={() => release(card.id)}
                 />
               ))}
             </Column>

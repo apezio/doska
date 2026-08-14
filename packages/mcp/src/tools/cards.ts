@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Card } from "@doska/contract"
 import { taskProgress, toggleTaskByIndex } from "@doska/markdown/core"
+import { PRIORITIES } from "@doska/tokens/priority"
 import { z } from "zod"
 import {
   type Board,
@@ -20,6 +21,13 @@ const deadline = z
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Use an ISO date, e.g. 2026-07-31")
   .nullable()
   .describe("Calendar date, no time — this is what the upcoming view lists")
+
+export const PRIORITY_IDS = PRIORITIES.map((p) => p.id) as [string, ...string[]]
+
+const priority = z
+  .enum(PRIORITY_IDS)
+  .nullable()
+  .describe("How important the card is; null or omitted for none")
 
 const cardId = z
   .string()
@@ -48,10 +56,11 @@ export function registerCardTools(server: McpServer, board: Board): void {
         title: z.string(),
         body: z.string().optional(),
         deadline: deadline.optional(),
+        priority: priority.optional(),
         place: place.default("top"),
       },
     },
-    async ({ boardId, columnId, title, body, deadline, place }) => {
+    async ({ boardId, columnId, title, body, deadline, priority, place }) => {
       const { cards } = await board.board(boardId)
       await board.column(boardId, columnId) // Reject an unknown column before writing.
 
@@ -66,7 +75,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
         columnId,
         number: null,
         deadline: deadline ?? null,
-        priority: "",
+        priority: priority ?? "",
         attachments: [],
         updatedAt: board.now(),
         deletedAt: null,
@@ -84,8 +93,9 @@ export function registerCardTools(server: McpServer, board: Board): void {
     {
       title: "Update card",
       description:
-        "Edit a card's title, body, or deadline. Omitted fields are left " +
-        "alone; pass a null deadline to clear it. `append` adds to the end " +
+        "Edit a card's title, body, deadline, or priority. Omitted fields " +
+        "are left alone; pass a null deadline or priority to clear it. " +
+        "`append` adds to the end " +
         "of the body instead of replacing it, which is the safe way to add " +
         "a note to a card you haven't read.",
       inputSchema: {
@@ -100,9 +110,10 @@ export function registerCardTools(server: McpServer, board: Board): void {
             "Markdown appended as a new block. Ignored if `body` is set"
           ),
         deadline: deadline.optional(),
+        priority: priority.optional(),
       },
     },
-    async ({ boardId, cardId, title, body, append, deadline }) => {
+    async ({ boardId, cardId, title, body, append, deadline, priority }) => {
       const { prefix } = await board.dashboard(boardId)
       const existing = await board.card(boardId, cardId)
 
@@ -118,6 +129,8 @@ export function registerCardTools(server: McpServer, board: Board): void {
           title: title ?? existing.title,
           body: nextBody,
           deadline: deadline === undefined ? existing.deadline : deadline,
+          priority:
+            priority === undefined ? existing.priority : (priority ?? ""),
         },
         board.now()
       )

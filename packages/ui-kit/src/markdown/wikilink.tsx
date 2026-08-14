@@ -1,3 +1,4 @@
+import { Check } from "lucide-react"
 import type { KeyboardEvent, MouseEvent } from "react"
 import { cn } from "../lib/cn"
 
@@ -12,6 +13,8 @@ interface IProps {
   badge?: string
   /** oklch hue tinting the badge; neutral without one. */
   hue?: number | null
+  /** The target sits in the board's done column. */
+  done?: boolean
   title?: string
   onOpen?: () => void
 }
@@ -28,6 +31,7 @@ export function MdWikilink({
   unresolved,
   badge,
   hue,
+  done,
   title,
   onOpen,
 }: IProps) {
@@ -67,21 +71,21 @@ export function MdWikilink({
         "wikilink inline text-[0.9em] leading-[1.6] not-italic",
         "transition-[filter] duration-150",
         "hover:brightness-[0.96] hover:saturate-[1.1] dark:hover:brightness-[1.15]",
-        onOpen && "cursor-pointer"
+        onOpen && "cursor-pointer",
+        done && "opacity-50"
       )}
     >
       <span
         className={cn(
           SEGMENT,
           "wikilink-label relative inline-block overflow-hidden",
-          "rounded-md font-semibold text-card-foreground border border-muted",
-          badge && "pl-3"
+          "rounded-md text-card-foreground inline-flex gap-1.5"
         )}
       >
         {badge && (
           <span
             className={cn(
-              "absolute inset-y-0 left-0 w-1.5",
+              "w-1 rounded-full shrink-0 block grow my-1",
               hue == null && "bg-muted-foreground/40"
             )}
             style={
@@ -91,7 +95,8 @@ export function MdWikilink({
             }
           />
         )}
-        <span>{label}</span>
+        <span className="leading-4.5 py-0.5">{label}</span>
+        {done && <Check className="inline size-3 mt-1.5 shrink-0" />}
       </span>
     </span>
   )

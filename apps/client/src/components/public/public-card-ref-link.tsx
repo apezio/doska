@@ -51,6 +51,7 @@ export function PublicCardRefLink({
       label={title}
       badge={columnTitle || undefined}
       hue={columnHue(column?.color ?? "")}
+      done={column?.done ?? false}
       title={columnTitle ? `${title} — ${columnTitle}` : title}
       onOpen={() => navigate(routes.card.to(card.id))}
     />

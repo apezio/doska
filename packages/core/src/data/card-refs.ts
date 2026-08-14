@@ -52,6 +52,8 @@ export interface ResolvedCardRef {
   columnTitle: string
   /** The column's palette color id; empty when it has none. */
   columnColor: string
+  /** The card sits in the board's done column. */
+  columnDone: boolean
 }
 
 /**
@@ -81,6 +83,7 @@ export function useCardRef(
       card: match.card,
       columnTitle: column?.title ?? "",
       columnColor: column?.color ?? "",
+      columnDone: column?.done ?? false,
     }
   }, [cards, columns, prefix, displayId])
 }

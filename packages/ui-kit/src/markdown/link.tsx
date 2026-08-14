@@ -23,7 +23,7 @@ export function MdLink({
       onClick={stopPropagation}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className="text-primary underline underline-offset-2 decoration-primary/35 transition-[text-decoration-color] duration-150 hover:decoration-primary"
+      className="hover:text-primary underline underline-offset-2 transition-[text-decoration-color] duration-150 hover:decoration-primary"
     >
       {children}
     </a>

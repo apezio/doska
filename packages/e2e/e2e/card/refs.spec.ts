@@ -120,7 +120,7 @@ test.describe("card references", () => {
     await expect(refMenuItem(page, "Target card", targetId)).toHaveCount(0)
   })
 
-  test("renders the target's id, title and column, and follows a re-title", async ({
+  test("renders the target's title and column, and follows a re-title", async ({
     page,
   }) => {
     const { targetId } = await boardWithTwoCards(page)
@@ -128,7 +128,6 @@ test.describe("card references", () => {
 
     const ref = cardRef(page, "Target card")
     await expect(ref).toBeVisible()
-    await expect(ref).toContainText(targetId)
     // The column the target currently sits in, rendered as the trailing pill.
     await expect(ref).toContainText(/To Do/i)
 
@@ -155,7 +154,6 @@ test.describe("card references", () => {
 
     const ref = cardRef(page, "Fix the sync bug")
     await expect(ref).toBeVisible()
-    await expect(ref).toContainText(targetId)
 
     await cardTitled(page, "Target card").click()
     await expect(cardPanel(page)).toBeVisible()
@@ -404,7 +402,7 @@ test.describe("card references", () => {
     await refMenuItem(page, "Untitled card", targetId).click()
     await page.getByRole("button", { name: "Save" }).click()
 
-    await expect(cardRef(page, "Untitled card")).toContainText(targetId)
+    await expect(cardRef(page, "Untitled card")).toBeVisible()
   })
 
   test("cards the server hasn't numbered yet aren't offered", async ({

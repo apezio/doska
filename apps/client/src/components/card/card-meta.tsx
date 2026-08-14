@@ -16,6 +16,8 @@ interface IProps {
   onChangeDeadline?: (deadline: string | null) => void
   /** Omit to show the priority without a picker. */
   onChangePriority?: (priority: string) => void
+  /** The board card shows priority as a dot on the title instead. */
+  hidePriority?: boolean
   className?: string
 }
 
@@ -27,6 +29,7 @@ export function CardMeta({
   body,
   onChangeDeadline,
   onChangePriority,
+  hidePriority,
   className,
 }: IProps) {
   const displayId = cardDisplayId(prefix, card.number)
@@ -41,7 +44,9 @@ export function CardMeta({
         value={card.deadline}
         onChange={onChangeDeadline}
       />
-      <CardPriority value={card.priority} onChange={onChangePriority} />
+      {!hidePriority && (
+        <CardPriority value={card.priority} onChange={onChangePriority} />
+      )}
     </div>
   )
 }

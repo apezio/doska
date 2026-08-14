@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
   MdImage,
+  PriorityDot,
   cn,
 } from "@doska/ui-kit"
 import type { DetailedHTMLProps, HTMLAttributes, ReactNode } from "react"
@@ -36,7 +37,6 @@ interface IProps extends DetailedHTMLProps<
   /** Omit to leave the body's task checkboxes inert. */
   onChangeBody?: (body: string) => void
   onChangeDeadline?: (deadline: string | null) => void
-  onChangePriority?: (priority: string) => void
   /** The card's attachments, drawn by whoever can resolve their URLs. */
   attachments?: ReactNode
   /** Draws an `attachment:<key>` image; the app and a public board find it differently. */
@@ -63,7 +63,6 @@ export function CardView({
   action,
   onChangeBody,
   onChangeDeadline,
-  onChangePriority,
   attachments,
   renderAttachmentImage,
   wrapCard = (card) => card,
@@ -96,13 +95,21 @@ export function CardView({
     >
       {wrapCard(
         image ? (
-          <ImageCard title={title} isDragging={isDragging} action={action}>
+          <ImageCard
+            title={title}
+            priority={card.priority}
+            isDragging={isDragging}
+            action={action}
+          >
             {drawImage(image)}
           </ImageCard>
         ) : (
           <CardBase className={cn(isDragging && "shadow-shade/5 shadow-xl")}>
             <CardHeader>
-              <CardTitle>{title || "Untitled card"}</CardTitle>
+              <CardTitle className="inline-flex items-start gap-2">
+                {title || "Untitled card"}
+                <PriorityDot value={card.priority} className="mt-2" />
+              </CardTitle>
               {action && (
                 <CardAction className="flex items-center gap-1">
                   {action}
@@ -115,7 +122,7 @@ export function CardView({
                 column={column}
                 prefix={prefix}
                 onChangeDeadline={onChangeDeadline}
-                onChangePriority={onChangePriority}
+                hidePriority
                 className="mt-2"
               />
             </CardContent>

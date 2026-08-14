@@ -7,7 +7,7 @@ import {
   PriorityChip,
   cn,
 } from "@doska/ui-kit"
-import { Check, Triangle } from "lucide-react"
+import { Check, Flag } from "lucide-react"
 
 interface IProps {
   value: string
@@ -39,12 +39,12 @@ export function CardPriority({ value, onChange, className }: IProps) {
           {isSet ? (
             <PriorityChip value={value} />
           ) : (
-            <Triangle className="size-3.5 text-muted-foreground hover:text-foreground" />
+            <Flag className="size-3.5 text-muted-foreground hover:text-foreground" />
           )}
         </MenuTrigger>
         <MenuContent align="start">
           <MenuItem onClick={() => onChange("")}>
-            <Triangle className="size-3.5 text-muted-foreground" />
+            <Flag className="size-3.5 text-muted-foreground" />
             No priority
             {!isSet && <Check className="ml-auto" />}
           </MenuItem>

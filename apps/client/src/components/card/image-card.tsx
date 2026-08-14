@@ -3,12 +3,14 @@ import {
   CardAction,
   CardHeader,
   CardTitle,
+  PriorityDot,
   cn,
 } from "@doska/ui-kit"
 import type { ReactNode } from "react"
 
 interface IProps {
   title: string
+  priority: string
   isDragging?: boolean
   /** Top-right slot: the card menu where there is one. */
   action?: ReactNode
@@ -19,7 +21,13 @@ interface IProps {
 /**
  * A card whose whole content is one image
  */
-export function ImageCard({ title, isDragging, action, children }: IProps) {
+export function ImageCard({
+  title,
+  priority,
+  isDragging,
+  action,
+  children,
+}: IProps) {
   return (
     <CardBase
       className={cn(
@@ -30,7 +38,10 @@ export function ImageCard({ title, isDragging, action, children }: IProps) {
     >
       {title ? (
         <CardHeader className="pb-2">
-          <CardTitle>{title}</CardTitle>
+          <CardTitle className="inline-flex items-center gap-1.5">
+            {title}
+            <PriorityDot value={priority} />
+          </CardTitle>
           {action && (
             <CardAction className="flex items-center gap-1">
               {action}

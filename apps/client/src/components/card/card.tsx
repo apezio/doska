@@ -49,7 +49,6 @@ export function Card({ id, showBody, isDragging, ...props }: IProps) {
         action={<CardMenu cardId={id} onEdit={open} />}
         onChangeBody={(body) => updateCard({ body })}
         onChangeDeadline={(deadline) => updateCard({ deadline })}
-        onChangePriority={(priority) => updateCard({ priority })}
         attachments={
           <CardAttachments className="pt-2" cardId={id} isReadonly />
         }

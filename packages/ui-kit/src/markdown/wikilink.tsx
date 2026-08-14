@@ -1,4 +1,4 @@
-import type { CSSProperties, KeyboardEvent, MouseEvent } from "react"
+import type { KeyboardEvent, MouseEvent } from "react"
 import { cn } from "../lib/cn"
 
 interface IProps {
@@ -73,34 +73,26 @@ export function MdWikilink({
       <span
         className={cn(
           SEGMENT,
-          "wikilink-label rounded-l-[0.5em] pl-[0.5em] font-semibold text-card-foreground",
-          !badge && "rounded-r-[0.5em]"
+          "wikilink-label relative inline-block overflow-hidden",
+          "rounded-md font-semibold text-card-foreground border border-muted",
+          badge && "pl-3"
         )}
       >
-        {label}
+        {badge && (
+          <span
+            className={cn(
+              "absolute inset-y-0 left-0 w-1.5",
+              hue == null && "bg-muted-foreground/40"
+            )}
+            style={
+              hue == null
+                ? undefined
+                : { background: `oklch(0.72 0.14 ${hue})` }
+            }
+          />
+        )}
+        <span>{label}</span>
       </span>
-      {badge && (
-        <span
-          className={cn(
-            SEGMENT,
-            "wikilink-badge rounded-r-[0.5em] tracking-[0.02em] uppercase",
-            hue != null &&
-              "bg-[var(--wikilink-bg)] text-[var(--wikilink-fg)] dark:bg-[var(--wikilink-bg-dark)] dark:text-[var(--wikilink-fg-dark)]"
-          )}
-          style={
-            hue == null
-              ? undefined
-              : ({
-                  "--wikilink-bg": `oklch(0.95 0.05 ${hue})`,
-                  "--wikilink-fg": `oklch(0.44 0.13 ${hue})`,
-                  "--wikilink-bg-dark": `oklch(0.62 0.14 ${hue} / 0.24)`,
-                  "--wikilink-fg-dark": `oklch(0.84 0.11 ${hue})`,
-                } as CSSProperties)
-          }
-        >
-          {badge}
-        </span>
-      )}
     </span>
   )
 }

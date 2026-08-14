@@ -99,6 +99,17 @@ export async function openBoardInSidebar(
 }
 
 /**
+ * Toggles the deck header's sort control by label ("Sort by priority" /
+ * "Sort by date"). Clicking the active one turns sort back off. The menu stays
+ * open on click (closeOnClick={false}), so this dismisses it afterward.
+ */
+export async function toggleSort(page: Page, label: string): Promise<void> {
+  await page.getByRole("button", { name: "Sort cards" }).click()
+  await page.getByRole("menuitem", { name: label }).click()
+  await page.keyboard.press("Escape")
+}
+
+/**
  * The sync indicator (a floating button at the bottom-right of the board). Its
  * accessible name *is* the current status ("Synced", "1 change", "2 changes",
  * "Sync failed", "Offline"), so a test reads status straight off the locator's

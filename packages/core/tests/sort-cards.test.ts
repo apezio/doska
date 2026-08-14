@@ -61,6 +61,11 @@ describe("sortCards", () => {
     expect(ids(cards, ["priority"])).toEqual(["first", "second"])
   })
 
+  it("handles an empty list", () => {
+    expect(sortCards([], [])).toEqual([])
+    expect(sortCards([], ["priority"])).toEqual([])
+  })
+
   it("ignores a key it does not recognise", () => {
     const cards = [card("b", { position: "a1" }), card("a", { position: "a0" })]
 

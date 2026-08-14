@@ -379,6 +379,40 @@ describe("the payload", () => {
     ])
   })
 
+  test("card priority and the board's sort choice appear in the payload", async () => {
+    await owner.dashboards.sync({
+      since: 0,
+      changes: [
+        {
+          ...board("b1"),
+          record: { ...board("b1").record, sort: ["priority"], updatedAt: now + 1 },
+        },
+      ],
+    })
+    await owner.board.sync({
+      boardId: "b1",
+      since: 0,
+      changes: [
+        {
+          ...card("card1", "col1"),
+          record: {
+            ...card("card1", "col1").record,
+            priority: "high",
+            updatedAt: now + 1,
+          },
+        },
+      ],
+    })
+    const { token } = await owner.boards.publish({ boardId: "b1" })
+
+    const body = (await anon(`/api/public/b/${token}`)).json()
+
+    expect(body.dashboard.sort).toEqual(["priority"])
+    expect(
+      body.cards.find((c: { id: string }) => c.id === "card1").priority
+    ).toBe("high")
+  })
+
   test("another board's records never appear", async () => {
     await owner.dashboards.sync({ since: 0, changes: [board("b2")] })
     await owner.board.sync({

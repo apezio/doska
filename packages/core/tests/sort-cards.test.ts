@@ -1,0 +1,70 @@
+import { describe, expect, it } from "vitest"
+import type { Card } from "../src/types"
+import { sortCards } from "../src/utils"
+
+const card = (id: string, fields: Partial<Card> = {}): Card =>
+  ({
+    id,
+    position: id,
+    priority: "",
+    deadline: null,
+    ...fields,
+  }) as Card
+
+const ids = (cards: Card[], keys: string[]) =>
+  sortCards(cards, keys).map((c) => c.id)
+
+describe("sortCards", () => {
+  it("returns the input untouched for no keys", () => {
+    const cards = [card("b"), card("a")]
+
+    expect(sortCards(cards, [])).toBe(cards)
+  })
+
+  it("orders by priority, unset last", () => {
+    const cards = [
+      card("none"),
+      card("low", { priority: "low" }),
+      card("high", { priority: "high" }),
+      card("med", { priority: "medium" }),
+    ]
+
+    expect(ids(cards, ["priority"])).toEqual(["high", "med", "low", "none"])
+  })
+
+  it("orders by deadline ascending, null last", () => {
+    const cards = [
+      card("none"),
+      card("late", { deadline: "2026-09-01" }),
+      card("soon", { deadline: "2026-08-15" }),
+    ]
+
+    expect(ids(cards, ["deadline"])).toEqual(["soon", "late", "none"])
+  })
+
+  it("breaks a priority tie with the next key", () => {
+    const cards = [
+      card("a", { priority: "high", deadline: "2026-09-01" }),
+      card("b", { priority: "high", deadline: "2026-08-15" }),
+      card("c", { priority: "low", deadline: "2026-01-01" }),
+    ]
+
+    expect(ids(cards, ["priority", "deadline"])).toEqual(["b", "a", "c"])
+  })
+
+  it("falls back to position once every key ties", () => {
+    const cards = [
+      card("second", { position: "a1", priority: "high" }),
+      card("first", { position: "a0", priority: "high" }),
+    ]
+
+    expect(ids(cards, ["priority"])).toEqual(["first", "second"])
+  })
+
+  it("ignores a key it does not recognise", () => {
+    const cards = [card("b", { position: "a1" }), card("a", { position: "a0" })]
+
+    expect(ids(cards, ["colour"])).toEqual(["b", "a"])
+    expect(ids(cards, ["colour", "priority"])).toEqual(["a", "b"])
+  })
+})

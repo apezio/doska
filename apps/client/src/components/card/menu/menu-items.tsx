@@ -4,19 +4,12 @@ import {
   MenuSeparator,
   MenuSub,
   MenuSubTrigger,
-  PriorityChip,
-  PRIORITIES,
 } from "@doska/ui-kit"
 import { generateKeyBetween } from "fractional-indexing"
-import { ArrowRightLeft, Check, Flag, Pencil, Trash2 } from "lucide-react"
+import { ArrowRightLeft, Pencil, Trash2 } from "lucide-react"
 import { useParams } from "wouter"
-import {
-  useDeleteCard,
-  useMoveCard,
-  useUpdateCard,
-} from "@doska/core/mutations"
-import { useBoard, useCard } from "@doska/core/queries"
-import { fallbackCard } from "@doska/core/seed"
+import { useDeleteCard, useMoveCard } from "@doska/core/mutations"
+import { useBoard } from "@doska/core/queries"
 import { routes } from "@/lib/routes"
 import { byPosition } from "@doska/core/utils"
 
@@ -37,7 +30,6 @@ export function CardMenuItems({ cardId, onEdit, align = "end" }: IProps) {
         Edit
       </MenuItem>
       <MoveToColumnSub cardId={cardId} />
-      <PrioritySub cardId={cardId} />
       <MenuSeparator />
       <MenuItem
         onClick={() => deleteCard(cardId)}
@@ -47,39 +39,6 @@ export function CardMenuItems({ cardId, onEdit, align = "end" }: IProps) {
         Delete
       </MenuItem>
     </MenuContent>
-  )
-}
-
-function PrioritySub({ cardId }: { cardId: string }) {
-  const { data: card = fallbackCard } = useCard(cardId)
-  const { mutate: updateCard } = useUpdateCard(cardId)
-
-  const isSet = PRIORITIES.some((p) => p.id === card.priority)
-
-  return (
-    <MenuSub>
-      <MenuSubTrigger>
-        <Flag />
-        Priority
-      </MenuSubTrigger>
-      <MenuContent align="start" sideOffset={2}>
-        <MenuItem onClick={() => updateCard({ priority: "" })}>
-          <Flag className="size-3.5 text-muted-foreground" />
-          No priority
-          {!isSet && <Check className="ml-auto" />}
-        </MenuItem>
-        {PRIORITIES.map((option) => (
-          <MenuItem
-            key={option.id}
-            onClick={() => updateCard({ priority: option.id })}
-          >
-            <PriorityChip value={option.id} />
-            {option.label}
-            {option.id === card.priority && <Check className="ml-auto" />}
-          </MenuItem>
-        ))}
-      </MenuContent>
-    </MenuSub>
   )
 }
 

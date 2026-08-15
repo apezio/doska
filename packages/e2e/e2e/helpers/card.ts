@@ -144,15 +144,14 @@ export function cardPriorityButton(page: Page, title: string) {
   return card(page, title).getByRole("button", { name: "Card priority" })
 }
 
-/** The priority chip's accessible label ("Priority: high"), or null when unset. */
+/** The priority chip's accessible label ("Priority: High"), or null when unset. */
 export function cardPriorityLabel(page: Page, title: string) {
   return card(page, title).locator('[aria-label^="Priority:"]')
 }
 
 /**
  * Sets the card titled `title`'s priority from its board card meta row.
- * `label` is one of the picker's option labels: "high", "med.", "low", or
- * "No priority" to clear it.
+ * `label` is one of "High", "Medium", "Low", or "No priority" to clear it.
  */
 export async function setCardPriority(
   page: Page,
@@ -160,9 +159,9 @@ export async function setCardPriority(
   label: string
 ): Promise<void> {
   await cardPriorityButton(page, title).click()
+  // Not exact: the option's accessible name also carries the chip's own
+  // "Priority: <label>" aria-label ahead of the visible text.
   await page.getByRole("menuitem", { name: label }).click()
-  // The menu stays open on click (closeOnClick={false}); dismiss it.
-  await page.keyboard.press("Escape")
 }
 
 /**

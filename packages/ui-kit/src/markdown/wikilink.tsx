@@ -68,7 +68,7 @@ export function MdWikilink({
         })
       }
       className={cn(
-        "wikilink inline text-[0.9em] leading-[1.6] not-italic",
+        "wikilink inline leading-[1.6] not-italic",
         "transition-[filter] duration-150",
         "hover:brightness-[0.96] hover:saturate-[1.1] dark:hover:brightness-[1.15]",
         onOpen && "cursor-pointer",

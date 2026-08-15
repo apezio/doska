@@ -71,8 +71,7 @@ export function MdWikilink({
         "wikilink inline leading-[1.6] not-italic",
         "transition-[filter] duration-150",
         "hover:brightness-[0.96] hover:saturate-[1.1] dark:hover:brightness-[1.15]",
-        onOpen && "cursor-pointer",
-        done && "opacity-50"
+        onOpen && "cursor-pointer"
       )}
     >
       <span

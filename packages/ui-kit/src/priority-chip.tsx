@@ -4,7 +4,7 @@ import { cn } from "./lib/cn"
 
 const CHIP_BY_PRIORITY: Record<string, string> = {
   high: "text-destructive/80",
-  medium: "text-amber-600/80 dark:text-amber-400/80",
+  medium: "text-amber-400/80 dark:text-amber-400/80",
   low: "text-muted-foreground",
 }
 

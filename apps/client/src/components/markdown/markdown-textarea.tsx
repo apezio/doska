@@ -148,8 +148,8 @@ export function MarkdownTextarea({
           "relative resize-none bg-transparent outline-none",
           "placeholder:text-muted-foreground/50",
           "field-sizing-content",
-          highlight && "text-transparent caret-foreground",
-          textClasses
+          textClasses,
+          highlight && "text-transparent caret-foreground"
         )}
       />
       {slashMenu && (

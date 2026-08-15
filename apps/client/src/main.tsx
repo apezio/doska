@@ -20,6 +20,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { PublicRouter } from "@/components/public/public-router"
 import { UpdateToast } from "@/components/toasts/update/update-toast"
 import { OfflineToast } from "@/components/toasts/offline/offline-toast"
+import { UndoToaster } from "@/components/toasts/card-delete/undo-toaster"
 import { WindowDragRegion } from "@/components/window-drag-region"
 import "./index.css"
 
@@ -70,6 +71,7 @@ if (isPublicLink) {
                 gutter={8}
                 reverseOrder={false}
               />
+              <UndoToaster />
               <UpdateToast />
               <OfflineToast />
               <WindowDragRegion />

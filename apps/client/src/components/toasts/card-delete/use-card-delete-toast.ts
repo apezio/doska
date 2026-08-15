@@ -7,6 +7,7 @@ import { createElement, useCallback } from "react"
 import { useLocation } from "wouter"
 import { routes } from "@/lib/routes"
 import { CardDeleteToast } from "./card-delete-toast"
+import { UNDO_TOASTER_ID } from "./undo-toaster"
 
 interface DeletedCard {
   id: string
@@ -55,7 +56,7 @@ export function useCardDeleteToast() {
               void undoDelete(deletedCard)
             },
           }),
-        { duration: 5000 }
+        { duration: 5000, toasterId: UNDO_TOASTER_ID }
       )
     },
     [undoDelete]

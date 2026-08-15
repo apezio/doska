@@ -1,7 +1,7 @@
 import type { DroppableProvidedProps } from "@hello-pangea/dnd"
 import type { ReactNode, Ref } from "react"
 import { Button, cn } from "@doska/ui-kit"
-import { CircleCheck, Eye, EyeOff, Plus } from "lucide-react"
+import { Check, Eye, EyeOff, Plus } from "lucide-react"
 import { ColumnSwatch } from "./column-swatch"
 import { ColumnTitle } from "./column-title"
 
@@ -54,12 +54,19 @@ export function ColumnView({
       >
         <div className="flex min-w-0 items-center gap-1.5">
           <ColumnSwatch color={color} labelled className="ml-1" />
-          <ColumnTitle title={title} onRename={onRename} />
-          {/* The only place the flag shows — its toggle lives in the menu. */}
+          <div>
+            <ColumnTitle title={title} onRename={onRename} />
+            {/* The only place the flag shows — its toggle lives in the menu. */}
+            {!!done && (
+              <div className="absolute -mt-1 ml-2 w-full text-xs text-muted-foreground/50">
+                Marks cards as done
+              </div>
+            )}
+          </div>
           {done && (
-            <CircleCheck
+            <Check
               aria-label={`${title} is the done column`}
-              className="size-4 shrink-0 text-emerald-600/50 dark:text-emerald-500/50"
+              className="-ml-2 size-4 shrink-0"
             />
           )}
         </div>

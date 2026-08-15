@@ -2,6 +2,7 @@ import { Button, cn, useIsMobile } from "@doska/ui-kit"
 import { Eye, LocateFixed, PencilLine, Trash2, X } from "lucide-react"
 import type { ReactNode } from "react"
 import { hasOverlayTitleBar } from "@/lib/platform"
+import { useIsFullscreen } from "@/lib/hooks"
 
 interface IProps {
   onClose: () => void
@@ -22,7 +23,8 @@ export function CardPanelHeader({
   actions,
 }: IProps) {
   const isMobile = useIsMobile()
-  const windowControlsInset = isMobile && hasOverlayTitleBar()
+  const isFullscreen = useIsFullscreen()
+  const windowControlsInset = isMobile && hasOverlayTitleBar() && !isFullscreen
 
   return (
     <div

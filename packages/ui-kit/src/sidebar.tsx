@@ -184,7 +184,7 @@ function SidebarInset({ className, ...props }: ComponentProps<"main">) {
       className={cn(
         "relative flex w-full flex-1 flex-col bg-background",
         "md:m-2 md:ml-0 md:rounded-xl md:shadow-sm",
-        "md:peer-data-[state=collapsed]:ml-2",
+        "md:peer-data-[state=collapsed]:m-0 md:peer-data-[state=collapsed]:rounded-none md:peer-data-[state=collapsed]:shadow-none",
         className
       )}
       {...props}

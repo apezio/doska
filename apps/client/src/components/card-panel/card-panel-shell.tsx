@@ -1,4 +1,4 @@
-import { cn } from "@doska/ui-kit"
+import { cn, useSidebar } from "@doska/ui-kit"
 import { useEffect, type CSSProperties, type ReactNode } from "react"
 import { PanelResizeHandle } from "./panel-resize-handle"
 import { usePanelResize } from "./use-panel-resize"
@@ -19,6 +19,7 @@ export function CardPanelShell({
   children,
 }: IProps) {
   const { width, isResizing, startResizing, resetWidth } = usePanelResize()
+  const { open: sidebarOpen } = useSidebar()
 
   useEffect(() => {
     if (!isOpen) return
@@ -39,11 +40,16 @@ export function CardPanelShell({
         "max-md:top-(--app-offset,0px) max-md:h-(--app-height,100svh)",
         "md:box-border",
         // Resizing must track the pointer, so only the open/close sweep animates.
-        !isResizing && "md:transition-[width] md:duration-200 md:ease-linear",
+        !isResizing &&
+          "md:transition-[width,padding] md:duration-200 md:ease-linear",
         // The padding is the handle's gutter, so the width covers both.
-        isOpen
-          ? "md:w-[calc(var(--card-panel-width)+1rem)] md:p-2"
-          : "max-md:hidden md:w-0"
+        isOpen &&
+          sidebarOpen &&
+          "md:w-[calc(var(--card-panel-width)+1rem)] md:p-2",
+        isOpen &&
+          !sidebarOpen &&
+          "md:w-[calc(var(--card-panel-width)+0.5rem)] md:pl-2",
+        !isOpen && "max-md:hidden md:w-0"
       )}
       onTransitionEnd={(e) => {
         if (e.target === e.currentTarget && !isOpen) onClosed()
@@ -60,7 +66,13 @@ export function CardPanelShell({
       <div
         role="region"
         aria-label="Card"
-        className="flex h-full w-full flex-col overflow-hidden bg-card text-sm text-card-foreground md:w-(--card-panel-width) md:rounded-xl md:ring-1 md:ring-foreground/10 md:ring-inset"
+        className={cn(
+          "flex h-full w-full flex-col overflow-hidden bg-card text-sm text-card-foreground md:w-(--card-panel-width)",
+          "md:transition-[border-radius] md:duration-200 md:ease-linear",
+          sidebarOpen
+            ? "md:rounded-xl md:ring-1 md:ring-foreground/10 md:ring-inset"
+            : "md:border-l md:border-foreground/10"
+        )}
       >
         {children}
       </div>

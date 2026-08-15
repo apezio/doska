@@ -29,8 +29,9 @@ export function AppShell({ deck, cardCloseHref, children }: IProps) {
           <SidebarInset
             className={cn(
               "min-w-0 overflow-hidden border border-border",
-              "md:transition-[margin] md:duration-200 md:ease-linear",
-              isCardOpen && "md:mr-0"
+              "md:peer-data-[state=collapsed]:border-0",
+              "md:transition-[margin,border-radius] md:duration-200 md:ease-linear",
+              isCardOpen && "md:mr-0 md:peer-data-[state=collapsed]:border-r"
             )}
           >
             {children}

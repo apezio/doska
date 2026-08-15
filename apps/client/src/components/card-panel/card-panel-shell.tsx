@@ -1,4 +1,4 @@
-import { cn, useSidebar } from "@doska/ui-kit"
+import { cn, useOptionalSidebar } from "@doska/ui-kit"
 import { useEffect, type CSSProperties, type ReactNode } from "react"
 import { PanelResizeHandle } from "./panel-resize-handle"
 import { usePanelResize } from "./use-panel-resize"
@@ -19,7 +19,7 @@ export function CardPanelShell({
   children,
 }: IProps) {
   const { width, isResizing, startResizing, resetWidth } = usePanelResize()
-  const { open: sidebarOpen } = useSidebar()
+  const sidebarOpen = useOptionalSidebar()?.open ?? true
 
   useEffect(() => {
     if (!isOpen) return

@@ -89,8 +89,18 @@ async function waitForPanelToClose(page: Page): Promise<void> {
 }
 
 /**
+ * Closes the card panel. Edits autosave on a debounce and closing flushes what
+ * is still queued, so this is how a spec commits a panel edit — the panel has
+ * no Save button.
+ */
+export async function closeCard(page: Page): Promise<void> {
+  await page.getByRole("button", { name: "Close card" }).click()
+  await waitForPanelToClose(page)
+}
+
+/**
  * Opens the card titled `fromTitle` in the panel editor, retitles it to
- * `toTitle`, saves, and waits for the board to show the new title.
+ * `toTitle`, closes the panel, and waits for the board to show the new title.
  */
 export async function retitleCard(
   page: Page,
@@ -100,8 +110,7 @@ export async function retitleCard(
   await openCard(page, fromTitle)
   const title = page.getByPlaceholder("Title")
   await title.fill(toTitle)
-  await page.getByRole("button", { name: "Save" }).click()
-  await waitForPanelToClose(page)
+  await closeCard(page)
   await expect(card(page, toTitle)).toBeVisible()
 }
 
@@ -126,7 +135,7 @@ export async function openCard(page: Page, title: string): Promise<void> {
 
 /**
  * Opens the card titled `title`, replaces its body (the "Notes" field) with
- * `body`, then saves — closing the panel back to the board.
+ * `body`, then closes the panel back to the board.
  */
 export async function editCardBody(
   page: Page,
@@ -135,8 +144,7 @@ export async function editCardBody(
 ): Promise<void> {
   await openCard(page, title)
   await page.getByPlaceholder("Notes").fill(body)
-  await page.getByRole("button", { name: "Save" }).click()
-  await waitForPanelToClose(page)
+  await closeCard(page)
 }
 
 /** The priority trigger/chip on the board card titled `title`. */

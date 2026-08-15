@@ -16,7 +16,12 @@ function upcomingDate() {
   const year = d.getFullYear()
   const month = String(d.getMonth() + 1).padStart(2, "0")
   const day = String(d.getDate()).padStart(2, "0")
-  return { iso: `${year}-${month}-${day}`, formatted: `${day}.${month}.${year}` }
+  // The chip leaves the year off while the date is still in the current one.
+  const sameYear = year === new Date().getFullYear()
+  return {
+    iso: `${year}-${month}-${day}`,
+    formatted: sameYear ? `${day}.${month}` : `${day}.${month}.${year}`,
+  }
 }
 
 // DateInput only renders the native input below the 768px breakpoint; above it the calendar popover is harder to drive.

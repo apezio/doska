@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test"
-import { addCard, card, column, createBoard } from "../helpers"
+import { addCard, card, closeCard, column, createBoard } from "../helpers"
 
 test.describe("card lifecycle", { tag: "@container" }, () => {
   test("create, edit, persist, then delete a card", async ({ page }) => {
@@ -20,7 +20,7 @@ test.describe("card lifecycle", { tag: "@container" }, () => {
     const title = page.getByPlaceholder("Title")
     await expect(title).toBeFocused()
     await title.fill("My E2E Card")
-    await page.getByRole("button", { name: "Save" }).click()
+    await closeCard(page)
 
     // It renders on the board with the new title...
     await expect(card(page, "My E2E Card")).toBeVisible()

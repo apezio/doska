@@ -3,6 +3,7 @@ import {
   addCard,
   card,
   cardPanel,
+  closeCard,
   createBoard,
   editCardBody,
   openCard,
@@ -43,7 +44,7 @@ async function bodyOfOneImage(page: Page, base: string): Promise<void> {
   await page.getByRole("button", { name: `${name} Insert image` }).click()
   await expect(notes).toHaveValue(new RegExp(`^!\\[${name}\\]\\(.+\\)$`))
 
-  await page.getByRole("button", { name: "Save" }).click()
+  await closeCard(page)
   await expect(page.getByPlaceholder("Notes")).toHaveCount(0)
 }
 
@@ -95,7 +96,7 @@ test.describe("image-only cards", { tag: "@container" }, () => {
       .getByPlaceholder("Notes")
       .dispatchEvent("drop", { dataTransfer: transfer })
     await expect(cardPanel(page).getByText("scan")).toBeVisible()
-    await page.getByRole("button", { name: "Save" }).click()
+    await closeCard(page)
     await expect(page.getByPlaceholder("Notes")).toHaveCount(0)
 
     // Nothing was written into the body, so the attachment itself is the card.

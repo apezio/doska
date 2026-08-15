@@ -67,10 +67,14 @@ export interface ResolvedCardRef {
   columnDone: boolean
 }
 
-/** The `12` in `ROAD-12`, or null when the text isn't this board's display id. */
+/** The `12` in `ROAD-12`, or null when the text isn't this board's display id.
+ * Ids are matched case-insensitively — people type them by hand. */
 function refNumber(prefix: string, displayId: string): number | null {
-  if (!prefix || !displayId.startsWith(`${prefix}-`)) return null
-  const rest = displayId.slice(prefix.length + 1)
+  if (!prefix) return null
+  const typed = displayId.trim().toUpperCase()
+  const head = `${prefix.toUpperCase()}-`
+  if (!typed.startsWith(head)) return null
+  const rest = typed.slice(head.length)
   return /^\d+$/.test(rest) ? Number(rest) : null
 }
 

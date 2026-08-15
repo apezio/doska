@@ -5,7 +5,7 @@ import {
   card,
   createBoard,
   openBoardInSidebar,
-  openBoardMenu,
+  openShare,
   remoteUnshare,
   renameBoard,
   retitleCard,
@@ -42,12 +42,6 @@ async function createAccount(
   await expect(page.getByText(login, { exact: true })).toBeVisible()
   await page.keyboard.press("Escape")
   await expect(page.getByRole("heading", { name: "Accounts" })).toHaveCount(0)
-}
-
-async function openShare(page: Page): Promise<void> {
-  await openBoardMenu(page)
-  await page.getByRole("menuitem", { name: "Share" }).click()
-  await expect(page.getByRole("heading", { name: "Share" })).toBeVisible()
 }
 
 /** The sidebar entry for `name`, marker and all. */

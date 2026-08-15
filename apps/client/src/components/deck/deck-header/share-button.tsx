@@ -14,8 +14,8 @@ export function ShareButton({ boardId, title }: IProps) {
   const [open, setOpen] = useState(false)
 
   const { authed } = useAuth()
-  const { data: roster } = useBoardMembers(boardId, authed)
-  const { data: token } = usePublicBoardStatus(boardId, authed)
+  const { data: roster } = useBoardMembers(boardId, !!authed)
+  const { data: token } = usePublicBoardStatus(boardId, !!authed)
 
   const members = roster?.members.length ?? 0
   const { Icon, label } = useMemo(() => {

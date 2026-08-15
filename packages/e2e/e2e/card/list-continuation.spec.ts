@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test"
-import { addCard, card, createBoard, openCard } from "../helpers"
+import { addCard, card, closeCard, createBoard, openCard } from "../helpers"
 
 /**
  * Enter inside a list item carries the marker to the next row, and Enter on an
@@ -80,7 +80,7 @@ test.describe("list continuation", () => {
     await notes.pressSequentially("- milk")
     await notes.press("Enter")
     await notes.pressSequentially("eggs")
-    await page.getByRole("button", { name: "Save" }).click()
+    await closeCard(page)
 
     await openCard(page, "milk")
     await expect(page.getByPlaceholder("Notes")).toHaveValue("- milk\n- eggs")

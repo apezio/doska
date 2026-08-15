@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test"
 import {
   addCard,
+  closeCard,
   columnCardTitles,
   createBoard,
   openCard,
@@ -25,7 +26,7 @@ test.describe("moving a card from its panel", () => {
     // The control renames itself to the column the card now sits in.
     await expect(columnPicker(page, "In Progress")).toBeVisible()
 
-    await page.getByRole("button", { name: "Save" }).click()
+    await closeCard(page)
     await expect(await columnCardTitles(page, "In Progress")).toEqual([
       "Restage me",
     ])

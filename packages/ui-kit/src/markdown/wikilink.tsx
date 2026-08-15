@@ -84,7 +84,7 @@ export function MdWikilink({
         {badge && (
           <span
             className={cn(
-              "w-1 rounded-full shrink-0 block grow my-1",
+              "wikilink-badge w-1 rounded-full shrink-0 block grow my-1",
               hue == null && "bg-muted-foreground/40"
             )}
             style={

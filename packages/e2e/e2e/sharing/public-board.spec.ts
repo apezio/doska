@@ -9,7 +9,7 @@ import {
   addCard,
   authenticate,
   createBoard,
-  openBoardMenu,
+  openShare,
   renameBoard,
   retitleCard,
   signIn,
@@ -56,8 +56,7 @@ async function publish(
   await retitleCard(page, "Untitled card", cardTitle)
   await waitForChange(request, boardId, "cards", cardTitle)
 
-  await openBoardMenu(page)
-  await page.getByRole("menuitem", { name: "Share" }).click()
+  await openShare(page)
   await page.getByRole("button", { name: "Create link" }).click()
 
   const link = page.getByRole("textbox", { name: "Public link" })
@@ -99,13 +98,15 @@ test.describe("a published board", () => {
       visitor.getByRole("button", { name: /^Add card to / })
     ).toHaveCount(0)
 
-    // A card still opens — read-only, so the panel has no Edit and no Save.
+    // A card still opens — read-only, so the panel has no Edit and no Delete.
     await publicCard(visitor, published.cardTitle).click()
     await expect(
       visitor.getByRole("button", { name: "Close card" })
     ).toBeVisible()
     await expect(visitor.getByRole("button", { name: "Edit" })).toHaveCount(0)
-    await expect(visitor.getByRole("button", { name: "Save" })).toHaveCount(0)
+    await expect(
+      visitor.getByRole("button", { name: "Delete card" })
+    ).toHaveCount(0)
 
     await visitor.context().close()
   })

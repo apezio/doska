@@ -44,6 +44,17 @@ export async function openBoardMenu(page: Page): Promise<void> {
 }
 
 /**
+ * Opens the share dialog from the deck header's own Share button. Its label
+ * carries the board's current reach ("Share: Private"), so match on the prefix.
+ */
+export async function openShare(page: Page): Promise<void> {
+  await deckHeader(page)
+    .getByRole("button", { name: /^Share: / })
+    .click()
+  await expect(page.getByRole("heading", { name: "Share" })).toBeVisible()
+}
+
+/**
  * Renames the open board via its header title (an inline-editable span that
  * flips to an input on click) and waits for the new name to show.
  */

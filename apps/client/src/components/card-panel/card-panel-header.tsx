@@ -1,5 +1,5 @@
 import { Button, cn, useIsMobile } from "@doska/ui-kit"
-import { Eye, PencilLine, X } from "lucide-react"
+import { Eye, LocateFixed, PencilLine, Trash2, X } from "lucide-react"
 import type { ReactNode } from "react"
 import { hasOverlayTitleBar } from "@/lib/platform"
 
@@ -8,17 +8,17 @@ interface IProps {
   /** Omit where the card cannot be edited — the toggle has nothing to toggle to. */
   onTogglePreivew?: () => void
   isPreview: boolean
-  /** Omit where there is nothing to save. */
-  onSave?: () => void
-  /** Extra controls before the toggle — attaching a file, where that is possible. */
+  onDelete?: () => void
+  onReveal?: () => void
   actions?: ReactNode
 }
 
 export function CardPanelHeader({
   onClose,
   isPreview,
-  onSave,
   onTogglePreivew,
+  onDelete,
+  onReveal,
   actions,
 }: IProps) {
   const isMobile = useIsMobile()
@@ -31,7 +31,37 @@ export function CardPanelHeader({
         windowControlsInset && "pl-24"
       )}
     >
-      <div className="flex w-20 justify-start">
+      <div className="flex justify-start gap-1">
+        {onReveal && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Reveal on board"
+            onClick={onReveal}
+          >
+            <LocateFixed />
+          </Button>
+        )}
+        {onDelete && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Delete card"
+            className="text-muted-foreground hover:text-destructive"
+            onClick={onDelete}
+          >
+            <Trash2 />
+          </Button>
+        )}
+      </div>
+      <div className="flex items-center justify-end gap-2">
+        {actions}
+        {onTogglePreivew && (
+          <Button variant="ghost" size="sm" onClick={onTogglePreivew}>
+            {isPreview ? <PencilLine /> : <Eye />}
+            {isPreview ? "Edit" : "Preview"}
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon-sm"
@@ -40,20 +70,6 @@ export function CardPanelHeader({
         >
           <X />
         </Button>
-      </div>
-      <div className="flex justify-end space-x-2">
-        {actions}
-        {onTogglePreivew && (
-          <Button variant="ghost" size="sm" onClick={onTogglePreivew}>
-            {isPreview ? <PencilLine /> : <Eye />}
-            {isPreview ? "Edit" : "Preview"}
-          </Button>
-        )}
-        {onSave && (
-          <Button size="sm" onClick={onSave}>
-            Save
-          </Button>
-        )}
       </div>
     </div>
   )

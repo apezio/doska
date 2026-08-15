@@ -10,10 +10,19 @@ interface IProps {
   content: Card
   onQueue: (id: string, patch: Draft) => void
   onClose: () => void
+  onDelete: () => void
+  onReveal: () => void
 }
 
 /** One card's editing session. Mount it keyed by `cardId`. */
-export function CardPane({ cardId, content, onQueue, onClose }: IProps) {
+export function CardPane({
+  cardId,
+  content,
+  onQueue,
+  onClose,
+  onDelete,
+  onReveal,
+}: IProps) {
   const [draft, setDraft] = useState<Draft>({})
   // Decided at mount, never re-derived: once you type, `content.body` is no
   // longer evidence the card opened with notes.
@@ -35,6 +44,8 @@ export function CardPane({ cardId, content, onQueue, onClose }: IProps) {
       onTogglePreview={() => setPreview(!isPreview)}
       onEdit={() => setPreview(false)}
       onClose={onClose}
+      onDelete={onDelete}
+      onReveal={onReveal}
     />
   )
 }

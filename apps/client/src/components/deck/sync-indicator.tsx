@@ -63,7 +63,7 @@ function view({ status, pending }: SyncState, connection: Connection) {
  * badge, a saved check, an offline notice, or a retry-on-click error. Clicking
  * flushes a sync now, mirroring ⌘S.
  *
- * Board-only, so it can't be the whole story — {@link ConnectionBanner} covers
+ * Board-only, so it can't be the whole story — {@link OfflineToast} covers
  * the rest of the app.
  */
 export function SyncIndicator() {

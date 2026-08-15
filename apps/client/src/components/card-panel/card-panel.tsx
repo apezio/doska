@@ -2,9 +2,12 @@ import { useIsMobile } from "@doska/ui-kit"
 import { useCallback, useEffect, useState } from "react"
 import { useLocation, useRoute } from "wouter"
 import { routes } from "@/lib/routes"
+import { useDeck } from "@/providers/deck/deck-context"
+import { useRevealCard } from "@/providers/card-reveal/card-reveal-context"
+import { useCardDeleteToast } from "@/components/toasts/card-delete/use-card-delete-toast"
 import { CardPane } from "./card-pane"
 import { CardPanelShell } from "./card-panel-shell"
-import { useCardSave } from "@doska/core/mutations"
+import { useCardSave, useDeleteCard } from "@doska/core/mutations"
 import { useCard } from "@doska/core/queries"
 
 interface IProps {
@@ -22,6 +25,10 @@ export function CardPanel({ closeHref }: IProps) {
   if (routeId && routeId !== lastCard) setLastCard(routeId)
 
   const { queue, flush } = useCardSave()
+  const { id: deckId } = useDeck()
+  const { mutate: deleteCard } = useDeleteCard(deckId)
+  const reveal = useRevealCard()
+  const { showCardDeleteToast } = useCardDeleteToast()
 
   const isMobile = useIsMobile()
   const card = routeId ?? (isMobile ? null : lastCard)
@@ -50,6 +57,14 @@ export function CardPanel({ closeHref }: IProps) {
           content={content}
           onQueue={queue}
           onClose={close}
+          onDelete={() => {
+            deleteCard(card)
+            showCardDeleteToast(card, {
+              reopenPanel: true,
+              title: content.title.trim() || "Untitled card",
+            })
+          }}
+          onReveal={() => reveal(card)}
         />
       )}
     </CardPanelShell>

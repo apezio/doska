@@ -22,6 +22,8 @@ interface IProps {
   /** Fired by clicking the read-only preview. */
   onEdit: () => void
   onClose: () => void
+  onDelete: () => void
+  onReveal: () => void
 }
 
 /** Ignore the click that ends a text selection — treat it as selecting, not editing. */
@@ -46,6 +48,8 @@ export function CardEditor({
   onTogglePreview,
   onEdit,
   onClose,
+  onDelete,
+  onReveal,
 }: IProps) {
   // State, not a ref: the slash button renders into this node once it mounts.
   const [overlay, setOverlay] = useState<HTMLDivElement | null>(null)
@@ -64,8 +68,9 @@ export function CardEditor({
                 <CardPanelHeader
                   isPreview={isPreview}
                   onClose={onClose}
-                  onSave={onClose}
                   onTogglePreivew={onTogglePreview}
+                  onDelete={onDelete}
+                  onReveal={onReveal}
                   actions={<AddAttachmentButton />}
                 />
               }

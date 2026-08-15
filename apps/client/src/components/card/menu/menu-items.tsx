@@ -9,8 +9,9 @@ import { generateKeyBetween } from "fractional-indexing"
 import { ArrowRightLeft, Pencil, Trash2 } from "lucide-react"
 import { useParams } from "wouter"
 import { useDeleteCard, useMoveCard } from "@doska/core/mutations"
-import { useBoard } from "@doska/core/queries"
+import { useBoard, useCard } from "@doska/core/queries"
 import { routes } from "@/lib/routes"
+import { useCardDeleteToast } from "@/components/toasts/card-delete/use-card-delete-toast"
 import { byPosition } from "@doska/core/utils"
 
 interface IProps {
@@ -22,6 +23,8 @@ interface IProps {
 export function CardMenuItems({ cardId, onEdit, align = "end" }: IProps) {
   const { id: deckId } = useParams<typeof routes.deck.pattern>()
   const { mutate: deleteCard } = useDeleteCard(deckId)
+  const { data: card } = useCard(cardId)
+  const { showCardDeleteToast } = useCardDeleteToast()
 
   return (
     <MenuContent align={align} onClick={(e) => e.stopPropagation()}>
@@ -32,7 +35,10 @@ export function CardMenuItems({ cardId, onEdit, align = "end" }: IProps) {
       <MoveToColumnSub cardId={cardId} />
       <MenuSeparator />
       <MenuItem
-        onClick={() => deleteCard(cardId)}
+        onClick={() => {
+          deleteCard(cardId)
+          showCardDeleteToast(cardId, { title: card?.title?.trim() || "Card" })
+        }}
         className="ml-auto data-highlighted:text-destructive"
       >
         <Trash2 />

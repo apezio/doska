@@ -11,7 +11,7 @@ export async function setDashboardSort(
   id: string,
   sort: string[]
 ): Promise<void> {
-  const dashboard = (await db.getDashboards()).find((d) => d.id === id)
+  const dashboard = await db.getDashboard(id)
   if (!dashboard || sameKeys(dashboard.sort ?? [], sort)) return
   await db.setDashboard({ ...dashboard, sort, updatedAt: stamp() })
   sync.markDirty("dashboards", id)

@@ -4,8 +4,8 @@
  * everything. A single key is `{ lower: key, upper: key }`.
  */
 export interface KeyRange {
-  lower?: string
-  upper?: string
+  lower?: string | number
+  upper?: string | number
   exclusive?: { lower?: boolean; upper?: boolean }
 }
 

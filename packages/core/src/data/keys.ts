@@ -17,7 +17,8 @@ export const keys = {
   session: ["session"] as const,
   accounts: ["accounts"] as const,
   /** Under the accounts prefix, so deleting an account clears its own count. */
-  ownedBoards: (userId: string) => ["accounts", "owned-boards", userId] as const,
+  ownedBoards: (userId: string) =>
+    ["accounts", "owned-boards", userId] as const,
   members: (boardId: string) => ["members", boardId] as const,
   /** The board's public share link. Not under `board`, which is the local
    * record: this one only ever comes from the server. */
@@ -29,6 +30,11 @@ export const keys = {
   sharedBoards: ["dashboards", "shared"] as const,
   directory: ["directory"] as const,
   unclaimedLocalBoards: ["unclaimed-local-boards"] as const,
+  /** Both sit under the board key, so a board invalidation refreshes them. */
+  cardRefOptions: (deckId: string, prefix: string) =>
+    ["board", deckId, "ref-options", prefix] as const,
+  cardRef: (deckId: string, prefix: string, displayId: string) =>
+    ["board", deckId, "ref", prefix, displayId] as const,
 }
 
 /**

@@ -15,7 +15,6 @@ export interface CardDeck {
 export async function getCardDeck(cardId: string): Promise<CardDeck | null> {
   const column = await getCardCol(cardId)
   if (!column) return null
-  const dashboards = await db.getDashboards()
-  const board = dashboards.find((d) => d.id === column.dashboardId)
-  return board ? { id: board.id, prefix: board.prefix } : null
+  const dashboard = await db.getDashboard(column.dashboardId)
+  return dashboard || null
 }

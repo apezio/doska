@@ -3,7 +3,7 @@ import { sync } from "../sync"
 
 /** Tombstones a column and all of its cards. */
 export async function deleteColumn(_deckId: string, id: string): Promise<void> {
-  const column = (await db.getColumns()).find((c) => c.id === id)
+  const column = await db.getColumn(id)
   if (!column) return
   const cards = await db.getCards(id)
 

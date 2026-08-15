@@ -5,6 +5,6 @@ import { db } from "../db/db"
 export async function getCardCol(cardId: string): Promise<Column | null> {
   const card = await db.getCard(cardId)
   if (!card) return null
-  const columns = await db.getColumns()
-  return columns.find((c) => c.id === card.columnId) ?? null
+  const column = await db.getColumn(card.columnId)
+  return column ?? null
 }

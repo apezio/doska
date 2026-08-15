@@ -20,7 +20,7 @@ function quote(identifier: string): string {
 
 function bounds(column: string, range: KeyRange | undefined) {
   const clauses: string[] = []
-  const params: string[] = []
+  const params: (string | number)[] = []
   if (range?.lower !== undefined) {
     clauses.push(`${quote(column)} >${range.exclusive?.lower ? "" : "="} ?`)
     params.push(range.lower)

@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@doska/client-db": "workspace:*",
     "@doska/contract": "workspace:*",
     "@doska/core": "workspace:*",
     "@doska/markdown": "workspace:*",

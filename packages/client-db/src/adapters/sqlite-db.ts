@@ -1,5 +1,16 @@
-import type { ClientDB, KeyRange, Query } from "@doska/ports"
-import { openDatabaseSync, type SQLiteDatabase } from "expo-sqlite"
+import type { ClientDB, KeyRange, Query } from "../client-db"
+
+export interface SQLiteDriver {
+  execSync(sql: string): void
+  execAsync(sql: string): Promise<void>
+  getAllSync<T>(sql: string, params: (string | number)[]): T[]
+  getAllAsync<T>(sql: string, params: (string | number)[]): Promise<T[]>
+  getFirstAsync<T>(
+    sql: string,
+    ...params: (string | number)[]
+  ): Promise<T | null>
+  runAsync(sql: string, ...params: (string | number)[]): Promise<unknown>
+}
 
 /**
  * Which JSON properties of a store's records carry a secondary index. The
@@ -43,14 +54,19 @@ function bounds(column: string, range: KeyRange | undefined) {
 export class SQLiteDB implements ClientDB {
   name: string
   version: number
-  private db: SQLiteDatabase
+  private db: SQLiteDriver
   private schema: Schema
 
-  constructor(name: string, version: number, schema: Schema) {
+  constructor(
+    name: string,
+    version: number,
+    schema: Schema,
+    open: (name: string) => SQLiteDriver
+  ) {
     this.name = name
     this.version = version
     this.schema = schema
-    this.db = openDatabaseSync(name)
+    this.db = open(name)
     this.migrate()
   }
 
@@ -66,13 +82,18 @@ export class SQLiteDB implements ClientDB {
       // every launch after the first would re-add one and fail on the duplicate.
       const columns = new Set(
         this.db
-          .getAllSync<{ name: string }>(`PRAGMA table_xinfo(${quote(store)})`)
+          .getAllSync<{ name: string }>(
+            `PRAGMA table_xinfo(${quote(store)})`,
+            []
+          )
           .map((column) => column.name)
       )
       for (const index of indexes) {
         if (!columns.has(index)) {
+          // No declared type: TEXT affinity would store a numeric property as
+          // text, and a lookup by number would then match nothing.
           this.db.execSync(
-            `ALTER TABLE ${quote(store)} ADD COLUMN ${quote(index)} TEXT ` +
+            `ALTER TABLE ${quote(store)} ADD COLUMN ${quote(index)} ` +
               `GENERATED ALWAYS AS (json_extract(value, '$.${index}')) VIRTUAL`
           )
         }

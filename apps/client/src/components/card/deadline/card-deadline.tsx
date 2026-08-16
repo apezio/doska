@@ -19,7 +19,10 @@ export function CardDeadline({ value, onChange, className, done }: IProps) {
       <DateInput
         value={value}
         onChange={onChange}
-        className={cn("cursor-pointer items-center gap-1.5", className)}
+        className={cn(
+          "-m-1.5 cursor-pointer items-center gap-1.5 p-1.5 md:m-0 md:p-0",
+          className
+        )}
       >
         <DeadlineChip done={done} value={value} />
       </DateInput>

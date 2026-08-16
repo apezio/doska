@@ -30,7 +30,7 @@ export function CardPriority({ value, onChange, className }: IProps) {
               type="button"
               aria-label="Card priority"
               className={cn(
-                "inline-flex cursor-pointer items-center",
+                "-m-1.5 inline-flex cursor-pointer items-center p-1.5 md:m-0 md:p-0",
                 className
               )}
             />
@@ -39,12 +39,12 @@ export function CardPriority({ value, onChange, className }: IProps) {
           {isSet ? (
             <PriorityChip value={value} />
           ) : (
-            <Flag className="size-3.5 text-muted-foreground hover:text-foreground" />
+            <Flag className="size-4 text-muted-foreground hover:text-foreground md:size-3.5" />
           )}
         </MenuTrigger>
         <MenuContent align="start">
           <MenuItem onClick={() => onChange("")}>
-            <Flag className="size-3.5 text-muted-foreground" />
+            <Flag className="size-4 text-muted-foreground md:size-3.5" />
             No priority
             {!isSet && <Check className="ml-auto" />}
           </MenuItem>

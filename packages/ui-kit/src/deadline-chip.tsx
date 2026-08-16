@@ -41,12 +41,12 @@ export function DeadlineChip({ value, className, done }: IProps) {
     <span
       className={cn(
         "inline-flex items-center gap-1",
-        "text-xs font-semibold tabular-nums",
+        "text-sm font-semibold tabular-nums md:text-xs",
         CHIP_BY_STATUS[status],
         className
       )}
     >
-      <Calendar className="size-3.5" />
+      <Calendar className="size-4 md:size-3.5" />
       {label}
     </span>
   )

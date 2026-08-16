@@ -33,7 +33,7 @@ export function PriorityChip({ value, className }: IProps) {
       )}
       aria-label={`Priority: ${priority.label}`}
     >
-      <Flag className="size-3.5 fill-current stroke-1" />
+      <Flag className="size-4 fill-current stroke-1 md:size-3.5" />
     </span>
   )
 }

@@ -1,6 +1,6 @@
 import type { Card, Column as ColumnType } from "@doska/core/types"
 import { useCallback } from "react"
-import { Pressable, Text, View } from "react-native"
+import { Platform, Pressable, RefreshControl, Text, View } from "react-native"
 import Animated, { useAnimatedRef } from "react-native-reanimated"
 import Sortable, {
   type SortableGridDragEndParams,
@@ -12,9 +12,12 @@ import {
   CARD_GAP,
   useCardGeometry,
 } from "@/components/board/drag/card-geometry"
+import { useSyncRefresh } from "@/lib/use-sync-refresh"
 
 /** Held this long without moving, a card lifts instead of the list scrolling. */
 const PICKUP_MS = 250
+
+const IOS = Platform.OS === "ios"
 
 interface IProps {
   deckId: string
@@ -46,6 +49,7 @@ export function Column({
   const showBody = !column.collapsed
   const scrollRef = useAnimatedRef<Animated.ScrollView>()
   const { registerList, registerHeight } = useCardGeometry()
+  const { refreshing, onRefresh } = useSyncRefresh([deckId])
 
   const renderCard = useCallback<SortableGridRenderItem<Card>>(
     ({ item }) => (
@@ -74,7 +78,16 @@ export function Column({
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerClassName="grow px-3 pb-6"
-        contentContainerStyle={{ paddingTop: HEAD_HEIGHT }}
+        contentContainerStyle={IOS ? undefined : { paddingTop: HEAD_HEIGHT }}
+        contentInset={IOS ? { top: HEAD_HEIGHT } : undefined}
+        contentOffset={IOS ? { x: 0, y: -HEAD_HEIGHT } : undefined}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            progressViewOffset={IOS ? undefined : HEAD_HEIGHT}
+          />
+        }
       >
         <Pressable
           onPress={onAddCard}

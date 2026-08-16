@@ -49,7 +49,15 @@ export default function UpcomingScreen() {
         </Pressable>
       </ScreenHeader>
 
-      {!data ? <Spinner /> : <UpcomingList cards={data} hideDone={hideDone} />}
+      {!data ? (
+        <Spinner />
+      ) : (
+        <UpcomingList
+          cards={data}
+          hideDone={hideDone}
+          boardIds={boardIds ? boardIds.split(",") : []}
+        />
+      )}
     </View>
   )
 }

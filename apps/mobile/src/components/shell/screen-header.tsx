@@ -5,13 +5,16 @@ import Menu from "lucide-react-native/icons/menu"
 import type { ReactNode } from "react"
 import { Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { OfflineBanner } from "@/components/shell/offline-banner"
+import { SyncIndicator } from "@/components/shell/sync-indicator"
 
 interface IProps {
   children?: ReactNode
 }
 
 /** Top bar of a screen: the drawer toggle, then whatever the screen puts beside
- * it. The web's `PageHeader`, with a real button in place of its sidebar rail. */
+ * it, then sync state. The web's `PageHeader`, with a real button in place of
+ * its sidebar rail. */
 export function ScreenHeader({ children }: IProps) {
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
@@ -28,7 +31,10 @@ export function ScreenHeader({ children }: IProps) {
           onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         />
         {children}
+        <SyncIndicator />
       </View>
+
+      <OfflineBanner />
     </View>
   )
 }

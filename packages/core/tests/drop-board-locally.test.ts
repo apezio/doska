@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it } from "vitest"
 import type { KeyRange } from "@doska/ports"
 import type { Runtime } from "../src/runtime"
 import { installRuntime } from "../src/runtime"
-import { CARDS, COLUMNS, DASHBOARDS, META_STORE } from "../src/api/constants"
+import {
+  CARDS,
+  COLUMNS,
+  DASHBOARDS,
+  META_STORE,
+  type StoreName,
+} from "../src/api/constants"
 
 /** An in-memory `ClientDB`, keyed `store/key`, honouring the cards-by-column index. */
 const rows = new Map<string, unknown>()
@@ -85,12 +91,22 @@ beforeEach(() => {
   installRuntime({ db, kv, net, http } as unknown as Runtime)
 })
 
+/** The engine's own `dropDirty`, which the drop now takes as an argument.
+ * Imported as late as the module under test, since the engine reads the runtime
+ * as it is constructed. */
+async function loadDropDirty() {
+  const { sync } = await import("../src/api/sync/sync-engine")
+  return (store: StoreName, ids: string[]) => sync.dropDirty(store, ids)
+}
+
 describe("dropBoardLocally", () => {
   it("removes the board's row, contents and cursor, and nothing else", async () => {
     seedBoards()
 
-    const { dropBoardLocally } = await import("../src/api/operations/drop-board-locally")
-    await dropBoardLocally("gone")
+    const dropDirty = await loadDropDirty()
+    const { dropBoardLocally } =
+      await import("../src/api/operations/drop-board-locally")
+    await dropBoardLocally("gone", dropDirty)
 
     expect(keysIn(DASHBOARDS)).toEqual(["mine"])
     expect(keysIn(COLUMNS)).toEqual(["col-mine"])
@@ -109,8 +125,9 @@ describe("dropBoardLocally", () => {
     sync.markDirty(CARDS, "card-gone")
     expect(sync.getState().pending).toBe(3)
 
-    const { dropBoardLocally } = await import("../src/api/operations/drop-board-locally")
-    await dropBoardLocally("gone")
+    const { dropBoardLocally } =
+      await import("../src/api/operations/drop-board-locally")
+    await dropBoardLocally("gone", (store, ids) => sync.dropDirty(store, ids))
 
     expect(sync.getState().pending).toBe(0)
   })
@@ -122,8 +139,9 @@ describe("dropBoardLocally", () => {
     sync.markDirty(CARDS, "card-gone")
     sync.markDirty(CARDS, "card-mine")
 
-    const { dropBoardLocally } = await import("../src/api/operations/drop-board-locally")
-    await dropBoardLocally("gone")
+    const { dropBoardLocally } =
+      await import("../src/api/operations/drop-board-locally")
+    await dropBoardLocally("gone", (store, ids) => sync.dropDirty(store, ids))
 
     expect(sync.isDirty(CARDS, "card-mine")).toBe(true)
     expect(sync.getState().pending).toBe(1)

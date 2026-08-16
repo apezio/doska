@@ -64,7 +64,10 @@ export function CardPanel({ closeHref }: IProps) {
               title: content.title.trim() || "Untitled card",
             })
           }}
-          onReveal={() => reveal(card)}
+          onReveal={() => {
+            if (isMobile) close()
+            reveal(card)
+          }}
         />
       )}
     </CardPanelShell>

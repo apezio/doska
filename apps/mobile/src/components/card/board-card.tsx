@@ -46,6 +46,7 @@ export function BoardCard({ card, deckId, prefix, showBody, done }: IProps) {
           displayId={cardDisplayId(prefix, card.number) ?? ""}
           body={card.body}
           deadline={card.deadline}
+          priority={card.priority}
           done={done}
         />
       </View>

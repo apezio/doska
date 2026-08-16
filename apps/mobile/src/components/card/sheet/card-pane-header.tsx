@@ -12,12 +12,19 @@ interface IProps {
   /** The unsaved body, so task progress tracks it live. */
   body: string
   deadline: string | null
+  priority: string
   cardNumber: number | null
 }
 
 /** The card's meta row, standing in for a navigation bar. The system draws the
  * sheet's grabber over the top ~16pt of this, so the row starts below it. */
-export function CardPaneHeader({ cardId, body, deadline, cardNumber }: IProps) {
+export function CardPaneHeader({
+  cardId,
+  body,
+  deadline,
+  priority,
+  cardNumber,
+}: IProps) {
   const { data: column } = useCardCol(cardId)
   const { data: deck } = useCardDeck(cardId)
 
@@ -28,6 +35,7 @@ export function CardPaneHeader({ cardId, body, deadline, cardNumber }: IProps) {
         displayId={cardDisplayId(deck?.prefix ?? "", cardNumber) ?? ""}
         body={body}
         deadline={deadline}
+        priority={priority}
         done={column?.done ?? false}
       />
       {column ? (

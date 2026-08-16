@@ -3,7 +3,6 @@ import { useState } from "react"
 import type { DigestCard } from "@doska/core/operations"
 import { useMoveCardToColumn } from "@doska/core/mutations"
 import { useDashboardNav } from "@/lib/hooks"
-import { ColumnTag } from "../column/column-tag"
 import { DoneColumnHelp } from "./done-column-help"
 
 interface IProps {
@@ -21,7 +20,6 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
     boardId,
     boardTitle,
     columnTitle,
-    columnColor,
     isDone,
     doneColumnId,
     undoneColumnId,
@@ -88,17 +86,8 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
             }}
             className="self-start truncate text-sm text-muted-foreground hover:text-foreground hover:underline"
           >
-            {boardTitle || "Untitled board"}
+            {boardTitle || "Untitled board"} · {columnTitle}
           </button>
-        </span>
-        <span className="flex w-28 shrink-0 justify-end">
-          {columnTitle && (
-            <ColumnTag
-              title={columnTitle}
-              color={columnColor}
-              isTinted={false}
-            />
-          )}
         </span>
       </CardBase>
       {!target && (

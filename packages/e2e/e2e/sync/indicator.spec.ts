@@ -70,7 +70,8 @@ test.describe("sync indicator", () => {
     const target = card(page, "Temp card");
     await target.getByRole("button", { name: "Card actions" }).click();
     await page.getByRole("menuitem", { name: "Delete" }).click();
-    await expect(page.getByText("Temp card")).toHaveCount(0);
+    // The board card, not a bare text match — the undo toast reads "Temp card deleted".
+    await expect(target).toHaveCount(0);
 
     // The tombstone pushes and the queue drains — no lingering unsaved change.
     await expect(syncIndicator(page)).toHaveAccessibleName("Synced");

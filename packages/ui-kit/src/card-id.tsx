@@ -29,12 +29,16 @@ export function CardId({ id, className }: { id: string; className?: string }) {
       title="Copy id"
       className={cn(
         "group/id inline-flex items-center gap-0.5 rounded-sm py-0.5 pr-1",
-        "font-mono text-xs font-normal text-muted-foreground",
+        "font-mono text-sm font-normal text-muted-foreground md:text-xs",
         "relative hover:text-foreground",
         className
       )}
     >
-      {copied ? <Check className="size-3.5" /> : <Hash className="size-3.5" />}
+      {copied ? (
+        <Check className="size-4 md:size-3.5" />
+      ) : (
+        <Hash className="size-4 md:size-3.5" />
+      )}
       <span className={cn("mt-px w-0", copied ? "opacity-100" : "opacity-0")}>
         copied
       </span>

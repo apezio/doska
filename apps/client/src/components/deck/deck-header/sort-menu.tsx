@@ -1,5 +1,5 @@
 import { Button, Menu, MenuContent, MenuItem, MenuTrigger } from "@doska/ui-kit"
-import { CalendarClock, Check, ListFilter, Triangle } from "lucide-react"
+import { CalendarClock, Check, Flag, ListFilter } from "lucide-react"
 
 interface IProps {
   sort: string[]
@@ -35,7 +35,7 @@ export function SortMenu({ sort, onChangeSort }: IProps) {
       </MenuTrigger>
       <MenuContent>
         <MenuItem closeOnClick={false} onClick={() => toggleSort("priority")}>
-          <Triangle />
+          <Flag />
           Sort by priority
           {sort.includes("priority") && <Check className="ml-auto" />}
         </MenuItem>

@@ -1,11 +1,17 @@
-import { Triangle } from "lucide-react"
+import { Flag } from "lucide-react"
 import { PRIORITIES } from "@doska/tokens/priority"
 import { cn } from "./lib/cn"
 
 const CHIP_BY_PRIORITY: Record<string, string> = {
-  high: "text-destructive",
-  medium: "text-amber-600 dark:text-amber-400",
+  high: "text-destructive/80",
+  medium: "text-amber-400/80 dark:text-amber-400/80",
   low: "text-muted-foreground",
+}
+
+const DOT_BY_PRIORITY: Record<string, string> = {
+  high: "bg-destructive dark:bg-destructive/80",
+  medium: "bg-amber-500/80 dark:bg-amber-400/80",
+  low: "bg-muted-foreground",
 }
 
 interface IProps {
@@ -27,7 +33,24 @@ export function PriorityChip({ value, className }: IProps) {
       )}
       aria-label={`Priority: ${priority.label}`}
     >
-      <Triangle className="size-3.5 fill-current stroke-1" />
+      <Flag className="size-4 fill-current stroke-1 md:size-3.5" />
     </span>
+  )
+}
+
+/** A small dot marking a card's priority, meant to sit at the end of its title. */
+export function PriorityDot({ value, className }: IProps) {
+  const priority = PRIORITIES.find((p) => p.id === value)
+  if (!priority) return null
+
+  return (
+    <span
+      className={cn(
+        "inline-block size-1.5 shrink-0 rounded-full",
+        DOT_BY_PRIORITY[priority.id],
+        className
+      )}
+      aria-label={`Priority: ${priority.label}`}
+    />
   )
 }

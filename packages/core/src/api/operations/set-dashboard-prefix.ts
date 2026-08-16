@@ -68,7 +68,7 @@ export async function setDashboardPrefix(
   if (!prefix) throw new Error("PREFIX_EMPTY")
   if (await prefixTaken(prefix, id)) throw new Error("PREFIX_TAKEN")
 
-  const dashboard = (await db.getDashboards()).find((d) => d.id === id)
+  const dashboard = await db.getDashboard(id)
   if (!dashboard || dashboard.prefix === prefix) return
   await db.setDashboard({ ...dashboard, prefix, updatedAt: stamp() })
   sync.markDirty("dashboards", id)

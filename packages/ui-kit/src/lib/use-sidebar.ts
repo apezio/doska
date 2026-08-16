@@ -19,3 +19,8 @@ export function useSidebar() {
   }
   return context
 }
+
+/** For components shared with the public pages, which have no sidebar at all. */
+export function useOptionalSidebar() {
+  return useContext(SidebarContext)
+}

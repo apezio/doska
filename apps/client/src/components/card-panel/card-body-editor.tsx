@@ -65,7 +65,7 @@ export function CardBodyEditor({
         placeholder="Notes"
         isPreview={isPreview}
         markers={PREVIEW_MARKERS}
-        className="min-h-[50vh] shrink-0 resize-none"
+        className="min-h-[50vh] shrink-0 resize-none text-foreground/90"
         containerClassName="flex-1"
       />
     </CardMarkdown>

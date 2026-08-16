@@ -109,8 +109,8 @@ describe("useDragEnd", () => {
     it("a cross-column drop lands above the destination's top regardless of destination.index, when the moved card ties with nothing there", () => {
       const cards = [
         card("moved", "todo", { position: "a0", priority: "medium" }),
-        card("top", "doing", { position: "m0", priority: "high" }),
-        card("bottom", "doing", { position: "z0", priority: "low" }),
+        card("top", "doing", { position: "a0", priority: "high" }),
+        card("bottom", "doing", { position: "a1", priority: "low" }),
       ]
       const moveCard = vi.fn()
       const handleDragEnd = useDragEnd(board(cards), moveCard, ["priority"])
@@ -126,10 +126,12 @@ describe("useDragEnd", () => {
 
       expect(moveCard).toHaveBeenCalledTimes(3)
       for (const call of moveCard.mock.calls) {
-        expect(call[0][0].position).toBe("a0")
+        // A key minted against the destination's top, not the base key: cards
+        // arrive at "a0", so minting that again would tie with one of them and
+        // leave the order undefined once the sort is cleared.
+        expect(call[0][0].position).toBe("Zz")
+        expect(call[0][0].position < "a0").toBe(true)
       }
-      // "a0" sorts ahead of the destination's actual top ("m0").
-      expect("a0" < "m0").toBe(true)
     })
   })
 })

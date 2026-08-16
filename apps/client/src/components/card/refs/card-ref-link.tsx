@@ -30,7 +30,7 @@ export function CardRefLink({
       />
     )
 
-  const { card, columnTitle, columnColor } = ref
+  const { card, columnTitle, columnColor, columnDone } = ref
   const title = alias || card.title || "Untitled card"
 
   return (
@@ -39,6 +39,7 @@ export function CardRefLink({
       label={title}
       badge={columnTitle || undefined}
       hue={columnHue(columnColor)}
+      done={columnDone}
       title={columnTitle ? `${title} — ${columnTitle}` : title}
       onOpen={() => navigate(routes.card.to(card.id))}
     />

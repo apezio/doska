@@ -23,7 +23,7 @@ export function ColumnTag({
       style={hue === null ? undefined : ({ "--tag-h": hue } as CSSProperties)}
       className={cn(
         "shrink-0 whitespace-nowrap",
-        "text-xs font-semibold tracking-[0.02em] uppercase",
+        "text-xs font-semibold tracking-[0.02em]",
         hue === null
           ? "text-muted-foreground"
           : [

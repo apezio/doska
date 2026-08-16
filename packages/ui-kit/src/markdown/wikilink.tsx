@@ -1,4 +1,5 @@
-import type { CSSProperties, KeyboardEvent, MouseEvent } from "react"
+import { Check } from "lucide-react"
+import type { KeyboardEvent, MouseEvent } from "react"
 import { cn } from "../lib/cn"
 
 interface IProps {
@@ -12,6 +13,8 @@ interface IProps {
   badge?: string
   /** oklch hue tinting the badge; neutral without one. */
   hue?: number | null
+  /** The target sits in the board's done column. */
+  done?: boolean
   title?: string
   onOpen?: () => void
 }
@@ -28,6 +31,7 @@ export function MdWikilink({
   unresolved,
   badge,
   hue,
+  done,
   title,
   onOpen,
 }: IProps) {
@@ -64,7 +68,7 @@ export function MdWikilink({
         })
       }
       className={cn(
-        "wikilink inline text-[0.9em] leading-[1.6] not-italic",
+        "wikilink inline leading-[1.6] not-italic",
         "transition-[filter] duration-150",
         "hover:brightness-[0.96] hover:saturate-[1.1] dark:hover:brightness-[1.15]",
         onOpen && "cursor-pointer"
@@ -73,34 +77,26 @@ export function MdWikilink({
       <span
         className={cn(
           SEGMENT,
-          "wikilink-label rounded-l-[0.5em] pl-[0.5em] font-semibold text-card-foreground",
-          !badge && "rounded-r-[0.5em]"
+          "wikilink-label relative inline-block overflow-hidden",
+          "rounded-md text-card-foreground inline-flex gap-1.5"
         )}
       >
-        {label}
+        {badge && (
+          <span
+            className={cn(
+              "wikilink-badge w-1 rounded-full shrink-0 block grow my-1",
+              hue == null && "bg-muted-foreground/40"
+            )}
+            style={
+              hue == null
+                ? undefined
+                : { background: `oklch(0.72 0.14 ${hue})` }
+            }
+          />
+        )}
+        <span className="leading-4.5 py-0.5">{label}</span>
+        {done && <Check className="inline size-3 mt-1.5 shrink-0" />}
       </span>
-      {badge && (
-        <span
-          className={cn(
-            SEGMENT,
-            "wikilink-badge rounded-r-[0.5em] tracking-[0.02em] uppercase",
-            hue != null &&
-              "bg-[var(--wikilink-bg)] text-[var(--wikilink-fg)] dark:bg-[var(--wikilink-bg-dark)] dark:text-[var(--wikilink-fg-dark)]"
-          )}
-          style={
-            hue == null
-              ? undefined
-              : ({
-                  "--wikilink-bg": `oklch(0.95 0.05 ${hue})`,
-                  "--wikilink-fg": `oklch(0.44 0.13 ${hue})`,
-                  "--wikilink-bg-dark": `oklch(0.62 0.14 ${hue} / 0.24)`,
-                  "--wikilink-fg-dark": `oklch(0.84 0.11 ${hue})`,
-                } as CSSProperties)
-          }
-        >
-          {badge}
-        </span>
-      )}
     </span>
   )
 }

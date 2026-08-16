@@ -6,9 +6,9 @@ export interface Priority {
 
 /** The importance levels a card can carry, most important first. */
 export const PRIORITIES: Priority[] = [
-  { id: "high", label: "high" },
-  { id: "medium", label: "med." },
-  { id: "low", label: "low" },
+  { id: "high", label: "High" },
+  { id: "medium", label: "Medium" },
+  { id: "low", label: "Low" },
 ]
 
 /**

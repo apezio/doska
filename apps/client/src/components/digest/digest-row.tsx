@@ -1,18 +1,9 @@
-import { Card as CardBase, Checkbox, cn } from "@doska/ui-kit"
+import { Card as CardBase, Checkbox, PriorityDot, cn } from "@doska/ui-kit"
 import { useState } from "react"
 import type { DigestCard } from "@doska/core/operations"
 import { useMoveCardToColumn } from "@doska/core/mutations"
 import { useDashboardNav } from "@/lib/hooks"
-import { ColumnTag } from "../column/column-tag"
 import { DoneColumnHelp } from "./done-column-help"
-
-/** Matches the triangle colors in `PriorityChip`, so a row reads the same way. */
-const CHECKBOX_BY_PRIORITY: Record<string, string> = {
-  high: "border-destructive bg-destructive/10 dark:bg-destructive/20 data-checked:border-destructive/50 data-checked:bg-destructive/50",
-  medium:
-    "border-amber-500 bg-amber-500/10 dark:bg-amber-500/20 data-checked:border-amber-500/50 data-checked:bg-amber-500/50",
-  low: "border-muted-foreground bg-muted-foreground/10 dark:bg-muted-foreground/20 data-checked:border-muted-foreground data-checked:bg-muted-foreground",
-}
 
 interface IProps {
   entry: DigestCard
@@ -29,7 +20,6 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
     boardId,
     boardTitle,
     columnTitle,
-    columnColor,
     isDone,
     doneColumnId,
     undoneColumnId,
@@ -65,7 +55,6 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
         <span onClick={(e) => e.stopPropagation()} className="inline-flex">
           <Checkbox
             variant={target ? "default" : "dashed"}
-            className={CHECKBOX_BY_PRIORITY[card.priority]}
             checked={isDone}
             readOnly={!target}
             aria-label={
@@ -82,11 +71,12 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
         <span className="flex min-w-0 flex-1 flex-col">
           <span
             className={cn(
-              "truncate text-base font-medium",
+              "inline-flex min-w-0 items-center gap-2 truncate text-base font-medium",
               isDone && "line-through"
             )}
           >
-            {title}
+            <span className="truncate">{title}</span>
+            <PriorityDot value={card.priority} />
           </span>
           <button
             type="button"
@@ -96,17 +86,8 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
             }}
             className="self-start truncate text-sm text-muted-foreground hover:text-foreground hover:underline"
           >
-            {boardTitle || "Untitled board"}
+            {boardTitle || "Untitled board"} · {columnTitle}
           </button>
-        </span>
-        <span className="flex w-28 shrink-0 justify-end">
-          {columnTitle && (
-            <ColumnTag
-              title={columnTitle}
-              color={columnColor}
-              isTinted={false}
-            />
-          )}
         </span>
       </CardBase>
       {!target && (

@@ -19,3 +19,5 @@ export const CARDS_BY_COLUMN = "columnId"
  * A `null` deadline yields no index key, so undated cards are absent by
  * construction — the index can't answer "cards with no deadline". */
 export const CARDS_BY_DEADLINE = "deadline"
+
+export const CARDS_BY_NUMBER = "number"

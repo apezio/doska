@@ -16,7 +16,6 @@ export function ColumnTitle({ title, onRename }: IProps) {
       value={title}
       onCommit={onRename}
       label={`Rename ${title}`}
-      className="uppercase"
       title="Click to rename"
     />
   )

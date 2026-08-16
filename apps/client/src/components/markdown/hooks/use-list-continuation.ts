@@ -66,6 +66,10 @@ export function useListContinuation(
       const lineEnd = text.indexOf("\n", caret)
       const line = text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd)
 
+      // Enter at the very start of an existing list item should just insert a
+      // plain newline above it, not continue the list.
+      if (caret === lineStart) return
+
       const item = parseListItem(line)
       if (!item) return
 

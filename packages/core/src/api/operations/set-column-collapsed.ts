@@ -7,7 +7,7 @@ export async function setColumnCollapsed(
   id: string,
   collapsed: boolean
 ): Promise<void> {
-  const column = (await db.getColumns()).find((c) => c.id === id)
+  const column = await db.getColumn(id)
   if (!column) return
   await db.setColumn({ ...column, collapsed, updatedAt: stamp() })
   sync.markDirty("columns", id)

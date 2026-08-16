@@ -17,11 +17,11 @@ test.describe("card priority and board sort", () => {
     await createBoard(page)
     await addCard(page, "To Do")
 
-    await setCardPriority(page, "Untitled card", "high")
+    await setCardPriority(page, "Untitled card", "High")
 
     await expect(cardPriorityLabel(page, "Untitled card")).toHaveAttribute(
       "aria-label",
-      "Priority: high"
+      "Priority: High"
     )
   })
 
@@ -34,9 +34,9 @@ test.describe("card priority and board sort", () => {
       await addCard(page, "To Do")
       await retitleCard(page, "Untitled card", title)
     }
-    await setCardPriority(page, "High", "high")
-    await setCardPriority(page, "Medium", "med.")
-    await setCardPriority(page, "Low", "low")
+    await setCardPriority(page, "High", "High")
+    await setCardPriority(page, "Medium", "Medium")
+    await setCardPriority(page, "Low", "Low")
 
     await toggleSort(page, "Sort by priority")
 
@@ -54,9 +54,9 @@ test.describe("card priority and board sort", () => {
       await addCard(page, "To Do")
       await retitleCard(page, "Untitled card", title)
     }
-    await setCardPriority(page, "High", "high")
-    await setCardPriority(page, "Medium", "med.")
-    await setCardPriority(page, "Low", "low")
+    await setCardPriority(page, "High", "High")
+    await setCardPriority(page, "Medium", "Medium")
+    await setCardPriority(page, "Low", "Low")
     await toggleSort(page, "Sort by priority")
     await expect
       .poll(() => columnCardTitles(page, "To Do"))
@@ -76,11 +76,11 @@ test.describe("card priority and board sort", () => {
 
     await addCard(page, "In Progress")
     await retitleCard(page, "Untitled card", "Existing")
-    await setCardPriority(page, "Existing", "high")
+    await setCardPriority(page, "Existing", "High")
 
     await addCard(page, "To Do")
     await retitleCard(page, "Untitled card", "Mover")
-    await setCardPriority(page, "Mover", "low")
+    await setCardPriority(page, "Mover", "Low")
 
     await toggleSort(page, "Sort by priority")
     await expect

@@ -89,8 +89,18 @@ async function waitForPanelToClose(page: Page): Promise<void> {
 }
 
 /**
+ * Closes the card panel. Edits autosave on a debounce and closing flushes what
+ * is still queued, so this is how a spec commits a panel edit — the panel has
+ * no Save button.
+ */
+export async function closeCard(page: Page): Promise<void> {
+  await page.getByRole("button", { name: "Close card" }).click()
+  await waitForPanelToClose(page)
+}
+
+/**
  * Opens the card titled `fromTitle` in the panel editor, retitles it to
- * `toTitle`, saves, and waits for the board to show the new title.
+ * `toTitle`, closes the panel, and waits for the board to show the new title.
  */
 export async function retitleCard(
   page: Page,
@@ -100,8 +110,7 @@ export async function retitleCard(
   await openCard(page, fromTitle)
   const title = page.getByPlaceholder("Title")
   await title.fill(toTitle)
-  await page.getByRole("button", { name: "Save" }).click()
-  await waitForPanelToClose(page)
+  await closeCard(page)
   await expect(card(page, toTitle)).toBeVisible()
 }
 
@@ -126,7 +135,7 @@ export async function openCard(page: Page, title: string): Promise<void> {
 
 /**
  * Opens the card titled `title`, replaces its body (the "Notes" field) with
- * `body`, then saves — closing the panel back to the board.
+ * `body`, then closes the panel back to the board.
  */
 export async function editCardBody(
   page: Page,
@@ -135,8 +144,7 @@ export async function editCardBody(
 ): Promise<void> {
   await openCard(page, title)
   await page.getByPlaceholder("Notes").fill(body)
-  await page.getByRole("button", { name: "Save" }).click()
-  await waitForPanelToClose(page)
+  await closeCard(page)
 }
 
 /** The priority trigger/chip on the board card titled `title`. */
@@ -144,15 +152,14 @@ export function cardPriorityButton(page: Page, title: string) {
   return card(page, title).getByRole("button", { name: "Card priority" })
 }
 
-/** The priority chip's accessible label ("Priority: high"), or null when unset. */
+/** The priority chip's accessible label ("Priority: High"), or null when unset. */
 export function cardPriorityLabel(page: Page, title: string) {
   return card(page, title).locator('[aria-label^="Priority:"]')
 }
 
 /**
  * Sets the card titled `title`'s priority from its board card meta row.
- * `label` is one of the picker's option labels: "high", "med.", "low", or
- * "No priority" to clear it.
+ * `label` is one of "High", "Medium", "Low", or "No priority" to clear it.
  */
 export async function setCardPriority(
   page: Page,
@@ -160,16 +167,21 @@ export async function setCardPriority(
   label: string
 ): Promise<void> {
   await cardPriorityButton(page, title).click()
+  // Not exact: the option's accessible name also carries the chip's own
+  // "Priority: <label>" aria-label ahead of the visible text.
   await page.getByRole("menuitem", { name: label }).click()
-  // The menu stays open on click (closeOnClick={false}); dismiss it.
-  await page.keyboard.press("Escape")
+}
+
+/** What @hello-pangea/dnd announces to screen readers as a drag progresses. */
+function dragAnnouncement(page: Page, text: RegExp) {
+  return page.locator('[id^="rfd-announcement-"]').filter({ hasText: text })
 }
 
 /**
  * Keyboard-drags the card titled `title`: focus it, Space to lift, the given
  * moves (e.g. "ArrowDown"/"ArrowRight"), Space to drop. The card element is its
- * own drag handle. Small pauses let @hello-pangea/dnd's async lift/move settle
- * between keypresses — without them the lift can be missed and the move no-ops.
+ * own drag handle. The lift and the drop are async, so each waits on dnd's own
+ * announcement — a fixed pause lets a slow lift through and the drag no-ops.
  */
 export async function dragCardByTitle(
   page: Page,
@@ -178,12 +190,13 @@ export async function dragCardByTitle(
 ): Promise<void> {
   await card(page, title).focus()
   await page.keyboard.press("Space")
-  await page.waitForTimeout(250) // wait for the lift to register
+  await expect(dragAnnouncement(page, /have lifted an item/)).toHaveCount(1)
   for (const move of moves) {
     await page.keyboard.press(move)
     await page.waitForTimeout(250)
   }
   await page.keyboard.press("Space")
+  await expect(dragAnnouncement(page, /have dropped the item/)).toHaveCount(1)
   await page.waitForTimeout(350) // wait out the drop animation
 }
 

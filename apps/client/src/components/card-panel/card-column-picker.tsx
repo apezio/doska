@@ -46,6 +46,7 @@ export function CardColumnPicker({ cardId }: { cardId: string }) {
         title="Move to another column"
         className={cn(
           "flex cursor-pointer items-center gap-0.5 rounded-full",
+          "-m-1.5 p-1.5 md:m-0 md:p-0",
           "hover:opacity-80 data-popup-open:opacity-80"
         )}
       >
@@ -53,16 +54,13 @@ export function CardColumnPicker({ cardId }: { cardId: string }) {
           title={current.title}
           color={current.color}
           isTinted={false}
+          className="text-sm md:text-xs"
         />
-        <ChevronDown className="size-3.5 text-muted-foreground" />
+        <ChevronDown className="size-4 text-muted-foreground md:size-3.5" />
       </MenuTrigger>
       <MenuContent>
         {columns.map((column) => (
-          <MenuItem
-            className="uppercase"
-            key={column.id}
-            onClick={() => moveTo(column.id)}
-          >
+          <MenuItem key={column.id} onClick={() => moveTo(column.id)}>
             {column.title}
             {column.id === current.id && <Check className="ml-auto" />}
           </MenuItem>

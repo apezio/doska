@@ -45,7 +45,7 @@ function DateInput({
 
   if (isMobile) {
     return (
-      <span className={cn("relative inline-flex", className)}>
+      <span className={cn("relative inline-flex overflow-hidden", className)}>
         {children}
         <Input
           type="date"
@@ -63,9 +63,9 @@ function DateInput({
               e.stopPropagation()
               onChange?.(null)
             }}
-            className="relative z-10 rounded-full p-0.5 text-muted-foreground hover:text-foreground"
+            className="relative z-10 rounded-full p-1 text-muted-foreground md:p-0.5 hover:text-foreground"
           >
-            <X className="size-3.5" />
+            <X className="size-4 md:size-3.5" />
           </button>
         )}
       </span>

@@ -5,6 +5,7 @@ import {
   CARDS,
   CARDS_BY_COLUMN,
   CARDS_BY_DEADLINE,
+  CARDS_BY_NUMBER,
   COLUMNS,
   DASHBOARDS,
   type StoreName,
@@ -60,6 +61,17 @@ export const db = {
         : undefined
     )
   },
+  getCardsByNumber(num?: number): Promise<Card[]> {
+    return runtime().db.getAll<Card>(
+      CARDS,
+      num
+        ? {
+            index: CARDS_BY_NUMBER,
+            range: { lower: num, upper: num },
+          }
+        : undefined
+    )
+  },
   /** Cards deadlined within `[from, to]` (inclusive `YYYY-MM-DD` bounds), in
    * date order. Spans every board — the index is global. */
   getCardsByDeadline(from: string, to: string): Promise<Card[]> {
@@ -77,6 +89,9 @@ export const db = {
   restoreCard(card: Card): Promise<void> {
     return runtime().db.set(CARDS, card.id, revive(card))
   },
+  getColumn(id: string): Promise<Column | undefined> {
+    return runtime().db.get<Column>(COLUMNS, id)
+  },
   getColumns(): Promise<Column[]> {
     return runtime().db.getAll<Column>(COLUMNS)
   },
@@ -88,6 +103,9 @@ export const db = {
   },
   restoreColumn(column: Column): Promise<void> {
     return runtime().db.set(COLUMNS, column.id, revive(column))
+  },
+  getDashboard(id: string): Promise<Dashboard | undefined> {
+    return runtime().db.get<Dashboard>(DASHBOARDS, id)
   },
   getDashboards(): Promise<Dashboard[]> {
     return runtime().db.getAll<Dashboard>(DASHBOARDS)

@@ -37,7 +37,7 @@ test.describe("digest navigation", () => {
     await page.goto("/digest")
     // Scoped to the row: the sidebar carries the board name too.
     const row = page.getByRole("button", { name: /Due soon/ })
-    await row.getByRole("button", { name: "Roadmap", exact: true }).click()
+    await row.getByRole("button", { name: "Roadmap · To Do" }).click()
 
     await page.waitForURL(new RegExp(`/d/${deckId}`))
     await expect(page.getByRole("button", { name: "Add column" })).toBeVisible()

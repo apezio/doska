@@ -6,6 +6,8 @@ const card = (id: string, fields: Partial<Card> = {}): Card =>
   ({
     id,
     position: id,
+    title: id,
+    body: "",
     priority: "",
     deadline: null,
     ...fields,
@@ -59,6 +61,22 @@ describe("sortCards", () => {
     ]
 
     expect(ids(cards, ["priority"])).toEqual(["first", "second"])
+  })
+
+  it("floats a blank card above every key", () => {
+    const cards = [
+      card("high", { priority: "high" }),
+      card("blank", { title: "  ", body: "" }),
+      card("low", { priority: "low" }),
+    ]
+
+    expect(ids(cards, ["priority"])).toEqual(["blank", "high", "low"])
+  })
+
+  it("keeps a titled card without a priority below the ranked ones", () => {
+    const cards = [card("none"), card("high", { priority: "high" })]
+
+    expect(ids(cards, ["priority"])).toEqual(["high", "none"])
   })
 
   it("handles an empty list", () => {

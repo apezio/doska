@@ -10,8 +10,8 @@ import {
   syncIndicator,
 } from "../helpers"
 
-// The offline banner overlays the panel's Save button, so activate Save by
-// keyboard rather than clicking through the banner.
+// Closed with Escape rather than the header button: the offline toast can land
+// over the panel, and either route flushes the queued edit on the way out.
 async function retitleCardOffline(
   page: Page,
   fromTitle: string,
@@ -19,8 +19,7 @@ async function retitleCardOffline(
 ): Promise<void> {
   await openCard(page, fromTitle)
   await page.getByPlaceholder("Title").fill(toTitle)
-  await page.getByRole("button", { name: "Save" }).focus()
-  await page.keyboard.press("Enter")
+  await page.keyboard.press("Escape")
   await page.waitForURL((url) => !url.pathname.includes("/c/"))
 }
 

@@ -6,6 +6,7 @@ import {
   cardPanel,
   cardRef,
   cardTitled,
+  closeCard,
   createBoard,
   editCardBody,
   openCard,
@@ -128,8 +129,9 @@ test.describe("card references", () => {
 
     const ref = cardRef(page, "Target card")
     await expect(ref).toBeVisible()
-    // The column the target currently sits in, rendered as the trailing pill.
-    await expect(ref).toContainText(/To Do/i)
+    // The column the target sits in is a color bar plus the hover title; only
+    // the title spells the column out.
+    await expect(ref).toHaveAttribute("title", /To Do/i)
 
     // Nothing but the id is stored in the text, so a rename propagates. Opened
     // via `cardTitled`: the source card's body now renders the target's title
@@ -137,7 +139,7 @@ test.describe("card references", () => {
     await cardTitled(page, "Target card").click()
     await expect(cardPanel(page)).toBeVisible()
     await page.getByPlaceholder("Title").fill("Renamed target")
-    await page.getByRole("button", { name: "Save" }).click()
+    await closeCard(page)
 
     await expect(cardRef(page, "Renamed target")).toBeVisible()
   })
@@ -158,7 +160,7 @@ test.describe("card references", () => {
     await cardTitled(page, "Target card").click()
     await expect(cardPanel(page)).toBeVisible()
     await page.getByPlaceholder("Title").fill("Renamed target")
-    await page.getByRole("button", { name: "Save" }).click()
+    await closeCard(page)
 
     // The alias is a snapshot the writer chose; nothing rewrites it.
     await expect(cardRef(page, "Fix the sync bug")).toBeVisible()
@@ -187,7 +189,8 @@ test.describe("card references", () => {
     const badge = cardRef(page, "Target card").locator(".wikilink-badge")
     const color = () =>
       badge.evaluate(
-        (el) => el.ownerDocument.defaultView!.getComputedStyle(el).color
+        (el) =>
+          el.ownerDocument.defaultView!.getComputedStyle(el).backgroundColor
       )
     const before = await color()
 
@@ -348,11 +351,11 @@ test.describe("card references", () => {
     await expect(cardPanel(page)).toBeVisible()
     await page.getByRole("button", { name: "Column: To Do. Move card" }).click()
     await page.getByRole("menuitem", { name: "In Progress" }).click()
-    await page.getByRole("button", { name: "Save" }).click()
+    await closeCard(page)
 
     const ref = cardRef(page, "Target card")
-    await expect(ref).toContainText(/In Progress/i)
-    await expect(ref).not.toContainText(/To Do/i)
+    await expect(ref).toHaveAttribute("title", /In Progress/i)
+    await expect(ref).not.toHaveAttribute("title", /To Do/i)
   })
 
   test("an id typed in the wrong case still resolves", async ({ page }) => {
@@ -400,7 +403,7 @@ test.describe("card references", () => {
     await notes.click()
     await notes.pressSequentially("[[")
     await refMenuItem(page, "Untitled card", targetId).click()
-    await page.getByRole("button", { name: "Save" }).click()
+    await closeCard(page)
 
     await expect(cardRef(page, "Untitled card")).toBeVisible()
   })

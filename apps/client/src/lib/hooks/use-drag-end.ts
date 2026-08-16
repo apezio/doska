@@ -48,7 +48,10 @@ export function useDragEnd(
     const prev = tied.filter((e) => e.index < destination.index).at(-1)?.card
     const next = tied.find((e) => e.index >= destination.index)?.card
 
-    const position = keyBetween(prev, next)
+    const position =
+      prev || next
+        ? keyBetween(prev, next)
+        : keyBetween(undefined, destCards[0])
     if (position === null) return
 
     moveCard([{ ...moved, columnId: destination.droppableId, position }])

@@ -172,11 +172,16 @@ export async function setCardPriority(
   await page.getByRole("menuitem", { name: label }).click()
 }
 
+/** What @hello-pangea/dnd announces to screen readers as a drag progresses. */
+function dragAnnouncement(page: Page, text: RegExp) {
+  return page.locator('[id^="rfd-announcement-"]').filter({ hasText: text })
+}
+
 /**
  * Keyboard-drags the card titled `title`: focus it, Space to lift, the given
  * moves (e.g. "ArrowDown"/"ArrowRight"), Space to drop. The card element is its
- * own drag handle. Small pauses let @hello-pangea/dnd's async lift/move settle
- * between keypresses — without them the lift can be missed and the move no-ops.
+ * own drag handle. The lift and the drop are async, so each waits on dnd's own
+ * announcement — a fixed pause lets a slow lift through and the drag no-ops.
  */
 export async function dragCardByTitle(
   page: Page,
@@ -185,12 +190,13 @@ export async function dragCardByTitle(
 ): Promise<void> {
   await card(page, title).focus()
   await page.keyboard.press("Space")
-  await page.waitForTimeout(250) // wait for the lift to register
+  await expect(dragAnnouncement(page, /have lifted an item/)).toHaveCount(1)
   for (const move of moves) {
     await page.keyboard.press(move)
     await page.waitForTimeout(250)
   }
   await page.keyboard.press("Space")
+  await expect(dragAnnouncement(page, /have dropped the item/)).toHaveCount(1)
   await page.waitForTimeout(350) // wait out the drop animation
 }
 

@@ -58,7 +58,7 @@ export function ColumnView({
             <ColumnTitle title={title} onRename={onRename} />
             {/* The only place the flag shows — its toggle lives in the menu. */}
             {!!done && (
-              <div className="absolute -mt-1 ml-2 w-full text-xs text-muted-foreground/50">
+              <div className="absolute -mt-1 ml-2 text-xs text-muted-foreground/50">
                 Marks cards as done
               </div>
             )}

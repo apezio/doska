@@ -1,15 +1,19 @@
-import type { SlashCommand } from "@doska/markdown"
+import type { SlashCommand, WikilinkOption } from "@doska/markdown"
 import type { Card } from "@doska/core/types"
+import { useCardRefOptions } from "@doska/core/card-refs"
 import { useCardDeck } from "@doska/core/queries"
 import { TextField } from "@doska/ui-kit-mobile"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useKeyboardHeight } from "@/lib/use-keyboard-height"
 import { CardBody } from "./card-body"
 import { CardPaneHeader } from "./card-pane-header"
 import { EditorToolbar, TOOLBAR_HEIGHT } from "./editor-toolbar"
+import { useListContinuation } from "./use-list-continuation"
 import { useSlashMenu } from "./use-slash-menu"
+
+const NO_REFS: WikilinkOption[] = []
 
 /** Backs the inputs only: round-tripping each keystroke would lag the caret. */
 export type Draft = Partial<Pick<Card, "title" | "body">>
@@ -39,9 +43,23 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
     onQueue(cardId, patch)
   }
 
+  const cardRefs = useCardRefOptions(deck?.id ?? "", deck?.prefix ?? "", cardId)
+  const refTargets = useMemo(
+    () => cardRefs.map((option) => option.target),
+    [cardRefs]
+  )
+
   const slash = useSlashMenu({
     value: body,
     onChangeValue: (value) => edit({ body: value }),
+    cardRefs,
+  })
+
+  const onChangeText = useListContinuation({
+    value: body,
+    caret: slash.caret,
+    onChangeValue: (value) => edit({ body: value }),
+    moveCaret: slash.moveCaret,
   })
 
   const scroller = useRef<ScrollView>(null)
@@ -62,12 +80,14 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
     // Inserting needs somewhere to insert into, and a typed `/` survives into
     // preview, where the caret it was measured against is gone.
     items: isPreview ? [] : slash.hasTrigger ? slash.items : slash.commands,
+    refs: isPreview ? NO_REFS : slash.refs,
     isPreview,
     onTogglePreview: () => setPreview(!isPreview),
     onSelect: (command: SlashCommand) => {
       if (slash.hasTrigger) slash.select(command)
       else slash.insertCommand(command)
     },
+    onSelectRef: slash.selectRef,
   }
 
   // Everything the bar covers: its own height, a gap, and the keyboard or the
@@ -112,8 +132,10 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
           body={body}
           deckId={deck?.id ?? ""}
           prefix={deck?.prefix ?? ""}
+          refTargets={refTargets}
           isPreview={isPreview}
           onChangeBody={(value) => edit({ body: value })}
+          onChangeText={onChangeText}
           onEdit={() => setPreview(false)}
           onSelectionChange={slash.onSelectionChange}
           selection={slash.selection}

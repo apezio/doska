@@ -275,6 +275,9 @@ importers:
       '@doska/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@doska/highlight':
+        specifier: workspace:*
+        version: link:../../packages/highlight
       '@doska/markdown':
         specifier: workspace:*
         version: link:../../packages/markdown

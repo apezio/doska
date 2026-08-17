@@ -15,6 +15,7 @@
     "@doska/client-db": "workspace:*",
     "@doska/contract": "workspace:*",
     "@doska/core": "workspace:*",
+    "@doska/highlight": "workspace:*",
     "@doska/markdown": "workspace:*",
     "@doska/ports": "workspace:*",
     "@doska/tokens": "workspace:*",

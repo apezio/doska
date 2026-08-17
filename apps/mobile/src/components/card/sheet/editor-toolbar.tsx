@@ -1,4 +1,4 @@
-import type { SlashCommand } from "@doska/markdown"
+import type { SlashCommand, WikilinkOption } from "@doska/markdown"
 import { Frosted } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import type { LucideIcon } from "lucide-react-native"
@@ -46,21 +46,26 @@ const SHADOW = {
 interface IProps {
   /** Commands to offer: the matches for a typed `/`, or the full list. */
   items: SlashCommand[]
+  /** Cards matching a typed `[[`; these take the pill over the commands. */
+  refs: WikilinkOption[]
   isPreview: boolean
   onTogglePreview: () => void
   onSelect: (command: SlashCommand) => void
+  onSelectRef: (option: WikilinkOption) => void
 }
 
 /**
  * The editor's one toolbar, as two pills: the commands on the left, the preview
- * toggle on its own to the right. The command pill is dropped entirely rather
- * than shown empty — in preview, and when a typed `/` matches nothing.
+ * toggle on its own to the right. The left pill is dropped entirely rather than
+ * shown empty — in preview, and when a typed trigger matches nothing.
  */
 export function EditorToolbar({
   items,
+  refs,
   isPreview,
   onTogglePreview,
   onSelect,
+  onSelectRef,
 }: IProps) {
   const tokens = useTokens()
 
@@ -69,16 +74,33 @@ export function EditorToolbar({
       className="flex-row items-center justify-center gap-2 px-3"
       style={{ paddingVertical: ROW_PADDING }}
     >
-      {items.length ? (
+      {refs.length ? (
         <Pill grow>
-          <ScrollView
-            horizontal
-            // A tap here must not be spent dismissing the keyboard.
-            keyboardShouldPersistTaps="always"
-            showsHorizontalScrollIndicator={false}
-            className="flex-1"
-            contentContainerClassName="items-center gap-1 px-1"
-          >
+          <Rail>
+            {refs.map((option) => (
+              <Pressable
+                key={option.id}
+                onPress={() => onSelectRef(option)}
+                accessibilityRole="button"
+                accessibilityLabel={`${option.target} ${option.title}`}
+                className="h-10 max-w-56 flex-row items-center gap-1.5 rounded-full px-3 active:bg-secondary"
+              >
+                <Text className="font-mono text-[13px] text-primary">
+                  {option.target}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  className="shrink text-[14px] text-card-foreground"
+                >
+                  {option.title}
+                </Text>
+              </Pressable>
+            ))}
+          </Rail>
+        </Pill>
+      ) : items.length ? (
+        <Pill grow>
+          <Rail>
             {items.map((command) => {
               const Glyph = ICON[command.id]
               return (
@@ -97,7 +119,7 @@ export function EditorToolbar({
                 </ToolButton>
               )
             })}
-          </ScrollView>
+          </Rail>
         </Pill>
       ) : null}
 
@@ -114,6 +136,22 @@ export function EditorToolbar({
         </ToolButton>
       </Pill>
     </View>
+  )
+}
+
+/** The horizontal strip of choices inside the left pill. */
+function Rail({ children }: { children: ReactNode }) {
+  return (
+    <ScrollView
+      horizontal
+      // A tap here must not be spent dismissing the keyboard.
+      keyboardShouldPersistTaps="always"
+      showsHorizontalScrollIndicator={false}
+      className="flex-1"
+      contentContainerClassName="items-center gap-1 px-1"
+    >
+      {children}
+    </ScrollView>
   )
 }
 

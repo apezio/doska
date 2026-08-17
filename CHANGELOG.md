@@ -1,11 +1,32 @@
 # Changelog
 
-## [Unreleased]
+## [0.19.0] - 2026-08-17
+
+### Added
+
+- Search, `⌘`+`K` on a board. It matches the card id, the title, the body and
+  the names of attached files. Picking one opens the card and scrolls the board to it.
+- Reveal on board: a card opened from search or from a link points at where it
+  sits.
+- Priority: high, medium or low on a card, or none. Set from the card, shown as
+  a chip, and carried through the MCP server.
+- A board can be sorted by priority, by deadline, or by both.
+- Deleting a card offers an undo toast. Several at once stack into a pile.
+- Delete and reveal buttons in the card panel header.
+- Issue templates for bugs, crashes and feature requests.
 
 ### Changed
 
 - macOS builds are signed with a Developer ID certificate and notarized by
   Apple
+- A `[[card]]` reference UI simplification.
+- Card reference lookups optimization.
+
+### Fixed
+
+- An error boundary now catches a render failure instead of blanking the page.
+- Invalid HTML nesting warnings in the console.
+- Meta icon sizes on mobile cards.
 
 ## [0.18.1] - 2026-08-11
 

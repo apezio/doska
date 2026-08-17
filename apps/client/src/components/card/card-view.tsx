@@ -100,7 +100,12 @@ export function CardView({
             {drawImage(image)}
           </ImageCard>
         ) : (
-          <CardBase className={cn(isDragging && "shadow-shade/5 shadow-xl")}>
+          <CardBase
+            className={cn(
+              isDragging &&
+                "bg-card/70 shadow-shade/5 shadow-xl backdrop-blur-md"
+            )}
+          >
             <CardHeader>
               <CardTitle>{title || "Untitled card"}</CardTitle>
               {action && (

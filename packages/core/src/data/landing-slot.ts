@@ -11,11 +11,6 @@ export interface Landing {
  * Holds a dropped card at the slot it was dropped in for as long as the drop
  * animation runs, so a sort that is about to move it elsewhere does not yank it
  * out from under the finger. `holdMs` is that animation's length.
- *
- * On a list that reads its order from the array it is handed, the landing order
- * is also what makes the card snap back: a sort leaves the order exactly as it
- * was, so without a different order in between, nothing tells the list to
- * re-read it.
  */
 export function useLandingSlot(enabled: boolean, holdMs: number) {
   const [landing, setLanding] = useState<Landing | null>(null)

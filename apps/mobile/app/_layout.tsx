@@ -58,6 +58,7 @@ export default function RootLayout() {
             <Stack.Screen name={SCREENS.boardActions} options={sheetOptions} />
             <Stack.Screen name={SCREENS.boardPrefix} options={sheetOptions} />
             <Stack.Screen name={SCREENS.boardReorder} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.boardSort} options={sheetOptions} />
             <Stack.Screen name={SCREENS.boardDelete} options={sheetOptions} />
             <Stack.Screen
               name={SCREENS.boardDoneColumn}

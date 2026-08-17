@@ -13,6 +13,7 @@ export const ROUTES = {
   boardActions: "/board/actions",
   boardPrefix: "/board/prefix",
   boardReorder: "/board/reorder",
+  boardSort: "/board/sort",
   boardDelete: "/board/delete",
   // Reached from Upcoming, which spans boards, so the board is not the open one.
   boardDoneColumn: (id: string) => `/board/${id}/done-column` as const,
@@ -37,6 +38,7 @@ export const SCREENS = {
   boardActions: "board/actions",
   boardPrefix: "board/prefix",
   boardReorder: "board/reorder",
+  boardSort: "board/sort",
   boardDelete: "board/delete",
   boardDoneColumn: "board/[id]/done-column",
   columnNew: "column/new",

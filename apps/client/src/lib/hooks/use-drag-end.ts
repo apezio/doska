@@ -2,8 +2,8 @@ import type { DropResult } from "@hello-pangea/dnd"
 import type { Board, Card } from "@doska/core/types"
 import {
   byPosition,
+  dropNeighbours,
   keyBetween,
-  sameSortGroup,
   sortCards,
 } from "@doska/core/utils"
 
@@ -42,16 +42,14 @@ export function useDragEnd(
       sort
     )
 
-    const tied = destCards
-      .map((card, index) => ({ card, index }))
-      .filter((entry) => sameSortGroup(entry.card, moved, sort))
-    const prev = tied.filter((e) => e.index < destination.index).at(-1)?.card
-    const next = tied.find((e) => e.index >= destination.index)?.card
+    const [prev, next] = dropNeighbours(
+      destCards,
+      destination.index,
+      moved,
+      sort
+    )
 
-    const position =
-      prev || next
-        ? keyBetween(prev, next)
-        : keyBetween(undefined, destCards[0])
+    const position = keyBetween(prev, next)
     if (position === null) return
 
     moveCard([{ ...moved, columnId: destination.droppableId, position }])

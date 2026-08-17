@@ -5,7 +5,13 @@ import {
 } from "@doska/core/mutations"
 import { useBoard } from "@doska/core/queries"
 import type { Card, Dashboard } from "@doska/core/types"
-import { byPosition, keyBetween } from "@doska/core/utils"
+import { useLandingSlot } from "@doska/core/landing-slot"
+import {
+  byPosition,
+  dropNeighbours,
+  keyBetween,
+  sortCards,
+} from "@doska/core/utils"
 import { EmptyState, Spinner } from "@doska/ui-kit-mobile"
 import { useCallback, useMemo, useState } from "react"
 import { useWindowDimensions } from "react-native"
@@ -15,6 +21,9 @@ import { Column } from "@/components/column/column"
 import { useCardGeometry } from "@/components/board/drag/card-geometry"
 import { useDropPoint } from "@/components/board/drag/use-drop-point"
 import { useEdgePaging } from "@/components/board/drag/use-edge-paging"
+
+/** The sortable's own drop animation, `dropAnimationDuration`. */
+const DROP_ANIMATION_MS = 300
 
 interface IProps {
   board: Dashboard
@@ -28,6 +37,8 @@ export function ColumnPager({ board: dashboard }: IProps) {
   const { mutate: createCard } = useCreateCard(deckId)
   const { mutate: moveCard } = useMoveCard(deckId)
   const { width } = useWindowDimensions()
+  const sort = useMemo(() => dashboard.sort ?? [], [dashboard.sort])
+  const { hold, place } = useLandingSlot(sort.length > 0, DROP_ANIMATION_MS)
 
   const columns = useMemo(
     () => [...(board?.columns ?? [])].sort(byPosition),
@@ -51,36 +62,49 @@ export function ColumnPager({ board: dashboard }: IProps) {
       if (!moved) return
 
       const toColumnId = columnIds[page.current] ?? fromColumnId
-      let neighbours: [Card | undefined, Card | undefined]
+      let between: [Card | undefined, Card | undefined]
 
       if (toColumnId === fromColumnId) {
         if (params.toIndex === params.fromIndex) return
         // The card sits at `toIndex` in the new order, so it is skipped over.
-        neighbours = [
-          params.data[params.toIndex - 1],
-          params.data[params.toIndex + 1],
-        ]
+        const order = params.data.filter((card) => card.id !== moved.id)
+        between = dropNeighbours(order, params.toIndex, moved, sort)
+        hold({ cardId: moved.id, columnId: toColumnId, index: params.toIndex })
       } else {
-        const order = board.cards
-          .filter((card) => card.columnId === toColumnId)
-          .sort(byPosition)
+        const order = sortCards(
+          board.cards
+            .filter((card) => card.columnId === toColumnId)
+            .sort(byPosition),
+          sort
+        )
         const index = await resolveDropIndex(
           toColumnId,
           order.map((card) => card.id),
           // The card's middle, not its top edge, or every drop reads low.
           dropPoint.current.y + heightOf(fromColumnId, moved.id) / 2
         )
-        neighbours = [order[index - 1], order[index]]
+        between = dropNeighbours(order, index, moved, sort)
+        hold({ cardId: moved.id, columnId: toColumnId, index })
       }
 
       // Only the moved card is written, so a reorder someone else is making at
       // the same time never collides with this one.
-      const position = keyBetween(neighbours[0], neighbours[1])
+      const position = keyBetween(between[0], between[1])
       if (!position) return
 
       moveCard([{ ...moved, columnId: toColumnId, position }])
     },
-    [board, columnIds, dropPoint, heightOf, moveCard, page, resolveDropIndex]
+    [
+      board,
+      columnIds,
+      dropPoint,
+      heightOf,
+      hold,
+      moveCard,
+      page,
+      resolveDropIndex,
+      sort,
+    ]
   )
 
   if (!board) return <Spinner />
@@ -110,9 +134,15 @@ export function ColumnPager({ board: dashboard }: IProps) {
           column={column}
           width={width}
           prefix={dashboard.prefix ?? ""}
-          cards={board.cards
-            .filter((card) => card.columnId === column.id)
-            .sort(byPosition)}
+          cards={place(
+            sortCards(
+              board.cards
+                .filter((card) => card.columnId === column.id)
+                .sort(byPosition),
+              sort
+            ),
+            column.id
+          )}
           onToggleBody={() =>
             setColumnCollapsed({
               id: column.id,

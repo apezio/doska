@@ -4,13 +4,22 @@ import { Separator, SheetItem } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import ArrowRightLeft from "lucide-react-native/icons/arrow-right-left"
 import Hash from "lucide-react-native/icons/hash"
+import ListFilter from "lucide-react-native/icons/list-filter"
 import Plus from "lucide-react-native/icons/plus"
 import Trash2 from "lucide-react-native/icons/trash-2"
 import { View } from "react-native"
 import { ROUTES } from "@/lib/routes"
+import { SORT_MODES } from "@doska/core/utils"
 
 interface IProps {
   board: Dashboard
+}
+
+function sortLabel(sort: string[]): string {
+  const picked = sort
+    .map((key) => SORT_MODES.find((mode) => mode.id === key)?.label)
+    .filter((label) => label !== undefined)
+  return picked.length > 0 ? picked.join(", ") : "Manual"
 }
 
 /** The board actions the web keeps behind its `⋯` menu. */
@@ -38,6 +47,12 @@ export function BoardActions({ board }: IProps) {
         label="Reorder columns"
         disabled={columns.length < 2}
         onPress={() => router.push(ROUTES.boardReorder)}
+      />
+      <SheetItem
+        icon={ListFilter}
+        label="Sort cards"
+        trailing={sortLabel(board.sort ?? [])}
+        onPress={() => router.push(ROUTES.boardSort)}
       />
       <Separator className="my-1" />
       <SheetItem

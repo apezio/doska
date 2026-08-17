@@ -16,6 +16,7 @@
     "./db": "./src/api/db/db.ts",
     "./fetch": "./src/api/fetch.ts",
     "./keys": "./src/data/keys.ts",
+    "./landing-slot": "./src/data/landing-slot.ts",
     "./last-board": "./src/data/last-board.ts",
     "./mutations": "./src/data/mutations/index.ts",
     "./operations": "./src/api/operations/index.ts",

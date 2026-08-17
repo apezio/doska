@@ -14,6 +14,8 @@ export const ROUTES = {
   boardPrefix: "/board/prefix",
   boardReorder: "/board/reorder",
   boardDelete: "/board/delete",
+  // Reached from Upcoming, which spans boards, so the board is not the open one.
+  boardDoneColumn: (id: string) => `/board/${id}/done-column` as const,
   columnNew: "/column/new",
   columnActions: (id: string) => `/column/${id}/actions` as const,
   columnDelete: (id: string) => `/column/${id}/delete` as const,
@@ -36,6 +38,7 @@ export const SCREENS = {
   boardPrefix: "board/prefix",
   boardReorder: "board/reorder",
   boardDelete: "board/delete",
+  boardDoneColumn: "board/[id]/done-column",
   columnNew: "column/new",
   columnActions: "column/[id]/actions",
   columnDelete: "column/[id]/delete",

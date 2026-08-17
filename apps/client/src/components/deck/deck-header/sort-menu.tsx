@@ -18,6 +18,8 @@ export function SortMenu({ sort, onChangeSort }: IProps) {
   return (
     <Menu>
       <MenuTrigger
+        openOnHover
+        closeDelay={200}
         render={
           <Button
             variant="ghost"

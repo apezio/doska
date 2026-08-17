@@ -33,8 +33,7 @@ export function CardRevealProvider({ children }: { children: ReactNode }) {
         .querySelector(`[data-rfd-draggable-id="${id}"]`)
         ?.scrollIntoView({
           behavior: "smooth",
-          // Lands on the card's title, offset by its `scroll-mt`.
-          block: "start",
+          block: "center",
           inline: "nearest",
         })
     }, PANEL_SETTLE_MS)

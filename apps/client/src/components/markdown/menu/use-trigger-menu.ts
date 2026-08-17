@@ -148,6 +148,9 @@ export function useTriggerMenu<T extends MenuItem>(
         case "Enter":
         case "Tab":
           e.preventDefault()
+          // Stop the textarea's own Enter handling (list continuation) from
+          // also acting on the keypress and overwriting the insertion.
+          e.stopPropagation()
           select(menu.items[activeIndex])
           break
         case "Escape":
@@ -163,19 +166,25 @@ export function useTriggerMenu<T extends MenuItem>(
   )
 
   // Bind to the textarea: typing/clicks re-evaluate the trigger, keys navigate.
+  // Keydown goes on the document in the capture phase, so an open menu claims
+  // Enter before the textarea's own listeners see it — listeners on the
+  // textarea itself would run in registration order, which is not ours to fix.
   useEffect(() => {
     const textarea = ref.current
     if (!textarea || !enabled) return
+    const onDocumentKeyDown = (e: KeyboardEvent) => {
+      if (e.target === textarea) onKeyDown(e)
+    }
     textarea.addEventListener("input", sync)
     textarea.addEventListener("keyup", onKeyUp)
     textarea.addEventListener("click", sync)
-    textarea.addEventListener("keydown", onKeyDown)
+    document.addEventListener("keydown", onDocumentKeyDown, true)
     textarea.addEventListener("blur", close)
     return () => {
       textarea.removeEventListener("input", sync)
       textarea.removeEventListener("keyup", onKeyUp)
       textarea.removeEventListener("click", sync)
-      textarea.removeEventListener("keydown", onKeyDown)
+      document.removeEventListener("keydown", onDocumentKeyDown, true)
       textarea.removeEventListener("blur", close)
     }
   }, [ref, enabled, sync, onKeyUp, onKeyDown, close])

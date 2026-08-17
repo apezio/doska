@@ -40,6 +40,11 @@ export function CardPanel({ closeHref }: IProps) {
     navigate(closeHref)
   }, [flush, navigate, closeHref])
 
+  const closeAndReveal = useCallback(() => {
+    close()
+    if (card) reveal(card)
+  }, [close, card, reveal])
+
   useEffect(() => {
     if (isOpen && content?.deletedAt) close()
   }, [isOpen, content?.deletedAt, close])
@@ -47,7 +52,7 @@ export function CardPanel({ closeHref }: IProps) {
   return (
     <CardPanelShell
       isOpen={isOpen}
-      onClose={close}
+      onClose={closeAndReveal}
       onClosed={() => setLastCard(null)}
     >
       {card && content && (
@@ -56,7 +61,7 @@ export function CardPanel({ closeHref }: IProps) {
           cardId={card}
           content={content}
           onQueue={queue}
-          onClose={close}
+          onClose={closeAndReveal}
           onDelete={() => {
             deleteCard(card)
             showCardDeleteToast(card, {

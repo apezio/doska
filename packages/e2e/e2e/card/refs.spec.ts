@@ -277,6 +277,22 @@ test.describe("card references", () => {
     await expect(notes).toHaveValue(first)
   })
 
+  test("Enter picks the row inside a list item, without continuing the list", async ({
+    page,
+  }) => {
+    const ids = await boardWithCards(page, ["Alpha", "Source card"])
+
+    await openCard(page, "Source card")
+    const notes = page.getByPlaceholder("Notes")
+    await notes.click()
+    await notes.pressSequentially("- todo [[Alph")
+    await expect(refMenuItem(page, "Alpha", ids["Alpha"])).toBeVisible()
+
+    await notes.press("Enter")
+
+    await expect(notes).toHaveValue(`- todo [[${ids["Alpha"]}|Alpha]]`)
+  })
+
   test("Escape closes the menu, leaves the panel open, and keeps it shut until the text changes", async ({
     page,
   }) => {

@@ -67,7 +67,7 @@ export function CardPanelShell({
         role="region"
         aria-label="Card"
         className={cn(
-          "flex h-full w-full flex-col overflow-hidden bg-card text-sm text-card-foreground md:w-(--card-panel-width)",
+          "flex h-full w-full flex-col overflow-hidden bg-background text-sm text-card-foreground md:w-(--card-panel-width)",
           "md:transition-[border-radius] md:duration-200 md:ease-linear",
           sidebarOpen
             ? "md:rounded-xl md:ring-1 md:ring-foreground/10 md:ring-inset"

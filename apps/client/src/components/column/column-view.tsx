@@ -1,7 +1,7 @@
 import type { DroppableProvidedProps } from "@hello-pangea/dnd"
 import type { ReactNode, Ref } from "react"
 import { Button, cn } from "@doska/ui-kit"
-import { Check, Eye, EyeOff, Plus } from "lucide-react"
+import { Check, FoldVertical, Plus, UnfoldVertical } from "lucide-react"
 import { ColumnSwatch } from "./column-swatch"
 import { ColumnTitle } from "./column-title"
 
@@ -80,7 +80,7 @@ export function ColumnView({
             }
             onClick={onToggleBody}
           >
-            {showBody ? <EyeOff /> : <Eye />}
+            {showBody ? <FoldVertical /> : <UnfoldVertical />}
           </Button>
           {menu}
         </div>

@@ -1,12 +1,14 @@
 import { IconButton } from "@doska/ui-kit-mobile"
 import { DrawerActions } from "@react-navigation/native"
-import { useNavigation } from "expo-router"
+import { router, useNavigation } from "expo-router"
 import Menu from "lucide-react-native/icons/menu"
+import Search from "lucide-react-native/icons/search"
 import type { ReactNode } from "react"
 import { Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { OfflineBanner } from "@/components/shell/offline-banner"
 import { SyncIndicator } from "@/components/shell/sync-indicator"
+import { ROUTES } from "@/lib/routes"
 
 interface IProps {
   children?: ReactNode
@@ -31,6 +33,11 @@ export function ScreenHeader({ children }: IProps) {
           onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         />
         {children}
+        <IconButton
+          icon={Search}
+          label="Search cards"
+          onPress={() => router.push(ROUTES.search)}
+        />
         <SyncIndicator />
       </View>
 

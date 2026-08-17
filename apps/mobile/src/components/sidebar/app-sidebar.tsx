@@ -8,6 +8,7 @@ import type { DrawerContentComponentProps } from "expo-router/drawer"
 import Anchor from "lucide-react-native/icons/anchor"
 import CalendarClock from "lucide-react-native/icons/calendar-clock"
 import Plus from "lucide-react-native/icons/plus"
+import Search from "lucide-react-native/icons/search"
 import Trash2 from "lucide-react-native/icons/trash-2"
 import { ScrollView, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -39,6 +40,11 @@ export function AppSidebar({
   // navigator and the route change happens underneath it.
   function go(href: (typeof ROUTES)["board" | "upcoming" | "trash"]) {
     router.navigate(href)
+    navigation.dispatch(DrawerActions.closeDrawer())
+  }
+
+  function openSearch() {
+    router.push(ROUTES.search)
     navigation.dispatch(DrawerActions.closeDrawer())
   }
 
@@ -77,6 +83,7 @@ export function AppSidebar({
         </View>
 
         <View className="gap-0.5 px-2">
+          <SidebarButton icon={Search} label="Search" onPress={openSearch} />
           <SidebarButton
             icon={CalendarClock}
             label="Upcoming"

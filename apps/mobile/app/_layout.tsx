@@ -63,6 +63,10 @@ export default function RootLayout() {
             <Stack.Screen name={SCREENS.columnActions} options={sheetOptions} />
             <Stack.Screen name={SCREENS.columnDelete} options={sheetOptions} />
             <Stack.Screen
+              name={SCREENS.search}
+              options={{ headerShown: false, presentation: "modal" }}
+            />
+            <Stack.Screen
               name={SCREENS.signIn}
               options={{ title: "Sync", presentation: "modal" }}
             />

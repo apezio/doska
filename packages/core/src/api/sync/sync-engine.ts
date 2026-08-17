@@ -180,7 +180,7 @@ class DeckSync {
     if (this.currentBoard === boardId) this.currentBoard = null
     this.watchedBoards = this.watchedBoards.filter((id) => id !== boardId)
     this.board.dropScope(boardId)
-    await dropBoardLocally(boardId)
+    await dropBoardLocally(boardId, (store, ids) => this.dropDirty(store, ids))
   }
 
   /**

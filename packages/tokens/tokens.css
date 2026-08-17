@@ -18,8 +18,9 @@
   --destructive: #ff5656;
   --success: #e3f4f0;
   --success-foreground: #308f77;
-  --border: #d4d4d4;
-  --input: #d4d4d4;
+  /* Carries the same blue tint as --foreground; a neutral grey reads dirty next to it. */
+  --border: #cfd1d9;
+  --input: #cfd1d9;
   --ring: #725cff;
   --sidebar: #ffffff;
   --sidebar-foreground: #343c54;
@@ -28,6 +29,14 @@
   --sidebar-accent: #f4f2ff;
   --sidebar-accent-foreground: #725cff;
   --sidebar-border: #eeeff2;
+
+  --elevation-1:
+    0 1px 2px -1px rgb(52 60 84 / 0.05), 0 2px 4px -2px rgb(52 60 84 / 0.035);
+  --elevation-2:
+    0 4px 8px -2px rgb(52 60 84 / 0.06), 0 2px 4px -2px rgb(52 60 84 / 0.035);
+  --elevation-3:
+    0 12px 28px -6px rgb(52 60 84 / 0.11), 0 4px 8px -4px rgb(52 60 84 / 0.06);
+  --elevation-inset: inset 0 1px 3px rgb(0 0 0 / 0.1);
 }
 
 .dark:root {
@@ -58,4 +67,12 @@
   --sidebar-accent: #343c54;
   --sidebar-accent-foreground: #f7f7f8;
   --sidebar-border: #ffffff1f;
+
+  --elevation-1:
+    0 1px 2px -1px rgb(0 0 0 / 0.24), 0 2px 4px -2px rgb(0 0 0 / 0.18);
+  --elevation-2:
+    0 4px 8px -2px rgb(0 0 0 / 0.27), 0 2px 4px -2px rgb(0 0 0 / 0.21);
+  --elevation-3:
+    0 12px 28px -6px rgb(0 0 0 / 0.36), 0 4px 8px -4px rgb(0 0 0 / 0.24);
+  --elevation-inset: inset 0 1px 3px rgb(0 0 0 / 0.4);
 }

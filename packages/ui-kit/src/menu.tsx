@@ -46,7 +46,7 @@ function MenuContent({
           finalFocus={focusTriggerOnKeyboardClose}
           className={cn(
             "min-w-36 overflow-hidden rounded-lg border bg-popover",
-            "text-sm text-popover-foreground shadow-md outline-none",
+            "text-sm text-popover-foreground shadow-e3 outline-none",
             "transition-[opacity,transform] duration-50",
             "data-ending-style:opacity-0 data-starting-style:opacity-0",
             "data-starting-style:scale-95",

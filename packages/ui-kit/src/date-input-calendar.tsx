@@ -49,7 +49,7 @@ export default function DateInputCalendar({
           finalFocus={focusTriggerOnKeyboardClose}
           className={cn(
             "overflow-hidden rounded-lg border bg-popover",
-            "text-popover-foreground shadow-md outline-none",
+            "text-popover-foreground shadow-e3 outline-none",
             "transition-[opacity,transform] duration-50",
             "data-ending-style:opacity-0 data-starting-style:opacity-0",
             "data-starting-style:scale-95"

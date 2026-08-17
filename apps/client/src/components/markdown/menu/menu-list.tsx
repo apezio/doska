@@ -38,7 +38,7 @@ export function MenuList<T extends MenuItem>({
       ref={ref}
       className={cn(
         "max-h-64 w-70 overflow-y-auto py-1",
-        "rounded-lg border bg-popover text-popover-foreground shadow-md",
+        "rounded-lg border bg-popover text-popover-foreground shadow-e3",
         className
       )}
       style={style}

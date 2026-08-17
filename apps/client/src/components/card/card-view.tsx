@@ -88,7 +88,7 @@ export function CardView({
     <div
       {...props}
       className={cn(
-        "group relative mb-3 w-full max-w-sm cursor-pointer scroll-mx-6 scroll-mt-[calc(--spacing(15)+10px)] rounded-lg",
+        "group relative mb-3 w-full max-w-sm cursor-pointer scroll-mx-6 scroll-mt-[calc(--spacing(15)+10px)] rounded-xl",
         "touch-manipulation select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none]",
         isRevealed &&
           "ring-2 ring-primary ring-offset-2 ring-offset-background transition-shadow"
@@ -103,7 +103,7 @@ export function CardView({
           <CardBase
             className={cn(
               isDragging &&
-                "bg-card/70 shadow-shade/5 shadow-xl backdrop-blur-md"
+                "bg-card/70 shadow-e3 backdrop-blur-md"
             )}
           >
             <CardHeader>

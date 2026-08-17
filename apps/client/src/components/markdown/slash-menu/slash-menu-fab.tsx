@@ -59,7 +59,7 @@ export function SlashMenuFab({ commands, onSelect, container }: IProps) {
         aria-label="Insert command"
         onPointerDown={(e) => e.preventDefault()}
         onClick={() => setOpen((o) => !o)}
-        className="pointer-events-auto absolute right-4 bottom-4 size-11 text-2xl font-semibold shadow-lg"
+        className="pointer-events-auto absolute right-4 bottom-4 size-11 text-2xl font-semibold shadow-e2"
       >
         /
       </Button>

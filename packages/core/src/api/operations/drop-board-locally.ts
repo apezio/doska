@@ -1,17 +1,21 @@
 import { keys } from "../../data/keys"
 import { queryClient } from "../../query-client"
-import { CARDS, COLUMNS, DASHBOARDS } from "../constants"
+import { CARDS, COLUMNS, DASHBOARDS, type StoreName } from "../constants"
 import { db } from "../db/db"
-import { sync } from "../sync/sync-engine"
 import { boardCursorKey } from "../sync/drivers/board-driver"
 import { clearCursor } from "../sync/drivers/channel-shared"
 import { purgeBoard } from "../sync/drivers/dashboard-channel"
+
+type DropDirty = (store: StoreName, ids: string[]) => void
 
 /**
  * Removes every local trace of a board the server won't serve us: its row, its
  * contents, its pull cursor, and its dirty refs.
  */
-export async function dropBoardLocally(boardId: string): Promise<void> {
+export async function dropBoardLocally(
+  boardId: string,
+  dropDirty: DropDirty
+): Promise<void> {
   const columns = (await db.getColumns()).filter(
     (column) => column.dashboardId === boardId
   )
@@ -19,12 +23,12 @@ export async function dropBoardLocally(boardId: string): Promise<void> {
     await Promise.all(columns.map((column) => db.getCards(column.id)))
   ).flat()
 
-  sync.dropDirty(DASHBOARDS, [boardId])
-  sync.dropDirty(
+  dropDirty(DASHBOARDS, [boardId])
+  dropDirty(
     COLUMNS,
     columns.map((column) => column.id)
   )
-  sync.dropDirty(
+  dropDirty(
     CARDS,
     cards.map((card) => card.id)
   )

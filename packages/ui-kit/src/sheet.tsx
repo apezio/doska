@@ -32,7 +32,7 @@ function SheetContent({
         data-slot="sheet-content"
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex h-full w-3/4 flex-col gap-4 sm:max-w-sm",
-          "border-r bg-popover text-sm text-popover-foreground shadow-lg",
+          "border-r bg-popover text-sm text-popover-foreground shadow-e3",
           "transition duration-200 ease-in-out",
           "data-starting-style:-translate-x-10 data-starting-style:opacity-0",
           "data-ending-style:-translate-x-10 data-ending-style:opacity-0",

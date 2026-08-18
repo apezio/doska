@@ -1,5 +1,11 @@
 import { Button, Menu, MenuContent, MenuItem, MenuTrigger } from "@doska/ui-kit"
+import { SORT_MODES, type SortKey } from "@doska/core/utils"
 import { CalendarClock, Check, Flag, ListFilter } from "lucide-react"
+
+const ICONS: Record<SortKey, typeof Flag> = {
+  priority: Flag,
+  deadline: CalendarClock,
+}
 
 interface IProps {
   sort: string[]
@@ -36,16 +42,21 @@ export function SortMenu({ sort, onChangeSort }: IProps) {
         <ListFilter />
       </MenuTrigger>
       <MenuContent>
-        <MenuItem closeOnClick={false} onClick={() => toggleSort("priority")}>
-          <Flag />
-          Sort by priority
-          {sort.includes("priority") && <Check className="ml-auto" />}
-        </MenuItem>
-        <MenuItem closeOnClick={false} onClick={() => toggleSort("deadline")}>
-          <CalendarClock />
-          Sort by date
-          {sort.includes("deadline") && <Check className="ml-auto" />}
-        </MenuItem>
+        {SORT_MODES.map(({ id, label }) => {
+          const Icon = ICONS[id]
+
+          return (
+            <MenuItem
+              key={id}
+              closeOnClick={false}
+              onClick={() => toggleSort(id)}
+            >
+              <Icon />
+              Sort by {label.toLowerCase()}
+              {sort.includes(id) && <Check className="ml-auto" />}
+            </MenuItem>
+          )
+        })}
       </MenuContent>
     </Menu>
   )

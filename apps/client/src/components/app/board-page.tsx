@@ -13,8 +13,12 @@ export function BoardPage({ deckId }: IProps) {
   const { dashboard } = useActiveDashboard(deckId)
 
   const deck = useMemo(
-    () => ({ id: dashboard.id, prefix: dashboard.prefix ?? "" }),
-    [dashboard.id, dashboard.prefix]
+    () => ({
+      id: dashboard.id,
+      prefix: dashboard.prefix ?? "",
+      sort: dashboard.sort ?? [],
+    }),
+    [dashboard.id, dashboard.prefix, dashboard.sort]
   )
 
   return (

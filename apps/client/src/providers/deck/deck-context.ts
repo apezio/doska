@@ -5,6 +5,8 @@ interface DeckContextValue {
   id: string
   /** The board's card id prefix (the `ROAD` in `ROAD-12`). */
   prefix: string
+  /** The board's active sort keys — empty when its cards sit where they were dropped. */
+  sort: string[]
 }
 
 /**
@@ -14,7 +16,11 @@ interface DeckContextValue {
  * child. Both are empty outside a board, and the prefix is empty on boards
  * created before card ids.
  */
-const DeckContext = createContext<DeckContextValue>({ id: "", prefix: "" })
+const DeckContext = createContext<DeckContextValue>({
+  id: "",
+  prefix: "",
+  sort: [],
+})
 
 export const DeckProvider = DeckContext.Provider
 
@@ -24,4 +30,8 @@ export function useDeck() {
 
 export function useDeckPrefix() {
   return useContext(DeckContext).prefix
+}
+
+export function useDeckSort() {
+  return useContext(DeckContext).sort
 }

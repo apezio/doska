@@ -21,7 +21,6 @@
   --font-sans: "Mulish Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
-  --shade: #232939;
 }
 
 :root {

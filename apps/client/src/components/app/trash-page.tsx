@@ -3,7 +3,7 @@ import { TrashView } from "@/components/trash/trash-view"
 import { sync } from "@doska/core/sync"
 import { AppShell } from "./app-shell"
 
-const NO_DECK = { id: "", prefix: "" }
+const NO_DECK = { id: "", prefix: "", sort: [] }
 
 /** Deleted boards, columns and cards, at `/trash`. */
 export function TrashPage() {

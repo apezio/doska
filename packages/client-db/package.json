@@ -5,10 +5,17 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./client-db": "./src/client-db.ts"
+    "./client-db": "./src/client-db.ts",
+    "./sqlite": "./src/adapters/sqlite-db.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {},
   "devDependencies": {
-    "@doska/configs": "workspace:*"
+    "@doska/configs": "workspace:*",
+    "fake-indexeddb": "^6.2.4",
+    "vitest": "^4.1.10"
   }
 }

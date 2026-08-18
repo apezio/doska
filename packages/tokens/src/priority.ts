@@ -11,6 +11,13 @@ export const PRIORITIES: Priority[] = [
   { id: "low", label: "Low" },
 ]
 
+/** The web takes medium's amber from Tailwind classes; native needs the value
+ * itself. Same pair as `DEADLINE.soonForeground`, which sits beside it on a card. */
+export const PRIORITY = {
+  light: { medium: "#d97706" },
+  dark: { medium: "#fbbf24" },
+} as const
+
 /**
  * Sort key: high 0, medium 1, low 2, unset or retired last. Takes `undefined`
  * because cards stored locally before the field existed read back without it —

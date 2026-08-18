@@ -16,9 +16,9 @@ export function AddColumn({ onAdd }: IProps) {
         onClick={onAdd}
         aria-label="Add column"
         className={cn(
-          "min-h-20 w-full shrink-0 rounded-3xl bg-background p-4 transition-colors",
+          "min-h-20 w-full shrink-0 rounded-2xl bg-background p-4 transition-colors",
           "border border-sidebar-primary-foreground",
-          "shadow-[inset_0_1px_3px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)]"
+          "shadow-inset"
         )}
       >
         <div className="flex items-center gap-2 text-muted-foreground/50 uppercase">

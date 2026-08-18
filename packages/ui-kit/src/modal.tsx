@@ -18,7 +18,7 @@ function ModalContent({
         data-slot="modal-overlay"
         forceRender
         className={cn(
-          "fixed inset-0 z-50 bg-background/40 supports-backdrop-filter:backdrop-blur-xs",
+          "fixed inset-0 z-50 bg-sidebar/50 supports-backdrop-filter:backdrop-blur-xs",
           "transition-opacity duration-200",
           "data-ending-style:opacity-0 data-starting-style:opacity-0"
         )}
@@ -27,11 +27,11 @@ function ModalContent({
         data-slot="modal-content"
         className={cn(
           // mobile: full-screen page
-          "fixed inset-0 z-50 flex flex-col bg-popover text-sm text-popover-foreground",
+          "fixed inset-0 z-50 flex flex-col bg-card text-sm text-popover-foreground",
           // desktop: centered modal (height is set per-state by the consumer so
           // it can transition smoothly between preview/editing)
           "md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2",
-          "md:max-h-[90svh] md:w-full md:max-w-2xl md:rounded-xl md:border md:shadow-xl",
+          "md:max-h-[90svh] md:w-full md:max-w-2xl md:rounded-xl md:border md:shadow-e3",
           // fade + scale on open/close, and animate the height change on resize
           "transition-all duration-200 ease-out",
           "data-ending-style:opacity-0 data-starting-style:opacity-0",

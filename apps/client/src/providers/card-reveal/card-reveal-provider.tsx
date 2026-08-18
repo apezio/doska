@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react"
 import { CardRevealCtx } from "./card-reveal-context"
 
 /** How long the highlight stays on: a flash, not a mode. */
@@ -39,8 +46,11 @@ export function CardRevealProvider({ children }: { children: ReactNode }) {
     }, PANEL_SETTLE_MS)
   }, [])
 
+  // Memoised: board cards read it, and they are memoised on their props.
+  const value = useMemo(() => ({ revealed, reveal }), [revealed, reveal])
+
   return (
-    <CardRevealCtx.Provider value={{ revealed, reveal }}>
+    <CardRevealCtx.Provider value={value}>
       {children}
     </CardRevealCtx.Provider>
   )

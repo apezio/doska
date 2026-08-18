@@ -12,6 +12,26 @@ export interface WikilinkOption {
   target: string
 }
 
+// `[[` followed by the query up to the caret. The query may contain spaces —
+// card titles do — but stops at a bracket or line break.
+const WIKILINK_TRIGGER = /\[\[([^[\]\n]*)$/
+
+export interface WikilinkTrigger {
+  /** Index of the first `[`. */
+  start: number
+  query: string
+}
+
+/** The `[[` trigger the caret sits in, or null when there is none. */
+export function matchWikilinkTrigger(
+  value: string,
+  caret: number
+): WikilinkTrigger | null {
+  const match = WIKILINK_TRIGGER.exec(value.slice(0, caret))
+  if (!match) return null
+  return { start: caret - match[1].length - 2, query: match[1] }
+}
+
 /**
  * Wraps a target in the wikilink syntax. An `alias` is written alongside it as
  * the label to display

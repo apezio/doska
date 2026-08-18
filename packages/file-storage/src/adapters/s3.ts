@@ -44,7 +44,7 @@ export class S3FileStorage implements FileStorage {
         "x-file-name": encodeURIComponent(input.name),
         "x-file-mime": input.mime,
       },
-      body: input.bytes,
+      body: input.bytes as RequestInit["body"],
     })
     if (!res.ok) throw new Error(`upload failed: ${res.status}`)
     const stored = (await res.json()) as UploadResponse

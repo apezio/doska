@@ -7,9 +7,11 @@ import Eye from "lucide-react-native/icons/eye"
 import Heading1 from "lucide-react-native/icons/heading-1"
 import Heading2 from "lucide-react-native/icons/heading-2"
 import Heading3 from "lucide-react-native/icons/heading-3"
+import Image from "lucide-react-native/icons/image"
 import Link from "lucide-react-native/icons/link"
 import ListChecks from "lucide-react-native/icons/list-checks"
 import Minus from "lucide-react-native/icons/minus"
+import Paperclip from "lucide-react-native/icons/paperclip"
 import Scissors from "lucide-react-native/icons/scissors"
 import TextQuote from "lucide-react-native/icons/text-quote"
 import type { ReactNode } from "react"
@@ -49,20 +51,31 @@ interface IProps {
   /** Cards matching a typed `[[`; these take the pill over the commands. */
   refs: WikilinkOption[]
   isPreview: boolean
+  /** False when there is no backend or no session to upload to. */
+  canAttach: boolean
+  /** True while an upload is in flight; the rows carry the progress. */
+  attaching: boolean
+  onAttach: () => void
+  onAttachPhoto: () => void
   onTogglePreview: () => void
   onSelect: (command: SlashCommand) => void
   onSelectRef: (option: WikilinkOption) => void
 }
 
 /**
- * The editor's one toolbar, as two pills: the commands on the left, the preview
- * toggle on its own to the right. The left pill is dropped entirely rather than
- * shown empty — in preview, and when a typed trigger matches nothing.
+ * The editor's one toolbar, as two pills: the commands on the left, attaching
+ * and the preview toggle on the right. The photo library needs its own button:
+ * the document picker cannot see it. The left pill is dropped entirely rather
+ * than shown empty — in preview, and when a typed trigger matches nothing.
  */
 export function EditorToolbar({
   items,
   refs,
   isPreview,
+  canAttach,
+  attaching,
+  onAttach,
+  onAttachPhoto,
   onTogglePreview,
   onSelect,
   onSelectRef,
@@ -125,6 +138,20 @@ export function EditorToolbar({
 
       <Pill>
         <ToolButton
+          label="Attach photo"
+          disabled={!canAttach || attaching}
+          onPress={onAttachPhoto}
+        >
+          <Image size={22} color={tokens.cardForeground} />
+        </ToolButton>
+        <ToolButton
+          label="Attach file"
+          disabled={!canAttach || attaching}
+          onPress={onAttach}
+        >
+          <Paperclip size={22} color={tokens.cardForeground} />
+        </ToolButton>
+        <ToolButton
           label="Preview"
           active={isPreview}
           onPress={onTogglePreview}
@@ -184,20 +211,24 @@ function Pill({ grow, children }: { grow?: boolean; children: ReactNode }) {
 function ToolButton({
   label,
   active,
+  disabled,
   onPress,
   children,
 }: {
   label: string
   active?: boolean
+  disabled?: boolean
   onPress: () => void
   children: ReactNode
 }) {
   return (
     <Pressable
+      disabled={disabled}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ selected: active }}
+      accessibilityState={{ selected: active, disabled }}
+      style={disabled ? { opacity: 0.3 } : undefined}
       className={
         active
           ? "size-10 items-center justify-center rounded-full bg-secondary"

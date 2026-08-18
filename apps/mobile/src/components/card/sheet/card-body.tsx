@@ -17,6 +17,7 @@ import { MarkdownView } from "@/components/markdown/markdown-view"
 const EDITOR_TEXT = "px-4 py-2 font-mono text-[15px] leading-[22px]"
 
 interface IProps {
+  cardId: string
   body: string
   /** The card's board, for the `[[ROAD-12]]` refs in its body. */
   deckId: string
@@ -34,6 +35,7 @@ interface IProps {
 }
 
 export function CardBody({
+  cardId,
   body,
   deckId,
   prefix,
@@ -86,7 +88,7 @@ export function CardBody({
 
   return (
     <Pressable onPress={onEdit} className="grow px-4 py-2">
-      <CardMarkdown deckId={deckId} prefix={prefix}>
+      <CardMarkdown cardId={cardId} deckId={deckId} prefix={prefix}>
         <MarkdownView
           onToggleTask={(index) => onChangeBody(toggleTaskByIndex(body, index))}
         >

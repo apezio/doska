@@ -11,7 +11,7 @@ export interface FileInput {
   /** Original filename — used only to derive an extension; not the stored key. */
   name: string
   mime: string
-  bytes: Blob
+  bytes: Blob | Uint8Array
 }
 
 /** A stored blob's stable handle. `key` is backend-specific and opaque to callers. */

@@ -1,7 +1,11 @@
-import type { SoleImage } from "@doska/markdown"
-import type { Attachment } from "@doska/core/types"
-import { isRenderableImage } from "./attachments/renderable-image"
+import type { SoleImage } from "@doska/markdown/sole-image"
+import type { Attachment } from "../types"
+import { isRenderableImage } from "./attachment-mime"
 
+/**
+ * The one image a card is, when that is all it is: a body that is a single
+ * image and nothing else, or no body and exactly one image attachment.
+ */
 export function cardSoleImage(
   hasBody: boolean,
   bodyImage: SoleImage | null,

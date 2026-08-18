@@ -1,4 +1,8 @@
-import type { SlashCommand, WikilinkOption } from "@doska/markdown"
+import {
+  DEFAULT_SLASH_COMMANDS,
+  type SlashCommand,
+  type WikilinkOption,
+} from "@doska/markdown"
 import type { Card } from "@doska/core/types"
 import { useCardRefOptions } from "@doska/core/card-refs"
 import { useCardDeck } from "@doska/core/queries"
@@ -7,6 +11,9 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useKeyboardHeight } from "@/lib/use-keyboard-height"
+import { CardAttachments } from "@/components/card/attachments/card-attachments"
+import { imageSlashCommands } from "@/components/card/attachments/image-slash-commands"
+import { useAttachmentUpload } from "@/components/card/attachments/use-attachment-upload"
 import { CardBody } from "./card-body"
 import { CardPaneHeader } from "./card-pane-header"
 import { EditorToolbar, TOOLBAR_HEIGHT } from "./editor-toolbar"
@@ -49,9 +56,20 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
     [cardRefs]
   )
 
+  const uploads = useAttachmentUpload(cardId)
+
+  const commands = useMemo(
+    () => [
+      ...DEFAULT_SLASH_COMMANDS,
+      ...imageSlashCommands(content.attachments),
+    ],
+    [content.attachments]
+  )
+
   const slash = useSlashMenu({
     value: body,
     onChangeValue: (value) => edit({ body: value }),
+    commands,
     cardRefs,
   })
 
@@ -82,6 +100,10 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
     items: isPreview ? [] : slash.hasTrigger ? slash.items : slash.commands,
     refs: isPreview ? NO_REFS : slash.refs,
     isPreview,
+    canAttach: uploads.enabled,
+    attaching: uploads.busy,
+    onAttach: () => void uploads.attach("files"),
+    onAttachPhoto: () => void uploads.attach("photos"),
     onTogglePreview: () => setPreview(!isPreview),
     onSelect: (command: SlashCommand) => {
       if (slash.hasTrigger) slash.select(command)
@@ -117,6 +139,13 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
           priority={content.priority}
           cardNumber={content.number}
         />
+        <CardAttachments
+          cardId={cardId}
+          isReadonly={isPreview}
+          pending={uploads.pending}
+          uploadError={uploads.error}
+          className="px-4 pt-2"
+        />
         <TextField
           multiline
           value={title}
@@ -129,6 +158,7 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
           }
         />
         <CardBody
+          cardId={cardId}
           body={body}
           deckId={deck?.id ?? ""}
           prefix={deck?.prefix ?? ""}

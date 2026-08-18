@@ -1,4 +1,3 @@
-// Image mimes browsers can't decode in an <img>, so we show the file icon instead.
 const UNRENDERABLE_IMAGE_MIMES = new Set([
   "image/heic",
   "image/heif",

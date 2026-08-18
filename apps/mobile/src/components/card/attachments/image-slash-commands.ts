@@ -1,6 +1,6 @@
-import { toAttachmentSrc, type SlashCommand } from "@doska/markdown"
-import type { Attachment } from "@doska/core/types"
 import { isRenderableImage } from "@doska/core/attachment-mime"
+import type { Attachment } from "@doska/core/types"
+import { toAttachmentSrc, type SlashCommand } from "@doska/markdown"
 
 /** Slash commands inserting the card's renderable image attachments as Markdown refs. */
 export function imageSlashCommands(attachments: Attachment[]): SlashCommand[] {

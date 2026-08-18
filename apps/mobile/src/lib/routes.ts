@@ -25,6 +25,8 @@ export const ROUTES = {
   cardDeadline: (id: string) => `/card/${id}/deadline` as const,
   cardPriority: (id: string) => `/card/${id}/priority` as const,
   cardMove: (id: string) => `/card/${id}/move` as const,
+  cardAttachment: (id: string, attachmentId: string) =>
+    `/card/${id}/attachment/${attachmentId}` as const,
   cardDelete: (id: string) => `/card/${id}/delete` as const,
 } as const
 
@@ -49,5 +51,6 @@ export const SCREENS = {
   cardDeadline: "card/[id]/deadline",
   cardPriority: "card/[id]/priority",
   cardMove: "card/[id]/move",
+  cardAttachment: "card/[id]/attachment/[attachmentId]",
   cardDelete: "card/[id]/delete",
 } as const

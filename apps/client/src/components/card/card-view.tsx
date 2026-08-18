@@ -13,7 +13,7 @@ import type { Card, Column } from "@doska/core/types"
 import { MarkdownCardPreview } from "../markdown"
 import { CardMeta } from "./card-meta"
 import { ImageCard } from "./image-card"
-import { cardSoleImage } from "./sole-image"
+import { cardSoleImage } from "@doska/core/card-sole-image"
 
 const BOARD_MARKERS = [cut]
 

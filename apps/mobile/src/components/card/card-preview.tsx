@@ -35,7 +35,7 @@ export function CardPreview({ card, deckId, prefix, onPatch }: IProps) {
 
   return (
     <View className="gap-1 border-t border-muted px-3 pt-2">
-      <CardMarkdown deckId={deckId} prefix={prefix}>
+      <CardMarkdown cardId={card.id} deckId={deckId} prefix={prefix}>
         <MarkdownView onToggleTask={toggleTask}>{preview}</MarkdownView>
       </CardMarkdown>
       {hasMore && (

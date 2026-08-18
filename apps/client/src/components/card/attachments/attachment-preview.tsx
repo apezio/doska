@@ -2,7 +2,7 @@ import { FileText } from "lucide-react"
 import type { Attachment } from "@doska/core/types"
 import type { AttachmentSource } from "@doska/core/attachment-labels"
 import { AttachmentUnavailable } from "./attachment-unavailable"
-import { isRenderableImage } from "./renderable-image"
+import { isRenderableImage } from "@doska/core/attachment-mime"
 import { useImageFailure } from "./use-image-failure"
 
 interface IProps {

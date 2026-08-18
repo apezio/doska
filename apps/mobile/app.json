@@ -23,6 +23,12 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Doska attaches the photos you pick to a card."
+        }
+      ],
       "@react-native-community/datetimepicker",
       [
         "expo-splash-screen",

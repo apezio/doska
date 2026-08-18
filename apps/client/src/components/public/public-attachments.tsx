@@ -3,7 +3,7 @@ import type { Attachment } from "@doska/core/types"
 import { publicAttachmentUrl } from "@doska/core/public"
 import { AttachmentList } from "../card/attachments/attachment-list"
 import { AttachmentViewer } from "../card/attachments/attachment-viewer"
-import { isRenderableImage } from "../card/attachments/renderable-image"
+import { isRenderableImage } from "@doska/core/attachment-mime"
 
 interface IProps {
   attachments: Attachment[]

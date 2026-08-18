@@ -1,8 +1,10 @@
 import { cardDisplayId } from "@doska/contract/prefix"
+import type { CardPatch } from "@doska/core/mutations"
 import type { Card } from "@doska/core/types"
 import { IconButton } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import MoreHorizontal from "lucide-react-native/icons/ellipsis"
+import { memo } from "react"
 import { Pressable, Text, View } from "react-native"
 import { CardPreview } from "@/components/card/card-preview"
 import { ROUTES } from "@/lib/routes"
@@ -16,10 +18,18 @@ interface IProps {
   showBody: boolean
   /** The card sits in the board's done column. */
   done: boolean
+  onPatch: (id: string, patch: CardPatch) => void
 }
 
 /** A board card: title, meta row, then the cut-truncated body preview. */
-export function BoardCard({ card, deckId, prefix, showBody, done }: IProps) {
+export const BoardCard = memo(function BoardCard({
+  card,
+  deckId,
+  prefix,
+  showBody,
+  done,
+  onPatch,
+}: IProps) {
   return (
     <Pressable
       onPress={() => router.push(ROUTES.card(card.id))}
@@ -51,7 +61,14 @@ export function BoardCard({ card, deckId, prefix, showBody, done }: IProps) {
         />
       </View>
 
-      {showBody && <CardPreview card={card} deckId={deckId} prefix={prefix} />}
+      {showBody && (
+        <CardPreview
+          card={card}
+          deckId={deckId}
+          prefix={prefix}
+          onPatch={onPatch}
+        />
+      )}
     </Pressable>
   )
-}
+})

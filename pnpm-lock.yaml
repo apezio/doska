@@ -266,12 +266,18 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@doska/client-db':
+        specifier: workspace:*
+        version: link:../../packages/client-db
       '@doska/contract':
         specifier: workspace:*
         version: link:../../packages/contract
       '@doska/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@doska/highlight':
+        specifier: workspace:*
+        version: link:../../packages/highlight
       '@doska/markdown':
         specifier: workspace:*
         version: link:../../packages/markdown

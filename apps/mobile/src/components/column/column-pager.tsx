@@ -1,14 +1,16 @@
 import {
   useCreateCard,
   useMoveCard,
+  useSaveCard,
   useSetColumnCollapsed,
+  type CardPatch,
 } from "@doska/core/mutations"
 import { useBoard } from "@doska/core/queries"
 import type { Card, Dashboard } from "@doska/core/types"
 import { useLandingSlot } from "@doska/core/landing-slot"
 import {
-  byPosition,
   dropNeighbours,
+  groupCardsByColumn,
   keyBetween,
   sortCards,
 } from "@doska/core/utils"
@@ -36,19 +38,51 @@ export function ColumnPager({ board: dashboard }: IProps) {
   const { mutate: setColumnCollapsed } = useSetColumnCollapsed(deckId)
   const { mutate: createCard } = useCreateCard(deckId)
   const { mutate: moveCard } = useMoveCard(deckId)
+  const { mutate: saveCard } = useSaveCard()
   const { width } = useWindowDimensions()
   const sort = useMemo(() => dashboard.sort ?? [], [dashboard.sort])
   const { hold, place } = useLandingSlot(sort.length > 0, DROP_ANIMATION_MS)
 
-  const columns = useMemo(
-    () => [...(board?.columns ?? [])].sort(byPosition),
-    [board?.columns]
+  // Memoised so that a re-render which leaves the board alone — picking a card
+  // up is one — hands every column the array it already has, and the columns
+  // below skip. `place` passes its input through when no card is landing there.
+  const grouped = useMemo(
+    () =>
+      board
+        ? groupCardsByColumn(board).map(({ column, cards }) => ({
+            column,
+            cards: sortCards(cards, sort),
+          }))
+        : [],
+    [board, sort]
   )
-  const columnIds = useMemo(() => columns.map((one) => one.id), [columns])
+
+  const columnIds = useMemo(
+    () => grouped.map(({ column }) => column.id),
+    [grouped]
+  )
   const { pagerRef, onPagerScroll, page } = useEdgePaging(columnIds, width)
   const dropPoint = useDropPoint()
   const { heightOf, resolveDropIndex } = useCardGeometry()
   const [dragging, setDragging] = useState(false)
+
+  const patchCard = useCallback(
+    (cardId: string, patch: CardPatch) => saveCard({ id: cardId, patch }),
+    [saveCard]
+  )
+
+  const toggleBody = useCallback(
+    (columnId: string, showBody: boolean) =>
+      setColumnCollapsed({ id: columnId, collapsed: showBody }),
+    [setColumnCollapsed]
+  )
+
+  const addCard = useCallback(
+    (columnId: string) => createCard(columnId),
+    [createCard]
+  )
+
+  const handleDragStart = useCallback(() => setDragging(true), [])
 
   // A card lands wherever the board has been paged to, which is not the column
   // it was picked up in if it was carried across. The sortable only ever
@@ -71,12 +105,8 @@ export function ColumnPager({ board: dashboard }: IProps) {
         between = dropNeighbours(order, params.toIndex, moved, sort)
         hold({ cardId: moved.id, columnId: toColumnId, index: params.toIndex })
       } else {
-        const order = sortCards(
-          board.cards
-            .filter((card) => card.columnId === toColumnId)
-            .sort(byPosition),
-          sort
-        )
+        const order =
+          grouped.find(({ column }) => column.id === toColumnId)?.cards ?? []
         const index = await resolveDropIndex(
           toColumnId,
           order.map((card) => card.id),
@@ -98,6 +128,7 @@ export function ColumnPager({ board: dashboard }: IProps) {
       board,
       columnIds,
       dropPoint,
+      grouped,
       heightOf,
       hold,
       moveCard,
@@ -109,7 +140,7 @@ export function ColumnPager({ board: dashboard }: IProps) {
 
   if (!board) return <Spinner />
 
-  if (columns.length === 0) {
+  if (grouped.length === 0) {
     return <EmptyState message="No columns yet." />
   }
 
@@ -127,30 +158,18 @@ export function ColumnPager({ board: dashboard }: IProps) {
       onScroll={onPagerScroll}
       scrollEventThrottle={16}
     >
-      {columns.map((column) => (
+      {grouped.map(({ column, cards }) => (
         <Column
           key={column.id}
           deckId={deckId}
           column={column}
           width={width}
           prefix={dashboard.prefix ?? ""}
-          cards={place(
-            sortCards(
-              board.cards
-                .filter((card) => card.columnId === column.id)
-                .sort(byPosition),
-              sort
-            ),
-            column.id
-          )}
-          onToggleBody={() =>
-            setColumnCollapsed({
-              id: column.id,
-              collapsed: !column.collapsed,
-            })
-          }
-          onAddCard={() => createCard(column.id)}
-          onDragStart={() => setDragging(true)}
+          cards={place(cards, column.id)}
+          onToggleBody={toggleBody}
+          onAddCard={addCard}
+          onPatchCard={patchCard}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         />
       ))}

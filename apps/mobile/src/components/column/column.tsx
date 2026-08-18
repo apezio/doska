@@ -1,5 +1,6 @@
+import type { CardPatch } from "@doska/core/mutations"
 import type { Card, Column as ColumnType } from "@doska/core/types"
-import { useCallback } from "react"
+import { memo, useCallback } from "react"
 import { Platform, Pressable, RefreshControl, Text, View } from "react-native"
 import Animated, { useAnimatedRef } from "react-native-reanimated"
 import Sortable, {
@@ -25,8 +26,9 @@ interface IProps {
   cards: Card[]
   prefix: string
   width: number
-  onToggleBody: () => void
-  onAddCard: () => void
+  onToggleBody: (columnId: string, showBody: boolean) => void
+  onAddCard: (columnId: string) => void
+  onPatchCard: (id: string, patch: CardPatch) => void
   onDragStart: (columnId: string) => void
   onDragEnd: (columnId: string, params: SortableGridDragEndParams<Card>) => void
 }
@@ -35,7 +37,7 @@ interface IProps {
  * One column, sized to the screen so the board pages between them — the same
  * shape the web takes below its `md` breakpoint.
  */
-export function Column({
+export const Column = memo(function Column({
   deckId,
   column,
   cards,
@@ -43,6 +45,7 @@ export function Column({
   width,
   onToggleBody,
   onAddCard,
+  onPatchCard,
   onDragStart,
   onDragEnd,
 }: IProps) {
@@ -64,10 +67,19 @@ export function Column({
           prefix={prefix}
           showBody={showBody}
           done={column.done}
+          onPatch={onPatchCard}
         />
       </View>
     ),
-    [column.id, column.done, deckId, prefix, showBody, registerHeight]
+    [
+      column.id,
+      column.done,
+      deckId,
+      prefix,
+      showBody,
+      registerHeight,
+      onPatchCard,
+    ]
   )
 
   return (
@@ -90,7 +102,7 @@ export function Column({
         }
       >
         <Pressable
-          onPress={onAddCard}
+          onPress={() => onAddCard(column.id)}
           className="mb-3 h-12 items-center justify-center rounded-xl border border-card-ring bg-card active:opacity-70"
         >
           <Text className="text-xl font-sans-medium text-muted-foreground">
@@ -123,8 +135,8 @@ export function Column({
         deckId={deckId}
         column={column}
         showBody={showBody}
-        onToggleBody={onToggleBody}
+        onToggleBody={() => onToggleBody(column.id, showBody)}
       />
     </View>
   )
-}
+})

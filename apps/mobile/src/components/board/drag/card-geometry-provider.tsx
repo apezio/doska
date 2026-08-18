@@ -1,4 +1,4 @@
-import { useCallback, useRef, type ReactNode } from "react"
+import { useCallback, useMemo, useRef, type ReactNode } from "react"
 import type { View } from "react-native"
 import { CARD_GAP, CardGeometryContext } from "./card-geometry"
 
@@ -65,10 +65,14 @@ export function CardGeometryProvider({ children }: { children: ReactNode }) {
     []
   )
 
+  // Memoised: every card reads it, and they are memoised on their props.
+  const value = useMemo(
+    () => ({ registerList, registerHeight, heightOf, resolveDropIndex }),
+    [registerList, registerHeight, heightOf, resolveDropIndex]
+  )
+
   return (
-    <CardGeometryContext.Provider
-      value={{ registerList, registerHeight, heightOf, resolveDropIndex }}
-    >
+    <CardGeometryContext.Provider value={value}>
       {children}
     </CardGeometryContext.Provider>
   )

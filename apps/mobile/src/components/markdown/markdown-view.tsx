@@ -24,10 +24,13 @@ interface IProps {
 export function MarkdownView({ children, onToggleTask }: IProps) {
   const renderers = useMarkdownRenderers()
 
-  const content: ReactNode[] = useMemo(() => {
-    const adapter = createNativeAdapter(renderers)
-    return renderMarkdown(parseMarkdown(children), adapter, { onToggleTask })
-  }, [children, renderers, onToggleTask])
+  const tree = useMemo(() => parseMarkdown(children), [children])
+
+  const content: ReactNode[] = useMemo(
+    () =>
+      renderMarkdown(tree, createNativeAdapter(renderers), { onToggleTask }),
+    [tree, renderers, onToggleTask]
+  )
 
   return <View className="gap-2">{content}</View>
 }

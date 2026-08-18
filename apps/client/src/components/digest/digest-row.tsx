@@ -1,6 +1,13 @@
-import { Card as CardBase, Checkbox, PriorityDot, cn } from "@doska/ui-kit"
+import {
+  Card as CardBase,
+  Checkbox,
+  PriorityDot,
+  TaskIndicator,
+  cn,
+} from "@doska/ui-kit"
 import { useState } from "react"
 import type { DigestCard } from "@doska/core/operations"
+import { taskProgress } from "@doska/markdown"
 import { useMoveCardToColumn } from "@doska/core/mutations"
 import { useDashboardNav } from "@/lib/hooks"
 import { DoneColumnHelp } from "./done-column-help"
@@ -29,6 +36,7 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
   const [helpOpen, setHelpOpen] = useState(false)
 
   const title = card.title || "Untitled card"
+  const tasks = taskProgress(card.body)
 
   // Null when the board has no done column, and then there is nowhere to send it.
   const target = isDone ? undoneColumnId : doneColumnId
@@ -89,6 +97,7 @@ export function DigestRow({ entry, isActive, onOpen }: IProps) {
             {boardTitle || "Untitled board"} · {columnTitle}
           </button>
         </span>
+        {tasks.total > 0 && <TaskIndicator {...tasks} />}
       </CardBase>
       {!target && (
         <DoneColumnHelp

@@ -6,7 +6,7 @@ export { EmptyState } from "./empty-state"
 export { Frosted } from "./frosted"
 export { IconButton } from "./icon-button"
 export { Input, TextField } from "./input"
-export { PriorityChip } from "./priority-chip"
+export { PriorityChip, PriorityDot } from "./priority-chip"
 export { Separator } from "./separator"
 export {
   SheetAction,

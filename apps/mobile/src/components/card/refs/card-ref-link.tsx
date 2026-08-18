@@ -28,7 +28,7 @@ export function CardRefLink({ deckId, prefix, displayId, alias }: IProps) {
       </Text>
     )
 
-  const { card, columnTitle, columnColor } = ref
+  const { card, columnTitle, columnColor, columnDone } = ref
   const swatch = columnSwatch(columnColor)
 
   return (
@@ -44,6 +44,11 @@ export function CardRefLink({ deckId, prefix, displayId, alias }: IProps) {
       <Text className="text-[15px] text-card-foreground">
         {alias || card.title || "Untitled card"}
       </Text>
+      {/* A glyph, not an icon: everything here is one text flow, and an inline
+          Svg inside a Text does not lay out reliably on Android. */}
+      {columnDone ? (
+        <Text className="text-[13px] text-card-foreground">{" ✓"}</Text>
+      ) : null}
       {columnTitle ? (
         <Text
           className="text-xs font-sans-medium"

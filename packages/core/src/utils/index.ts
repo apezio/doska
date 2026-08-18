@@ -4,6 +4,7 @@ export {
   deadlineRelative,
   deadlineStatus,
   formatDeadline,
+  formatDeadlineNoYearIfCurrent,
   longDate,
   todayIso,
   weekday,

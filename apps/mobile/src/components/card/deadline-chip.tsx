@@ -1,7 +1,7 @@
 import {
   deadlineRelative,
   deadlineStatus,
-  formatDeadline,
+  formatDeadlineNoYearIfCurrent,
 } from "@doska/core/utils"
 import { DEADLINE } from "@doska/tokens/deadline"
 import { Chip } from "@doska/ui-kit-mobile"
@@ -32,7 +32,7 @@ export function DeadlineChip({ value, done }: IProps) {
     value === null
       ? null
       : status === "upcoming"
-        ? formatDeadline(value)
+        ? formatDeadlineNoYearIfCurrent(value)
         : deadlineRelative(value)
   const chip = CHIP[status]
   const tint =

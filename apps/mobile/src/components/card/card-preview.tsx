@@ -1,10 +1,12 @@
 import type { CardPatch } from "@doska/core/mutations"
 import type { Card } from "@doska/core/types"
-import { cut, toggleTaskByIndex } from "@doska/markdown"
+import { cut, toggleTaskByIndex, useMarkers } from "@doska/markdown"
 import { useCallback } from "react"
 import { Text, View } from "react-native"
 import { MarkdownView } from "@/components/markdown/markdown-view"
 import { CardMarkdown } from "./card-markdown"
+
+const BOARD_MARKERS = [cut]
 
 interface IProps {
   card: Card
@@ -15,8 +17,13 @@ interface IProps {
 
 /** The card's body down to the cut marker, or nothing if it has no body. */
 export function CardPreview({ card, deckId, prefix, onPatch }: IProps) {
-  // `hasMore` is the cut marker having fired: the rest opens in the card view.
-  const { body: preview, applied: hasMore } = cut.cardRender(card.body)
+  const { body: preview, applied } = useMarkers(
+    card.body,
+    BOARD_MARKERS,
+    "card"
+  )
+  // The cut marker having fired: the rest opens in the card view.
+  const hasMore = applied.includes(cut.name)
 
   const toggleTask = useCallback(
     (index: number) =>

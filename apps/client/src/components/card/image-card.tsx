@@ -25,7 +25,7 @@ export function ImageCard({ title, isDragging, action, children }: IProps) {
       className={cn(
         "gap-0 py-0",
         title && "pt-2",
-        isDragging && "shadow-shade/5 shadow-xl"
+        isDragging && "shadow-e3"
       )}
     >
       {title ? (

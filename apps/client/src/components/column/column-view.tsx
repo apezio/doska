@@ -87,9 +87,9 @@ export function ColumnView({
       </div>
       <div
         className={cn(
-          "flex min-h-40 w-full shrink-0 flex-col rounded-3xl bg-background p-4 transition-colors",
+          "flex min-h-40 w-full shrink-0 flex-col rounded-2xl bg-background p-4 transition-colors",
           "border border-sidebar-primary-foreground",
-          "shadow-[inset_0_1px_3px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)]",
+          "shadow-inset",
           isDraggingOver && "bg-primary/5 dark:bg-sidebar/50"
         )}
       >

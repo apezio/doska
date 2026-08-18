@@ -50,7 +50,7 @@ export function DoneColumnDemo() {
         )}
         style={{ transform: done ? "translateX(calc(100% + 0.75rem))" : "" }}
       >
-        <div className="flex h-9 items-center gap-2 rounded-md border bg-card px-2 shadow-sm">
+        <div className="flex h-9 items-center gap-2 rounded-md border bg-card px-2 shadow-e1">
           <span
             className={cn(
               "flex size-3.5 shrink-0 items-center justify-center rounded-[3px]",

@@ -1,33 +1,36 @@
 import { Draggable } from "@hello-pangea/dnd"
-import { motion } from "motion/react"
+import { memo } from "react"
 import { useLocation } from "wouter"
+import type { CardPatch } from "@doska/core/mutations"
+import type { Card as CardData, Column } from "@doska/core/types"
 import { DROP_ANIMATION_MS } from "@/lib/hooks"
 import { routes } from "@/lib/routes"
 import { Card } from "./card"
+import { OrderAnimator } from "./order-animator"
 
 interface IProps {
-  id: string
+  card: CardData
+  column: Column
   index: number
   showBody: boolean
-  animateOrder: boolean
+  onPatch: (id: string, patch: CardPatch) => void
   /** The card has finished its drop animation and is back in the layout. */
-  onDropSettled?: () => void
+  onDropSettled: (id: string) => void
 }
 
-export function DraggableCard({
-  id,
+export const DraggableCard = memo(function DraggableCard({
+  card,
+  column,
   index,
   showBody,
-  animateOrder,
+  onPatch,
   onDropSettled,
 }: IProps) {
   const [, navigate] = useLocation()
+  const id = card.id
 
   return (
-    <motion.div
-      layout={animateOrder ? "position" : false}
-      transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
-    >
+    <OrderAnimator>
       <Draggable draggableId={id} index={index}>
         {(provided, snapshot) => (
           <Card
@@ -46,7 +49,7 @@ export function DraggableCard({
                 event.target === event.currentTarget &&
                 event.propertyName === "transform"
               )
-                onDropSettled?.()
+                onDropSettled(id)
             }}
             onClick={(e) => {
               if (snapshot.isDragging) return
@@ -55,10 +58,12 @@ export function DraggableCard({
             }}
             isDragging={snapshot.isDragging}
             showBody={showBody}
-            id={id}
+            card={card}
+            column={column}
+            onPatch={onPatch}
           />
         )}
       </Draggable>
-    </motion.div>
+    </OrderAnimator>
   )
-}
+})

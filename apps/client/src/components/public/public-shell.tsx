@@ -19,7 +19,7 @@ export function PublicShell({ title, isCardOpen, children, panel }: IProps) {
         className={cn(
           "relative flex w-full min-w-0 flex-1 flex-col overflow-hidden",
           "border border-border bg-background",
-          "md:m-2 md:rounded-xl md:shadow-sm",
+          "md:m-2 md:rounded-xl md:shadow-e1",
           "md:transition-[margin] md:duration-200 md:ease-linear",
           isCardOpen && "md:mr-0"
         )}

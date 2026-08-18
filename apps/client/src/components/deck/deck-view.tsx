@@ -4,6 +4,7 @@ import {
   useDeleteColumn,
   useDeleteDashboard,
   useMoveCard,
+  useSaveCard,
   useMoveColumn,
   useRenameColumn,
   useRenameDashboard,
@@ -12,8 +13,10 @@ import {
   useSetColumnDone,
   useSetDashboardSort,
   useUpdateDashboardPrefix,
+  type CardPatch,
 } from "@doska/core/mutations"
 import { useBoard, useDashboards } from "@doska/core/queries"
+import { useCallback } from "react"
 import { useDragEnd, useSyncShortcut } from "@/lib/hooks"
 import type { Dashboard } from "@doska/core/types"
 import { Deck } from "./deck"
@@ -51,6 +54,13 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
   const { mutate: moveColumn } = useMoveColumn(id)
   const { mutate: renameColumn } = useRenameColumn(id)
   const { mutate: deleteColumn } = useDeleteColumn(id)
+  const { mutate: saveCard } = useSaveCard()
+
+  const patchCard = useCallback(
+    (cardId: string, patch: CardPatch) => saveCard({ id: cardId, patch }),
+    [saveCard]
+  )
+
   const handleDragEnd = useDragEnd(board, moveCard, dashboard.sort ?? [])
 
   return (
@@ -82,6 +92,7 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
       onDeleteDashboard={() => deleteDashboard(id)}
       onChangeSort={(sort) => setDashboardSort({ id, sort })}
       onDragEnd={handleDragEnd}
+      onPatchCard={patchCard}
     />
   )
 }

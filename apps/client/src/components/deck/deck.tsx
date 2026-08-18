@@ -2,11 +2,13 @@ import { useState } from "react"
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd"
 import type { Board, Dashboard } from "@doska/core/types"
 import { byPosition, groupCardsByColumn, sortCards } from "@doska/core/utils"
+import type { CardPatch } from "@doska/core/mutations"
 import { useLandingSlot } from "@/lib/hooks"
 import { Column } from "../column/column"
 import { AddColumn } from "../column/add-column"
 import { DraggableCard } from "../card/draggable-card"
 import { BoardView } from "./board-view"
+import { DragStateProvider } from "./drag-state"
 import { DeckHeader } from "./deck-header/deck-header"
 import { SyncIndicator } from "./sync-indicator"
 
@@ -28,6 +30,7 @@ interface IProps {
   onDeleteDashboard: () => void
   onChangeSort: (sort: string[]) => void
   onDragEnd: (result: DropResult) => void
+  onPatchCard: (id: string, patch: CardPatch) => void
 }
 
 export function Deck({
@@ -48,6 +51,7 @@ export function Deck({
   onDeleteDashboard,
   onChangeSort,
   onDragEnd,
+  onPatchCard,
 }: IProps) {
   const [isDragging, setIsDragging] = useState(false)
 
@@ -56,67 +60,70 @@ export function Deck({
   const { hold, release, place } = useLandingSlot(sort.length > 0)
 
   return (
-    <DragDropContext
-      onDragStart={() => setIsDragging(true)}
-      onDragEnd={(result) => {
-        setIsDragging(false)
-        hold(result)
-        onDragEnd(result)
-      }}
-    >
-      <BoardView
-        isLoading={isLoading}
-        isDragging={isDragging}
-        footer={<SyncIndicator />}
-        header={
-          <DeckHeader
-            boardId={dashboard.id}
-            title={dashboard.title}
-            prefix={dashboard.prefix ?? ""}
-            takenPrefixes={takenPrefixes}
-            onRename={onRenameDashboard}
-            onRenamePrefix={onRenameDashboardPrefix}
-            onDelete={onDeleteDashboard}
-            columns={[...board.columns].sort(byPosition)}
-            onReorderColumns={onReorderColumns}
-            sort={sort}
-            onChangeSort={onChangeSort}
-          />
-        }
+    <DragStateProvider value={isDragging}>
+      <DragDropContext
+        onDragStart={() => setIsDragging(true)}
+        onDragEnd={(result) => {
+          setIsDragging(false)
+          hold(result)
+          onDragEnd(result)
+        }}
       >
-        {grouped.map(({ column, cards }) => {
-          const ordered = place(sortCards(cards, sort), column.id)
-          const showBody = !column.collapsed
-          return (
-            <Column
-              key={column.id}
-              id={column.id}
-              title={column.title}
-              color={column.color}
-              showBody={showBody}
-              onToggleBody={() => onToggleBody(column.id, showBody)}
-              onAddCard={() => onAddCard(column.id)}
-              onRename={(title) => onRenameColumn(column.id, title)}
-              onChangeColor={(color) => onChangeColumnColor(column.id, color)}
-              done={column.done}
-              onChangeDone={(done) => onChangeColumnDone(column.id, done)}
-              onDelete={() => onDeleteColumn(column.id)}
-            >
-              {ordered.map((card, index) => (
-                <DraggableCard
-                  key={card.id}
-                  id={card.id}
-                  index={index}
-                  showBody={showBody}
-                  animateOrder={!isDragging}
-                  onDropSettled={() => release(card.id)}
-                />
-              ))}
-            </Column>
-          )
-        })}
-        <AddColumn onAdd={onAddColumn} />
-      </BoardView>
-    </DragDropContext>
+        <BoardView
+          isLoading={isLoading}
+          isDragging={isDragging}
+          footer={<SyncIndicator />}
+          header={
+            <DeckHeader
+              boardId={dashboard.id}
+              title={dashboard.title}
+              prefix={dashboard.prefix ?? ""}
+              takenPrefixes={takenPrefixes}
+              onRename={onRenameDashboard}
+              onRenamePrefix={onRenameDashboardPrefix}
+              onDelete={onDeleteDashboard}
+              columns={[...board.columns].sort(byPosition)}
+              onReorderColumns={onReorderColumns}
+              sort={sort}
+              onChangeSort={onChangeSort}
+            />
+          }
+        >
+          {grouped.map(({ column, cards }) => {
+            const ordered = place(sortCards(cards, sort), column.id)
+            const showBody = !column.collapsed
+            return (
+              <Column
+                key={column.id}
+                id={column.id}
+                title={column.title}
+                color={column.color}
+                showBody={showBody}
+                onToggleBody={() => onToggleBody(column.id, showBody)}
+                onAddCard={() => onAddCard(column.id)}
+                onRename={(title) => onRenameColumn(column.id, title)}
+                onChangeColor={(color) => onChangeColumnColor(column.id, color)}
+                done={column.done}
+                onChangeDone={(done) => onChangeColumnDone(column.id, done)}
+                onDelete={() => onDeleteColumn(column.id)}
+              >
+                {ordered.map((card, index) => (
+                  <DraggableCard
+                    key={card.id}
+                    card={card}
+                    column={column}
+                    index={index}
+                    showBody={showBody}
+                    onPatch={onPatchCard}
+                    onDropSettled={release}
+                  />
+                ))}
+              </Column>
+            )
+          })}
+          <AddColumn onAdd={onAddColumn} />
+        </BoardView>
+      </DragDropContext>
+    </DragStateProvider>
   )
 }

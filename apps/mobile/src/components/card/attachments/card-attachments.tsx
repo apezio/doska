@@ -5,9 +5,10 @@ import { useUpdateCard } from "@doska/core/mutations"
 import { useCard } from "@doska/core/queries"
 import { useConnection } from "@doska/core/sync"
 import type { Attachment } from "@doska/core/types"
+import { Loader } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { useState } from "react"
-import { ActivityIndicator, Share, Text, View } from "react-native"
+import { Share, Text, View } from "react-native"
 import { ROUTES } from "@/lib/routes"
 import { AttachmentRow } from "./attachment-row"
 import type { PendingUpload } from "./use-attachment-upload"
@@ -81,8 +82,11 @@ export function CardAttachments({
       ))}
       {pending.map((p) => (
         <View key={p.id} className="flex-row items-center gap-2 py-1">
-          <ActivityIndicator size="small" />
-          <Text numberOfLines={1} className="flex-1 text-[13px] text-muted-foreground">
+          <Loader size={12} />
+          <Text
+            numberOfLines={1}
+            className="flex-1 text-[13px] text-muted-foreground"
+          >
             {p.name}
           </Text>
         </View>

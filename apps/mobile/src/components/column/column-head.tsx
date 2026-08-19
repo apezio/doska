@@ -1,6 +1,6 @@
 import { useRenameColumn } from "@doska/core/mutations"
 import type { Column } from "@doska/core/types"
-import { Frosted, IconButton, TextField } from "@doska/ui-kit-mobile"
+import { IconButton, TextField } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
 import CircleCheck from "lucide-react-native/icons/circle-check"
@@ -10,8 +10,7 @@ import { Pressable, Text, View } from "react-native"
 import { ROUTES } from "@/lib/routes"
 import { ColumnSwatch } from "./column-swatch"
 
-/** Reserved as the scroller's top inset, since the head floats over it. */
-export const HEAD_HEIGHT = 60
+const HEAD_HEIGHT = 60
 
 /** The web's `text-emerald-600/50 dark:text-emerald-500/50`, which is a
  * Tailwind palette entry rather than a theme token. */
@@ -24,10 +23,10 @@ interface IProps {
   onToggleBody: () => void
 }
 
-/** The web's `sticky top-0` column head: swatch, editable title, and the
- * actions it keeps behind a `⋯` — here a sheet route. */
+/** The column head above its cards: swatch, editable title, and the actions the
+ * web keeps behind a `⋯` — here a sheet route. */
 export function ColumnHead({ deckId, column, showBody, onToggleBody }: IProps) {
-  const { headVeil, dark } = useTokens()
+  const { dark } = useTokens()
   const { mutate: rename } = useRenameColumn(deckId)
 
   // The field is a draft until it commits, but a rename arriving from sync has
@@ -49,20 +48,9 @@ export function ColumnHead({ deckId, column, showBody, onToggleBody }: IProps) {
   }
 
   return (
-    <Frosted
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: HEAD_HEIGHT,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 8,
-        paddingHorizontal: 12,
-        backgroundColor: headVeil,
-      }}
+    <View
+      style={{ height: HEAD_HEIGHT }}
+      className="flex-row items-center justify-between gap-2 bg-background px-3"
     >
       <View className="flex-1 flex-row items-center gap-1.5">
         <ColumnSwatch color={column.color} />
@@ -98,6 +86,6 @@ export function ColumnHead({ deckId, column, showBody, onToggleBody }: IProps) {
           onPress={() => router.push(ROUTES.columnActions(column.id))}
         />
       </View>
-    </Frosted>
+    </View>
   )
 }

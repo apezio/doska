@@ -7,7 +7,6 @@ import type { ReactNode } from "react"
 import { Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { OfflineBanner } from "@/components/shell/offline-banner"
-import { SyncIndicator } from "@/components/shell/sync-indicator"
 import { ROUTES } from "@/lib/routes"
 
 interface IProps {
@@ -15,8 +14,8 @@ interface IProps {
 }
 
 /** Top bar of a screen: the drawer toggle, then whatever the screen puts beside
- * it, then sync state. The web's `PageHeader`, with a real button in place of
- * its sidebar rail. */
+ * it, then search. The web's `PageHeader`, with a real button in place of its
+ * sidebar rail. */
 export function ScreenHeader({ children }: IProps) {
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
@@ -38,7 +37,6 @@ export function ScreenHeader({ children }: IProps) {
           label="Search cards"
           onPress={() => router.push(ROUTES.search)}
         />
-        <SyncIndicator />
       </View>
 
       <OfflineBanner />

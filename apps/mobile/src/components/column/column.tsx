@@ -8,7 +8,7 @@ import Sortable, {
   type SortableGridRenderItem,
 } from "react-native-sortables"
 import { BoardCard } from "@/components/card/board-card"
-import { ColumnHead, HEAD_HEIGHT } from "./column-head"
+import { ColumnHead } from "./column-head"
 import {
   CARD_GAP,
   useCardGeometry,
@@ -82,19 +82,19 @@ export const Column = memo(function Column({
 
   return (
     <View className="flex-1 bg-background" style={{ width }}>
-      {/* Cards scroll edge to edge and pass under the head, which is what its
-          blur is there to catch. */}
+      <ColumnHead
+        deckId={deckId}
+        column={column}
+        showBody={showBody}
+        onToggleBody={() => onToggleBody(column.id, showBody)}
+      />
+
       <Animated.ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerClassName="grow px-3 pb-6"
-        contentContainerStyle={{ paddingTop: HEAD_HEIGHT + 8 }}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            progressViewOffset={HEAD_HEIGHT}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
         <Pressable
@@ -126,13 +126,6 @@ export const Column = memo(function Column({
           />
         </View>
       </Animated.ScrollView>
-
-      <ColumnHead
-        deckId={deckId}
-        column={column}
-        showBody={showBody}
-        onToggleBody={() => onToggleBody(column.id, showBody)}
-      />
     </View>
   )
 })

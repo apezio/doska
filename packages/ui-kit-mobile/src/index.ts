@@ -15,6 +15,6 @@ export {
   SheetItem,
   SheetScreen,
 } from "./sheet"
-export { Spinner } from "./spinner"
+export { Loader, Spinner } from "./spinner"
 export { cn } from "./lib/cn"
 export { useTokens, type Tokens } from "./tokens"

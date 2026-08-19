@@ -7,6 +7,8 @@ import { FONTS } from "@/lib/fonts"
 
 SplashScreen.preventAutoHideAsync()
 
+const SYNC_INTERVAL_MS = 30_000
+
 interface IProps {
   children: ReactNode
 }
@@ -20,7 +22,7 @@ export function AppGate({ children }: IProps) {
   const settled = failure !== null || (ready && fontsLoaded)
 
   useEffect(() => {
-    bootstrapClient().then(
+    bootstrapClient(SYNC_INTERVAL_MS).then(
       () => setReady(true),
       (error: Error) => setFailure(error)
     )

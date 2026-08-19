@@ -13,7 +13,7 @@
     "build": "turbo run build --filter=!desktop --filter=!mobile",
     "desktop": "pnpm --filter desktop dev",
     "mobile": "pnpm --filter mobile dev",
-    "mobile-device": "pnpm --filter mobile exec expo run:ios --device",
+    "mobile-device": "APP_VARIANT=dev pnpm --filter mobile exec expo run:ios --device",
     "mobile-install": "pnpm --filter mobile exec expo run:ios --device --configuration Release",
     "lint": "turbo run lint",
     "type-check": "turbo run typecheck",

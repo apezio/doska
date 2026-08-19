@@ -94,7 +94,7 @@ do_prebuild() {
   # prebuild defaults to recreating ios/ from scratch, and its dirty-tree guard
   # would prompt over the app.json edit two lines up, which is the script's own
   # doing. EXPO_NO_GIT_STATUS skips the guard so the run stays non-interactive.
-  (cd "$MOBILE" && EXPO_NO_GIT_STATUS=1 pnpm exec expo prebuild --platform ios)
+  (cd "$MOBILE" && APP_VARIANT= EXPO_NO_GIT_STATUS=1 pnpm exec expo prebuild --platform ios)
 }
 
 do_archive() {

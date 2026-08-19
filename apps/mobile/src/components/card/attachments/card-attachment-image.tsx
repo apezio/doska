@@ -3,7 +3,8 @@ import { useCard } from "@doska/core/queries"
 import { cn } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { useState } from "react"
-import { Image, Pressable } from "react-native"
+import { Pressable } from "react-native"
+import { Image } from "@/lib/image"
 import { ROUTES } from "@/lib/routes"
 import { AttachmentRow } from "./attachment-row"
 import { AttachmentUnavailable } from "./attachment-unavailable"
@@ -47,9 +48,9 @@ export function CardAttachmentImage({
     <Image
       source={{ uri }}
       accessibilityLabel={alt}
-      resizeMode={bleed ? "cover" : "contain"}
+      contentFit={bleed ? "cover" : "contain"}
       onLoad={(e) => {
-        const { width, height } = e.nativeEvent.source
+        const { width, height } = e.source
         if (height) setRatio(width / height)
       }}
       className={cn("w-full", !bleed && "rounded-md")}

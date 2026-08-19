@@ -8,7 +8,7 @@ import { FONTS } from "@/lib/fonts"
 
 SplashScreen.preventAutoHideAsync()
 
-const SYNC_INTERVAL_MS = 30_000
+const SYNC_INTERVAL_MS = 5_000
 
 interface IProps {
   children: ReactNode

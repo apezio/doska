@@ -16,7 +16,12 @@ import {
 } from "@doska/core/utils"
 import { EmptyState, Spinner } from "@doska/ui-kit-mobile"
 import { useCallback, useMemo, useState } from "react"
-import { useWindowDimensions } from "react-native"
+import {
+  useWindowDimensions,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from "react-native"
 import Animated from "react-native-reanimated"
 import type { SortableGridDragEndParams } from "react-native-sortables"
 import { Column } from "@/components/column/column"
@@ -26,6 +31,15 @@ import { useEdgePaging } from "@/components/board/drag/use-edge-paging"
 
 /** The sortable's own drop animation, `dropAnimationDuration`. */
 const DROP_ANIMATION_MS = 300
+
+/**
+ * How many columns either side of the open one stay mounted. Every card renders
+ * its own markdown, so mounting a whole board at once is what makes switching
+ * boards stall; a placeholder of the same width keeps the pager's snapping and
+ * scroll extent intact. One either side is also what the drag needs: a card
+ * only ever lands on the open page, which is never a placeholder.
+ */
+const MOUNT_WINDOW = 1
 
 interface IProps {
   board: Dashboard
@@ -62,6 +76,7 @@ export function ColumnPager({ board: dashboard }: IProps) {
     [grouped]
   )
   const { pagerRef, onPagerScroll, page } = useEdgePaging(columnIds, width)
+  const [openPage, setOpenPage] = useState(0)
   const dropPoint = useDropPoint()
   const { heightOf, resolveDropIndex } = useCardGeometry()
   const [dragging, setDragging] = useState(false)
@@ -83,6 +98,16 @@ export function ColumnPager({ board: dashboard }: IProps) {
   )
 
   const handleDragStart = useCallback(() => setDragging(true), [])
+
+  const handlePagerScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      onPagerScroll(event)
+      if (width > 0) {
+        setOpenPage(Math.round(event.nativeEvent.contentOffset.x / width))
+      }
+    },
+    [onPagerScroll, width]
+  )
 
   // A card lands wherever the board has been paged to, which is not the column
   // it was picked up in if it was carried across. The sortable only ever
@@ -155,24 +180,28 @@ export function ColumnPager({ board: dashboard }: IProps) {
       // A lifted card pages the board by dwelling at an edge; a swipe at the
       // same time would fight it.
       scrollEnabled={!dragging}
-      onScroll={onPagerScroll}
+      onScroll={handlePagerScroll}
       scrollEventThrottle={16}
     >
-      {grouped.map(({ column, cards }) => (
-        <Column
-          key={column.id}
-          deckId={deckId}
-          column={column}
-          width={width}
-          prefix={dashboard.prefix ?? ""}
-          cards={place(cards, column.id)}
-          onToggleBody={toggleBody}
-          onAddCard={addCard}
-          onPatchCard={patchCard}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        />
-      ))}
+      {grouped.map(({ column, cards }, index) =>
+        Math.abs(index - openPage) > MOUNT_WINDOW ? (
+          <View key={column.id} style={{ width }} />
+        ) : (
+          <Column
+            key={column.id}
+            deckId={deckId}
+            column={column}
+            width={width}
+            prefix={dashboard.prefix ?? ""}
+            cards={place(cards, column.id)}
+            onToggleBody={toggleBody}
+            onAddCard={addCard}
+            onPatchCard={patchCard}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          />
+        )
+      )}
     </Animated.ScrollView>
   )
 }

@@ -6,8 +6,9 @@ import { router } from "expo-router"
 import Share2 from "lucide-react-native/icons/share-2"
 import X from "lucide-react-native/icons/x"
 import { useState } from "react"
-import { Image, Share, View } from "react-native"
+import { Share, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { Image } from "@/lib/image"
 import { AttachmentUnavailable } from "./attachment-unavailable"
 import { useAttachmentUri } from "./use-attachment-uri"
 
@@ -69,7 +70,7 @@ export function AttachmentViewer({ cardId, attachmentId }: IProps) {
           <Image
             source={{ uri }}
             accessibilityLabel={attachment?.name}
-            resizeMode="contain"
+            contentFit="contain"
             style={{ flex: 1, width: "100%" }}
           />
         )}

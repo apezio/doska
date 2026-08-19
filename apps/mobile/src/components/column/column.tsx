@@ -14,10 +14,20 @@ import {
   CARD_GAP,
   useCardGeometry,
 } from "@/components/board/drag/card-geometry"
+import { DragTilt } from "@/components/board/drag/drag-tilt"
 import { useSyncRefresh } from "@/lib/use-sync-refresh"
 
 /** Held this long without moving, a card lifts instead of the list scrolling. */
 const PICKUP_MS = 250
+
+// borderWidth has to be zeroed explicitly: the library merges this over its
+// defaults key by key, so an omitted key keeps the default dashed outline.
+const DROP_SLOT = {
+  backgroundColor: "rgba(0, 0, 0, 0.1)",
+  borderRadius: 12,
+  borderWidth: 0,
+  flex: 1,
+} as const
 
 interface IProps {
   deckId: string
@@ -55,7 +65,7 @@ export const Column = memo(function Column({
 
   const renderCard = useCallback<SortableGridRenderItem<Card>>(
     ({ item }) => (
-      <View
+      <DragTilt
         onLayout={(event) =>
           registerHeight(column.id, item.id, event.nativeEvent.layout.height)
         }
@@ -68,7 +78,7 @@ export const Column = memo(function Column({
           done={column.done}
           onPatch={onPatchCard}
         />
-      </View>
+      </DragTilt>
     ),
     [
       column.id,
@@ -113,14 +123,12 @@ export const Column = memo(function Column({
             renderItem={renderCard}
             rowGap={CARD_GAP}
             dragActivationDelay={PICKUP_MS}
-            // Its own scroller, so a card held at the top or bottom can
-            // reach a drop site that is off-screen.
             scrollableRef={scrollRef}
-            // A card is nearly as wide as the screen, so snapping its centre
-            // under the finger throws it sideways as it lifts.
             enableActiveItemSnap={false}
+            activeItemScale={1}
             hapticsEnabled
             showDropIndicator
+            dropIndicatorStyle={DROP_SLOT}
             onDragStart={() => onDragStart(column.id)}
             onDragEnd={(params) => onDragEnd(column.id, params)}
           />

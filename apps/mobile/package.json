@@ -63,6 +63,7 @@
   "devDependencies": {
     "@babel/core": "^7.28.0",
     "@doska/configs": "workspace:*",
+    "@types/node": "^22",
     "@types/react": "^19",
     "eslint": "^10",
     "typescript": "~6"

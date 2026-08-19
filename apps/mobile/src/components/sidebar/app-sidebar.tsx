@@ -28,18 +28,18 @@ export function AppSidebar({
   const { mutate: createDashboard } = useCreateDashboard()
 
   function go(href: (typeof ROUTES)["board" | "upcoming" | "trash"]) {
-    router.navigate(href)
     navigation.dispatch(DrawerActions.closeDrawer())
+    if (pathname !== href) router.navigate(href)
   }
 
   function openSearch() {
-    router.push(ROUTES.search)
     navigation.dispatch(DrawerActions.closeDrawer())
+    router.push(ROUTES.search)
   }
 
   function openBoard(id: string) {
-    setLastBoard(id)
     go(ROUTES.board)
+    setLastBoard(id)
   }
 
   return (

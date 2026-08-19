@@ -60,6 +60,7 @@ export default function RootLayout() {
               options={{ headerShown: false, presentation: "modal" }}
             />
             <Stack.Screen name={SCREENS.boardActions} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.boardRename} options={sheetOptions} />
             <Stack.Screen name={SCREENS.boardPrefix} options={sheetOptions} />
             <Stack.Screen name={SCREENS.boardReorder} options={sheetOptions} />
             <Stack.Screen name={SCREENS.boardSort} options={sheetOptions} />
@@ -70,6 +71,7 @@ export default function RootLayout() {
             />
             <Stack.Screen name={SCREENS.columnNew} options={sheetOptions} />
             <Stack.Screen name={SCREENS.columnActions} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.columnRename} options={sheetOptions} />
             <Stack.Screen name={SCREENS.columnDelete} options={sheetOptions} />
             <Stack.Screen
               name={SCREENS.search}

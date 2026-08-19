@@ -20,7 +20,7 @@ const DARK_TOKENS: Tokens = {
   ...DARK,
   dark: true,
   headVeil: "#232939cc",
-  cardVeil: "#2d3447cc",
+  cardVeil: "#282e3fcc",
 }
 
 export function useTokens(): Tokens {

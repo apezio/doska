@@ -1,9 +1,8 @@
-import { useRenameDashboard } from "@doska/core/mutations"
 import type { Dashboard } from "@doska/core/types"
-import { IconButton, TextField } from "@doska/ui-kit-mobile"
+import { IconButton } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import MoreHorizontal from "lucide-react-native/icons/ellipsis"
-import { useState } from "react"
+import { Pressable, Text } from "react-native"
 import { ScreenHeader } from "@/components/shell/screen-header"
 import { ROUTES } from "@/lib/routes"
 
@@ -11,41 +10,22 @@ interface IProps {
   board: Dashboard
 }
 
-/** The board's top bar: the drawer toggle, the editable board name, and the
- * actions the web keeps behind its `⋯` menu — here a sheet route. */
 export function BoardHeader({ board }: IProps) {
-  const { mutate: rename } = useRenameDashboard()
-
-  // The field is a draft until it commits, but a rename arriving from sync — or
-  // a switch to another board — has to replace what is sitting in it.
-  const [draft, setDraft] = useState(board.title)
-  const [committed, setCommitted] = useState(board.title)
-  if (board.title !== committed) {
-    setCommitted(board.title)
-    setDraft(board.title)
-  }
-
-  function commitTitle() {
-    const next = draft.trim()
-    if (!next || next === board.title) {
-      setDraft(board.title)
-      return
-    }
-    rename({ id: board.id, name: next })
-  }
-
   return (
     <ScreenHeader>
-      <TextField
-        value={draft}
-        onChangeText={setDraft}
-        onBlur={commitTitle}
-        onSubmitEditing={commitTitle}
-        returnKeyType="done"
-        accessibilityLabel="Board name"
-        placeholder="Untitled board"
-        className="flex-1 px-1 text-base font-sans-semibold text-sidebar-foreground"
-      />
+      <Pressable
+        onPress={() => router.push(ROUTES.boardRename)}
+        accessibilityRole="button"
+        accessibilityLabel={`Rename ${board.title}`}
+        className="min-w-0 flex-1 active:opacity-40"
+      >
+        <Text
+          numberOfLines={1}
+          className="px-1 text-base font-sans-semibold text-sidebar-foreground"
+        >
+          {board.title}
+        </Text>
+      </Pressable>
       <IconButton
         icon={MoreHorizontal}
         label="Board actions"

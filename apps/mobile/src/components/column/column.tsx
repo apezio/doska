@@ -83,7 +83,6 @@ export const Column = memo(function Column({
   return (
     <View className="flex-1 bg-background" style={{ width }}>
       <ColumnHead
-        deckId={deckId}
         column={column}
         showBody={showBody}
         onToggleBody={() => onToggleBody(column.id, showBody)}

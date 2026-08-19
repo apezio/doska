@@ -35,7 +35,7 @@ export const LIGHT: ThemeTokens = {
 export const DARK: ThemeTokens = {
   background: "#232939",
   foreground: "#f7f7f8",
-  card: "#2d3447",
+  card: "#282e3f",
   cardForeground: "#f7f7f8",
   popover: "#2d3447",
   popoverForeground: "#f7f7f8",

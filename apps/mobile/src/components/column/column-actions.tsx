@@ -13,8 +13,6 @@ interface IProps {
   columnId: string
 }
 
-/** The column actions the web keeps behind its `⋯` menu. Renaming is not here:
- * the head's title is the field, as it is on the web. */
 export function ColumnActions({ deckId, columnId }: IProps) {
   const { data: board } = useBoard(deckId)
   const { mutate: setColor } = useSetColumnColor(deckId)

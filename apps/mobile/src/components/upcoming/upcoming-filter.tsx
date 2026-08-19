@@ -1,5 +1,6 @@
 import type { DigestFilter } from "@doska/core/operations"
-import { Pressable, Text, View } from "react-native"
+import { Text } from "@doska/ui-kit-mobile"
+import { Pressable, View } from "react-native"
 
 const FILTERS: { id: DigestFilter; label: string }[] = [
   { id: "today", label: "Today" },

@@ -1,5 +1,5 @@
 import type { SlashCommand, WikilinkOption } from "@doska/markdown"
-import { Frosted } from "@doska/ui-kit-mobile"
+import { Frosted, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import type { LucideIcon } from "lucide-react-native"
 import Code from "lucide-react-native/icons/code"
@@ -15,7 +15,7 @@ import Paperclip from "lucide-react-native/icons/paperclip"
 import Scissors from "lucide-react-native/icons/scissors"
 import TextQuote from "lucide-react-native/icons/text-quote"
 import type { ReactNode } from "react"
-import { Pressable, ScrollView, Text, View } from "react-native"
+import { Pressable, ScrollView, View } from "react-native"
 
 const ICON: Record<string, LucideIcon> = {
   todo: ListChecks,

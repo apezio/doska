@@ -3,12 +3,12 @@ import {
   type TrashEntry,
   type TrashKind,
 } from "@doska/core/operations"
-import { Button } from "@doska/ui-kit-mobile"
+import { Button, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import Columns3 from "lucide-react-native/icons/columns-3"
 import LayoutDashboard from "lucide-react-native/icons/layout-dashboard"
 import StickyNote from "lucide-react-native/icons/sticky-note"
-import { Text, View } from "react-native"
+import { View } from "react-native"
 
 const ICONS: Record<TrashKind, typeof StickyNote> = {
   cards: StickyNote,

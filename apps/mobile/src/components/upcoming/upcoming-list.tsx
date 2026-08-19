@@ -1,7 +1,7 @@
 import { groupByDeadline, type DigestCard } from "@doska/core/operations"
 import { deadlineLabel, longDate, weekday } from "@doska/core/utils"
-import { EmptyState } from "@doska/ui-kit-mobile"
-import { RefreshControl, SectionList, Text, View } from "react-native"
+import { EmptyState, Text } from "@doska/ui-kit-mobile"
+import { RefreshControl, SectionList, View } from "react-native"
 import { UpcomingRow } from "@/components/upcoming/upcoming-row"
 import { useSyncRefresh } from "@/lib/use-sync-refresh"
 

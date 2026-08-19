@@ -1,8 +1,9 @@
 import { bootstrapClient } from "@doska/core/bootstrap"
+import { Text } from "@doska/ui-kit-mobile"
 import { useFonts } from "expo-font"
 import * as SplashScreen from "expo-splash-screen"
 import { type ReactNode, useEffect, useState } from "react"
-import { Text, View } from "react-native"
+import { View } from "react-native"
 import { FONTS } from "@/lib/fonts"
 
 SplashScreen.preventAutoHideAsync()

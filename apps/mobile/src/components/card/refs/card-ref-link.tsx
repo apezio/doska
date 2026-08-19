@@ -1,8 +1,8 @@
 import { useCardRef } from "@doska/core/card-refs"
 import { columnSwatch } from "@doska/tokens/columns"
+import { Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
-import { Text } from "react-native"
 import { ROUTES } from "@/lib/routes"
 
 interface IProps {

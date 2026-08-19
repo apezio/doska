@@ -1,10 +1,9 @@
 import { cut, toggleTaskByIndex } from "@doska/markdown"
-import { TextField } from "@doska/ui-kit-mobile"
+import { Text, TextField } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { useMemo } from "react"
 import {
   Pressable,
-  Text,
   View,
   type TextInputSelectionChangeEvent,
 } from "react-native"

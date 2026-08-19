@@ -1,7 +1,7 @@
 import { tokenStyles, tokenizeMarkdown } from "@doska/highlight"
+import { Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { useMemo } from "react"
-import { Text } from "react-native"
 import { tokenTextStyles } from "./theme"
 
 interface IProps {

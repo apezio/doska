@@ -1,5 +1,6 @@
-import { Text, View } from "react-native"
+import { View } from "react-native"
 import { SheetAction } from "./sheet"
+import { Text } from "./text"
 
 interface IProps {
   title: string

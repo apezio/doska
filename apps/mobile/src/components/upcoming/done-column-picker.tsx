@@ -1,7 +1,8 @@
 import { useSetColumnDone } from "@doska/core/mutations"
 import { useBoard } from "@doska/core/queries"
 import { byPosition } from "@doska/core/utils"
-import { Pressable, Text, View } from "react-native"
+import { Text } from "@doska/ui-kit-mobile"
+import { Pressable, View } from "react-native"
 import { ColumnSwatch } from "@/components/column/column-swatch"
 
 interface IProps {

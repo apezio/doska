@@ -1,11 +1,11 @@
 import { useUpdateCard } from "@doska/core/mutations"
 import { useCard } from "@doska/core/queries"
 import { PRIORITIES } from "@doska/tokens/priority"
-import { PriorityChip, SheetScreen } from "@doska/ui-kit-mobile"
+import { PriorityChip, SheetScreen, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router, useLocalSearchParams } from "expo-router"
 import Check from "lucide-react-native/icons/check"
-import { Pressable, Text, View } from "react-native"
+import { Pressable, View } from "react-native"
 
 /** None first, the way the web's priority menu lists it. */
 const OPTIONS = [{ id: "", label: "No priority" }, ...PRIORITIES]

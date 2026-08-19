@@ -1,5 +1,6 @@
 import { COLUMN_COLORS } from "@doska/tokens/columns"
-import { Pressable, ScrollView, Text, View } from "react-native"
+import { Text } from "@doska/ui-kit-mobile"
+import { Pressable, ScrollView, View } from "react-native"
 import { ColumnSwatch } from "./column-swatch"
 
 interface IProps {

@@ -1,11 +1,11 @@
 import type { Column } from "@doska/core/types"
 import { byPosition } from "@doska/core/utils"
-import { IconButton, SheetBar } from "@doska/ui-kit-mobile"
+import { IconButton, SheetBar, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { generateKeyBetween } from "fractional-indexing"
 import ChevronDown from "lucide-react-native/icons/chevron-down"
 import ChevronUp from "lucide-react-native/icons/chevron-up"
-import { ScrollView, Text, View } from "react-native"
+import { ScrollView, View } from "react-native"
 import { ColumnSwatch } from "./column-swatch"
 
 interface IProps {

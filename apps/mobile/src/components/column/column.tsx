@@ -1,7 +1,8 @@
 import type { CardPatch } from "@doska/core/mutations"
 import type { Card, Column as ColumnType } from "@doska/core/types"
+import { Text } from "@doska/ui-kit-mobile"
 import { memo, useCallback } from "react"
-import { Pressable, RefreshControl, Text, View } from "react-native"
+import { Pressable, RefreshControl, View } from "react-native"
 import Animated, { useAnimatedRef } from "react-native-reanimated"
 import Sortable, {
   type SortableGridDragEndParams,

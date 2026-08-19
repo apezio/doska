@@ -1,10 +1,11 @@
 import { useAccount } from "@doska/core/account"
 import { initials } from "@doska/core/utils"
+import { Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
 import ChevronRight from "lucide-react-native/icons/chevron-right"
 import UserRound from "lucide-react-native/icons/user-round"
-import { Pressable, Text, View } from "react-native"
+import { Pressable, View } from "react-native"
 import { ROUTES } from "@/lib/routes"
 
 /** What sync is doing, and a tap to fix it — the sign-in screen handles both
@@ -37,7 +38,9 @@ export function SidebarAccount() {
         <Text
           numberOfLines={1}
           className={
-            dropped ? "text-xs text-destructive" : "text-xs text-muted-foreground"
+            dropped
+              ? "text-xs text-destructive"
+              : "text-xs text-muted-foreground"
           }
         >
           {subtitle}

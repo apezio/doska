@@ -1,8 +1,8 @@
 import { useBoard } from "@doska/core/queries"
 import { searchCards } from "@doska/core/search"
-import { EmptyState, Spinner } from "@doska/ui-kit-mobile"
+import { EmptyState, Spinner, Text } from "@doska/ui-kit-mobile"
 import { useMemo } from "react"
-import { FlatList, Text } from "react-native"
+import { FlatList } from "react-native"
 import { SearchResultRow } from "@/components/search/search-result-row"
 
 interface IProps {
@@ -29,7 +29,7 @@ export function SearchResults({ deckId, prefix, query, onSelect }: IProps) {
   )
 
   if (trimmed === "") {
-    return <EmptyState message="Search by title, notes, or card id." />
+    return <EmptyState message="Type to search this board." />
   }
   if (!board) return <Spinner />
   if (hits.length === 0) {

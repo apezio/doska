@@ -3,9 +3,9 @@ import type {
   MarkdownAdapter,
   MarkdownRenderers,
 } from "@doska/markdown"
-import { Checkbox, Separator } from "@doska/ui-kit-mobile"
+import { Checkbox, Separator, Text } from "@doska/ui-kit-mobile"
 import { Fragment } from "react"
-import { Linking, ScrollView, Text, View } from "react-native"
+import { Linking, ScrollView, View } from "react-native"
 
 // Body copy: 1rem at the web's 16px root, line-height 1.6.
 const BODY = "font-sans text-base leading-6 text-card-foreground"

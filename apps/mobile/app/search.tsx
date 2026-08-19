@@ -15,6 +15,7 @@ export default function SearchScreen() {
     <View className="flex-1 bg-background">
       <SearchField
         value={query}
+        boardTitle={board?.title}
         onChangeText={setQuery}
         onCancel={() => router.back()}
       />

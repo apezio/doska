@@ -1,11 +1,11 @@
 import { isRenderableImage } from "@doska/core/attachment-mime"
 import type { Attachment } from "@doska/core/types"
-import { IconButton } from "@doska/ui-kit-mobile"
+import { IconButton, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import FileText from "lucide-react-native/icons/file-text"
 import ImageIcon from "lucide-react-native/icons/image"
 import X from "lucide-react-native/icons/x"
-import { Pressable, Text, View } from "react-native"
+import { Pressable, View } from "react-native"
 
 interface IProps {
   attachment: Attachment

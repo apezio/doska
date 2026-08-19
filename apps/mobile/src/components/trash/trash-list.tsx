@@ -1,6 +1,7 @@
 import { useRestore } from "@doska/core/mutations"
 import type { TrashEntry } from "@doska/core/operations"
-import { FlatList, RefreshControl, Text } from "react-native"
+import { Text } from "@doska/ui-kit-mobile"
+import { FlatList, RefreshControl } from "react-native"
 import { TrashRow } from "@/components/trash/trash-row"
 import { useSyncRefresh } from "@/lib/use-sync-refresh"
 

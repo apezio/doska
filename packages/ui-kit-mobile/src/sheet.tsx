@@ -1,7 +1,8 @@
 import type { LucideIcon } from "lucide-react-native"
 import type { ReactNode } from "react"
-import { Pressable, Text, View } from "react-native"
+import { Pressable, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { Text } from "./text"
 import { useTokens } from "./tokens"
 
 /**

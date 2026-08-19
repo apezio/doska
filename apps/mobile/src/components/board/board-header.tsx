@@ -1,8 +1,8 @@
 import type { Dashboard } from "@doska/core/types"
-import { IconButton } from "@doska/ui-kit-mobile"
+import { IconButton, Text } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import MoreHorizontal from "lucide-react-native/icons/ellipsis"
-import { Pressable, Text } from "react-native"
+import { Pressable } from "react-native"
 import { ScreenHeader } from "@/components/shell/screen-header"
 import { ROUTES } from "@/lib/routes"
 

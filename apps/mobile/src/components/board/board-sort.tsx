@@ -1,10 +1,10 @@
 import { useSetDashboardSort } from "@doska/core/mutations"
 import type { Dashboard } from "@doska/core/types"
-import { SheetFootnote } from "@doska/ui-kit-mobile"
+import { SheetFootnote, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { SORT_MODES } from "@doska/core/utils"
 import Check from "lucide-react-native/icons/check"
-import { Pressable, Text, View } from "react-native"
+import { Pressable, View } from "react-native"
 import { SORT_ICONS } from "./sort-icons"
 
 /** The board's sort modes, the web's `⋯` sort menu as a sheet. Several can be

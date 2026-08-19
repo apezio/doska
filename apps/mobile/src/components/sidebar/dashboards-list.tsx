@@ -1,5 +1,6 @@
 import type { Dashboard } from "@doska/core/types"
-import { Text, View } from "react-native"
+import { Text } from "@doska/ui-kit-mobile"
+import { View } from "react-native"
 import { SidebarButton } from "./sidebar-button"
 
 interface IProps {

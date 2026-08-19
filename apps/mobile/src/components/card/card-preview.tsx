@@ -1,8 +1,9 @@
 import type { CardPatch } from "@doska/core/mutations"
 import type { Card } from "@doska/core/types"
 import { cut, toggleTaskByIndex, useMarkers } from "@doska/markdown"
+import { Text } from "@doska/ui-kit-mobile"
 import { useCallback } from "react"
-import { Text, View } from "react-native"
+import { View } from "react-native"
 import { MarkdownView } from "@/components/markdown/markdown-view"
 import { CardMarkdown } from "./card-markdown"
 

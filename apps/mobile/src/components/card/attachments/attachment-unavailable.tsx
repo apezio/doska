@@ -1,6 +1,7 @@
 import { attachmentUnavailable } from "@doska/core/attachment-labels"
 import { useConnection } from "@doska/core/sync"
-import { Text, View } from "react-native"
+import { Text } from "@doska/ui-kit-mobile"
+import { View } from "react-native"
 
 /** Stands in for an attachment that didn't load, and says why. */
 export function AttachmentUnavailable({ className }: { className?: string }) {

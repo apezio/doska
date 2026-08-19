@@ -5,7 +5,7 @@ import {
   type Connection,
   type SyncState,
 } from "@doska/core/sync"
-import { Loader } from "@doska/ui-kit-mobile"
+import { Loader, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
 import type { LucideIcon } from "lucide-react-native"
@@ -15,7 +15,7 @@ import LogIn from "lucide-react-native/icons/log-in"
 import PencilLine from "lucide-react-native/icons/pencil-line"
 import TriangleAlert from "lucide-react-native/icons/triangle-alert"
 import { useSyncExternalStore } from "react"
-import { Pressable, Text } from "react-native"
+import { Pressable } from "react-native"
 import { ROUTES } from "@/lib/routes"
 
 interface Look {

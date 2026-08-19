@@ -3,10 +3,10 @@ import {
   UNCLAIMED_BOARDS_WARNING,
   useUnclaimedLocalBoards,
 } from "@doska/core/queries"
-import { Button, Input } from "@doska/ui-kit-mobile"
+import { Button, Input, Text } from "@doska/ui-kit-mobile"
 import { useRouter } from "expo-router"
 import { useState } from "react"
-import { Text, View } from "react-native"
+import { View } from "react-native"
 import { getServerUrl, setServerUrl } from "@doska/core/server"
 
 export function SyncSetup() {

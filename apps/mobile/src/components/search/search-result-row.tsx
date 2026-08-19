@@ -1,6 +1,7 @@
 import { cardDisplayId } from "@doska/contract/prefix"
 import type { SearchHit, Segment } from "@doska/core/search"
-import { Pressable, Text, View } from "react-native"
+import { Text } from "@doska/ui-kit-mobile"
+import { Pressable, View } from "react-native"
 import { ColumnSwatch } from "@/components/column/column-swatch"
 
 /** Matched runs in weight only, as on the web: a highlighter pen in a list is

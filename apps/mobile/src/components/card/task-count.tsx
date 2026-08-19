@@ -1,5 +1,6 @@
+import { Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
-import { Text, View } from "react-native"
+import { View } from "react-native"
 import Svg, { Circle, Path } from "react-native-svg"
 
 interface IProps {

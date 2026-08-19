@@ -1,5 +1,5 @@
-import { SheetBar, SheetFootnote } from "@doska/ui-kit-mobile"
-import { Text, View } from "react-native"
+import { SheetBar, SheetFootnote, Text } from "@doska/ui-kit-mobile"
+import { View } from "react-native"
 import { DoneColumnPicker } from "./done-column-picker"
 
 interface IProps {

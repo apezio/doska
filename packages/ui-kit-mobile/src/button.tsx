@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react-native"
-import { Pressable, Text } from "react-native"
+import { Pressable } from "react-native"
+import { Text } from "./text"
 import { useTokens } from "./tokens"
 
 const SURFACE = {

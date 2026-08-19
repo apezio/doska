@@ -1,9 +1,9 @@
 import { useMoveCardToColumn } from "@doska/core/mutations"
 import type { DigestCard } from "@doska/core/operations"
 import { taskProgress } from "@doska/markdown"
-import { Checkbox, PriorityDot } from "@doska/ui-kit-mobile"
+import { Checkbox, PriorityDot, Text } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
-import { Pressable, Text, View } from "react-native"
+import { Pressable, View } from "react-native"
 import { TaskCount } from "@/components/card/task-count"
 import { ROUTES } from "@/lib/routes"
 

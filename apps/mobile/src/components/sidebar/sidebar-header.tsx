@@ -1,8 +1,8 @@
-import { cn } from "@doska/ui-kit-mobile"
+import { Text, cn } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import Constants from "expo-constants"
 import Anchor from "lucide-react-native/icons/anchor"
-import { Text, View } from "react-native"
+import { View } from "react-native"
 
 export function SidebarHeader() {
   const tokens = useTokens()

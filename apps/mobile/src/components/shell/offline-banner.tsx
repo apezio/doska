@@ -1,8 +1,8 @@
 import { sync, useConnection } from "@doska/core/sync"
-import { Button, IconButton } from "@doska/ui-kit-mobile"
+import { Button, IconButton, Text } from "@doska/ui-kit-mobile"
 import X from "lucide-react-native/icons/x"
 import { useState } from "react"
-import { Text, View } from "react-native"
+import { View } from "react-native"
 
 /**
  * Persistent notice for a dropped sync connection — the mobile form of the

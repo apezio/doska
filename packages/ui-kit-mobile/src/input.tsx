@@ -43,7 +43,7 @@ export function Input({
     <TextField
       className={[
         "rounded-xl border px-3 py-3 text-card-foreground",
-        mono ? "font-mono text-base" : "text-[15px]",
+        mono ? "font-mono text-[16px]" : "text-[15px]",
         invalid ? "border-destructive" : "border-border",
         TONE[tone],
         className ?? "",

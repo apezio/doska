@@ -1,7 +1,7 @@
 import type { CardPatch } from "@doska/core/mutations"
 import type { Card, Column as ColumnType } from "@doska/core/types"
 import { memo, useCallback } from "react"
-import { Platform, Pressable, RefreshControl, Text, View } from "react-native"
+import { Pressable, RefreshControl, Text, View } from "react-native"
 import Animated, { useAnimatedRef } from "react-native-reanimated"
 import Sortable, {
   type SortableGridDragEndParams,
@@ -17,8 +17,6 @@ import { useSyncRefresh } from "@/lib/use-sync-refresh"
 
 /** Held this long without moving, a card lifts instead of the list scrolling. */
 const PICKUP_MS = 250
-
-const IOS = Platform.OS === "ios"
 
 interface IProps {
   deckId: string
@@ -90,14 +88,12 @@ export const Column = memo(function Column({
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerClassName="grow px-3 pb-6"
-        contentContainerStyle={IOS ? undefined : { paddingTop: HEAD_HEIGHT }}
-        contentInset={IOS ? { top: HEAD_HEIGHT } : undefined}
-        contentOffset={IOS ? { x: 0, y: -HEAD_HEIGHT } : undefined}
+        contentContainerStyle={{ paddingTop: HEAD_HEIGHT + 8 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            progressViewOffset={IOS ? undefined : HEAD_HEIGHT}
+            progressViewOffset={HEAD_HEIGHT}
           />
         }
       >

@@ -40,7 +40,7 @@ function Body({ cardId }: { cardId: string }) {
               className="flex-row items-center gap-3 rounded-xl px-3 py-3.5 active:bg-muted"
             >
               <PriorityChip value={option.id} size={20} />
-              <Text className="flex-1 text-[17px] font-sans text-card-foreground">
+              <Text className="flex-1 text-body font-sans text-card-foreground">
                 {option.label}
               </Text>
               {current ? <Check size={20} color={tokens.primary} /> : null}

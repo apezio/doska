@@ -45,7 +45,7 @@ export function AttachmentViewer({ cardId, attachmentId }: IProps) {
       <View className="flex-row items-center gap-2 border-b border-muted px-3 py-2">
         <Text
           numberOfLines={1}
-          className="flex-1 text-[15px] font-sans-semibold text-card-foreground"
+          className="flex-1 text-subheadline font-sans-semibold text-card-foreground"
         >
           {attachment?.name ?? "File"}
         </Text>
@@ -59,7 +59,7 @@ export function AttachmentViewer({ cardId, attachmentId }: IProps) {
       </View>
 
       {!!error && (
-        <Text className="border-b border-muted px-3 py-2 text-[13px] text-destructive">
+        <Text className="border-b border-muted px-3 py-2 text-footnote text-destructive">
           {error}
         </Text>
       )}

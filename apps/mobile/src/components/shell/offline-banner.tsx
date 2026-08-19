@@ -29,7 +29,7 @@ export function OfflineBanner() {
       className="flex-row items-center gap-3 border-t border-sidebar-border bg-popover px-3 py-2"
     >
       <View className="flex-1">
-        <Text className="text-[13px] font-sans-medium text-popover-foreground">
+        <Text className="text-footnote font-sans-medium text-popover-foreground">
           Not syncing
         </Text>
         <Text className="text-xs text-muted-foreground">

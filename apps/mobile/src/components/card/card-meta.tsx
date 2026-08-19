@@ -29,15 +29,13 @@ export function CardMeta({
   const tasks = taskProgress(body)
 
   return (
-    <View className="flex-row items-center gap-4">
+    <View className="flex-row items-center gap-4 py-2">
       {displayId.length > 0 && (
         <Text className="font-mono text-xs text-muted-foreground">
           #{displayId}
         </Text>
       )}
       {tasks.total > 0 && <TaskCount {...tasks} />}
-      {/* Nested in the board card's Pressable, which it shadows: the chip is
-          the deadline control on the card as well as in its sheet. */}
       <Pressable
         onPress={() => router.push(ROUTES.cardDeadline(cardId))}
         accessibilityRole="button"

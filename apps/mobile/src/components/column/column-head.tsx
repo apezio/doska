@@ -24,7 +24,7 @@ export function ColumnHead({ column, showBody, onToggleBody }: IProps) {
       <ColumnSwatch color={column.color} />
       <View
         className={cn(
-          "flex-1 flex-row items-center gap-3",
+          "flex-1 flex-row items-center gap-3 -mt-0.5",
           column.done && "-mt-1"
         )}
       >

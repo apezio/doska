@@ -48,7 +48,7 @@ function Columns({ cardId, deckId, onDone }: IProps & { deckId: string }) {
             className="flex-row items-center gap-3 rounded-xl px-3 py-3.5 active:bg-muted"
           >
             <ColumnSwatch color={column.color} />
-            <Text className="flex-1 text-[17px] font-sans text-card-foreground">
+            <Text className="flex-1 text-body font-sans text-card-foreground">
               {column.title || "Untitled column"}
             </Text>
             {current ? <Check size={20} color={tokens.primary} /> : null}

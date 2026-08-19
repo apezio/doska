@@ -1,6 +1,6 @@
 import { useAccount } from "@doska/core/account"
 import { initials } from "@doska/core/utils"
-import { Text } from "@doska/ui-kit-mobile"
+import { cn, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
 import ChevronRight from "lucide-react-native/icons/chevron-right"
@@ -31,17 +31,16 @@ export function SidebarAccount() {
       <View className="flex-1">
         <Text
           numberOfLines={1}
-          className="text-[13px] font-sans-medium text-sidebar-foreground"
+          className="text-footnote font-sans-medium text-sidebar-foreground"
         >
           {name}
         </Text>
         <Text
           numberOfLines={1}
-          className={
-            dropped
-              ? "text-xs text-destructive"
-              : "text-xs text-muted-foreground"
-          }
+          className={cn(
+            "text-xs",
+            dropped ? "text-destructive" : "text-muted-foreground"
+          )}
         >
           {subtitle}
         </Text>

@@ -1,5 +1,5 @@
 import type { DigestFilter } from "@doska/core/operations"
-import { Text } from "@doska/ui-kit-mobile"
+import { cn, Text } from "@doska/ui-kit-mobile"
 import { Pressable, View } from "react-native"
 
 const FILTERS: { id: DigestFilter; label: string }[] = [
@@ -26,18 +26,16 @@ export function UpcomingFilter({ value, onChange }: IProps) {
             onPress={() => onChange(filter.id)}
             accessibilityRole="button"
             accessibilityState={{ selected }}
-            className={
-              selected
-                ? "flex-1 items-center rounded-[6px] bg-card py-1.5"
-                : "flex-1 items-center rounded-[6px] py-1.5 active:opacity-70"
-            }
+            className={cn(
+              "flex-1 items-center rounded-[6px] py-1.5",
+              selected ? "bg-card" : "active:opacity-70"
+            )}
           >
             <Text
-              className={
-                selected
-                  ? "text-[13px] font-sans-medium text-card-foreground"
-                  : "text-[13px] font-sans-medium text-muted-foreground"
-              }
+              className={cn(
+                "text-footnote font-sans-medium",
+                selected ? "text-card-foreground" : "text-muted-foreground"
+              )}
             >
               {filter.label}
             </Text>

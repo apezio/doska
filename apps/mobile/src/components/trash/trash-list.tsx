@@ -24,7 +24,7 @@ export function TrashList({ entries, boardIds }: IProps) {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
       ListHeaderComponent={
-        <Text className="pb-1 text-[13px] text-muted-foreground">
+        <Text className="pb-1 text-footnote text-muted-foreground">
           Items here are permanently deleted after 14 days.
         </Text>
       }

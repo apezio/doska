@@ -34,7 +34,7 @@ export function AttachmentRow({ attachment, onPress, onRemove }: IProps) {
         <Glyph size={16} color={tokens.mutedForeground} />
         <Text
           numberOfLines={1}
-          className="flex-1 text-[13px] text-muted-foreground"
+          className="flex-1 text-footnote text-muted-foreground"
         >
           {attachment.name}
         </Text>

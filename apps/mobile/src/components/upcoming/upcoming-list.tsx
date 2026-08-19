@@ -1,6 +1,6 @@
 import { groupByDeadline, type DigestCard } from "@doska/core/operations"
 import { deadlineLabel, longDate, weekday } from "@doska/core/utils"
-import { EmptyState, Text } from "@doska/ui-kit-mobile"
+import { cn, EmptyState, Text } from "@doska/ui-kit-mobile"
 import { RefreshControl, SectionList, View } from "react-native"
 import { UpcomingRow } from "@/components/upcoming/upcoming-row"
 import { useSyncRefresh } from "@/lib/use-sync-refresh"
@@ -37,11 +37,10 @@ export function UpcomingList({ cards, hideDone, boardIds }: IProps) {
       renderSectionHeader={({ section }) => (
         <View className="flex-row items-baseline gap-2 pt-3">
           <Text
-            className={
-              section.overdue
-                ? "text-xs font-sans-semibold uppercase text-destructive"
-                : "text-xs font-sans-semibold uppercase text-muted-foreground"
-            }
+            className={cn(
+              "text-xs font-sans-semibold uppercase",
+              section.overdue ? "text-destructive" : "text-muted-foreground"
+            )}
           >
             {section.title}
           </Text>

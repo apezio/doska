@@ -91,7 +91,7 @@ export const BoardCard = memo(function BoardCard({
       className="gap-2 overflow-hidden rounded-xl border border-card-ring bg-card py-2 active:opacity-70"
     >
       <View className="flex-row items-start gap-2 px-3">
-        <Text className="flex-1 text-base font-sans-semibold text-card-foreground mt-0.5">
+        <Text className="flex-1 text-lg font-sans-semibold text-card-foreground">
           {card.title || "Untitled card"}
         </Text>
         {actions}

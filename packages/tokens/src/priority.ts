@@ -11,11 +11,14 @@ export const PRIORITIES: Priority[] = [
   { id: "low", label: "Low" },
 ]
 
-/** The web takes medium's amber from Tailwind classes; native needs the value
- * itself. Same pair as `DEADLINE.soonForeground`, which sits beside it on a card. */
+/**
+ * The web takes medium's amber from Tailwind classes; native needs the value
+ * itself. Its flag and its dot are a shade apart there — `amber-400` and
+ * `amber-500`, both mixed to 80% — so each surface carries its own value.
+ */
 export const PRIORITY = {
-  light: { medium: "#d97706" },
-  dark: { medium: "#fbbf24" },
+  light: { flagMedium: "#ffb900cc", dotMedium: "#fe9a00cc" },
+  dark: { flagMedium: "#fbbf24", dotMedium: "#fbbf24" },
 } as const
 
 /**

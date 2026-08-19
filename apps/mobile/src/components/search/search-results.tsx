@@ -44,7 +44,7 @@ export function SearchResults({ deckId, prefix, query, onSelect }: IProps) {
       keyboardDismissMode="on-drag"
       contentContainerClassName="gap-2 p-3"
       ListHeaderComponent={
-        <Text className="pb-1 text-[13px] text-muted-foreground">
+        <Text className="pb-1 text-footnote text-muted-foreground">
           {hits.length === 1 ? "1 result" : `${hits.length} results`}
         </Text>
       }

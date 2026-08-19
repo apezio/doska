@@ -1,5 +1,5 @@
 import type { SlashCommand, WikilinkOption } from "@doska/markdown"
-import { Frosted, Text } from "@doska/ui-kit-mobile"
+import { cn, Frosted, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import type { LucideIcon } from "lucide-react-native"
 import Code from "lucide-react-native/icons/code"
@@ -98,7 +98,7 @@ export function EditorToolbar({
                 accessibilityLabel={`${option.target} ${option.title}`}
                 className="h-10 max-w-56 flex-row items-center gap-1.5 rounded-full px-3 active:bg-secondary"
               >
-                <Text className="font-mono text-[13px] text-primary">
+                <Text className="font-mono text-footnote text-primary">
                   {option.target}
                 </Text>
                 <Text
@@ -126,7 +126,7 @@ export function EditorToolbar({
                   {Glyph ? (
                     <Glyph size={22} color={tokens.cardForeground} />
                   ) : (
-                    <Text className="text-[13px] font-sans-medium text-card-foreground">
+                    <Text className="text-footnote font-sans-medium text-card-foreground">
                       {command.title}
                     </Text>
                   )}
@@ -230,11 +230,10 @@ function ToolButton({
       accessibilityLabel={label}
       accessibilityState={{ selected: active, disabled }}
       style={disabled ? { opacity: 0.3 } : undefined}
-      className={
-        active
-          ? "size-10 items-center justify-center rounded-full bg-secondary"
-          : "size-10 items-center justify-center rounded-full active:bg-secondary"
-      }
+      className={cn(
+        "size-10 items-center justify-center rounded-full",
+        active ? "bg-secondary" : "active:bg-secondary"
+      )}
     >
       {children}
     </Pressable>

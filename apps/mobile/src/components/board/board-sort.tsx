@@ -36,7 +36,7 @@ export function BoardSort({ board }: { board: Dashboard }) {
             className="flex-row items-center gap-3 rounded-xl px-3 py-3.5 active:bg-muted"
           >
             <Icon size={20} color={tokens.cardForeground} />
-            <Text className="flex-1 text-[17px] font-sans text-card-foreground">
+            <Text className="flex-1 text-body font-sans text-card-foreground">
               Sort by {label.toLowerCase()}
             </Text>
             {selected ? <Check size={20} color={tokens.primary} /> : null}

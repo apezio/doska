@@ -1,6 +1,6 @@
 import { attachmentUnavailable } from "@doska/core/attachment-labels"
 import { useConnection } from "@doska/core/sync"
-import { Text } from "@doska/ui-kit-mobile"
+import { cn, Text } from "@doska/ui-kit-mobile"
 import { View } from "react-native"
 
 /** Stands in for an attachment that didn't load, and says why. */
@@ -12,7 +12,10 @@ export function AttachmentUnavailable({ className }: { className?: string }) {
     <View
       accessibilityRole="image"
       accessibilityLabel={message}
-      className={`items-center justify-center rounded-lg border border-dashed border-border bg-muted p-4 ${className ?? ""}`}
+      className={cn(
+        "items-center justify-center rounded-lg border border-dashed border-border bg-muted p-4",
+        className
+      )}
     >
       <Text className="text-center text-xs text-muted-foreground">
         {message}

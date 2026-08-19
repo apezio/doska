@@ -3,7 +3,7 @@ import type {
   MarkdownAdapter,
   MarkdownRenderers,
 } from "@doska/markdown"
-import { Checkbox, Separator, Text } from "@doska/ui-kit-mobile"
+import { Checkbox, cn, Separator, Text } from "@doska/ui-kit-mobile"
 import { Fragment } from "react"
 import { Linking, ScrollView, View } from "react-native"
 
@@ -30,7 +30,7 @@ function blockImage(
       key={key}
       className="my-1 rounded-md border border-border bg-muted px-3 py-4"
     >
-      <Text className="font-sans text-[13px] text-muted-foreground">
+      <Text className="font-sans text-footnote text-muted-foreground">
         {alt || "Image"}
       </Text>
     </View>
@@ -54,7 +54,7 @@ export function createNativeAdapter(
             run.kind === "inline" ? (
               <Text
                 key={i}
-                className={style.muted ? `${BODY} text-muted-foreground` : BODY}
+                className={cn(BODY, style.muted && "text-muted-foreground")}
               >
                 {run.children}
               </Text>
@@ -72,11 +72,10 @@ export function createNativeAdapter(
       return (
         <Text
           key={key}
-          className={
-            depth >= 3
-              ? "mt-1 font-sans-bold text-base leading-5 text-muted-foreground"
-              : "mt-1 font-sans-bold text-base leading-5 text-card-foreground"
-          }
+          className={cn(
+            "mt-1 font-sans-bold text-base leading-5",
+            depth >= 3 ? "text-muted-foreground" : "text-card-foreground"
+          )}
         >
           {children}
         </Text>
@@ -101,7 +100,7 @@ export function createNativeAdapter(
               onPress={marker.onToggle}
             />
           ) : (
-            <Text className={`min-w-[18px] ${BODY} text-muted-foreground`}>
+            <Text className={cn("min-w-[18px]", BODY, "text-muted-foreground")}>
               {marker.kind === "number" ? `${marker.value}.` : "•"}
             </Text>
           )}
@@ -127,7 +126,7 @@ export function createNativeAdapter(
           className="rounded-md border border-border bg-muted"
           contentContainerClassName="p-3"
         >
-          <Text className="font-mono text-[13px] leading-5 text-card-foreground">
+          <Text className="font-mono text-footnote leading-5 text-card-foreground">
             {value}
           </Text>
         </ScrollView>
@@ -153,7 +152,7 @@ export function createNativeAdapter(
       return (
         <View
           key={key}
-          className={header ? "flex-row" : "flex-row border-t border-border"}
+          className={cn("flex-row", !header && "border-t border-border")}
         >
           {cells}
         </View>
@@ -164,18 +163,17 @@ export function createNativeAdapter(
       return (
         <View
           key={key}
-          className={[
+          className={cn(
             "w-36 px-3 py-2",
-            cell.column === 0 ? "" : "border-l border-border",
-            cell.header ? "bg-muted" : "",
-          ].join(" ")}
+            cell.column > 0 && "border-l border-border",
+            cell.header && "bg-muted"
+          )}
         >
           <Text
-            className={
-              cell.header
-                ? "font-sans-semibold text-sm text-card-foreground"
-                : "font-sans text-sm text-card-foreground"
-            }
+            className={cn(
+              "text-sm text-card-foreground",
+              cell.header ? "font-sans-semibold" : "font-sans"
+            )}
             style={{ textAlign: cell.align ?? "left" }}
           >
             {children}
@@ -187,7 +185,10 @@ export function createNativeAdapter(
     // Raw HTML has no native equivalent; showing the source beats dropping it.
     html(value, key) {
       return (
-        <Text key={key} className="font-mono text-[13px] text-muted-foreground">
+        <Text
+          key={key}
+          className="font-mono text-footnote text-muted-foreground"
+        >
           {value}
         </Text>
       )
@@ -196,7 +197,7 @@ export function createNativeAdapter(
     footnoteDefinition(label, blocks, key) {
       return (
         <View key={key} className="flex-row gap-2">
-          <Text className="font-sans text-[13px] text-muted-foreground">
+          <Text className="font-sans text-footnote text-muted-foreground">
             {label}
           </Text>
           <View className="flex-1">{blocks}</View>
@@ -247,8 +248,8 @@ export function createNativeAdapter(
 
     inlineCode(value, key) {
       return (
-        <Text key={key} className="bg-muted font-mono text-[13px]">
-          {` ${value} `}
+        <Text key={key} className="font-mono text-footnote">
+          `{value}`
         </Text>
       )
     },
@@ -281,7 +282,7 @@ export function createNativeAdapter(
       return (
         <Text
           key={key}
-          className="bg-muted font-sans-medium text-[13px] text-muted-foreground"
+          className="bg-muted font-sans-medium text-footnote text-muted-foreground"
         >
           {` ${alias ?? target} `}
         </Text>
@@ -298,7 +299,10 @@ export function createNativeAdapter(
 
     footnoteReference(label, key) {
       return (
-        <Text key={key} className="font-sans text-[11px] text-muted-foreground">
+        <Text
+          key={key}
+          className="font-sans text-caption text-muted-foreground"
+        >
           {label}
         </Text>
       )

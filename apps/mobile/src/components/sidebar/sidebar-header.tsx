@@ -15,7 +15,7 @@ export function SidebarHeader() {
       </Text>
       <Text
         className={cn(
-          "text-[13px] text-muted-foreground font-mono",
+          "text-footnote text-muted-foreground font-mono",
           "absolute right-4 w-40 line-clamp-1"
         )}
       >

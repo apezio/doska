@@ -85,14 +85,14 @@ export function CardAttachments({
           <Loader size={12} />
           <Text
             numberOfLines={1}
-            className="flex-1 text-[13px] text-muted-foreground"
+            className="flex-1 text-footnote text-muted-foreground"
           >
             {p.name}
           </Text>
         </View>
       ))}
       {!!message && (
-        <Text className="pt-1 text-[13px] text-destructive">{message}</Text>
+        <Text className="pt-1 text-footnote text-destructive">{message}</Text>
       )}
     </View>
   )

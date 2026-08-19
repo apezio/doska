@@ -32,13 +32,13 @@ export function SearchField({
     >
       <View className="flex-row items-center gap-3 px-4 pb-1 pt-4">
         <View className="min-w-0 flex-1 flex-row items-baseline gap-1.5">
-          <Text className="text-[22px] font-sans-bold text-sidebar-foreground">
+          <Text className="text-title font-sans-bold text-sidebar-foreground">
             Search
           </Text>
           {!!boardTitle && (
             <Text
               numberOfLines={1}
-              className="shrink font-sans text-[13px] text-muted-foreground"
+              className="shrink font-sans text-footnote text-muted-foreground"
             >
               in {boardTitle}
             </Text>
@@ -50,7 +50,7 @@ export function SearchField({
           accessibilityRole="button"
           className="active:opacity-40"
         >
-          <Text className="text-[17px] font-sans-medium text-primary">
+          <Text className="text-body font-sans-medium text-primary">
             Cancel
           </Text>
         </Pressable>
@@ -68,7 +68,7 @@ export function SearchField({
           returnKeyType="search"
           placeholder="Title, notes, or card id"
           accessibilityLabel="Search cards"
-          className="min-w-0 flex-1 py-2.5 text-[16px] text-foreground"
+          className="min-w-0 flex-1 py-2.5 text-callout text-foreground"
         />
         {value !== "" && (
           <IconButton

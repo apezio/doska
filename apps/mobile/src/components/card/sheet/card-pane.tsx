@@ -6,7 +6,7 @@ import {
 import type { Card } from "@doska/core/types"
 import { useCardRefOptions } from "@doska/core/card-refs"
 import { useCardDeck } from "@doska/core/queries"
-import { TextField } from "@doska/ui-kit-mobile"
+import { cn, TextField } from "@doska/ui-kit-mobile"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -151,11 +151,10 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
           value={title}
           onChangeText={(value) => edit({ title: value })}
           placeholder="Title"
-          className={
-            isPreview
-              ? "px-4 py-1.5 text-xl font-sans-semibold text-card-foreground"
-              : "px-4 py-1.5 font-mono text-xl text-card-foreground"
-          }
+          className={cn(
+            "mb-2 mt-4 font-sans-bold px-4 py-1.5 text-2xl text-card-foreground",
+            !isPreview && "font-mono-medium"
+          )}
         />
         <CardBody
           cardId={cardId}

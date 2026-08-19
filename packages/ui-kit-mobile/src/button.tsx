@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react-native"
 import { Pressable } from "react-native"
+import { cn } from "./lib/cn"
 import { Text } from "./text"
 import { useTokens } from "./tokens"
 
@@ -14,8 +15,8 @@ const LABEL = {
 }
 
 const SIZE = {
-  md: { box: "rounded-xl px-4 py-3", label: "text-[15px]", icon: 16 },
-  sm: { box: "rounded-lg px-3 py-1.5", label: "text-[13px]", icon: 14 },
+  md: { box: "rounded-xl px-4 py-3", label: "text-subheadline", icon: 16 },
+  sm: { box: "rounded-lg px-3 py-1.5", label: "text-footnote", icon: 14 },
 }
 
 interface IProps {
@@ -45,12 +46,12 @@ export function Button({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
-      className={[
+      className={cn(
         "flex-row items-center justify-center gap-1.5",
         metrics.box,
         SURFACE[variant],
-        disabled ? "opacity-40" : "active:opacity-70",
-      ].join(" ")}
+        disabled ? "opacity-40" : "active:opacity-70"
+      )}
     >
       {!!Icon && (
         <Icon
@@ -60,7 +61,7 @@ export function Button({
           }
         />
       )}
-      <Text className={`font-sans-medium ${metrics.label} ${LABEL[variant]}`}>
+      <Text className={cn("font-sans-medium", metrics.label, LABEL[variant])}>
         {label}
       </Text>
     </Pressable>

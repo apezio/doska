@@ -27,10 +27,10 @@ export function ConfirmBody({
   return (
     <View>
       <View className="px-6 pb-4 pt-1">
-        <Text className="text-center text-[15px] font-sans-semibold text-card-foreground">
+        <Text className="text-center text-subheadline font-sans-semibold text-card-foreground">
           {title}
         </Text>
-        <Text className="mt-1 text-center text-[13px] leading-[18px] text-muted-foreground">
+        <Text className="mt-1 text-center text-footnote leading-[18px] text-muted-foreground">
           {description}
         </Text>
       </View>

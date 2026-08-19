@@ -1,7 +1,7 @@
 import type { DigestFilter } from "@doska/core/operations"
 import { useDashboards, useDigest } from "@doska/core/queries"
 import { sync } from "@doska/core/sync"
-import { Spinner, Text } from "@doska/ui-kit-mobile"
+import { cn, Spinner, Text } from "@doska/ui-kit-mobile"
 import { useFocusEffect } from "expo-router"
 import { useCallback, useState } from "react"
 import { Pressable, View } from "react-native"
@@ -34,18 +34,16 @@ export default function UpcomingScreen() {
           hitSlop={8}
           accessibilityRole="button"
           accessibilityState={{ selected: hideDone }}
-          className={
-            hideDone
-              ? "rounded-lg bg-secondary px-2 py-1"
-              : "rounded-lg px-2 py-1 active:bg-muted"
-          }
+          className={cn(
+            "rounded-lg px-2 py-1",
+            hideDone ? "bg-secondary" : "active:bg-muted"
+          )}
         >
           <Text
-            className={
-              hideDone
-                ? "text-[13px] font-sans-medium text-secondary-foreground"
-                : "text-[13px] font-sans-medium text-muted-foreground"
-            }
+            className={cn(
+              "text-footnote font-sans-medium",
+              hideDone ? "text-secondary-foreground" : "text-muted-foreground"
+            )}
           >
             Hide done
           </Text>

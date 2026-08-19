@@ -1,7 +1,7 @@
 import { useMoveCardToColumn } from "@doska/core/mutations"
 import type { DigestCard } from "@doska/core/operations"
 import { taskProgress } from "@doska/markdown"
-import { Checkbox, PriorityDot, Text } from "@doska/ui-kit-mobile"
+import { Checkbox, cn, PriorityDot, Text } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { Pressable, View } from "react-native"
 import { TaskCount } from "@/components/card/task-count"
@@ -21,11 +21,10 @@ export function UpcomingRow({ entry }: IProps) {
   return (
     <Pressable
       onPress={() => router.push(ROUTES.card(entry.card.id))}
-      className={
-        entry.isDone
-          ? "flex-row items-center gap-3 rounded-xl border border-border bg-card p-3 opacity-40 active:opacity-70"
-          : "flex-row items-center gap-3 rounded-xl border border-border bg-card p-3 active:opacity-70"
-      }
+      className={cn(
+        "flex-row items-center gap-3 rounded-xl border border-border bg-card p-3 active:opacity-70",
+        entry.isDone && "opacity-40"
+      )}
     >
       <Checkbox
         checked={entry.isDone}
@@ -42,11 +41,10 @@ export function UpcomingRow({ entry }: IProps) {
         <View className="flex-row items-center gap-2">
           <Text
             numberOfLines={1}
-            className={
-              entry.isDone
-                ? "shrink text-[15px] font-sans-medium text-muted-foreground line-through"
-                : "shrink text-[15px] font-sans-medium text-card-foreground"
-            }
+            className={cn(
+              "shrink text-subheadline font-sans-medium text-card-foreground",
+              entry.isDone && "text-muted-foreground line-through"
+            )}
           >
             {entry.card.title || "Untitled card"}
           </Text>

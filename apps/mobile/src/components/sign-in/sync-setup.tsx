@@ -38,11 +38,11 @@ export function SyncSetup() {
         <Text className="text-xl font-sans-semibold text-card-foreground">
           Set up sync
         </Text>
-        <Text className="text-[13px] text-muted-foreground">
+        <Text className="text-footnote text-muted-foreground">
           Your boards stay on this device until you set up sync.
         </Text>
         {unclaimedBoards && (
-          <Text className="text-[13px] text-muted-foreground">
+          <Text className="text-footnote text-muted-foreground">
             {UNCLAIMED_BOARDS_WARNING}
           </Text>
         )}

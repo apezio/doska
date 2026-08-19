@@ -17,7 +17,7 @@ export function DoneColumnHelp({ boardId, onClose }: IProps) {
         leading={{ label: "Not now", onPress: onClose }}
       />
 
-      <Text className="px-3 pb-3 text-[15px] leading-[20px] text-muted-foreground">
+      <Text className="px-3 pb-3 text-subheadline leading-[20px] text-muted-foreground">
         Marking a card done moves it to its board's done column, so a board
         without one has nowhere to put it.
       </Text>

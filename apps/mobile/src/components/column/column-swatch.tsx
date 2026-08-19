@@ -15,7 +15,7 @@ export function ColumnSwatch({ color }: { color: string }) {
 
   return (
     <View
-      className="size-3 shrink-0 rounded-full border"
+      className="size-3 shrink-0 rounded-full"
       style={{ backgroundColor: swatch.dot, borderColor: swatch.ring }}
     />
   )

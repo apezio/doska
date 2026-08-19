@@ -1,6 +1,7 @@
 import * as Haptics from "expo-haptics"
 import Check from "lucide-react-native/icons/check"
 import { Pressable, View } from "react-native"
+import { cn } from "./lib/cn"
 import { useTokens } from "./tokens"
 
 interface IProps {
@@ -15,11 +16,11 @@ export function Checkbox({ checked, onPress, className }: IProps) {
 
   const box = (
     <View
-      className={[
+      className={cn(
         "size-5 items-center justify-center rounded-[5px] border",
         checked ? "border-primary bg-primary" : "border-input",
-        className ?? "",
-      ].join(" ")}
+        className
+      )}
     >
       {checked && <Check size={14} strokeWidth={3} color={primaryForeground} />}
     </View>

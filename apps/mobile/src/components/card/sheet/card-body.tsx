@@ -13,7 +13,7 @@ import { MarkdownView } from "@/components/markdown/markdown-view"
 
 // Both layers of the editor wear this: it is what keeps the painted text under
 // the caret. The input adds only its transparent color on top.
-const EDITOR_TEXT = "px-4 py-2 font-mono text-[15px] leading-[22px]"
+const EDITOR_TEXT = "px-4 py-2 font-mono text-subheadline leading-[22px]"
 
 interface IProps {
   cardId: string
@@ -79,7 +79,7 @@ export function CardBody({
   if (!body.trim()) {
     return (
       <Pressable onPress={onEdit} className="grow px-4 py-2">
-        <Text className="text-[15px] text-muted-foreground">Notes</Text>
+        <Text className="text-subheadline text-muted-foreground">Notes</Text>
       </Pressable>
     )
   }

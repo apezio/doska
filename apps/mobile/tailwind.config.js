@@ -9,6 +9,20 @@ const fontFamily = {
   "mono-medium": ["GeistMono_500Medium"],
 }
 
+/* The iOS type scale, in size only. Tailwind's own `text-*` sizes each set a
+   line height too, which a `Text` cannot then inherit — so every size the app
+   sets is named here and leading is left to `leading-*` where it matters.
+   Mirrored by the `font-size` group in the kit's `cn`, which would otherwise
+   read these as text colours and drop them. */
+const fontSize = {
+  caption: "11px",
+  footnote: "13px",
+  subheadline: "15px",
+  callout: "16px",
+  body: "17px",
+  title: "22px",
+}
+
 const sharedColors = require("@doska/tokens/tailwind-colors.cjs")
 
 const color = (name) => `var(--${name})`
@@ -26,6 +40,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily,
+      fontSize,
       colors: {
         ...sharedColors,
         mark: color("mark"),

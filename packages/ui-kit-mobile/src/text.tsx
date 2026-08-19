@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react"
 import { Text as RNText, type TextProps } from "react-native"
+import { cn } from "./lib/cn"
 
 /** Whether a `Text` is being rendered inside another one. */
 const Nested = createContext(false)
@@ -24,7 +25,7 @@ export function Text({ className, ...props }: TextProps) {
   return (
     <Nested.Provider value={true}>
       <RNText
-        className={inherits ? className : `font-sans ${className ?? ""}`}
+        className={inherits ? className : cn("font-sans", className)}
         {...props}
       />
     </Nested.Provider>

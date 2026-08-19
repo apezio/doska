@@ -32,7 +32,7 @@ export function TrashRow({ entry, isRestoring, onRestore }: IProps) {
       <View className="min-w-0 flex-1">
         <Text
           numberOfLines={1}
-          className="text-[15px] font-sans-medium text-card-foreground"
+          className="text-subheadline font-sans-medium text-card-foreground"
         >
           {entry.title || "Untitled"}
         </Text>

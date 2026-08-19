@@ -1,7 +1,8 @@
 import { cardDisplayId } from "@doska/contract/prefix"
 import { useCardCol, useCardDeck } from "@doska/core/queries"
-import { Chip, Text } from "@doska/ui-kit-mobile"
+import { Chip, IconButton, Text } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
+import MoreHorizontal from "lucide-react-native/icons/ellipsis"
 import { Pressable, View } from "react-native"
 import { CardMeta } from "@/components/card/card-meta"
 import { ColumnSwatch } from "@/components/column/column-swatch"
@@ -45,14 +46,23 @@ export function CardPaneHeader({
           accessibilityLabel={`Column: ${column.title}`}
           hitSlop={6}
         >
-          <Chip className="bg-muted">
+          <Chip>
             <ColumnSwatch color={column.color} />
-            <Text className="text-xs font-sans-medium uppercase text-muted-foreground">
+            <Text className="font-sans-medium text-muted-foreground">
               {column.title}
             </Text>
           </Chip>
         </Pressable>
       )}
+      {/* Trailing, the way a navigation bar sets its overflow button. */}
+      <View className="ml-auto -mr-1.5">
+        <IconButton
+          icon={MoreHorizontal}
+          label="Card actions"
+          variant="plain"
+          onPress={() => router.push(ROUTES.cardActions(cardId))}
+        />
+      </View>
     </View>
   )
 }

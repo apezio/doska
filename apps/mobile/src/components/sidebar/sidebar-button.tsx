@@ -1,4 +1,4 @@
-import { Text } from "@doska/ui-kit-mobile"
+import { cn, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import type { LucideIcon } from "lucide-react-native"
 import { Pressable } from "react-native"
@@ -24,11 +24,10 @@ export function SidebarButton({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: isActive }}
-      className={
-        isActive
-          ? "flex-row items-center gap-2 rounded-lg bg-sidebar-accent px-2 py-2"
-          : "flex-row items-center gap-2 rounded-lg px-2 py-2 active:bg-muted"
-      }
+      className={cn(
+        "flex-row items-center gap-2 rounded-lg px-2 py-2",
+        isActive ? "bg-sidebar-accent" : "active:bg-muted"
+      )}
     >
       {!!Icon && (
         <Icon
@@ -38,11 +37,12 @@ export function SidebarButton({
       )}
       <Text
         numberOfLines={1}
-        className={
+        className={cn(
+          "flex-1 text-subheadline",
           isActive
-            ? "flex-1 text-[15px] font-sans-medium text-sidebar-accent-foreground"
-            : "flex-1 text-[15px] font-sans text-sidebar-foreground"
-        }
+            ? "font-sans-medium text-sidebar-accent-foreground"
+            : "font-sans text-sidebar-foreground"
+        )}
       >
         {label}
       </Text>

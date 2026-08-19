@@ -1,4 +1,5 @@
 import { TextInput, type TextInputProps } from "react-native"
+import { cn } from "./lib/cn"
 import { useTokens } from "./tokens"
 
 /**
@@ -41,13 +42,13 @@ export function Input({
 }: IProps) {
   return (
     <TextField
-      className={[
+      className={cn(
         "rounded-xl border px-3 py-3 text-card-foreground",
-        mono ? "font-mono text-[16px]" : "text-[15px]",
+        mono ? "font-mono text-callout" : "text-subheadline",
         invalid ? "border-destructive" : "border-border",
         TONE[tone],
-        className ?? "",
-      ].join(" ")}
+        className
+      )}
       {...props}
     />
   )

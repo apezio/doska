@@ -31,13 +31,13 @@ export function SearchResultRow({ hit, prefix, onPress }: IProps) {
     >
       <Text
         numberOfLines={1}
-        className="text-[15px] font-sans-medium text-card-foreground"
+        className="text-subheadline font-sans-medium text-card-foreground"
       >
         <Segments segments={hit.title} />
       </Text>
 
       {hit.snippet && (
-        <Text numberOfLines={1} className="text-[13px] text-muted-foreground">
+        <Text numberOfLines={1} className="text-footnote text-muted-foreground">
           <Segments segments={hit.snippet} />
         </Text>
       )}

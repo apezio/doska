@@ -1,5 +1,6 @@
 import { isRenderableImage } from "@doska/core/attachment-mime"
 import { useCard } from "@doska/core/queries"
+import { cn } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { useState } from "react"
 import { Image, Pressable } from "react-native"
@@ -51,7 +52,7 @@ export function CardAttachmentImage({
         const { width, height } = e.nativeEvent.source
         if (height) setRatio(width / height)
       }}
-      className={bleed ? "w-full" : "w-full rounded-md"}
+      className={cn("w-full", !bleed && "rounded-md")}
       style={{ aspectRatio: ratio || 16 / 9 }}
     />
   )

@@ -58,7 +58,7 @@ export function ReorderColumns({ columns, onReorder, onClose }: IProps) {
             <ColumnSwatch color={column.color} />
             <Text
               numberOfLines={1}
-              className="flex-1 text-[17px] font-sans text-card-foreground"
+              className="flex-1 text-body font-sans text-card-foreground"
             >
               {column.title}
             </Text>

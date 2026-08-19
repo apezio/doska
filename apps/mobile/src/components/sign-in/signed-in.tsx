@@ -16,7 +16,7 @@ export function SignedIn({ login }: IProps) {
         <Text className="text-xl font-sans-semibold text-card-foreground">
           Sync is on
         </Text>
-        <Text className="text-[13px] text-muted-foreground">
+        <Text className="text-footnote text-muted-foreground">
           Signed in{login ? ` as ${login}` : ""} to {getServerUrl()}.
         </Text>
       </View>

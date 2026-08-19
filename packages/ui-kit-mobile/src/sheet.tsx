@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react-native"
 import type { ReactNode } from "react"
 import { Pressable, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { cn } from "./lib/cn"
 import { Text } from "./text"
 import { useTokens } from "./tokens"
 
@@ -51,7 +52,7 @@ export function SheetBar({
         <Text
           numberOfLines={1}
           pointerEvents="none"
-          className="absolute inset-x-0 text-center text-[17px] font-sans-semibold text-card-foreground"
+          className="absolute inset-x-0 text-center text-body font-sans-semibold text-card-foreground"
         >
           {title}
         </Text>
@@ -75,11 +76,10 @@ function BarButton({
   return (
     <Pressable hitSlop={8} onPress={action.onPress} className="min-w-16">
       <Text
-        className={
-          emphasised
-            ? "text-right text-[17px] font-sans-semibold text-primary"
-            : "text-[17px] font-sans text-primary"
-        }
+        className={cn(
+          "text-body font-sans text-primary",
+          emphasised && "text-right font-sans-semibold"
+        )}
       >
         {action.label}
       </Text>
@@ -98,11 +98,10 @@ export function SheetFootnote({
 }) {
   return (
     <Text
-      className={
-        error
-          ? "px-1 pt-2 text-[13px] leading-[18px] text-destructive"
-          : "px-1 pt-2 text-[13px] leading-[18px] text-muted-foreground"
-      }
+      className={cn(
+        "px-1 pt-2 text-footnote leading-[18px]",
+        error ? "text-destructive" : "text-muted-foreground"
+      )}
     >
       {text}
     </Text>
@@ -134,19 +133,18 @@ export function SheetItem({
     <Pressable
       disabled={disabled}
       onPress={onPress}
-      className={
-        disabled
-          ? "flex-row items-center gap-3 rounded-xl px-3 py-3.5 opacity-40"
-          : "flex-row items-center gap-3 rounded-xl px-3 py-3.5 active:bg-muted"
-      }
+      className={cn(
+        "flex-row items-center gap-3 rounded-xl px-3 py-3.5",
+        disabled ? "opacity-40" : "active:bg-muted"
+      )}
     >
       <Icon size={20} color={color} />
       {/* 17pt: the body size iOS sets every list row and menu item in. */}
-      <Text style={{ color }} className="flex-1 text-[17px] font-sans">
+      <Text style={{ color }} className="flex-1 text-body font-sans">
         {label}
       </Text>
       {!!trailing && (
-        <Text className="font-mono text-[13px] text-muted-foreground">
+        <Text className="font-mono text-footnote text-muted-foreground">
           {trailing}
         </Text>
       )}
@@ -155,9 +153,9 @@ export function SheetItem({
 }
 
 const ACTION_LABEL = {
-  default: "text-[17px] font-sans text-primary",
-  cancel: "text-[17px] font-sans-semibold text-primary",
-  destructive: "text-[17px] font-sans text-destructive",
+  default: "text-body font-sans text-primary",
+  cancel: "text-body font-sans-semibold text-primary",
+  destructive: "text-body font-sans text-destructive",
 }
 
 /**

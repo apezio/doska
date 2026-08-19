@@ -5,7 +5,7 @@ import {
   type Connection,
   type SyncState,
 } from "@doska/core/sync"
-import { Loader, Text } from "@doska/ui-kit-mobile"
+import { cn, Loader, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
 import type { LucideIcon } from "lucide-react-native"
@@ -48,7 +48,7 @@ const WIDTH = 100
 const BOX =
   "flex-row items-center justify-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 active:opacity-70"
 
-const LABEL_CLASS = "font-sans-medium text-[13px] text-muted-foreground"
+const LABEL_CLASS = "font-sans-medium text-footnote text-muted-foreground"
 
 export function SyncIndicator() {
   const state = useSyncExternalStore(sync.subscribe, sync.getState)
@@ -94,7 +94,7 @@ export function SyncIndicator() {
       )}
       <Text
         numberOfLines={1}
-        className={`${LABEL_CLASS} ${danger ? "text-destructive" : ""}`}
+        className={cn(LABEL_CLASS, danger && "text-destructive")}
       >
         {label}
       </Text>

@@ -45,17 +45,21 @@ export function CardPaneHeader({
           accessibilityRole="button"
           accessibilityLabel={`Column: ${column.title}`}
           hitSlop={6}
+          className="shrink"
         >
-          <Chip>
+          <Chip className="gap-2">
             <ColumnSwatch color={column.color} />
-            <Text className="font-sans-medium text-muted-foreground">
+            <Text
+              numberOfLines={1}
+              className="shrink font-sans-medium text-muted-foreground"
+            >
               {column.title}
             </Text>
           </Chip>
         </Pressable>
       )}
       {/* Trailing, the way a navigation bar sets its overflow button. */}
-      <View className="ml-auto -mr-1.5">
+      <View className="ml-auto shrink-0 -mr-1.5">
         <IconButton
           icon={MoreHorizontal}
           label="Card actions"

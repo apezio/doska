@@ -7,20 +7,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 interface IProps {
   value: string
-  /** What the search is scoped to — only the open board is searched. */
   boardTitle?: string
   onChangeText: (value: string) => void
   onCancel: () => void
 }
 
-/** The search screen's own top bar: a title row over the field, so the modal
- * says what it is and what it covers without a navigation header. */
-export function SearchField({
-  value,
-  boardTitle,
-  onChangeText,
-  onCancel,
-}: IProps) {
+export function SearchField({ value, onChangeText, onCancel }: IProps) {
   const insets = useSafeAreaInsets()
   const tokens = useTokens()
 
@@ -35,14 +27,6 @@ export function SearchField({
           <Text className="text-title font-sans-bold text-sidebar-foreground">
             Search
           </Text>
-          {!!boardTitle && (
-            <Text
-              numberOfLines={1}
-              className="shrink font-sans text-footnote text-muted-foreground"
-            >
-              in {boardTitle}
-            </Text>
-          )}
         </View>
         <Pressable
           onPress={onCancel}
@@ -66,7 +50,6 @@ export function SearchField({
           autoCapitalize="none"
           spellCheck={false}
           returnKeyType="search"
-          placeholder="Title, notes, or card id"
           accessibilityLabel="Search cards"
           className="min-w-0 flex-1 py-2.5 text-callout text-foreground"
         />

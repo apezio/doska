@@ -1,8 +1,7 @@
 import { useRenameColumn } from "@doska/core/mutations"
 import { useBoard } from "@doska/core/queries"
-import { SheetScreen } from "@doska/ui-kit-mobile"
+import { RenameOneSheet } from "@doska/ui-kit-mobile"
 import { router, useLocalSearchParams } from "expo-router"
-import { RenameForm } from "@/components/shell/rename-form"
 import { useActiveBoard } from "@/lib/use-active-board"
 
 export default function ColumnRenameSheet() {
@@ -21,15 +20,13 @@ function Body({ deckId, columnId }: { deckId: string; columnId: string }) {
   if (!column) return null
 
   return (
-    <SheetScreen>
-      <RenameForm
-        title="Rename column"
-        value={column.title}
-        placeholder="Untitled column"
-        label="Column name"
-        onCommit={(title) => rename({ id: column.id, title })}
-        onClose={() => router.back()}
-      />
-    </SheetScreen>
+    <RenameOneSheet
+      title="Rename column"
+      value={column.title}
+      label="Column name"
+      placeholder="Untitled column"
+      onCommit={(title) => rename({ id: column.id, title })}
+      onClose={() => router.back()}
+    />
   )
 }

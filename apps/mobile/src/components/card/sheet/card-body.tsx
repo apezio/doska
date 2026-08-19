@@ -70,8 +70,7 @@ export function CardBody({
           placeholder="Notes"
           textAlignVertical="top"
           scrollEnabled={false}
-          // The caret is the input's only visible mark once its text is not.
-          selectionColor={tokens.primary}
+          selectionColor={tokens.cardForeground}
           className={`grow ${EDITOR_TEXT} text-transparent`}
         />
       </View>

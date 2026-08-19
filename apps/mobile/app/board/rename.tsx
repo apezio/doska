@@ -1,7 +1,6 @@
 import { useRenameDashboard } from "@doska/core/mutations"
-import { SheetScreen } from "@doska/ui-kit-mobile"
+import { RenameOneSheet } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
-import { RenameForm } from "@/components/shell/rename-form"
 import { useActiveBoard } from "@/lib/use-active-board"
 
 export default function BoardRenameSheet() {
@@ -10,15 +9,13 @@ export default function BoardRenameSheet() {
   if (!board) return null
 
   return (
-    <SheetScreen>
-      <RenameForm
-        title="Rename board"
-        value={board.title}
-        placeholder="Untitled board"
-        label="Board name"
-        onCommit={(name) => rename({ id: board.id, name })}
-        onClose={() => router.back()}
-      />
-    </SheetScreen>
+    <RenameOneSheet
+      title="Rename board"
+      value={board.title}
+      label="Board name"
+      placeholder="Untitled board"
+      onCommit={(name) => rename({ id: board.id, name })}
+      onClose={() => router.back()}
+    />
   )
 }

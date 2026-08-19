@@ -4,6 +4,8 @@ import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
 import CircleCheck from "lucide-react-native/icons/circle-check"
 import MoreHorizontal from "lucide-react-native/icons/ellipsis"
+import FoldVertical from "lucide-react-native/icons/fold-vertical"
+import UnfoldVertical from "lucide-react-native/icons/unfold-vertical"
 import { Pressable, Text, View } from "react-native"
 import { ROUTES } from "@/lib/routes"
 import { ColumnSwatch } from "./column-swatch"
@@ -54,11 +56,11 @@ export function ColumnHead({ column, showBody, onToggleBody }: IProps) {
       </View>
 
       <View className="flex-row items-center gap-1">
-        <Pressable onPress={onToggleBody} hitSlop={10}>
-          <Text className="text-[13px] font-sans-medium text-muted-foreground">
-            {showBody ? "Hide body" : "Show body"}
-          </Text>
-        </Pressable>
+        <IconButton
+          icon={showBody ? FoldVertical : UnfoldVertical}
+          label={showBody ? "Hide card bodies" : "Show card bodies"}
+          onPress={onToggleBody}
+        />
         <IconButton
           icon={MoreHorizontal}
           label={`${column.title} actions`}

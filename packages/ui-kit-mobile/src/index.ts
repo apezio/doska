@@ -7,6 +7,7 @@ export { Frosted } from "./frosted"
 export { IconButton } from "./icon-button"
 export { Input, TextField } from "./input"
 export { PriorityChip, PriorityDot } from "./priority-chip"
+export { RenameOneSheet, type NameCheck } from "./rename-one-sheet"
 export { Separator } from "./separator"
 export {
   SheetAction,

@@ -52,14 +52,14 @@ export function Button({
         disabled ? "opacity-40" : "active:opacity-70",
       ].join(" ")}
     >
-      {Icon ? (
+      {!!Icon && (
         <Icon
           size={metrics.icon}
           color={
             variant === "primary" ? tokens.primaryForeground : tokens.foreground
           }
         />
-      ) : null}
+      )}
       <Text className={`font-sans-medium ${metrics.label} ${LABEL[variant]}`}>
         {label}
       </Text>

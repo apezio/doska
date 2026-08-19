@@ -35,14 +35,14 @@ export function SearchField({
           <Text className="text-[22px] font-sans-bold text-sidebar-foreground">
             Search
           </Text>
-          {boardTitle ? (
+          {!!boardTitle && (
             <Text
               numberOfLines={1}
               className="shrink font-sans text-[13px] text-muted-foreground"
             >
               in {boardTitle}
             </Text>
-          ) : null}
+          )}
         </View>
         <Pressable
           onPress={onCancel}

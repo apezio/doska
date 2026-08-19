@@ -87,7 +87,7 @@ export function EditorToolbar({
       className="flex-row items-center justify-center gap-2 px-3"
       style={{ paddingVertical: ROW_PADDING }}
     >
-      {refs.length ? (
+      {refs.length > 0 && (
         <Pill grow>
           <Rail>
             {refs.map((option) => (
@@ -111,7 +111,8 @@ export function EditorToolbar({
             ))}
           </Rail>
         </Pill>
-      ) : items.length ? (
+      )}
+      {refs.length === 0 && items.length > 0 && (
         <Pill grow>
           <Rail>
             {items.map((command) => {
@@ -134,7 +135,7 @@ export function EditorToolbar({
             })}
           </Rail>
         </Pill>
-      ) : null}
+      )}
 
       <Pill>
         <ToolButton

@@ -56,13 +56,13 @@ export function DeadlineForm({ value, onCommit, onClose }: IProps) {
         }}
       />
 
-      {draft ? (
+      {!!draft && (
         <SheetAction
           label="Clear date"
           role="destructive"
           onPress={() => setDraft(null)}
         />
-      ) : null}
+      )}
     </View>
   )
 }

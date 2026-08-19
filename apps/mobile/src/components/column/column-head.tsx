@@ -2,7 +2,7 @@ import type { Column } from "@doska/core/types"
 import { IconButton, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
-import CircleCheck from "lucide-react-native/icons/circle-check"
+import Check from "lucide-react-native/icons/check"
 import MoreHorizontal from "lucide-react-native/icons/ellipsis"
 import FoldVertical from "lucide-react-native/icons/fold-vertical"
 import UnfoldVertical from "lucide-react-native/icons/unfold-vertical"
@@ -12,10 +12,6 @@ import { ColumnSwatch } from "./column-swatch"
 
 const HEAD_HEIGHT = 60
 
-/** The web's `text-emerald-600/50 dark:text-emerald-500/50`, which is a
- * Tailwind palette entry rather than a theme token. */
-const DONE_TINT = { light: "#05966980", dark: "#34d39980" }
-
 interface IProps {
   column: Column
   showBody: boolean
@@ -23,7 +19,7 @@ interface IProps {
 }
 
 export function ColumnHead({ column, showBody, onToggleBody }: IProps) {
-  const { dark } = useTokens()
+  const tokens = useTokens()
 
   return (
     <View
@@ -44,15 +40,22 @@ export function ColumnHead({ column, showBody, onToggleBody }: IProps) {
           >
             {column.title}
           </Text>
+          {column.done && (
+            <Text
+              numberOfLines={1}
+              className="text-[11px] font-sans text-muted-foreground/50"
+            >
+              Marks cards as done
+            </Text>
+          )}
         </Pressable>
-        {/* The only place the flag shows — its toggle lives in the sheet. */}
-        {column.done ? (
-          <CircleCheck
+        {column.done && (
+          <Check
             size={16}
-            color={dark ? DONE_TINT.dark : DONE_TINT.light}
+            color={tokens.mutedForeground}
             accessibilityLabel={`${column.title} is the done column`}
           />
-        ) : null}
+        )}
       </View>
 
       <View className="flex-row items-center gap-1">

@@ -67,14 +67,14 @@ export const BoardCard = memo(function BoardCard({
         onPress={() => router.push(ROUTES.card(card.id))}
         className="overflow-hidden rounded-xl border border-card-ring bg-card active:opacity-70"
       >
-        {card.title ? (
+        {!!card.title && (
           <View className="flex-row items-start gap-2 px-3 py-2">
             <Text className="flex-1 text-base font-sans-semibold leading-snug text-card-foreground">
               {card.title}
             </Text>
             {actions}
           </View>
-        ) : null}
+        )}
         <CardAttachmentImage
           cardId={card.id}
           attachmentKey={bleedKey}

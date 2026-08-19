@@ -105,7 +105,7 @@ export function createNativeAdapter(
               {marker.kind === "number" ? `${marker.value}.` : "•"}
             </Text>
           )}
-          <View className="flex-1 gap-1">{blocks}</View>
+          <View className="flex-1 gap-1 -mt-[1px] ml-1">{blocks}</View>
         </View>
       )
     },

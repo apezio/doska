@@ -91,9 +91,9 @@ export function CardAttachments({
           </Text>
         </View>
       ))}
-      {message ? (
+      {!!message && (
         <Text className="pt-1 text-[13px] text-destructive">{message}</Text>
-      ) : null}
+      )}
     </View>
   )
 }

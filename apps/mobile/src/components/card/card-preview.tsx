@@ -40,7 +40,7 @@ export function CardPreview({ card, deckId, prefix, onPatch }: IProps) {
         <MarkdownView onToggleTask={toggleTask}>{preview}</MarkdownView>
       </CardMarkdown>
       {hasMore && (
-        <Text className="text-[13px] text-muted-foreground">
+        <Text className="text-sm text-muted-foreground mt-2">
           Open to see more
         </Text>
       )}

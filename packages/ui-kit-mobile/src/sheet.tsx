@@ -47,7 +47,7 @@ export function SheetBar({
 }) {
   return (
     <View className="h-11 flex-row items-center justify-between">
-      {title ? (
+      {!!title && (
         <Text
           numberOfLines={1}
           pointerEvents="none"
@@ -55,7 +55,7 @@ export function SheetBar({
         >
           {title}
         </Text>
-      ) : null}
+      )}
       <BarButton action={leading} />
       <BarButton action={trailing} emphasised />
     </View>
@@ -145,11 +145,11 @@ export function SheetItem({
       <Text style={{ color }} className="flex-1 text-[17px] font-sans">
         {label}
       </Text>
-      {trailing ? (
+      {!!trailing && (
         <Text className="font-mono text-[13px] text-muted-foreground">
           {trailing}
         </Text>
-      ) : null}
+      )}
     </Pressable>
   )
 }

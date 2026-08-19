@@ -38,7 +38,7 @@ export function CardPaneHeader({
         priority={priority}
         done={column?.done ?? false}
       />
-      {column ? (
+      {!!column && (
         <Pressable
           onPress={() => router.push(ROUTES.cardMove(cardId))}
           accessibilityRole="button"
@@ -52,7 +52,7 @@ export function CardPaneHeader({
             </Text>
           </Chip>
         </Pressable>
-      ) : null}
+      )}
     </View>
   )
 }

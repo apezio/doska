@@ -58,23 +58,22 @@ export function AttachmentViewer({ cardId, attachmentId }: IProps) {
         <IconButton icon={X} label="Close" onPress={() => router.back()} />
       </View>
 
-      {error ? (
+      {!!error && (
         <Text className="border-b border-muted px-3 py-2 text-[13px] text-destructive">
           {error}
         </Text>
-      ) : null}
+      )}
 
       <View className="flex-1 items-center justify-center p-3">
-        {uri ? (
+        {!!uri && (
           <Image
             source={{ uri }}
             accessibilityLabel={attachment?.name}
             resizeMode="contain"
             style={{ flex: 1, width: "100%" }}
           />
-        ) : unavailable ? (
-          <AttachmentUnavailable className="w-full" />
-        ) : null}
+        )}
+        {!uri && unavailable && <AttachmentUnavailable className="w-full" />}
       </View>
     </View>
   )

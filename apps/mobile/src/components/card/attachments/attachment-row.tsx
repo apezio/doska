@@ -39,14 +39,14 @@ export function AttachmentRow({ attachment, onPress, onRemove }: IProps) {
           {attachment.name}
         </Text>
       </Pressable>
-      {onRemove ? (
+      {!!onRemove && (
         <IconButton
           icon={X}
           label={`Remove ${attachment.name}`}
           size={16}
           onPress={onRemove}
         />
-      ) : null}
+      )}
     </View>
   )
 }

@@ -1,35 +1,32 @@
 import * as Haptics from "expo-haptics"
+import Check from "lucide-react-native/icons/check"
 import { Pressable, View } from "react-native"
-import { Text } from "./text"
+import { useTokens } from "./tokens"
 
 interface IProps {
   checked: boolean
-  /** Omitted where the checkbox is only a readout, as on a board card. */
   onPress?: () => void
   className?: string
 }
 
 /** A markdown task's box. */
 export function Checkbox({ checked, onPress, className }: IProps) {
+  const { primaryForeground } = useTokens()
+
   const box = (
     <View
       className={[
-        "size-4 items-center justify-center rounded-[4px] border",
+        "size-5 items-center justify-center rounded-[5px] border",
         checked ? "border-primary bg-primary" : "border-input",
         className ?? "",
       ].join(" ")}
     >
-      {checked ? (
-        <Text className="text-[10px] leading-[12px] text-primary-foreground">
-          ✓
-        </Text>
-      ) : null}
+      {checked && <Check size={14} strokeWidth={3} color={primaryForeground} />}
     </View>
   )
 
   if (!onPress) return box
 
-  // Widens the touch target without moving the box.
   return (
     <Pressable
       accessibilityRole="checkbox"

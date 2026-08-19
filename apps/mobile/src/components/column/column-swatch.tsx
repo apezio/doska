@@ -1,9 +1,11 @@
-import { View } from "react-native"
 import { columnSwatch } from "@doska/tokens/columns"
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
+import { View } from "react-native"
 
 /** A column's color as a dot; `""` is the dashed "no color" outline. */
 export function ColumnSwatch({ color }: { color: string }) {
-  const swatch = columnSwatch(color)
+  const { dark } = useTokens()
+  const swatch = columnSwatch(color, dark ? "dark" : "light")
 
   if (!swatch) {
     return (

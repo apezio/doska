@@ -30,12 +30,12 @@ export function SidebarButton({
           : "flex-row items-center gap-2 rounded-lg px-2 py-2 active:bg-muted"
       }
     >
-      {Icon ? (
+      {!!Icon && (
         <Icon
           size={16}
           color={isActive ? tokens.primary : tokens.mutedForeground}
         />
-      ) : null}
+      )}
       <Text
         numberOfLines={1}
         className={

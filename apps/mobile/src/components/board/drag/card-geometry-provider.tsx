@@ -5,6 +5,7 @@ import { CARD_GAP, CardGeometryContext } from "./card-geometry"
 interface ColumnGeometry {
   list: View | null
   heights: Record<string, number>
+  top: number | null
 }
 
 /**
@@ -20,7 +21,7 @@ export function CardGeometryProvider({ children }: { children: ReactNode }) {
   const columns = useRef<Record<string, ColumnGeometry>>({})
 
   function columnOf(columnId: string) {
-    columns.current[columnId] ??= { list: null, heights: {} }
+    columns.current[columnId] ??= { list: null, heights: {}, top: null }
     return columns.current[columnId]
   }
 
@@ -41,16 +42,11 @@ export function CardGeometryProvider({ children }: { children: ReactNode }) {
     []
   )
 
-  const resolveDropIndex = useCallback(
-    async (columnId: string, order: string[], y: number) => {
-      const { list, heights } = columnOf(columnId)
-      if (!list) return order.length
-
-      const top = await new Promise<number | null>((settle) => {
-        list.measureInWindow((_x, pageY) => settle(pageY))
-      })
-      if (top === null) return order.length
-
+  // Walking the stacked heights is the same in both directions, so the async
+  // and cached paths share it rather than drifting apart.
+  const indexFrom = useCallback(
+    (columnId: string, order: string[], y: number, top: number) => {
+      const { heights } = columnOf(columnId)
       let index = 0
       let cursor = top
       for (const cardId of order) {
@@ -65,10 +61,61 @@ export function CardGeometryProvider({ children }: { children: ReactNode }) {
     []
   )
 
+  const cacheColumnTop = useCallback((columnId: string) => {
+    const column = columnOf(columnId)
+    column.list?.measureInWindow((_x, pageY) => {
+      column.top = pageY
+    })
+  }, [])
+
+  const forgetColumnTops = useCallback(() => {
+    for (const column of Object.values(columns.current)) column.top = null
+  }, [])
+
+  const dropIndexAt = useCallback(
+    (columnId: string, order: string[], y: number) => {
+      const { top } = columnOf(columnId)
+      if (top === null) return null
+      return indexFrom(columnId, order, y, top)
+    },
+    [indexFrom]
+  )
+
+  const resolveDropIndex = useCallback(
+    async (columnId: string, order: string[], y: number) => {
+      const { list } = columnOf(columnId)
+      if (!list) return order.length
+
+      const top = await new Promise<number | null>((settle) => {
+        list.measureInWindow((_x, pageY) => settle(pageY))
+      })
+      if (top === null) return order.length
+
+      return indexFrom(columnId, order, y, top)
+    },
+    [indexFrom]
+  )
+
   // Memoised: every card reads it, and they are memoised on their props.
   const value = useMemo(
-    () => ({ registerList, registerHeight, heightOf, resolveDropIndex }),
-    [registerList, registerHeight, heightOf, resolveDropIndex]
+    () => ({
+      registerList,
+      registerHeight,
+      heightOf,
+      resolveDropIndex,
+      cacheColumnTop,
+      forgetColumnTops,
+      dropIndexAt,
+    }),
+    [
+      registerList,
+      registerHeight,
+      heightOf,
+      resolveDropIndex,
+      cacheColumnTop,
+      forgetColumnTops,
+      dropIndexAt,
+    ]
   )
 
   return (

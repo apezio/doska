@@ -29,6 +29,18 @@ import { useCardGeometry } from "@/components/board/drag/card-geometry"
 import { useDropPoint } from "@/components/board/drag/use-drop-point"
 import { useEdgePaging } from "@/components/board/drag/use-edge-paging"
 
+/** The card in flight: its home column, and the gap it needs to leave open. */
+interface Drag {
+  columnId: string
+  height: number
+}
+
+/** Where the gap is currently open. */
+interface Gap {
+  columnId: string
+  index: number
+}
+
 /** The sortable's own drop animation, `dropAnimationDuration`. */
 const DROP_ANIMATION_MS = 300
 
@@ -77,9 +89,41 @@ export function ColumnPager({ board: dashboard }: IProps) {
   )
   const { pagerRef, onPagerScroll, page } = useEdgePaging(columnIds, width)
   const [openPage, setOpenPage] = useState(0)
-  const dropPoint = useDropPoint()
-  const { heightOf, resolveDropIndex } = useCardGeometry()
+  const {
+    heightOf,
+    resolveDropIndex,
+    cacheColumnTop,
+    forgetColumnTops,
+    dropIndexAt,
+  } = useCardGeometry()
   const [dragging, setDragging] = useState(false)
+  const [drag, setDrag] = useState<Drag | null>(null)
+  const [gap, setGap] = useState<Gap | null>(null)
+
+  // The gap follows the finger, so it is worked out from the cached column tops
+  // rather than measuring: this runs for every position the drag reports.
+  const trackGap = useCallback(
+    (y: number) => {
+      if (!drag) return
+      const toColumnId = columnIds[page.current]
+      if (!toColumnId || toColumnId === drag.columnId) {
+        setGap(null)
+        return
+      }
+      const order =
+        grouped.find(({ column }) => column.id === toColumnId)?.cards ?? []
+      const index = dropIndexAt(
+        toColumnId,
+        order.map((card) => card.id),
+        // The card's middle, not its top edge, or every drop reads low.
+        y + drag.height / 2
+      )
+      setGap(index === null ? null : { columnId: toColumnId, index })
+    },
+    [columnIds, drag, dropIndexAt, grouped, page]
+  )
+
+  const dropPoint = useDropPoint(trackGap)
 
   const patchCard = useCallback(
     (cardId: string, patch: CardPatch) => saveCard({ id: cardId, patch }),
@@ -97,7 +141,15 @@ export function ColumnPager({ board: dashboard }: IProps) {
     [createCard]
   )
 
-  const handleDragStart = useCallback(() => setDragging(true), [])
+  const handleDragStart = useCallback(
+    (columnId: string, cardId: string) => {
+      setDragging(true)
+      setDrag({ columnId, height: heightOf(columnId, cardId) })
+      // Measured once here, not per frame, and dropped again on release.
+      for (const id of columnIds) cacheColumnTop(id)
+    },
+    [cacheColumnTop, columnIds, heightOf]
+  )
 
   const handlePagerScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -115,39 +167,51 @@ export function ColumnPager({ board: dashboard }: IProps) {
   // column it has already worked the new order out, across columns nobody has.
   const handleDragEnd = useCallback(
     async (fromColumnId: string, params: SortableGridDragEndParams<Card>) => {
-      setDragging(false)
-      if (!board) return
-      const moved = board.cards.find((card) => card.id === params.key)
-      if (!moved) return
+      // Released after the drop animation, not with it: flipping scrollEnabled
+      // while the edge-paging scroll is still running makes the pager cancel it
+      // and snap back to the column the card came from.
+      setTimeout(() => setDragging(false), DROP_ANIMATION_MS)
+      setDrag(null)
+      forgetColumnTops()
+      // Held open until the move is committed: the cross-column branch
+      // awaits a measure first, and closing the gap before the card is
+      // there leaves the column blinking shut and open again.
+      try {
+        if (!board) return
+        const moved = board.cards.find((card) => card.id === params.key)
+        if (!moved) return
 
-      const toColumnId = columnIds[page.current] ?? fromColumnId
-      let between: [Card | undefined, Card | undefined]
+        const toColumnId = columnIds[page.current] ?? fromColumnId
+        let between: [Card | undefined, Card | undefined]
 
-      if (toColumnId === fromColumnId) {
-        if (params.toIndex === params.fromIndex) return
-        // The card sits at `toIndex` in the new order, so it is skipped over.
-        const order = params.data.filter((card) => card.id !== moved.id)
-        between = dropNeighbours(order, params.toIndex, moved, sort)
-        hold({ cardId: moved.id, columnId: toColumnId, index: params.toIndex })
-      } else {
-        const order =
-          grouped.find(({ column }) => column.id === toColumnId)?.cards ?? []
-        const index = await resolveDropIndex(
-          toColumnId,
-          order.map((card) => card.id),
-          // The card's middle, not its top edge, or every drop reads low.
-          dropPoint.current.y + heightOf(fromColumnId, moved.id) / 2
-        )
-        between = dropNeighbours(order, index, moved, sort)
-        hold({ cardId: moved.id, columnId: toColumnId, index })
+        if (toColumnId === fromColumnId) {
+          if (params.toIndex === params.fromIndex) return
+          // The card sits at `toIndex` in the new order, so it is skipped over.
+          const order = params.data.filter((card) => card.id !== moved.id)
+          between = dropNeighbours(order, params.toIndex, moved, sort)
+          hold({ cardId: moved.id, columnId: toColumnId, index: params.toIndex })
+        } else {
+          const order =
+            grouped.find(({ column }) => column.id === toColumnId)?.cards ?? []
+          const index = await resolveDropIndex(
+            toColumnId,
+            order.map((card) => card.id),
+            // The card's middle, not its top edge, or every drop reads low.
+            dropPoint.current.y + heightOf(fromColumnId, moved.id) / 2
+          )
+          between = dropNeighbours(order, index, moved, sort)
+          hold({ cardId: moved.id, columnId: toColumnId, index })
+        }
+
+        // Only the moved card is written, so a reorder someone else is making at
+        // the same time never collides with this one.
+        const position = keyBetween(between[0], between[1])
+        if (!position) return
+
+        moveCard([{ ...moved, columnId: toColumnId, position }])
+      } finally {
+        setGap(null)
       }
-
-      // Only the moved card is written, so a reorder someone else is making at
-      // the same time never collides with this one.
-      const position = keyBetween(between[0], between[1])
-      if (!position) return
-
-      moveCard([{ ...moved, columnId: toColumnId, position }])
     },
     [
       board,
@@ -156,6 +220,7 @@ export function ColumnPager({ board: dashboard }: IProps) {
       grouped,
       heightOf,
       hold,
+      forgetColumnTops,
       moveCard,
       page,
       resolveDropIndex,
@@ -194,6 +259,8 @@ export function ColumnPager({ board: dashboard }: IProps) {
             width={width}
             prefix={dashboard.prefix ?? ""}
             cards={place(cards, column.id)}
+            gapIndex={gap?.columnId === column.id ? gap.index : null}
+            gapHeight={drag?.height ?? 0}
             onToggleBody={toggleBody}
             onAddCard={addCard}
             onPatchCard={patchCard}

@@ -17,6 +17,15 @@ export interface CardGeometry {
     order: string[],
     y: number
   ) => Promise<number>
+  /** Caches a column's top so `dropIndexAt` can run without measuring. */
+  cacheColumnTop: (columnId: string) => void
+  /** Clears every cached top, so a scroll cannot leave a stale one behind. */
+  forgetColumnTops: () => void
+  /**
+   * `resolveDropIndex` against the cached top, cheap enough to call while the
+   * finger moves. Null until `cacheColumnTop` has landed for that column.
+   */
+  dropIndexAt: (columnId: string, order: string[], y: number) => number | null
 }
 
 export const CardGeometryContext = createContext<CardGeometry | null>(null)

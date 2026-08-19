@@ -7,7 +7,7 @@ import Animated, {
 import { useItemContext } from "react-native-sortables"
 
 /** Degrees a card leans by once it is fully lifted. */
-const TILT_DEG = 2
+const TILT_DEG = 1
 
 /**
  * Tilts the card it wraps while it is being dragged. Must render inside a

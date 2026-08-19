@@ -1,5 +1,5 @@
 import type { Column } from "@doska/core/types"
-import { IconButton, Text } from "@doska/ui-kit-mobile"
+import { cn, IconButton, Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
 import Check from "lucide-react-native/icons/check"
@@ -9,8 +9,6 @@ import UnfoldVertical from "lucide-react-native/icons/unfold-vertical"
 import { Pressable, View } from "react-native"
 import { ROUTES } from "@/lib/routes"
 import { ColumnSwatch } from "./column-swatch"
-
-const HEAD_HEIGHT = 60
 
 interface IProps {
   column: Column
@@ -22,17 +20,19 @@ export function ColumnHead({ column, showBody, onToggleBody }: IProps) {
   const tokens = useTokens()
 
   return (
-    <View
-      style={{ height: HEAD_HEIGHT }}
-      className="flex-row items-center justify-between gap-2 bg-background px-3"
-    >
-      <View className="flex-1 flex-row items-center gap-1.5">
-        <ColumnSwatch color={column.color} />
+    <View className="flex-row items-center justify-between gap-3 bg-background px-3 h-20">
+      <ColumnSwatch color={column.color} />
+      <View
+        className={cn(
+          "flex-1 flex-row items-center gap-3",
+          column.done && "-mt-1"
+        )}
+      >
         <Pressable
           onPress={() => router.push(ROUTES.columnRename(column.id))}
           accessibilityRole="button"
           accessibilityLabel={`Rename ${column.title}`}
-          className="shrink active:opacity-40"
+          className="active:opacity-40 relative"
         >
           <Text
             numberOfLines={1}
@@ -43,7 +43,7 @@ export function ColumnHead({ column, showBody, onToggleBody }: IProps) {
           {column.done && (
             <Text
               numberOfLines={1}
-              className="text-[11px] font-sans text-muted-foreground/50"
+              className="text-xs font-sans text-muted-foreground absolute -bottom-3.5 w-[120px]"
             >
               Marks cards as done
             </Text>

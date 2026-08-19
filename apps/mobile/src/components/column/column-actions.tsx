@@ -1,12 +1,13 @@
-import { useSetColumnColor, useSetColumnDone } from "@doska/core/mutations"
+import { useSetColumnDone } from "@doska/core/mutations"
 import { useBoard } from "@doska/core/queries"
+import { COLUMN_COLORS } from "@doska/tokens/columns"
 import { Separator, SheetItem } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import CircleCheck from "lucide-react-native/icons/circle-check"
+import Palette from "lucide-react-native/icons/palette"
 import Trash2 from "lucide-react-native/icons/trash-2"
 import { View } from "react-native"
 import { ROUTES } from "@/lib/routes"
-import { ColumnColorRow } from "./column-color-row"
 
 interface IProps {
   deckId: string
@@ -15,7 +16,6 @@ interface IProps {
 
 export function ColumnActions({ deckId, columnId }: IProps) {
   const { data: board } = useBoard(deckId)
-  const { mutate: setColor } = useSetColumnColor(deckId)
   const { mutate: setDone } = useSetColumnDone(deckId)
 
   const column = board?.columns.find((one) => one.id === columnId)
@@ -23,9 +23,13 @@ export function ColumnActions({ deckId, columnId }: IProps) {
 
   return (
     <View className="gap-1">
-      <ColumnColorRow
-        color={column.color}
-        onChange={(color) => setColor({ id: column.id, color })}
+      <SheetItem
+        icon={Palette}
+        label="Color"
+        trailing={
+          COLUMN_COLORS.find((one) => one.id === column.color)?.label ?? "None"
+        }
+        onPress={() => router.push(ROUTES.columnColor(column.id))}
       />
       <SheetItem
         icon={CircleCheck}

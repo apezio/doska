@@ -72,6 +72,7 @@ export default function RootLayout() {
             <Stack.Screen name={SCREENS.columnNew} options={sheetOptions} />
             <Stack.Screen name={SCREENS.columnActions} options={sheetOptions} />
             <Stack.Screen name={SCREENS.columnRename} options={sheetOptions} />
+            <Stack.Screen name={SCREENS.columnColor} options={sheetOptions} />
             <Stack.Screen name={SCREENS.columnDelete} options={sheetOptions} />
             <Stack.Screen
               name={SCREENS.search}

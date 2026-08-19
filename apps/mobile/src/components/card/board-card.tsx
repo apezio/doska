@@ -45,13 +45,9 @@ export const BoardCard = memo(function BoardCard({
   const bodyImage =
     hasBody && !applied.includes(cut.name) ? soleImage(preview) : null
   const sole = cardSoleImage(hasBody, bodyImage, card.attachments ?? [])
-  // Nothing else renders remote images on this platform, so only an attachment
-  // can carry a card.
   const bleedKey = sole?.source.kind === "attachment" ? sole.source.key : null
 
   const actions = (
-    // Nested in the card's own Pressable, which it shadows: a tap here
-    // opens the actions rather than the card.
     <IconButton
       icon={MoreHorizontal}
       label={`${card.title || "Untitled card"} actions`}
@@ -95,7 +91,7 @@ export const BoardCard = memo(function BoardCard({
       className="gap-2 overflow-hidden rounded-xl border border-card-ring bg-card py-2 active:opacity-70"
     >
       <View className="flex-row items-start gap-2 px-3">
-        <Text className="flex-1 text-base font-sans-semibold leading-snug text-card-foreground">
+        <Text className="flex-1 text-base font-sans-semibold text-card-foreground mt-0.5">
           {card.title || "Untitled card"}
         </Text>
         {actions}

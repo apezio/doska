@@ -1,5 +1,6 @@
 import { TaskIndicator, cn } from "@doska/ui-kit"
 import { taskProgress, type TaskProgress } from "@doska/markdown"
+import type { ReactNode } from "react"
 import type { Card, Column } from "@doska/core/types"
 import { CardDeadline } from "./deadline/card-deadline"
 import { CardPriority } from "./priority/card-priority"
@@ -18,6 +19,7 @@ interface IProps {
   onChangePriority?: (priority: string) => void
   className?: string
   showEmpty?: boolean
+  lead?: ReactNode
 }
 
 /** A card's task progress, deadline and priority — on the board card and in its panel. */
@@ -30,11 +32,13 @@ export function CardMeta({
   onChangePriority,
   className,
   showEmpty,
+  lead,
 }: IProps) {
   const { done, total } = tasks ?? taskProgress(body ?? card.body)
 
   return (
     <div className={cn("flex items-center gap-4 text-sm", className)}>
+      {lead}
       {total > 0 && <TaskIndicator done={done} total={total} />}
       {(showEmpty || !!card.deadline) && (
         <CardDeadline

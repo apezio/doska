@@ -19,6 +19,8 @@ interface IProps {
   isLoading: boolean
   onToggleBody: (columnId: string, collapsed: boolean) => void
   onAddCard: (columnId: string) => void
+  /** Creates a card and opens it, for the header's add. */
+  onAddAndOpenCard: (columnId: string) => void
   onAddColumn: () => void
   onReorderColumns: (changed: Board["columns"]) => void
   onChangeColumnColor: (columnId: string, color: string) => void
@@ -40,6 +42,7 @@ export function Deck({
   isLoading,
   onToggleBody,
   onAddCard,
+  onAddAndOpenCard,
   onAddColumn,
   onReorderColumns,
   onChangeColumnColor,
@@ -57,6 +60,7 @@ export function Deck({
   const [isDragging, setIsDragging] = useState(false)
 
   const grouped = groupCardsByColumn(board)
+  const orderedColumns = [...board.columns].sort(byPosition)
   const sort = dashboard.sort ?? []
   const { hold, release, place } = useLandingSlot(sort.length > 0)
 
@@ -80,12 +84,17 @@ export function Deck({
               title={dashboard.title}
               onRename={onRenameDashboard}
               onDelete={onDeleteDashboard}
-              columns={[...board.columns].sort(byPosition)}
+              columns={orderedColumns}
               onReorderColumns={onReorderColumns}
               sort={sort}
               onChangeSort={onChangeSort}
               view={view}
               onChangeView={onChangeView}
+              onAddCard={
+                orderedColumns[0]
+                  ? () => onAddAndOpenCard(orderedColumns[0].id)
+                  : undefined
+              }
             />
           }
         >

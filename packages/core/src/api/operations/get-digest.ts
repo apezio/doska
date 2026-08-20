@@ -9,6 +9,8 @@ export type DigestFilter = "today" | "week"
 
 export interface DigestCard {
   card: Card
+  /** The column the card sits in, so the digest can draw a real board card. */
+  column: Column
   boardId: string
   boardTitle: string
   columnTitle: string
@@ -83,6 +85,7 @@ export async function getDigest(filter: DigestFilter): Promise<DigestCard[]> {
     return [
       {
         card,
+        column,
         boardId: board.id,
         boardTitle: board.title,
         columnTitle: column.title,
@@ -103,15 +106,16 @@ export interface DigestGroup {
   entries: DigestCard[]
 }
 
-/** Priority first, then deadline — which only breaks ties in the overdue pile,
- * the one group spanning several dates. */
-function byPriorityThenDeadline(a: DigestCard, b: DigestCard): number {
+/**
+ * Priority, then the card's number.
+ */
+function byPriority(a: DigestCard, b: DigestCard): number {
   const rank = priorityRank(a.card.priority) - priorityRank(b.card.priority)
   if (rank !== 0) return rank
-  const dateA = a.card.deadline ?? ""
-  const dateB = b.card.deadline ?? ""
-  if (dateA === dateB) return 0
-  return dateA < dateB ? -1 : 1
+  const numberA = a.card.number ?? Infinity
+  const numberB = b.card.number ?? Infinity
+  if (numberA !== numberB) return numberA - numberB
+  return a.card.id < b.card.id ? -1 : 1
 }
 
 /**
@@ -119,7 +123,7 @@ function byPriorityThenDeadline(a: DigestCard, b: DigestCard): number {
  * into a single overdue group ahead of them. `getDigest` returns deadline
  * order, so a plain pass groups them — no sort, and no map keyed by date. Done
  * cards never enter the overdue pile: a finished card isn't a missed deadline.
- * Each group is then ordered by priority.
+ * Each group is then ordered by priority alone.
  */
 export function groupByDeadline(
   entries: DigestCard[],
@@ -139,7 +143,7 @@ export function groupByDeadline(
   }
   if (overdue.length)
     groups.unshift({ kind: "overdue", date: "", entries: overdue })
-  for (const group of groups) group.entries.sort(byPriorityThenDeadline)
+  for (const group of groups) group.entries.sort(byPriority)
   return groups
 }
 
@@ -158,6 +162,7 @@ export function boardDigest(board: Board, boardTitle: string): DigestCard[] {
     return [
       {
         card,
+        column,
         boardId,
         boardTitle,
         columnTitle: column.title,
@@ -194,7 +199,7 @@ export function groupBoardCards(
   })
   const groups = groupByDeadline(dated, today)
   if (undated.length) {
-    undated.sort(byPriorityThenDeadline)
+    undated.sort(byPriority)
     groups.push({ kind: "undated", date: "", entries: undated })
   }
   return groups

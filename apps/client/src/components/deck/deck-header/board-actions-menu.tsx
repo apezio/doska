@@ -10,11 +10,14 @@ import {
 import { ArrowRightLeft, MoreHorizontal, Trash2 } from "lucide-react"
 import { ConfirmDialog } from "../../confirm-dialog"
 import { ReorderColumnsModal } from "../reorder-columns/reorder-columns-modal"
+import { SortSub } from "./sort-sub"
 import type { Column } from "@doska/core/types"
 
 interface IProps {
   title: string
   columns: Column[]
+  sort: string[]
+  onChangeSort: (sort: string[]) => void
   onDelete: () => void
   onReorderColumns: (changed: Column[]) => void
 }
@@ -22,6 +25,8 @@ interface IProps {
 export function BoardActionsMenu({
   title,
   columns,
+  sort,
+  onChangeSort,
   onDelete,
   onReorderColumns,
 }: IProps) {
@@ -44,6 +49,7 @@ export function BoardActionsMenu({
           <MoreHorizontal />
         </MenuTrigger>
         <MenuContent>
+          <SortSub sort={sort} onChangeSort={onChangeSort} />
           <MenuItem
             onClick={() => setReorderOpen(true)}
             disabled={columns.length < 2}

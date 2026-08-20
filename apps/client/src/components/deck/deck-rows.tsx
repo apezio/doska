@@ -1,3 +1,4 @@
+import { AnimatePresence } from "motion/react"
 import { CalendarClock } from "lucide-react"
 import type { DigestCard, DigestGroup as Group } from "@doska/core/operations"
 import { CenteredState } from "../digest/centered-state"
@@ -24,15 +25,17 @@ export function DeckRows({ groups, openCardId, onOpenCard }: IProps) {
             </p>
           </CenteredState>
         ) : (
-          groups.map((group) => (
-            <DigestGroup
-              key={`${group.kind}-${group.date}`}
-              group={group}
-              showBoard={false}
-              openCardId={openCardId}
-              onOpenCard={onOpenCard}
-            />
-          ))
+          <AnimatePresence initial={false}>
+            {groups.map((group) => (
+              <DigestGroup
+                key={`${group.kind}-${group.date}`}
+                group={group}
+                showBoard={false}
+                openCardId={openCardId}
+                onOpenCard={onOpenCard}
+              />
+            ))}
+          </AnimatePresence>
         )}
       </div>
     </div>

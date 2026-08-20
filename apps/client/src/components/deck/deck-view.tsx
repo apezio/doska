@@ -17,7 +17,9 @@ import {
 import { useBoard } from "@doska/core/queries"
 import { setBoardView, useBoardView } from "@doska/core/board-view"
 import { useCallback } from "react"
+import { useLocation } from "wouter"
 import { useDragEnd, useSyncShortcut } from "@/lib/hooks"
+import { routes } from "@/lib/routes"
 import type { Dashboard } from "@doska/core/types"
 import { Deck } from "./deck"
 
@@ -27,6 +29,7 @@ import { Deck } from "./deck"
  */
 export function DeckView({ dashboard }: { dashboard: Dashboard }) {
   const id = dashboard.id
+  const [, navigate] = useLocation()
 
   // ⌘S / Ctrl+S flushes a sync immediately
   useSyncShortcut()
@@ -67,6 +70,11 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
         setColumnCollapsed({ id: columnId, collapsed })
       }
       onAddCard={createCard}
+      onAddAndOpenCard={(columnId) =>
+        createCard(columnId, {
+          onSuccess: (cardId) => navigate(routes.card.to(cardId)),
+        })
+      }
       onAddColumn={() => createColumn("New column")}
       onReorderColumns={moveColumn}
       onChangeColumnColor={(columnId, color) =>

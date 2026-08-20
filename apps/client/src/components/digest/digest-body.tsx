@@ -1,3 +1,4 @@
+import { AnimatePresence } from "motion/react"
 import { CalendarClock, TriangleAlert } from "lucide-react"
 import type {
   DigestCard,
@@ -53,7 +54,7 @@ export function DigestBody({
     )
 
   return (
-    <>
+    <AnimatePresence initial={false}>
       {groups.map((g) => (
         <DigestGroup
           key={`${g.kind}-${g.date}`}
@@ -62,6 +63,6 @@ export function DigestBody({
           onOpenCard={onOpenCard}
         />
       ))}
-    </>
+    </AnimatePresence>
   )
 }

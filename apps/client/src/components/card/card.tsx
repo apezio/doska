@@ -1,4 +1,9 @@
-import { memo, type DetailedHTMLProps, type HTMLAttributes } from "react"
+import {
+  memo,
+  type DetailedHTMLProps,
+  type HTMLAttributes,
+  type ReactNode,
+} from "react"
 import { useLocation } from "wouter"
 import type { CardPatch } from "@doska/core/mutations"
 import type { Card as CardData, Column } from "@doska/core/types"
@@ -19,6 +24,9 @@ interface IProps extends DetailedHTMLProps<
   showBody: boolean
   isDragging: boolean
   onPatch: (id: string, patch: CardPatch) => void
+  lead?: ReactNode
+  metaLead?: ReactNode
+  imageCard?: boolean
 }
 
 export const Card = memo(function Card({
@@ -27,6 +35,9 @@ export const Card = memo(function Card({
   showBody,
   isDragging,
   onPatch,
+  lead,
+  metaLead,
+  imageCard,
   ...props
 }: IProps) {
   const [, navigate] = useLocation()
@@ -49,6 +60,9 @@ export const Card = memo(function Card({
         showBody={showBody}
         isDragging={isDragging}
         isRevealed={isRevealed}
+        lead={lead}
+        metaLead={metaLead}
+        imageCard={imageCard}
         action={<CardMenu cardId={id} onEdit={open} />}
         onChangeBody={(body) => onPatch(id, { body })}
         onChangeDeadline={(deadline) => onPatch(id, { deadline })}

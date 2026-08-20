@@ -1,12 +1,8 @@
-import {
-  Card as CardBase,
-  Checkbox,
-  PriorityDot,
-  TaskIndicator,
-  cn,
-} from "@doska/ui-kit"
+import { Checkbox, cn } from "@doska/ui-kit"
 import type { DigestCard } from "@doska/core/operations"
-import { taskProgress } from "@doska/markdown"
+import type { CardPatch } from "@doska/core/mutations"
+import { Card } from "../card/card"
+import { ColumnSwatch } from "../column/column-swatch"
 
 interface IProps {
   entry: DigestCard
@@ -18,9 +14,11 @@ interface IProps {
   onOpen: () => void
   onToggleDone: () => void
   onOpenBoard: () => void
+  onPatch: (id: string, patch: CardPatch) => void
 }
 
-/** One card in the digest. */
+/** One card in the digest: the board card itself, collapsed, with a tick box on
+ * the title row and where it lives on the meta row. */
 export function DigestRow({
   entry,
   isActive,
@@ -29,76 +27,67 @@ export function DigestRow({
   onOpen,
   onToggleDone,
   onOpenBoard,
+  onPatch,
 }: IProps) {
-  const { card, boardTitle, columnTitle, isDone } = entry
-
-  const title = card.title || "Untitled card"
-  const tasks = taskProgress(card.body)
+  const { card, column, boardTitle, columnTitle, isDone } = entry
 
   return (
-    <CardBase
-      role="button"
-      tabIndex={0}
+    <Card
+      card={card}
+      column={column}
+      showBody={false}
+      isDragging={false}
+      imageCard={false}
+      onPatch={onPatch}
       onClick={onOpen}
-      onKeyDown={(e) => {
-        if (e.key !== "Enter" && e.key !== " ") return
-        e.preventDefault()
-        onOpen()
-      }}
       className={cn(
-        // Overrides the card's stacked layout: a digest card is one line.
-        "cursor-pointer flex-row items-center gap-3 rounded-xl px-3",
-        "hover:ring-foreground/20",
+        "mb-0 max-w-none",
         isActive && "ring-2 ring-primary/40",
         isDone && "opacity-40"
       )}
-    >
-      <span onClick={(e) => e.stopPropagation()} className="inline-flex">
-        <Checkbox
-          variant={canToggleDone ? "default" : "dashed"}
-          checked={isDone}
-          readOnly={!canToggleDone}
-          aria-label={
-            canToggleDone ? "Toggle done" : "How marking cards done works"
-          }
-          // A read-only box never reports a change, so the explaining case has
-          // to come off the click instead.
-          onClick={() => {
-            if (!canToggleDone) onToggleDone()
-          }}
-          onCheckedChange={() => {
-            if (canToggleDone) onToggleDone()
-          }}
-        />
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col">
+      lead={
         <span
-          className={cn(
-            "inline-flex min-w-0 items-center gap-2 truncate text-base font-medium",
-            isDone && "line-through"
-          )}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex pt-0.5"
         >
-          <span className="truncate">{title}</span>
-          <PriorityDot value={card.priority} />
+          <Checkbox
+            variant={canToggleDone ? "default" : "dashed"}
+            checked={isDone}
+            readOnly={!canToggleDone}
+            aria-label={
+              canToggleDone ? "Toggle done" : "How marking cards done works"
+            }
+            onClick={() => {
+              if (!canToggleDone) onToggleDone()
+            }}
+            onCheckedChange={() => {
+              if (canToggleDone) onToggleDone()
+            }}
+          />
         </span>
-        {showBoard ? (
+      }
+      metaLead={
+        showBoard ? (
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation()
               onOpenBoard()
             }}
-            className="self-start truncate text-sm text-muted-foreground hover:text-foreground hover:underline"
+            className="flex min-w-0 items-center gap-1.5 text-muted-foreground hover:text-foreground"
           >
-            {boardTitle || "Untitled board"} · {columnTitle}
+            <ColumnSwatch color={column.color} />
+            <span className="truncate hover:underline">
+              {boardTitle || "Untitled board"} · {columnTitle}
+            </span>
           </button>
         ) : (
-          <span className="self-start truncate text-sm text-muted-foreground">
-            {columnTitle}
+          <span className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
+            <ColumnSwatch color={column.color} />
+            <span className="truncate">{columnTitle}</span>
           </span>
-        )}
-      </span>
-      {tasks.total > 0 && <TaskIndicator {...tasks} />}
-    </CardBase>
+        )
+      }
+    />
   )
 }

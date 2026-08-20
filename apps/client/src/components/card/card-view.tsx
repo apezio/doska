@@ -38,6 +38,13 @@ interface IProps extends DetailedHTMLProps<
   isRevealed?: boolean
   /** Top-right slot: the card menu where the viewer can act on the card. */
   action?: ReactNode
+  /** Opens the title row, for a checkbox or the like. */
+  lead?: ReactNode
+  /** Opens the meta row, for the card's column or board. */
+  metaLead?: ReactNode
+  /** Off where a card whose whole body is one image should still read as an
+   * ordinary card, as in the digest. */
+  imageCard?: boolean
   /** Omit to leave the body's task checkboxes inert. */
   onChangeBody?: (body: string) => void
   onChangeDeadline?: (deadline: string | null) => void
@@ -65,12 +72,16 @@ export function CardView({
   isDragging,
   isRevealed,
   action,
+  lead,
+  metaLead,
+  imageCard = true,
   onChangeBody,
   onChangeDeadline,
   onChangePriority,
   attachments,
   renderAttachmentImage,
   wrapCard = (card) => card,
+  className,
   ...props
 }: IProps) {
   const { title, body } = card
@@ -79,7 +90,7 @@ export function CardView({
   const hasMore = applied.includes(cut.name)
   const files = card.attachments ?? []
   const bodyImage = hasBody && !hasMore ? soleImage(preview) : null
-  const image = cardSoleImage(hasBody, bodyImage, files)
+  const image = imageCard ? cardSoleImage(hasBody, bodyImage, files) : null
 
   const drawImage = (image: SoleImage) =>
     image.source.kind === "attachment" ? (
@@ -89,7 +100,8 @@ export function CardView({
     )
 
   const tasks = taskProgress(body)
-  const hasMeta = tasks.total > 0 || !!card.deadline || !!card.priority
+  const hasMeta =
+    !!metaLead || tasks.total > 0 || !!card.deadline || !!card.priority
 
   return (
     <div
@@ -98,7 +110,8 @@ export function CardView({
         "group relative mb-3 w-full max-w-sm cursor-pointer scroll-mx-6 scroll-mt-[calc(--spacing(15)+10px)] rounded-xl",
         "touch-manipulation select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none]",
         isRevealed &&
-          "ring-2 ring-primary ring-offset-2 ring-offset-background transition-shadow"
+          "ring-2 ring-primary ring-offset-2 ring-offset-background transition-shadow",
+        className
       )}
     >
       {wrapCard(
@@ -113,7 +126,10 @@ export function CardView({
             )}
           >
             <CardHeader>
-              <CardTitle>{title || "Untitled card"}</CardTitle>
+              <CardTitle className={cn(lead && "flex items-start gap-2")}>
+                {lead}
+                <span>{title || "Untitled card"}</span>
+              </CardTitle>
               {action && (
                 <CardAction className="flex items-center gap-1">
                   {action}
@@ -126,6 +142,7 @@ export function CardView({
                   card={card}
                   column={column}
                   tasks={tasks}
+                  lead={metaLead}
                   onChangeDeadline={onChangeDeadline}
                   onChangePriority={onChangePriority}
                   className="mt-2"

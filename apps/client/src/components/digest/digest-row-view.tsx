@@ -1,7 +1,13 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
+import { motion } from "motion/react"
 import type { DigestCard } from "@doska/core/operations"
-import { useMoveCardToColumn } from "@doska/core/mutations"
+import {
+  useMoveCardToColumn,
+  useSaveCard,
+  type CardPatch,
+} from "@doska/core/mutations"
 import { useDashboardNav } from "@/lib/hooks"
+import { REORDER_TRANSITION } from "@/lib/motion"
 import { DigestRow } from "./digest-row"
 import { DoneColumnHelp } from "./done-column-help"
 
@@ -18,13 +24,25 @@ export function DigestRowView({ entry, isActive, showBoard, onOpen }: IProps) {
   const { card, boardId, isDone, doneColumnId, undoneColumnId } = entry
   const { selectDashboard } = useDashboardNav()
   const { mutate: moveCardToColumn } = useMoveCardToColumn()
+  const { mutate: saveCard } = useSaveCard()
   const [helpOpen, setHelpOpen] = useState(false)
+
+  const patchCard = useCallback(
+    (cardId: string, patch: CardPatch) => saveCard({ id: cardId, patch }),
+    [saveCard]
+  )
 
   // Null when the board has no done column, and then there is nowhere to send it.
   const target = isDone ? undoneColumnId : doneColumnId
 
   return (
-    <li>
+    <motion.li
+      layoutId={card.id}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={REORDER_TRANSITION}
+    >
       <DigestRow
         entry={entry}
         isActive={isActive}
@@ -36,6 +54,7 @@ export function DigestRowView({ entry, isActive, showBoard, onOpen }: IProps) {
           else setHelpOpen(true)
         }}
         onOpenBoard={() => selectDashboard(boardId)}
+        onPatch={patchCard}
       />
       {!target && (
         <DoneColumnHelp
@@ -45,6 +64,6 @@ export function DigestRowView({ entry, isActive, showBoard, onOpen }: IProps) {
           onOpenBoard={() => selectDashboard(boardId)}
         />
       )}
-    </li>
+    </motion.li>
   )
 }

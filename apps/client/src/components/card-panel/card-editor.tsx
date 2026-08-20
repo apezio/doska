@@ -58,7 +58,6 @@ export function CardEditor({
     <div className="flex min-h-0 flex-1 flex-col">
       <AttachmentUploadProvider cardId={cardId}>
         <AttachmentDropZone className="flex min-h-0 flex-1 flex-col">
-          {/* Anchors the mobile slash button: inside the pane, outside the scroller. */}
           <div
             ref={setOverlay}
             className="relative flex min-h-0 flex-1 flex-col"

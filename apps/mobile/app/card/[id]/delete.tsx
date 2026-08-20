@@ -1,13 +1,13 @@
 import { useDeleteCard } from "@doska/core/mutations"
-import { useCard, useCardDeck } from "@doska/core/queries"
+import { useCard, useCardDeckId } from "@doska/core/queries"
 import { ConfirmBody, SheetScreen } from "@doska/ui-kit-mobile"
 import { router, useLocalSearchParams } from "expo-router"
 
 export default function CardDeleteSheet() {
   const { id } = useLocalSearchParams<{ id: string }>()
-  const { data: deck } = useCardDeck(id ?? null)
+  const { data: deckId } = useCardDeckId(id ?? null)
 
-  return id && deck ? <Body cardId={id} deckId={deck.id} /> : null
+  return id && deckId ? <Body cardId={id} deckId={deckId} /> : null
 }
 
 function Body({ cardId, deckId }: { cardId: string; deckId: string }) {

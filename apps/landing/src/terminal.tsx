@@ -22,7 +22,7 @@ const mcpSession: Line[] = [
   { text: "⏺ get_board(roadmap)", className: call },
   { text: "  ⎿ 3 columns · 12 cards", className: result },
   { text: '⏺ create_card("Offline banner")', className: call },
-  { text: "  ⎿ created ROAD-13 in Todo", className: ok },
+  { text: "  ⎿ created card 13 in Todo", className: ok },
 ]
 
 /** A terminal window: static output, optionally with a blinking cursor left at the end. */

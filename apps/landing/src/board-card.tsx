@@ -2,10 +2,8 @@ import { useState, type ReactNode } from "react"
 import { taskProgress, toggleTaskByIndex } from "@doska/markdown"
 import {
   Card,
-  CardAction,
   CardContent,
   CardHeader,
-  CardId,
   CardTitle,
   DeadlineChip,
   Markdown,
@@ -19,14 +17,12 @@ import {
  * it does in the app.
  */
 export function BoardCard({
-  id,
   title,
   deadline,
   body,
   lead,
   children,
 }: {
-  id: string
   title: string
   /** Fixed dates only — a relative one ("in 3 days") would break prerendering. */
   deadline?: string
@@ -44,9 +40,6 @@ export function BoardCard({
         <CardTitle className="font-bold text-balance">
           <h3>{title}</h3>
         </CardTitle>
-        <CardAction>
-          <CardId id={id} />
-        </CardAction>
       </CardHeader>
       {(tasks.total > 0 || deadline) && (
         <CardContent>

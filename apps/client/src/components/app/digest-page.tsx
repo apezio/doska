@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react"
 import { useRoute } from "wouter"
 import { DigestView } from "@/components/digest/digest-view"
 import { sync } from "@doska/core/sync"
-import { useCardDeck } from "@doska/core/queries"
+import { useCardDeckId } from "@doska/core/queries"
 import { routes } from "@/lib/routes"
 import { AppShell } from "./app-shell"
 
@@ -13,11 +13,11 @@ export function DigestPage() {
   }, [])
 
   const [, params] = useRoute(routes.card.pattern)
-  const { data: cardDeck } = useCardDeck(params?.id ?? null)
+  const { data: cardDeckId } = useCardDeckId(params?.id ?? null)
 
   const deck = useMemo(
-    () => ({ id: cardDeck?.id ?? "", sort: [] }),
-    [cardDeck]
+    () => ({ id: cardDeckId ?? "", sort: [] }),
+    [cardDeckId]
   )
 
   return (

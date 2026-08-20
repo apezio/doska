@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test"
-import { addCard, card, createBoard } from "../helpers"
+import { addCard, card, createBoard, digestRow } from "../helpers"
 
 // DateInput only renders the native input below the 768px breakpoint.
 function deadlineInput(page: Page) {
@@ -12,10 +12,6 @@ function isoIn(days: number): string {
   d.setDate(d.getDate() + days)
   const month = String(d.getMonth() + 1).padStart(2, "0")
   return `${d.getFullYear()}-${month}-${String(d.getDate()).padStart(2, "0")}`
-}
-
-function digestRow(page: Page, title: string) {
-  return page.getByRole("button", { name: new RegExp(title) })
 }
 
 test.describe("digest", () => {

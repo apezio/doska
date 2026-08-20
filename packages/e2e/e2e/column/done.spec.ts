@@ -3,6 +3,7 @@ import {
   addCard,
   columnDoneBadge,
   createBoard,
+  digestRow,
   retitleCard,
   setColumnDone,
 } from "../helpers"
@@ -67,17 +68,17 @@ test.describe("marking a column done", () => {
 
     // Undone column first: the digest row carries no strikethrough.
     await page.goto("/digest")
-    let row = page.getByRole("button", { name: /Wrapped up/ })
+    let row = digestRow(page, "Wrapped up")
     await expect(row).toBeVisible()
-    await expect(row.locator(".line-through")).toHaveCount(0)
+    await expect(row.getByRole("checkbox")).not.toBeChecked()
 
     // Mark the column done and the same row now renders struck through.
     await page.goto(`/d/${deckId}`)
     await setColumnDone(page, "In Progress", true)
 
     await page.goto("/digest")
-    row = page.getByRole("button", { name: /Wrapped up/ })
-    await expect(row.locator(".line-through")).toHaveText("Wrapped up")
+    row = digestRow(page, "Wrapped up")
+    await expect(row.getByRole("checkbox")).toBeChecked()
   })
 
   test("the digest names a done column when the board has none", async ({
@@ -93,7 +94,7 @@ test.describe("marking a column done", () => {
     // No done column yet, so the row's tick box explains itself instead. The
     // seeded Welcome board has none either, hence the scoping to this row.
     await page.goto("/digest")
-    const row = page.getByRole("button", { name: /Needs a done column/ })
+    const row = digestRow(page, "Needs a done column")
     const help = row.getByRole("checkbox", {
       name: "How marking cards done works",
     })
@@ -110,7 +111,9 @@ test.describe("marking a column done", () => {
     const checkbox = row.getByRole("checkbox", { name: "Toggle done" })
     await expect(checkbox).toBeVisible()
     await checkbox.click()
-    await expect(row.locator(".line-through")).toHaveText("Needs a done column")
+    await expect(
+      row.getByRole("checkbox", { name: "Toggle done" })
+    ).toBeChecked()
 
     // The flag is the board's, not the digest's: it shows up on the column too.
     await page.goto(`/d/${deckId}`)

@@ -43,7 +43,9 @@ export function DigestRow({
       className={cn(
         "mb-0 max-w-none",
         isActive && "ring-2 ring-primary/40",
-        isDone && "opacity-40"
+        // The board shows done by the column a card sits in; a row has to say
+        // so itself, and the title is the card's own markup to reach into.
+        isDone && "opacity-40 [&_[data-slot=card-title]]:line-through"
       )}
       lead={
         <span
@@ -53,6 +55,7 @@ export function DigestRow({
           <Checkbox
             variant={canToggleDone ? "default" : "dashed"}
             checked={isDone}
+            className="mt-px"
             readOnly={!canToggleDone}
             aria-label={
               canToggleDone ? "Toggle done" : "How marking cards done works"

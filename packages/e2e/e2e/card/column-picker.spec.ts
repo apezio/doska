@@ -5,6 +5,7 @@ import {
   closeCard,
   columnCardTitles,
   createBoard,
+  digestRow,
   openCard,
   retitleCard,
 } from "../helpers"
@@ -61,13 +62,11 @@ test.describe("moving a card from its panel", () => {
       .fill(iso)
 
     await page.goto("/digest")
-    await page.getByRole("button", { name: /Due and misfiled/ }).click()
+    await digestRow(page, "Due and misfiled").click()
 
     await moveOpenCard(page, "Done")
 
     // The digest row re-tags itself, so the move landed on the card itself.
-    await expect(
-      page.getByRole("button", { name: /Due and misfiled.*DONE/i })
-    ).toBeVisible()
+    await expect(digestRow(page, "Due and misfiled")).toContainText("Done")
   })
 })

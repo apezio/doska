@@ -9,7 +9,7 @@ import { useUndoShortcut } from "@/lib/hooks"
 import { routes } from "@/lib/routes"
 
 interface IProps {
-  deck: { id: string; prefix: string; sort: string[] }
+  deck: { id: string; sort: string[] }
   cardCloseHref?: string
   children: ReactNode
 }

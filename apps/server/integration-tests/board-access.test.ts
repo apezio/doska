@@ -15,7 +15,6 @@ const board = (id: string, title: string) => ({
     id,
     title,
     position: "a",
-    prefix: "",
     updatedAt: now,
     deletedAt: null,
   },

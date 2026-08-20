@@ -13,3 +13,6 @@ export type Board = {
   columns: Column[]
   cards: Card[]
 }
+
+/** How a board renders: its columns, or every card as one date-grouped list. */
+export type DashboardView = "board" | "rows"

@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Card, Column, Dashboard } from "@doska/contract"
-import { cardDisplayId } from "@doska/contract/prefix"
+import { cardDisplayId } from "@doska/contract/card-id"
 import { z } from "zod"
 import type { Board } from "../board"
 import { addDays, todayIso, UPCOMING_DAYS } from "@doska/utils/dates"
@@ -17,7 +17,7 @@ interface Located {
 
 /** How a located card goes back to a client. */
 function result({ card, dashboard, column }: Located, bodies: boolean) {
-  const shaped = shapeCard(card, dashboard.prefix)
+  const shaped = shapeCard(card)
   return {
     ...shaped,
     body: bodies ? shaped.body : undefined,
@@ -30,8 +30,8 @@ function result({ card, dashboard, column }: Located, bodies: boolean) {
 }
 
 /** Everything `query` matches against, as one lowercased blob. */
-function haystack({ card, dashboard }: Located): string {
-  const display = cardDisplayId(dashboard.prefix, card.number) ?? ""
+function haystack({ card }: Located): string {
+  const display = cardDisplayId(card.number) ?? ""
   return `${card.title}\n${card.body}\n${display}`.toLowerCase()
 }
 
@@ -66,15 +66,12 @@ export function registerSearchTools(server: McpServer, board: Board): void {
         "or column. " +
         "Searches titles and Markdown bodies, so it also finds " +
         "[[card]] links. Cheaper than reading whole boards when you " +
-        "know roughly what you're after, and the way to turn a ROAD-12 into " +
-        "the card id the write tools take.",
+        "know roughly what you're after.",
       inputSchema: {
         query: z
           .string()
           .optional()
-          .describe(
-            "Case-insensitive substring of the title, body, or display id"
-          ),
+          .describe("Case-insensitive substring of the title or body"),
         boardIds: z
           .array(z.string())
           .optional()

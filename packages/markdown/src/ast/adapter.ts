@@ -58,7 +58,7 @@ export interface MarkdownAdapter {
     position: "block" | "inline",
     key: string
   ): ReactNode
-  /** `alias` is the label written into the text, as in `[[ROAD-12|Fix it]]`. */
+  /** `alias` is the label written into the text, as in `[[12|Fix it]]`. */
   wikilink(target: string, alias: string | undefined, key: string): ReactNode
   cut(key: string): ReactNode
   footnoteReference(label: string, key: string): ReactNode

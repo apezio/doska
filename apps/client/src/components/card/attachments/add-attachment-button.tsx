@@ -1,5 +1,5 @@
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@doska/ui-kit"
-import { Paperclip } from "lucide-react"
+import { LoaderCircle, Paperclip } from "lucide-react"
 import { useRef } from "react"
 import { useUploads } from "@/providers/attachment-upload/attachment-upload-context"
 
@@ -19,12 +19,12 @@ export function AddAttachmentButton() {
   const button = (
     <Button
       variant="ghost"
-      size="sm"
+      size="icon-sm"
+      aria-label="Attach"
       disabled={!enabled || busy}
       onClick={() => inputRef.current?.click()}
     >
-      <Paperclip />
-      {busy ? "Uploading…" : "Attach"}
+      {busy ? <LoaderCircle className="animate-spin" /> : <Paperclip />}
     </Button>
   )
 

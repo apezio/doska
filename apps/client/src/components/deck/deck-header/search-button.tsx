@@ -4,12 +4,7 @@ import { Search } from "lucide-react"
 import { SearchModal } from "../../search"
 import { useSearchShortcut } from "@/lib/hooks"
 
-interface IProps {
-  boardId: string
-  prefix: string
-}
-
-export function SearchButton({ boardId, prefix }: IProps) {
+export function SearchButton({ boardId }: { boardId: string }) {
   const [open, setOpen] = useState(false)
 
   useSearchShortcut(useCallback(() => setOpen(true), []))
@@ -29,7 +24,6 @@ export function SearchButton({ boardId, prefix }: IProps) {
         open={open}
         onOpenChange={setOpen}
         boardId={boardId}
-        prefix={prefix}
       />
     </>
   )

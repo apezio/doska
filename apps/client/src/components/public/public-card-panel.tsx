@@ -33,8 +33,7 @@ export function PublicCardPanel({ token, snapshot, closeHref }: IProps) {
 
   const close = useCallback(() => navigate(closeHref), [navigate, closeHref])
 
-  const { dashboard, cards, columns } = snapshot
-  const prefix = dashboard.prefix ?? ""
+  const { cards, columns } = snapshot
   const card = cards.find((one) => one.id === cardId)
   const column = columns.find((one) => one.id === card?.columnId)
 
@@ -49,20 +48,24 @@ export function PublicCardPanel({ token, snapshot, closeHref }: IProps) {
           key={card.id}
           cardId={card.id}
           token={token}
-          prefix={prefix}
           cards={cards}
           columns={columns}
         >
           <div className="flex min-h-0 flex-1 flex-col">
             <CardPaneLayout
-              header={<CardPanelHeader isPreview onClose={close} />}
-              meta={
-                <>
-                  <CardMeta card={card} column={column} prefix={prefix} />
-                  {column && (
-                    <ColumnTag title={column.title} color={column.color} />
-                  )}
-                </>
+              header={
+                <CardPanelHeader
+                  isPreview
+                  onClose={close}
+                  meta={
+                    <>
+                      <CardMeta card={card} column={column} />
+                      {column && (
+                        <ColumnTag title={column.title} color={column.color} />
+                      )}
+                    </>
+                  }
+                />
               }
               attachments={
                 <PublicAttachments

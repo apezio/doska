@@ -93,7 +93,7 @@ describe("dashboards.sync", () => {
       changes: [
         { store: "dashboards", record: {
           id: "b1", title: "Roadmap", position: "a",
-          prefix: "ROAD", updatedAt: now, deletedAt: null,
+          updatedAt: now, deletedAt: null,
         } },
       ],
     })
@@ -103,7 +103,7 @@ describe("dashboards.sync", () => {
 
     const rows = await getDB().select().from(dashboards)
     expect(rows).toHaveLength(1)
-    expect(rows[0].prefix).toBe("ROAD")
+    expect(rows[0].title).toBe("Roadmap")
   })
 
   test("a board's sort choice survives push and pull, on the boards-list channel", async () => {
@@ -112,7 +112,7 @@ describe("dashboards.sync", () => {
       changes: [
         { store: "dashboards", record: {
           id: "b1", title: "Roadmap", position: "a",
-          prefix: "ROAD", sort: ["priority"], updatedAt: now, deletedAt: null,
+          sort: ["priority"], updatedAt: now, deletedAt: null,
         } },
       ],
     })
@@ -130,7 +130,7 @@ describe("dashboards.sync", () => {
       changes: [
         { store: "dashboards", record: {
           id: "b1", title: "Roadmap", position: "a",
-          prefix: "ROAD", updatedAt: now, deletedAt: null,
+          updatedAt: now, deletedAt: null,
         } },
       ],
     })

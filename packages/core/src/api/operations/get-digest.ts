@@ -1,6 +1,6 @@
 import { priorityRank } from "@doska/tokens/priority"
 import { UPCOMING_DAYS } from "@doska/utils/dates"
-import type { Card, Column } from "../../types"
+import type { Board, Card, Column } from "../../types"
 import { addDays, byPosition, todayIso } from "../../utils"
 import { db } from "../db/db"
 import { live } from "./live"
@@ -9,9 +9,10 @@ export type DigestFilter = "today" | "week"
 
 export interface DigestCard {
   card: Card
+  /** The column the card sits in, so the digest can draw a real board card. */
+  column: Column
   boardId: string
   boardTitle: string
-  prefix: string
   columnTitle: string
   columnColor: string
   isDone: boolean
@@ -84,9 +85,9 @@ export async function getDigest(filter: DigestFilter): Promise<DigestCard[]> {
     return [
       {
         card,
+        column,
         boardId: board.id,
         boardTitle: board.title,
-        prefix: board.prefix,
         columnTitle: column.title,
         columnColor: column.color,
         isDone: column.done,
@@ -98,20 +99,23 @@ export async function getDigest(filter: DigestFilter): Promise<DigestCard[]> {
 }
 
 export interface DigestGroup {
-  /** The group's deadline, or `""` for the overdue pile that leads the list. */
+  /** `overdue` leads the list, `undated` closes it; both carry an empty `date`. */
+  kind: "overdue" | "date" | "undated"
+  /** The group's deadline, empty for the `overdue` and `undated` piles. */
   date: string
   entries: DigestCard[]
 }
 
-/** Priority first, then deadline — which only breaks ties in the overdue pile,
- * the one group spanning several dates. */
-function byPriorityThenDeadline(a: DigestCard, b: DigestCard): number {
+/**
+ * Priority, then the card's number.
+ */
+function byPriority(a: DigestCard, b: DigestCard): number {
   const rank = priorityRank(a.card.priority) - priorityRank(b.card.priority)
   if (rank !== 0) return rank
-  const dateA = a.card.deadline ?? ""
-  const dateB = b.card.deadline ?? ""
-  if (dateA === dateB) return 0
-  return dateA < dateB ? -1 : 1
+  const numberA = a.card.number ?? Infinity
+  const numberB = b.card.number ?? Infinity
+  if (numberA !== numberB) return numberA - numberB
+  return a.card.id < b.card.id ? -1 : 1
 }
 
 /**
@@ -119,7 +123,7 @@ function byPriorityThenDeadline(a: DigestCard, b: DigestCard): number {
  * into a single overdue group ahead of them. `getDigest` returns deadline
  * order, so a plain pass groups them — no sort, and no map keyed by date. Done
  * cards never enter the overdue pile: a finished card isn't a missed deadline.
- * Each group is then ordered by priority.
+ * Each group is then ordered by priority alone.
  */
 export function groupByDeadline(
   entries: DigestCard[],
@@ -135,9 +139,68 @@ export function groupByDeadline(
     }
     const last = groups[groups.length - 1]
     if (last && last.date === date) last.entries.push(entry)
-    else groups.push({ date, entries: [entry] })
+    else groups.push({ kind: "date", date, entries: [entry] })
   }
-  if (overdue.length) groups.unshift({ date: "", entries: overdue })
-  for (const group of groups) group.entries.sort(byPriorityThenDeadline)
+  if (overdue.length)
+    groups.unshift({ kind: "overdue", date: "", entries: overdue })
+  for (const group of groups) group.entries.sort(byPriority)
+  return groups
+}
+
+/**
+ * Every live card on one board as digest entries. The board's columns and cards
+ * are already loaded for the deck, so this is a transform rather than a read —
+ * unlike {@link getDigest}, which spans every board and has to go to the DB.
+ */
+export function boardDigest(board: Board, boardTitle: string): DigestCard[] {
+  const columnById = new Map(board.columns.map((c) => [c.id, c]))
+  const targets = targetsByBoard(board.columns)
+  return board.cards.flatMap((card) => {
+    const column = columnById.get(card.columnId)
+    if (!column) return []
+    const boardId = column.dashboardId
+    return [
+      {
+        card,
+        column,
+        boardId,
+        boardTitle,
+        columnTitle: column.title,
+        columnColor: column.color,
+        isDone: column.done,
+        doneColumnId: targets.get(boardId)?.doneColumnId ?? null,
+        undoneColumnId: targets.get(boardId)?.undoneColumnId ?? null,
+      },
+    ]
+  })
+}
+
+/**
+ * The row view's groups: deadlined cards grouped as in the digest, then
+ * everything without a deadline in one pile at the end. Undated cards are split
+ * off first, because {@link groupByDeadline} reads a missing deadline as `""`
+ * and would sweep them into the overdue pile.
+ */
+export function groupBoardCards(
+  entries: DigestCard[],
+  today = todayIso()
+): DigestGroup[] {
+  const dated: DigestCard[] = []
+  const undated: DigestCard[] = []
+  for (const entry of entries) {
+    if (entry.card.deadline) dated.push(entry)
+    else undated.push(entry)
+  }
+  dated.sort((a, b) => {
+    const dateA = a.card.deadline ?? ""
+    const dateB = b.card.deadline ?? ""
+    if (dateA === dateB) return 0
+    return dateA < dateB ? -1 : 1
+  })
+  const groups = groupByDeadline(dated, today)
+  if (undated.length) {
+    undated.sort(byPriority)
+    groups.push({ kind: "undated", date: "", entries: undated })
+  }
   return groups
 }

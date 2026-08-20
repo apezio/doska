@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test"
 import {
   addCard,
+  attachmentRow,
   card,
   cardPanel,
   createBoard,
@@ -33,7 +34,7 @@ test.describe("dropping and pasting files", { tag: "@container" }, () => {
     await expect(page.getByText("Drop files to attach")).toHaveCount(0)
     await expect(cardPanel(page).getByText("dropped")).toBeVisible()
     await expect(
-      cardPanel(page).getByRole("button", { name: "dropped.png" })
+      attachmentRow(page, "dropped.png")
     ).toBeVisible()
   })
 
@@ -85,7 +86,7 @@ test.describe("dropping and pasting files", { tag: "@container" }, () => {
       // ...and as an attachment on the card. (Matched on the tile: the notes now
       // carry the same name, so plain text would be ambiguous.)
       await expect(
-        cardPanel(page).getByRole("button", { name: "pasted.png" })
+        attachmentRow(page, "pasted.png")
       ).toBeVisible()
     })
   })
@@ -100,7 +101,7 @@ test.describe("dropping and pasting files", { tag: "@container" }, () => {
     const transfer = await pngDataTransfer(page, "chart.png")
     await notes.dispatchEvent("drop", { dataTransfer: transfer })
     await expect(
-      cardPanel(page).getByRole("button", { name: "chart.png" })
+      attachmentRow(page, "chart.png")
     ).toBeVisible()
 
     await notes.click()

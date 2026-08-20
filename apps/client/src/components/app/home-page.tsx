@@ -2,7 +2,7 @@ import { Home } from "@/components"
 import { useActiveDashboard } from "@/lib/hooks"
 import { AppShell } from "./app-shell"
 
-const NO_DECK = { id: "", prefix: "", sort: [] }
+const NO_DECK = { id: "", sort: [] }
 
 /** The landing screen, with no board open. */
 export function HomePage() {

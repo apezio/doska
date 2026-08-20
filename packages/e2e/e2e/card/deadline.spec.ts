@@ -1,59 +1,47 @@
-import { test, expect, type Page } from "@playwright/test"
-import { addCard, card, createBoard } from "../helpers"
+import { test, expect } from "@playwright/test"
+import {
+  addCard,
+  card,
+  cardTitled,
+  createBoard,
+  setDeadline,
+} from "../helpers"
 
-// The overlay input has no accessible name, so it's reached by its type attribute.
-function deadlineInput(page: Page) {
-  return card(page, "Untitled card").locator('input[type="date"]')
-}
+const UPCOMING = weekOut()
 
-// Anything within 3 days reads as a relative label instead of a date, so an
-// "upcoming" date has to be computed from today rather than hardcoded.
-const UPCOMING = upcomingDate()
-
-function upcomingDate() {
+function weekOut() {
   const d = new Date()
-  d.setDate(d.getDate() + 30)
+  d.setDate(d.getDate() + 7)
   const year = d.getFullYear()
   const month = String(d.getMonth() + 1).padStart(2, "0")
   const day = String(d.getDate()).padStart(2, "0")
-  // The chip leaves the year off while the date is still in the current one.
   const sameYear = year === new Date().getFullYear()
-  return {
-    iso: `${year}-${month}-${day}`,
-    formatted: sameYear ? `${day}.${month}` : `${day}.${month}.${year}`,
-  }
+  return sameYear ? `${day}.${month}` : `${day}.${month}.${year}`
 }
 
-// DateInput only renders the native input below the 768px breakpoint; above it the calendar popover is harder to drive.
 test.describe("card deadline", () => {
-  test.use({ viewport: { width: 500, height: 800 } })
-
   test("setting a future deadline shows the upcoming date", async ({
     page,
   }) => {
     await createBoard(page)
     await addCard(page, "To Do")
 
-    await deadlineInput(page).fill(UPCOMING.iso)
+    await setDeadline(page, "Untitled card", "In a week")
 
-    await expect(card(page, "Untitled card").getByText(UPCOMING.formatted)).toBeVisible()
+    await expect(card(page, "Untitled card").getByText(UPCOMING)).toBeVisible()
   })
 
   test("an overdue deadline is colour-coded distinctly from an upcoming one", async ({
     page,
   }) => {
-    await createBoard(page)
-    await addCard(page, "To Do")
+    await page.goto("/d/welcome")
 
-    await deadlineInput(page).fill("2020-01-01")
-
-    // An overdue deadline reads as the relative label ("overdue"), not the date.
-    const overdueChip = card(page, "Untitled card").getByText("overdue")
+    const overdueChip = cardTitled(page, "Deadlines").getByText(/days ago/)
     await expect(overdueChip).toBeVisible()
     await expect(overdueChip).toHaveClass(/text-destructive/)
 
-    await deadlineInput(page).fill(UPCOMING.iso)
-    const upcomingChip = card(page, "Untitled card").getByText(UPCOMING.formatted)
+    await setDeadline(page, "Deadlines", "In a week")
+    const upcomingChip = cardTitled(page, "Deadlines").getByText(UPCOMING)
     await expect(upcomingChip).not.toHaveClass(/text-destructive/)
   })
 
@@ -61,10 +49,10 @@ test.describe("card deadline", () => {
     await createBoard(page)
     await addCard(page, "To Do")
 
-    await deadlineInput(page).fill(UPCOMING.iso)
-    await expect(card(page, "Untitled card").getByText(UPCOMING.formatted)).toBeVisible()
+    await setDeadline(page, "Untitled card", "In a week")
+    await expect(card(page, "Untitled card").getByText(UPCOMING)).toBeVisible()
 
     await page.reload()
-    await expect(card(page, "Untitled card").getByText(UPCOMING.formatted)).toBeVisible()
+    await expect(card(page, "Untitled card").getByText(UPCOMING)).toBeVisible()
   })
 })

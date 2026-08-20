@@ -2,6 +2,7 @@ import { expect, type APIRequestContext, type Page } from "@playwright/test"
 import type { Change } from "@doska/contract"
 import { newerThan, sync, waitForChange } from "./rpc"
 import { column } from "./column"
+import { menu } from "./menu"
 
 /* -------------------------------------------------------------------------- */
 /*  Card helpers. Cards are addressed by their visible title; bodies are the   */
@@ -32,25 +33,28 @@ export function cardTitled(page: Page, title: string) {
     })
 }
 
-/** A card's copy-to-clipboard id chip. Only renders once the server stamps a number (needs a synced board). */
-export function cardIdButton(page: Page) {
-  return page.getByRole("button", { name: /^Copy card id / })
-}
-
 /**
- * The display id ("ROAD-12") shown on the card titled `title`. Only exists once
- * the server has stamped the card a number, so the board must be signed in.
+ * The display id ("12") of the card titled `title`, read off its search result
+ * — the one place the app still prints it. Only exists once the server has
+ * stamped the card a number, so the board must be signed in.
  */
 export async function cardDisplayId(
   page: Page,
   title: string
 ): Promise<string> {
-  const chip = card(page, title).getByRole("button", { name: /^Copy card id / })
+  await page.getByRole("button", { name: "Search cards" }).click()
+  const input = page.getByPlaceholder("Search cards")
+  await input.fill(title)
+
+  const row = page.getByRole("option").filter({ hasText: title }).first()
   // The number arrives on a sync round-trip, which the default expect timeout
   // can lose to under a loaded parallel run.
-  await expect(chip).toBeVisible({ timeout: 15_000 })
-  const label = (await chip.getAttribute("aria-label")) ?? ""
-  return label.replace("Copy card id ", "")
+  await expect(row).toContainText(/#\d+/, { timeout: 15_000 })
+  const [, id] = /#(\d+)/.exec((await row.textContent()) ?? "") ?? []
+
+  await page.keyboard.press("Escape")
+  await expect(input).toBeHidden()
+  return id
 }
 
 /**
@@ -157,19 +161,41 @@ export function cardPriorityLabel(page: Page, title: string) {
   return card(page, title).locator('[aria-label^="Priority:"]')
 }
 
-/**
- * Sets the card titled `title`'s priority from its board card meta row.
- * `label` is one of "High", "Medium", "Low", or "No priority" to clear it.
- */
+export async function openCardMenu(page: Page, title: string): Promise<void> {
+  await cardTitled(page, title)
+    .getByRole("button", { name: "Card actions" })
+    .click()
+  await expect(menu(page, "Card actions")).toBeVisible()
+}
+
 export async function setCardPriority(
   page: Page,
   title: string,
   label: string
 ): Promise<void> {
-  await cardPriorityButton(page, title).click()
-  // Not exact: the option's accessible name also carries the chip's own
-  // "Priority: <label>" aria-label ahead of the visible text.
-  await page.getByRole("menuitem", { name: label }).click()
+  await openCardMenu(page, title)
+  await menu(page, "Card actions")
+    .getByRole("menuitem", { name: "Priority", exact: true })
+    .click()
+  await menu(page, "Priority").getByRole("menuitem", { name: label }).click()
+  await expect(menu(page, "Card actions")).toBeHidden()
+}
+
+export type DeadlinePreset = "No deadline" | "Today" | "Tomorrow" | "In a week"
+
+export async function setDeadline(
+  page: Page,
+  title: string,
+  preset: DeadlinePreset
+): Promise<void> {
+  await openCardMenu(page, title)
+  await menu(page, "Card actions")
+    .getByRole("menuitem", { name: "Deadline", exact: true })
+    .click()
+  await menu(page, "Deadline")
+    .getByRole("menuitem", { name: preset, exact: true })
+    .click()
+  await expect(menu(page, "Card actions")).toBeHidden()
 }
 
 /** What @hello-pangea/dnd announces to screen readers as a drag progresses. */

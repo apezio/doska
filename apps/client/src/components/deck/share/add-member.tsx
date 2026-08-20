@@ -61,7 +61,7 @@ export function AddMember({ boardId, members }: IProps) {
           {shown.map((account) => (
             <li
               key={account.id}
-              className="flex items-center gap-2 border-b border-muted py-2 last:border-b-0"
+              className="flex items-center gap-2 border-b py-2 last:border-b-0"
             >
               <span className="truncate text-sm">{account.username}</span>
               <Button

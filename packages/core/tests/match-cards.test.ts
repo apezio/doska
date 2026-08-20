@@ -45,7 +45,7 @@ describe("searchCards", () => {
     ]
 
     expect(hitIds(cards, "12")).toEqual(["numbered", "titled"])
-    // The stripped prefix only applies to the number field, so `road-12`
+    // Stripping the old prefix only applies to the number field, so `road-12`
     // leaves the card whose title merely reads `12` behind.
     expect(hitIds(cards, "road-12")).toEqual(["numbered"])
   })

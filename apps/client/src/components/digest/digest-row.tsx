@@ -1,112 +1,96 @@
-import {
-  Card as CardBase,
-  Checkbox,
-  PriorityDot,
-  TaskIndicator,
-  cn,
-} from "@doska/ui-kit"
-import { useState } from "react"
+import { Checkbox, cn } from "@doska/ui-kit"
 import type { DigestCard } from "@doska/core/operations"
-import { taskProgress } from "@doska/markdown"
-import { useMoveCardToColumn } from "@doska/core/mutations"
-import { useDashboardNav } from "@/lib/hooks"
-import { DoneColumnHelp } from "./done-column-help"
+import type { CardPatch } from "@doska/core/mutations"
+import { Card } from "../card/card"
+import { ColumnSwatch } from "../column/column-swatch"
 
 interface IProps {
   entry: DigestCard
   isActive: boolean
+  /** Off inside a single board, where every row names the same board. */
+  showBoard?: boolean
+  /** False when the board has no done column: the checkbox explains instead. */
+  canToggleDone: boolean
   onOpen: () => void
+  onToggleDone: () => void
+  onOpenBoard: () => void
+  onPatch: (id: string, patch: CardPatch) => void
 }
 
-/**
- * One card in the digest
- */
-export function DigestRow({ entry, isActive, onOpen }: IProps) {
-  const {
-    card,
-    boardId,
-    boardTitle,
-    columnTitle,
-    isDone,
-    doneColumnId,
-    undoneColumnId,
-  } = entry
-  const { selectDashboard } = useDashboardNav()
-  const { mutate: moveCardToColumn } = useMoveCardToColumn()
-  const [helpOpen, setHelpOpen] = useState(false)
-
-  const title = card.title || "Untitled card"
-  const tasks = taskProgress(card.body)
-
-  // Null when the board has no done column, and then there is nowhere to send it.
-  const target = isDone ? undoneColumnId : doneColumnId
+/** One card in the digest: the board card itself, collapsed, with a tick box on
+ * the title row and where it lives on the meta row. */
+export function DigestRow({
+  entry,
+  isActive,
+  showBoard = true,
+  canToggleDone,
+  onOpen,
+  onToggleDone,
+  onOpenBoard,
+  onPatch,
+}: IProps) {
+  const { card, column, boardTitle, columnTitle, isDone } = entry
 
   return (
-    <li>
-      <CardBase
-        role="button"
-        tabIndex={0}
-        onClick={onOpen}
-        onKeyDown={(e) => {
-          if (e.key !== "Enter" && e.key !== " ") return
-          e.preventDefault()
-          onOpen()
-        }}
-        className={cn(
-          // Overrides the card's stacked layout: a digest card is one line.
-          "cursor-pointer flex-row items-center gap-3 rounded-xl px-3",
-          "hover:ring-foreground/20",
-          isActive && "ring-2 ring-primary/40",
-          isDone && "opacity-40"
-        )}
-      >
-        <span onClick={(e) => e.stopPropagation()} className="inline-flex">
+    <Card
+      card={card}
+      column={column}
+      showBody={false}
+      isDragging={false}
+      imageCard={false}
+      onPatch={onPatch}
+      onClick={onOpen}
+      className={cn(
+        "mb-0 max-w-none",
+        isActive && "ring-2 ring-primary/40",
+        // The board shows done by the column a card sits in; a row has to say
+        // so itself, and the title is the card's own markup to reach into.
+        isDone && "opacity-40 [&_[data-slot=card-title]]:line-through"
+      )}
+      lead={
+        <span
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex pt-0.5"
+        >
           <Checkbox
-            variant={target ? "default" : "dashed"}
+            variant={canToggleDone ? "default" : "dashed"}
             checked={isDone}
-            readOnly={!target}
+            className="mt-px"
+            readOnly={!canToggleDone}
             aria-label={
-              !target ? "How marking cards done works" : "Toggle done"
+              canToggleDone ? "Toggle done" : "How marking cards done works"
             }
             onClick={() => {
-              if (!target) setHelpOpen(true)
+              if (!canToggleDone) onToggleDone()
             }}
             onCheckedChange={() => {
-              if (target) moveCardToColumn({ id: card.id, columnId: target })
+              if (canToggleDone) onToggleDone()
             }}
           />
         </span>
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span
-            className={cn(
-              "inline-flex min-w-0 items-center gap-2 truncate text-base font-medium",
-              isDone && "line-through"
-            )}
-          >
-            <span className="truncate">{title}</span>
-            <PriorityDot value={card.priority} />
-          </span>
+      }
+      metaLead={
+        showBoard ? (
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation()
-              selectDashboard(boardId)
+              onOpenBoard()
             }}
-            className="self-start truncate text-sm text-muted-foreground hover:text-foreground hover:underline"
+            className="flex min-w-0 items-center gap-1.5 text-muted-foreground hover:text-foreground"
           >
-            {boardTitle || "Untitled board"} · {columnTitle}
+            <ColumnSwatch color={column.color} />
+            <span className="truncate hover:underline">
+              {boardTitle || "Untitled board"} · {columnTitle}
+            </span>
           </button>
-        </span>
-        {tasks.total > 0 && <TaskIndicator {...tasks} />}
-      </CardBase>
-      {!target && (
-        <DoneColumnHelp
-          open={helpOpen}
-          onOpenChange={setHelpOpen}
-          boardId={boardId}
-          onOpenBoard={() => selectDashboard(boardId)}
-        />
-      )}
-    </li>
+        ) : (
+          <span className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
+            <ColumnSwatch color={column.color} />
+            <span className="truncate">{columnTitle}</span>
+          </span>
+        )
+      }
+    />
   )
 }

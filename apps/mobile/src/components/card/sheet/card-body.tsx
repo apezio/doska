@@ -11,9 +11,8 @@ import { MarkdownView } from "@/components/markdown/markdown-view"
 
 interface IProps {
   body: string
-  /** The card's board, for the `[[ROAD-12]]` refs in its body. */
+  /** The card's board, for the `[[12]]` refs in its body. */
   deckId: string
-  prefix: string
   isPreview: boolean
   onChangeBody: (value: string) => void
   /** Fired by tapping the read-only preview. */
@@ -25,7 +24,6 @@ interface IProps {
 export function CardBody({
   body,
   deckId,
-  prefix,
   isPreview,
   onChangeBody,
   onEdit,
@@ -63,7 +61,7 @@ export function CardBody({
 
   return (
     <Pressable onPress={onEdit} className="grow px-4 py-2">
-      <CardMarkdown deckId={deckId} prefix={prefix}>
+      <CardMarkdown deckId={deckId}>
         <MarkdownView
           onToggleTask={(index) => onChangeBody(toggleTaskByIndex(body, index))}
         >

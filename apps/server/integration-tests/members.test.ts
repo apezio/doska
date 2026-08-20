@@ -22,7 +22,6 @@ const board = (id: string, deletedAt: number | null = null) => ({
     id,
     title: id,
     position: "a",
-    prefix: "",
     updatedAt: now,
     deletedAt,
   },

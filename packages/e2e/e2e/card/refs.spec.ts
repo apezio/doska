@@ -48,32 +48,29 @@ async function boardWithTwoCards(page: Page) {
  * the same title.
  */
 function refMenuItem(page: Page, title: string, displayId: string) {
-  return page.getByRole("button", { name: `${title} ${displayId}` })
+  return page.getByRole("button", { name: `${title} #${displayId}` })
 }
 
 /**
  * Every row of the open `[[` menu, in the order shown. Scoped to the panel and
- * to names ending in a display id, minus the panel's own copy-id chip, which
- * ends in one too. The board order the rows come in isn't fixed, so tests that
- * care about position read it off these rows rather than assuming it.
+ * to names ending in a `#id`. The board order the rows come in isn't fixed, so
+ * tests that care about position read it off these rows rather than assuming it.
  */
 function refMenuRows(page: Page): Locator {
-  return cardPanel(page).getByRole("button", {
-    name: /^(?!Copy card id).*[A-Z0-9]+-\d+$/,
-  })
+  return cardPanel(page).getByRole("button", { name: /#\d+$/ })
 }
 
 /** The display id a menu row offers, read out of the row's text. */
 function rowDisplayId(text: string): string {
-  const id = text.match(/[A-Z0-9]+-\d+/)
+  const id = text.match(/#(\d+)/)
   if (!id) throw new Error(`no display id in menu row "${text}"`)
-  return id[0]
+  return id[1]
 }
 
 /** What picking a menu row writes: the target's id, plus its title as an alias. */
 function rowInsertion(text: string): string {
   const id = rowDisplayId(text)
-  return `[[${id}|${text.replace(id, "").trim()}]]`
+  return `[[${id}|${text.replace(`#${id}`, "").trim()}]]`
 }
 
 /** A card's "⋯" menu, reached by title alone — a referencing card renders the target's title too. */
@@ -351,10 +348,9 @@ test.describe("card references", () => {
     await page.getByRole("menuitem", { name: "Delete" }).click()
 
     // The id stays readable, but there's nothing left to click through to.
+    // Scoped to the card: the sidebar's version link carries digits too.
     await expect(card(page, "Source card").getByText(targetId)).toBeVisible()
-    await expect(
-      page.getByRole("link").filter({ hasText: targetId })
-    ).toHaveCount(0)
+    await expect(card(page, "Source card").getByRole("link")).toHaveCount(0)
   })
 
   test("moving the target re-pills the reference with its new column", async ({
@@ -365,7 +361,8 @@ test.describe("card references", () => {
 
     await cardTitled(page, "Target card").click()
     await expect(cardPanel(page)).toBeVisible()
-    await page.getByRole("button", { name: "Column: To Do. Move card" }).click()
+    await cardPanel(page).getByRole("button", { name: "Card actions" }).click()
+    await page.getByRole("menuitem", { name: "Move to" }).click()
     await page.getByRole("menuitem", { name: "In Progress" }).click()
     await closeCard(page)
 
@@ -411,8 +408,10 @@ test.describe("card references", () => {
     await addCard(page, "To Do")
     await retitleCard(page, "Untitled card", "Source card")
     // Left untitled on purpose — it still has an id, so it can still be linked.
+    // Search reads title and body only, so the body is what finds it here.
     await addCard(page, "To Do")
-    const targetId = await cardDisplayId(page, "Untitled card")
+    await editCardBody(page, "Untitled card", "needle")
+    const targetId = await cardDisplayId(page, "needle")
 
     await openCard(page, "Source card")
     const notes = page.getByPlaceholder("Notes")

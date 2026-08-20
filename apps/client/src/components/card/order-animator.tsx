@@ -1,5 +1,6 @@
 import { motion } from "motion/react"
 import type { ReactNode } from "react"
+import { REORDER_TRANSITION } from "@/lib/motion"
 import { useIsBoardDragging } from "../deck/drag-state"
 
 export function OrderAnimator({ children }: { children: ReactNode }) {
@@ -8,7 +9,7 @@ export function OrderAnimator({ children }: { children: ReactNode }) {
   return (
     <motion.div
       layout={isDragging ? false : "position"}
-      transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
+      transition={REORDER_TRANSITION}
     >
       {children}
     </motion.div>

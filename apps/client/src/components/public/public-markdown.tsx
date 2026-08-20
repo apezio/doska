@@ -8,7 +8,6 @@ import { PublicCardRefLink } from "./public-card-ref-link"
 interface IProps {
   cardId: string
   token: string
-  prefix: string
   cards: Card[]
   columns: Column[]
   children: ReactNode
@@ -21,7 +20,6 @@ interface IProps {
 export function PublicMarkdown({
   cardId,
   token,
-  prefix,
   cards,
   columns,
   children,
@@ -43,13 +41,12 @@ export function PublicMarkdown({
         <PublicCardRefLink
           displayId={target}
           alias={alias}
-          prefix={prefix}
           cards={cards}
           columns={columns}
         />
       ),
     }),
-    [token, attachments, prefix, cards, columns]
+    [token, attachments, cards, columns]
   )
 
   return (

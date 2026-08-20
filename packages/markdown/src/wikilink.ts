@@ -8,7 +8,7 @@ export interface WikilinkOption {
   id: string
   title: string
   hint?: string
-  /** What lands in the text — the `ROAD-12` in `[[ROAD-12]]`. */
+  /** What lands in the text — the `12` in `[[12]]`. */
   target: string
 }
 

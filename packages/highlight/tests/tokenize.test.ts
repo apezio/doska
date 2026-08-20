@@ -17,7 +17,7 @@ function tokenizeLine(source: string, targets?: string[]): Token[] {
 const SAMPLE = `# A heading with **bold**
 
 Plain text, *emphasis*, \`code\`, ==mark== and ~~struck~~.
-A [label](https://example.dev) and a [[ROAD-12|Fix the sync bug]].
+A [label](https://example.dev) and a [[12|Fix the sync bug]].
 
 > quoted, with **bold** inside
 
@@ -95,22 +95,22 @@ describe("tokenizeMarkdown", () => {
   })
 
   it("reads a wikilink as broken only when the targets say so", () => {
-    const known = ["ROAD-12"]
+    const known = ["12"]
+    expect(kindsOf(tokenizeLine("[[12]]", known), "12")).toEqual(["wikilink"])
+    expect(kindsOf(tokenizeLine("[[99]]", known), "99")).toEqual([
+      "brokenWikilink",
+    ])
+    // Ids used to carry a board prefix; those references still point at 12.
     expect(kindsOf(tokenizeLine("[[ROAD-12]]", known), "ROAD-12")).toEqual([
       "wikilink",
     ])
-    expect(kindsOf(tokenizeLine("[[ROAD-99]]", known), "ROAD-99")).toEqual([
-      "brokenWikilink",
-    ])
     // No list means the caller could not tell, so nothing is drawn as broken.
-    expect(kindsOf(tokenizeLine("[[ROAD-99]]"), "ROAD-99")).toEqual([
-      "wikilink",
-    ])
+    expect(kindsOf(tokenizeLine("[[99]]"), "99")).toEqual(["wikilink"])
   })
 
   it("keeps a wikilink's alias readable and its brackets syntax", () => {
-    const tokens = tokenizeLine("[[ROAD-12|Fix the sync bug]]", ["road-12"])
-    expect(kindsOf(tokens, "ROAD-12")).toEqual(["wikilink"])
+    const tokens = tokenizeLine("[[12|Fix the sync bug]]", ["12"])
+    expect(kindsOf(tokens, "12")).toEqual(["wikilink"])
     expect(kindsOf(tokens, "Fix the sync bug")).toEqual([])
     expect(kindsOf(tokens, "[[")).toEqual(["syntax"])
   })

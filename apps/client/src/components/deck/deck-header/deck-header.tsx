@@ -1,37 +1,39 @@
-import { InvisibleInput } from "@doska/ui-kit"
+import { Button, InvisibleInput } from "@doska/ui-kit"
+import { Plus } from "lucide-react"
 import { PageHeader } from "../../app/page-header"
 import { BoardActionsMenu } from "./board-actions-menu"
 import { SearchButton } from "./search-button"
+import { RowViewButton } from "./row-view-button"
 import { ShareButton } from "./share-button"
-import { SortMenu } from "./sort-menu"
-import type { Column } from "@doska/core/types"
+import type { Column, DashboardView } from "@doska/core/types"
 
 interface IProps {
   boardId: string
   title: string
-  prefix: string
-  takenPrefixes: string[]
   columns: Column[]
   sort: string[]
+  view: DashboardView
   onRename: (name: string) => void
-  onRenamePrefix: (prefix: string) => void
   onDelete: () => void
   onReorderColumns: (changed: Column[]) => void
   onChangeSort: (sort: string[]) => void
+  onChangeView: (view: DashboardView) => void
+  /** Omitted while the board has no column to put a card in. */
+  onAddCard?: () => void
 }
 
 export function DeckHeader({
   boardId,
   title,
-  prefix,
-  takenPrefixes,
   columns,
   sort,
+  view,
   onRename,
-  onRenamePrefix,
   onDelete,
   onReorderColumns,
   onChangeSort,
+  onChangeView,
+  onAddCard,
 }: IProps) {
   return (
     <PageHeader>
@@ -43,15 +45,25 @@ export function DeckHeader({
       />
 
       <div className="ml-auto flex items-center gap-1">
-        <SearchButton boardId={boardId} prefix={prefix} />
-        <SortMenu sort={sort} onChangeSort={onChangeSort} />
+        {onAddCard && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Add card"
+            className="text-muted-foreground"
+            onClick={onAddCard}
+          >
+            <Plus />
+          </Button>
+        )}
+        <SearchButton boardId={boardId} />
+        <RowViewButton view={view} onChangeView={onChangeView} />
         <ShareButton boardId={boardId} title={title} />
         <BoardActionsMenu
           title={title}
-          prefix={prefix}
-          takenPrefixes={takenPrefixes}
           columns={columns}
-          onRenamePrefix={onRenamePrefix}
+          sort={sort}
+          onChangeSort={onChangeSort}
           onDelete={onDelete}
           onReorderColumns={onReorderColumns}
         />

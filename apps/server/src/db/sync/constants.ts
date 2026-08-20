@@ -15,7 +15,7 @@ const cardNumberCounterId = (boardId: string) => `cardno:${boardId}`
 
 /**
  * Allocates the next human-readable card number for a board (the `12` in
- * `ROAD-12`), starting at 1.
+ * `[[12]]`), starting at 1.
  */
 export async function allocateCardNumber(
   tx: Tx,

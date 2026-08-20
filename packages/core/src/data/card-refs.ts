@@ -1,4 +1,4 @@
-import { cardDisplayId } from "@doska/contract/prefix"
+import { cardDisplayId, refNumber } from "@doska/contract/card-id"
 import type { Card } from "@doska/contract"
 import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
@@ -9,26 +9,25 @@ import { keys } from "./keys"
 export interface CardRefOption {
   id: string
   title: string
+  /** What the row shows beside the title; `#` marks it as the card's number. */
   hint: string
+  /** What picking the row writes into the body — the bare id, no `#`. */
   target: string
 }
 
 const NO_OPTIONS: CardRefOption[] = []
 
 /** A card with no number yet has no display id, so it can't be referenced. */
-async function referenceable(
-  deckId: string,
-  prefix: string
-): Promise<CardRefOption[]> {
+async function referenceable(deckId: string): Promise<CardRefOption[]> {
   const { cards } = await api.getBoard(deckId)
   return cards.flatMap((card) => {
-    const displayId = cardDisplayId(prefix, card.number)
+    const displayId = cardDisplayId(card.number)
     if (!displayId) return []
     return [
       {
         id: card.id,
         title: card.title || "Untitled card",
-        hint: displayId,
+        hint: `#${displayId}`,
         target: displayId,
       },
     ]
@@ -41,12 +40,11 @@ async function referenceable(
  */
 export function useCardRefOptions(
   deckId: string,
-  prefix: string,
   excludeCardId?: string
 ): CardRefOption[] {
   const { data: options } = useQuery({
-    queryKey: keys.cardRefOptions(deckId, prefix),
-    queryFn: () => referenceable(deckId, prefix),
+    queryKey: keys.cardRefOptions(deckId),
+    queryFn: () => referenceable(deckId),
     networkMode: "always",
   })
 
@@ -67,19 +65,8 @@ export interface ResolvedCardRef {
   columnDone: boolean
 }
 
-/** The `12` in `ROAD-12`, or null when the text isn't this board's display id.
- * Ids are matched case-insensitively — people type them by hand. */
-function refNumber(prefix: string, displayId: string): number | null {
-  if (!prefix) return null
-  const typed = displayId.trim().toUpperCase()
-  const head = `${prefix.toUpperCase()}-`
-  if (!typed.startsWith(head)) return null
-  const rest = typed.slice(head.length)
-  return /^\d+$/.test(rest) ? Number(rest) : null
-}
-
 /**
- * Resolves one `[[ROAD-12]]` without reading the board: an index seek on the
+ * Resolves one `[[12]]` without reading the board: an index seek on the
  * card number, then one column read per candidate — which both places the card
  * on this board and supplies the pill.
  *
@@ -88,10 +75,9 @@ function refNumber(prefix: string, displayId: string): number | null {
  */
 async function resolveCardRef(
   deckId: string,
-  prefix: string,
   displayId: string
 ): Promise<ResolvedCardRef | null> {
-  const number = refNumber(prefix, displayId)
+  const number = refNumber(displayId)
   if (number == null) return null
 
   const candidates = (await api.getCardsByNumber(number)).filter(live)
@@ -115,15 +101,14 @@ async function resolveCardRef(
   }
 }
 
-/** The card a `[[ROAD-12]]` points at, or undefined until it resolves. */
+/** The card a `[[12]]` points at, or undefined until it resolves. */
 export function useCardRef(
   deckId: string,
-  prefix: string,
   displayId: string
 ): ResolvedCardRef | undefined {
   const { data } = useQuery({
-    queryKey: keys.cardRef(deckId, prefix, displayId),
-    queryFn: () => resolveCardRef(deckId, prefix, displayId),
+    queryKey: keys.cardRef(deckId, displayId),
+    queryFn: () => resolveCardRef(deckId, displayId),
     networkMode: "always",
   })
   return data ?? undefined

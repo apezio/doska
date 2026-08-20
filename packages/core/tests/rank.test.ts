@@ -52,11 +52,11 @@ describe("rankBy", () => {
   describe("the number field", () => {
     const items: Item[] = [{ id: "12", number: "12" }]
 
-    it("scores a typed prefix the same as the bare digits", () => {
+    it("scores an old prefixed id the same as the bare digits", () => {
       const bare = rank(items, "12")
       expect(rank(items, "road-12")).toEqual(bare)
       expect(rank(items, "ROAD-12")).toEqual(bare)
-      // A prefix carrying digits, which a board derives from a name like "UB5".
+      // A prefix could carry digits of its own, from a name like "UB5".
       expect(rank(items, "UB5-12")).toEqual(bare)
     })
 

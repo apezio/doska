@@ -1,7 +1,7 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test"
 import type { Dashboard } from "@doska/contract"
-import { derivePrefix } from "@doska/contract/prefix"
 import { dashboardSync, newerThan } from "./rpc"
+import { menu } from "./menu"
 
 /* -------------------------------------------------------------------------- */
 /*  Board (dashboard) helpers. Everything tests touch is what a user sees:    */
@@ -37,10 +37,10 @@ export function boardTitle(page: Page, name: string) {
   return deckHeader(page).getByText(name, { exact: true })
 }
 
-/** Opens the deck header's "⋯" menu — the prefix, reorder and delete live there. */
+/** Opens the deck header's "⋯" menu — reorder and delete live there. */
 export async function openBoardMenu(page: Page): Promise<void> {
   await deckHeader(page).getByRole("button", { name: "Board actions" }).click()
-  await expect(page.getByRole("menu")).toBeVisible()
+  await expect(menu(page, "Board actions")).toBeVisible()
 }
 
 /**
@@ -83,22 +83,6 @@ export async function deleteBoard(page: Page): Promise<void> {
     .click()
 }
 
-/**
- * The "Card prefix" entry in the board's "⋯" menu, which shows the prefix
- * currently set. The menu has to be open already.
- */
-export function prefixMenuItem(page: Page, prefix: string) {
-  return page.getByRole("menuitem", { name: `Card prefix ${prefix}` })
-}
-
-/** Opens the card-prefix modal from the board's "⋯" menu and returns its input. */
-export async function openPrefixEditor(page: Page, prefix: string) {
-  await openBoardMenu(page)
-  await prefixMenuItem(page, prefix).click()
-  const input = page.getByRole("textbox", { name: "Board prefix" })
-  await expect(input).toBeVisible()
-  return input
-}
 
 /** Opens the board named `name` from the sidebar's dashboards list. */
 export async function openBoardInSidebar(
@@ -109,14 +93,16 @@ export async function openBoardInSidebar(
   await expect(boardTitle(page, name)).toBeVisible()
 }
 
-/**
- * Toggles the deck header's sort control by label ("Sort by priority" /
- * "Sort by date"). Clicking the active one turns sort back off. The menu stays
- * open on click (closeOnClick={false}), so this dismisses it afterward.
- */
 export async function toggleSort(page: Page, label: string): Promise<void> {
-  await page.getByRole("button", { name: "Sort cards" }).click()
-  await page.getByRole("menuitem", { name: label }).click()
+  await expect(async () => {
+    await openBoardMenu(page)
+    await menu(page, "Board actions")
+      .getByRole("menuitem", { name: "Sort cards" })
+      .hover({ timeout: 2000 })
+    await menu(page, "Sort cards")
+      .getByRole("menuitem", { name: label })
+      .click({ timeout: 2000 })
+  }).toPass({ timeout: 15_000 })
   await page.keyboard.press("Escape")
 }
 
@@ -155,7 +141,6 @@ export async function remoteCreateDashboard(
           id,
           title,
           position: "a5",
-          prefix: derivePrefix(title),
           sort: [],
           updatedAt: Date.now(),
           deletedAt: null,
@@ -192,7 +177,6 @@ export async function remoteRenameDashboard(
         record: {
           ...existing,
           title: toTitle,
-          prefix: derivePrefix(toTitle),
           updatedAt: newerThan(existing),
         },
       },

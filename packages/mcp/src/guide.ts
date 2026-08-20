@@ -8,11 +8,9 @@ export const INSTRUCTIONS = `Doska is a kanban board: boards hold columns, colum
 Ids and references
 - Every tool takes opaque ids (board-xxxx, col-xxxx, card-xxxx). They never
   change, so they are the only safe thing to write against.
-- Cards also show a display id per board, like ROAD-12 — the board's prefix plus
-  a number. It is what people say out loud and what [[ROAD-12]] links use, but it
-  is not an address: the number is only allocated on the card's first sync, and
-  the prefix is editable in board settings. When someone names a ROAD-12, look it
-  up with search_cards and use the id that comes back.
+- A card also carries a number, which exists so one card body can link to
+  another as [[12]]. Nothing else addresses a card by it, so reach for it only
+  when writing a reference — get_board and search_cards report it as cardId.
 
 Columns
 - Column order is left to right; card order is top to bottom.
@@ -38,9 +36,9 @@ Card bodies: GitHub-flavored Markdown, plus these
 - Task lists (- [ ] / - [x]) are first class: the card shows a done/total count
   and the boxes are clickable. Use check_task to tick one instead of rewriting
   the body.
-- [[ROAD-12]] links to another card, Obsidian style, and picks up that card's
+- [[12]] links to another card, Obsidian style, and picks up that card's
   column color. It shows the card's current title, so prefer this form.
-  [[ROAD-12|Fix the sync bug]] pins the wording instead, and nothing updates it
+  [[12|Fix the sync bug]] pins the wording instead, and nothing updates it
   when that card is renamed. Ordinary [label](url) links work as normal.
 - A line containing only -cut- ends the card's preview: the board card shows
   what is above it, the full body opens in the card view. Put the summary above

@@ -1,4 +1,11 @@
 import type { JSHandle, Locator, Page } from "@playwright/test"
+import { cardPanel } from "./card"
+
+export function attachmentRow(page: Page, name: string) {
+  return cardPanel(page)
+    .locator('[data-slot="attachment"]')
+    .filter({ hasText: name })
+}
 
 /* -------------------------------------------------------------------------- */
 /*  File helpers. Uploads go to the real `/api/files` route and land on real    */

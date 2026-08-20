@@ -5,7 +5,7 @@ import { routes } from "@/lib/routes"
 import { useDeck } from "@/providers/deck/deck-context"
 
 /**
- * A `[[ROAD-12]]` reference rendered inside a card body: the card's id, then
+ * A `[[12]]` reference rendered inside a card body: the card's id, then
  * its title, then a pill for the column it sits in, tinted with that
  * column's color.
  */
@@ -17,8 +17,8 @@ export function CardRefLink({
   alias?: string
 }) {
   const [, navigate] = useLocation()
-  const { id: deckId, prefix } = useDeck()
-  const ref = useCardRef(deckId, prefix, displayId)
+  const { id: deckId } = useDeck()
+  const ref = useCardRef(deckId, displayId)
 
   if (!ref)
     return (

@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test"
 import {
   addCard,
+  attachmentRow,
   card,
   cardPanel,
   createBoard,
@@ -45,7 +46,7 @@ test.describe("card attachments", { tag: "@container" }, () => {
 
     await expect(cardPanel(page).getByText("diagram")).toBeVisible()
     await expect(
-      cardPanel(page).getByRole("button", { name: "diagram.png" })
+      attachmentRow(page, "diagram.png")
     ).toBeVisible()
   })
 

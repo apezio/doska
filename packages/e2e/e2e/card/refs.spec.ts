@@ -348,10 +348,9 @@ test.describe("card references", () => {
     await page.getByRole("menuitem", { name: "Delete" }).click()
 
     // The id stays readable, but there's nothing left to click through to.
+    // Scoped to the card: the sidebar's version link carries digits too.
     await expect(card(page, "Source card").getByText(targetId)).toBeVisible()
-    await expect(
-      page.getByRole("link").filter({ hasText: targetId })
-    ).toHaveCount(0)
+    await expect(card(page, "Source card").getByRole("link")).toHaveCount(0)
   })
 
   test("moving the target re-pills the reference with its new column", async ({
@@ -409,8 +408,10 @@ test.describe("card references", () => {
     await addCard(page, "To Do")
     await retitleCard(page, "Untitled card", "Source card")
     // Left untitled on purpose — it still has an id, so it can still be linked.
+    // Search reads title and body only, so the body is what finds it here.
     await addCard(page, "To Do")
-    const targetId = await cardDisplayId(page, "Untitled card")
+    await editCardBody(page, "Untitled card", "needle")
+    const targetId = await cardDisplayId(page, "needle")
 
     await openCard(page, "Source card")
     const notes = page.getByPlaceholder("Notes")

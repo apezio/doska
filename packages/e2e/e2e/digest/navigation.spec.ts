@@ -1,25 +1,12 @@
-import { test, expect, type Page } from "@playwright/test"
+import { test, expect } from "@playwright/test"
 import {
   addCard,
   createBoard,
   digestRow,
   renameBoard,
   retitleCard,
+  setDeadline,
 } from "../helpers"
-
-/** The native date input only renders below the 768px breakpoint. */
-function deadlineInput(page: Page, title: string) {
-  return page
-    .locator("[data-rfd-draggable-id]", { hasText: title })
-    .locator('input[type="date"]')
-}
-
-/** Local `YYYY-MM-DD` for today. */
-function todayIso(): string {
-  const d = new Date()
-  const month = String(d.getMonth() + 1).padStart(2, "0")
-  return `${d.getFullYear()}-${month}-${String(d.getDate()).padStart(2, "0")}`
-}
 
 test.describe("digest navigation", () => {
   test("the sidebar's Upcoming entry opens the digest", async ({ page }) => {
@@ -38,9 +25,7 @@ test.describe("digest navigation", () => {
     await addCard(page, "To Do")
     await retitleCard(page, "Untitled card", "Due soon")
 
-    // The native date input only renders below the 768px breakpoint.
-    await page.setViewportSize({ width: 500, height: 900 })
-    await deadlineInput(page, "Due soon").fill(todayIso())
+    await setDeadline(page, "Due soon", "Today")
 
     await page.goto("/digest")
     // Scoped to the row: the sidebar carries the board name too.

@@ -8,6 +8,7 @@ import {
   digestRow,
   openCard,
   retitleCard,
+  setDeadline,
 } from "../helpers"
 
 /**
@@ -53,13 +54,7 @@ test.describe("moving a card from its panel", () => {
     await addCard(page, "To Do")
     await retitleCard(page, "Untitled card", "Due and misfiled")
 
-    await page.setViewportSize({ width: 500, height: 900 })
-    const today = new Date()
-    const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
-    await page
-      .locator("[data-rfd-draggable-id]", { hasText: "Due and misfiled" })
-      .locator('input[type="date"]')
-      .fill(iso)
+    await setDeadline(page, "Due and misfiled", "Today")
 
     await page.goto("/digest")
     await digestRow(page, "Due and misfiled").click()

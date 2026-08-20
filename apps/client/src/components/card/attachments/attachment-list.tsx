@@ -32,6 +32,7 @@ export function AttachmentList({
         {attachments.map((att) => (
           <div
             key={att.id}
+            data-slot="attachment"
             className="group/item flex items-center rounded-md py-0.5"
           >
             <div

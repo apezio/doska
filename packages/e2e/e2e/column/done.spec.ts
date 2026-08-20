@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test"
+import { test, expect } from "@playwright/test"
 import {
   addCard,
   columnDoneBadge,
@@ -6,21 +6,8 @@ import {
   digestRow,
   retitleCard,
   setColumnDone,
+  setDeadline,
 } from "../helpers"
-
-/** The native date input only renders below the 768px breakpoint. */
-function deadlineInput(page: Page, title: string) {
-  return page
-    .locator("[data-rfd-draggable-id]", { hasText: title })
-    .locator('input[type="date"]')
-}
-
-/** Local `YYYY-MM-DD` for today — the reference the digest ranges against. */
-function todayIso(): string {
-  const d = new Date()
-  const month = String(d.getMonth() + 1).padStart(2, "0")
-  return `${d.getFullYear()}-${month}-${String(d.getDate()).padStart(2, "0")}`
-}
 
 test.describe("marking a column done", () => {
   test("badges the column and persists across reload", async ({ page }) => {
@@ -62,9 +49,7 @@ test.describe("marking a column done", () => {
     await addCard(page, "In Progress")
     await retitleCard(page, "Untitled card", "Wrapped up")
 
-    // The native date input only renders below the 768px breakpoint.
-    await page.setViewportSize({ width: 500, height: 900 })
-    await deadlineInput(page, "Wrapped up").fill(todayIso())
+    await setDeadline(page, "Wrapped up", "Today")
 
     // Undone column first: the digest row carries no strikethrough.
     await page.goto("/digest")
@@ -88,8 +73,7 @@ test.describe("marking a column done", () => {
     await addCard(page, "In Progress")
     await retitleCard(page, "Untitled card", "Needs a done column")
 
-    await page.setViewportSize({ width: 500, height: 900 })
-    await deadlineInput(page, "Needs a done column").fill(todayIso())
+    await setDeadline(page, "Needs a done column", "Today")
 
     // No done column yet, so the row's tick box explains itself instead. The
     // seeded Welcome board has none either, hence the scoping to this row.

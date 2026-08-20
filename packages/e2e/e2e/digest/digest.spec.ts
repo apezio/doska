@@ -1,26 +1,13 @@
-import { test, expect, type Page } from "@playwright/test"
-import { addCard, card, createBoard, digestRow } from "../helpers"
-
-// DateInput only renders the native input below the 768px breakpoint.
-function deadlineInput(page: Page) {
-  return card(page, "Untitled card").locator('input[type="date"]')
-}
-
-/** Local `YYYY-MM-DD`, `days` from today — the same reference the digest uses. */
-function isoIn(days: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() + days)
-  const month = String(d.getMonth() + 1).padStart(2, "0")
-  return `${d.getFullYear()}-${month}-${String(d.getDate()).padStart(2, "0")}`
-}
+import { test, expect } from "@playwright/test"
+import { addCard, createBoard, digestRow, setDeadline } from "../helpers"
 
 test.describe("digest", () => {
   test.use({ viewport: { width: 500, height: 800 } })
 
-  test("a card due in three days shows under Upcoming", async ({ page }) => {
+  test("a card due in a week shows under Upcoming", async ({ page }) => {
     await createBoard(page)
     await addCard(page, "To Do")
-    await deadlineInput(page).fill(isoIn(3))
+    await setDeadline(page, "Untitled card", "In a week")
 
     await page.goto("/digest")
     await expect(digestRow(page, "Untitled card")).toBeVisible()
@@ -29,7 +16,7 @@ test.describe("digest", () => {
   test("a card due today shows in the digest", async ({ page }) => {
     await createBoard(page)
     await addCard(page, "To Do")
-    await deadlineInput(page).fill(isoIn(0))
+    await setDeadline(page, "Untitled card", "Today")
 
     await page.goto("/digest")
     await expect(digestRow(page, "Untitled card")).toBeVisible()
@@ -38,24 +25,17 @@ test.describe("digest", () => {
   test("a card past its deadline lands in the overdue group", async ({
     page,
   }) => {
-    await createBoard(page)
-    await addCard(page, "To Do")
-    await deadlineInput(page).fill(isoIn(-30))
-
     await page.goto("/digest")
-    const overdue = page.getByRole("heading", { name: "Overdue" })
-    await expect(overdue).toBeVisible()
-    await expect(digestRow(page, "Untitled card")).toBeVisible()
+
+    await expect(page.getByRole("heading", { name: "Overdue" })).toBeVisible()
+    await expect(digestRow(page, "Deadlines")).toBeVisible()
   })
 
-  test("a card past the upcoming range is not shown", async ({ page }) => {
+  test("a card with no deadline is not shown", async ({ page }) => {
     await createBoard(page)
     await addCard(page, "To Do")
-    await deadlineInput(page).fill(isoIn(90))
 
     await page.goto("/digest")
-    // Not asserted as empty: the seeded demo board carries an overdue card of
-    // its own, which the range is right to show.
     await expect(digestRow(page, "Untitled card")).toHaveCount(0)
   })
 
@@ -64,7 +44,7 @@ test.describe("digest", () => {
   }) => {
     await createBoard(page)
     await addCard(page, "To Do")
-    await deadlineInput(page).fill(isoIn(2))
+    await setDeadline(page, "Untitled card", "Tomorrow")
     await page.reload()
 
     await page.goto("/digest")

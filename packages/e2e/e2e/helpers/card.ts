@@ -2,6 +2,7 @@ import { expect, type APIRequestContext, type Page } from "@playwright/test"
 import type { Change } from "@doska/contract"
 import { newerThan, sync, waitForChange } from "./rpc"
 import { column } from "./column"
+import { menu } from "./menu"
 
 /* -------------------------------------------------------------------------- */
 /*  Card helpers. Cards are addressed by their visible title; bodies are the   */
@@ -160,19 +161,41 @@ export function cardPriorityLabel(page: Page, title: string) {
   return card(page, title).locator('[aria-label^="Priority:"]')
 }
 
-/**
- * Sets the card titled `title`'s priority from its board card meta row.
- * `label` is one of "High", "Medium", "Low", or "No priority" to clear it.
- */
+export async function openCardMenu(page: Page, title: string): Promise<void> {
+  await cardTitled(page, title)
+    .getByRole("button", { name: "Card actions" })
+    .click()
+  await expect(menu(page, "Card actions")).toBeVisible()
+}
+
 export async function setCardPriority(
   page: Page,
   title: string,
   label: string
 ): Promise<void> {
-  await cardPriorityButton(page, title).click()
-  // Not exact: the option's accessible name also carries the chip's own
-  // "Priority: <label>" aria-label ahead of the visible text.
-  await page.getByRole("menuitem", { name: label }).click()
+  await openCardMenu(page, title)
+  await menu(page, "Card actions")
+    .getByRole("menuitem", { name: "Priority", exact: true })
+    .click()
+  await menu(page, "Priority").getByRole("menuitem", { name: label }).click()
+  await expect(menu(page, "Card actions")).toBeHidden()
+}
+
+export type DeadlinePreset = "No deadline" | "Today" | "Tomorrow" | "In a week"
+
+export async function setDeadline(
+  page: Page,
+  title: string,
+  preset: DeadlinePreset
+): Promise<void> {
+  await openCardMenu(page, title)
+  await menu(page, "Card actions")
+    .getByRole("menuitem", { name: "Deadline", exact: true })
+    .click()
+  await menu(page, "Deadline")
+    .getByRole("menuitem", { name: preset, exact: true })
+    .click()
+  await expect(menu(page, "Card actions")).toBeHidden()
 }
 
 /** What @hello-pangea/dnd announces to screen readers as a drag progresses. */

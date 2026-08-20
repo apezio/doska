@@ -20,6 +20,7 @@ export function AddAttachmentButton() {
     <Button
       variant="ghost"
       size="icon-sm"
+      aria-label="Attach"
       disabled={!enabled || busy}
       onClick={() => inputRef.current?.click()}
     >

@@ -54,7 +54,12 @@ export function CardPanelHeader({
       <div className="flex items-center justify-end gap-2">
         {actions}
         {onTogglePreivew && (
-          <Button variant="ghost" size="icon-sm" onClick={onTogglePreivew}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={isPreview ? "Edit" : "Preview"}
+            onClick={onTogglePreivew}
+          >
             {isPreview ? <PencilLine /> : <Eye />}
           </Button>
         )}

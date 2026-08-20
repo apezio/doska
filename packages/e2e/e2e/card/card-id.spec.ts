@@ -1,10 +1,12 @@
-import { test, expect, type Page } from "@playwright/test"
-import { addCard, cardDisplayId, createBoard, signIn } from "../helpers"
-
-/** The card's "⋯" menu, which is where "Copy id" lives. */
-function openCardMenu(page: Page) {
-  return page.getByRole("button", { name: "Card actions" }).first().click()
-}
+import { test, expect } from "@playwright/test"
+import {
+  addCard,
+  cardDisplayId,
+  createBoard,
+  openCardMenu,
+  retitleCard,
+  signIn,
+} from "../helpers"
 
 // The id is only stamped by the server on sync, so these need a signed-in board.
 test.describe("card id", () => {
@@ -21,11 +23,12 @@ test.describe("card id", () => {
       await signIn(page)
       await createBoard(page)
       await addCard(page, "To Do")
+      await retitleCard(page, "Untitled card", "Numbered")
 
-      const id = await cardDisplayId(page, "Untitled card")
+      const id = await cardDisplayId(page, "Numbered")
       expect(id).toMatch(/^\d+$/)
 
-      await openCardMenu(page)
+      await openCardMenu(page, "Numbered")
       await page.getByRole("menuitem", { name: "Copy id" }).click()
 
       // navigator.clipboard is on the real page, not Node's ambient Navigator type.
@@ -44,7 +47,7 @@ test.describe("card id", () => {
     await createBoard(page)
     await addCard(page, "To Do")
 
-    await openCardMenu(page)
+    await openCardMenu(page, "Untitled card")
     await expect(page.getByRole("menuitem", { name: "Copy id" })).toHaveCount(0)
   })
 })

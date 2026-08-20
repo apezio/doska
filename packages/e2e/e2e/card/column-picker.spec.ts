@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test"
 import {
   addCard,
+  cardPanel,
   closeCard,
   columnCardTitles,
   createBoard,
@@ -8,9 +9,15 @@ import {
   retitleCard,
 } from "../helpers"
 
-/** The panel's column control, named after the column the card is in. */
-function columnPicker(page: Page, columnName: string) {
-  return page.getByRole("button", { name: `Column: ${columnName}. Move card` })
+/**
+ * Moves the open card from the panel's "⋯" menu, which is the only column
+ * control the panel has. Scoped to the panel: the board card behind it has a
+ * menu of the same name.
+ */
+async function moveOpenCard(page: Page, columnName: string) {
+  await cardPanel(page).getByRole("button", { name: "Card actions" }).click()
+  await page.getByRole("menuitem", { name: "Move to" }).click()
+  await page.getByRole("menuitem", { name: columnName }).click()
 }
 
 test.describe("moving a card from its panel", () => {
@@ -20,11 +27,16 @@ test.describe("moving a card from its panel", () => {
     await retitleCard(page, "Untitled card", "Restage me")
 
     await openCard(page, "Restage me")
-    await columnPicker(page, "To Do").click()
-    await page.getByRole("menuitem", { name: "In Progress" }).click()
+    await moveOpenCard(page, "In Progress")
 
-    // The control renames itself to the column the card now sits in.
-    await expect(columnPicker(page, "In Progress")).toBeVisible()
+    // The menu re-reads the card, so the column it now sits in is unpickable.
+    await cardPanel(page).getByRole("button", { name: "Card actions" }).click()
+    await page.getByRole("menuitem", { name: "Move to" }).click()
+    await expect(
+      page.getByRole("menuitem", { name: "In Progress" })
+    ).toBeDisabled()
+    await page.keyboard.press("Escape")
+    await page.keyboard.press("Escape")
 
     await closeCard(page)
     await expect(await columnCardTitles(page, "In Progress")).toEqual([
@@ -51,9 +63,7 @@ test.describe("moving a card from its panel", () => {
     await page.goto("/digest")
     await page.getByRole("button", { name: /Due and misfiled/ }).click()
 
-    await columnPicker(page, "To Do").click()
-    await page.getByRole("menuitem", { name: "Done" }).click()
-    await expect(columnPicker(page, "Done")).toBeVisible()
+    await moveOpenCard(page, "Done")
 
     // The digest row re-tags itself, so the move landed on the card itself.
     await expect(

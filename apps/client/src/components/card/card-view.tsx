@@ -121,7 +121,7 @@ export function CardView({
               )}
             </CardHeader>
             {hasMeta && (
-              <CardContent className={cn(!showBody && hasBody && "-mb-2")}>
+              <CardContent>
                 <CardMeta
                   card={card}
                   column={column}
@@ -135,8 +135,9 @@ export function CardView({
             {hasBody && (
               <div
                 className={cn(
-                  "grid transition-[grid-template-rows] duration-200 ease-out",
-                  showBody ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                  "grid transition-[grid-template-rows,margin] duration-200 ease-out",
+                  // Collapsed, the row is 0px but still a flex child: cancel the card's gap.
+                  showBody ? "grid-rows-[1fr]" : "-mt-2 grid-rows-[0fr]"
                 )}
               >
                 <div className="overflow-hidden">

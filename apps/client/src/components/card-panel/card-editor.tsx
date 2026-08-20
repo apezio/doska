@@ -6,7 +6,6 @@ import { CardPanelHeader } from "./card-panel-header"
 import { CardPanelMenu } from "./card-panel-menu"
 import { CardBodyEditor } from "./card-body-editor"
 import { CardMetaLive } from "../card/card-meta-live"
-import { CardColumnPicker } from "./card-column-picker"
 import { CardAttachments } from "../card/attachments/card-attachments"
 import { AddAttachmentButton } from "../card/attachments/add-attachment-button"
 import { AttachmentDropZone } from "../card/attachments/attachment-drop-zone"
@@ -79,12 +78,7 @@ export function CardEditor({
                       onDelete={onDelete}
                     />
                   }
-                  meta={
-                    <>
-                      <CardMetaLive cardId={cardId} body={body} />
-                      <CardColumnPicker cardId={cardId} />
-                    </>
-                  }
+                  meta={<CardMetaLive cardId={cardId} body={body} />}
                 />
               }
               attachments={
@@ -111,8 +105,8 @@ export function CardEditor({
                   placeholder="Title"
                   isPreview={isPreview}
                   className={cn(
-                    "py-1.5 text-xl! font-semibold",
-                    !isPreview && "font-mono"
+                    "py-1.5 text-xl font-semibold",
+                    isPreview ? "text-2xl font-bold" : "font-mono"
                   )}
                 />
               }

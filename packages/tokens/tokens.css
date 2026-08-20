@@ -30,11 +30,11 @@
   --sidebar-border: #eeeff2;
 
   --elevation-1:
-    0 1px 2px -1px rgb(52 60 84 / 0.08), 0 6px 14px -4px rgb(52 60 84 / 0.09);
+    0 1px 2px -1px rgb(52 60 84 / 0.08), 0 3px 8px -3px rgb(52 60 84 / 0.09);
   --elevation-2:
-    0 8px 20px -4px rgb(52 60 84 / 0.12), 0 2px 6px -2px rgb(52 60 84 / 0.07);
+    0 4px 10px -3px rgb(52 60 84 / 0.12), 0 1px 4px -2px rgb(52 60 84 / 0.07);
   --elevation-3:
-    0 20px 44px -10px rgb(52 60 84 / 0.18), 0 6px 14px -6px rgb(52 60 84 / 0.11);
+    0 10px 24px -8px rgb(52 60 84 / 0.18), 0 3px 8px -5px rgb(52 60 84 / 0.11);
   --elevation-inset: inset 0 1px 3px rgb(52 60 84 / 0.12);
 }
 
@@ -68,10 +68,10 @@
   --sidebar-border: #ffffff1f;
 
   --elevation-1:
-    0 1px 2px -1px rgb(13 16 26 / 0.34), 0 6px 14px -4px rgb(13 16 26 / 0.32);
+    0 1px 2px -1px rgb(13 16 26 / 0.34), 0 3px 8px -3px rgb(13 16 26 / 0.32);
   --elevation-2:
-    0 8px 20px -4px rgb(13 16 26 / 0.42), 0 2px 6px -2px rgb(13 16 26 / 0.3);
+    0 4px 10px -3px rgb(13 16 26 / 0.42), 0 1px 4px -2px rgb(13 16 26 / 0.3);
   --elevation-3:
-    0 20px 44px -10px rgb(13 16 26 / 0.52), 0 6px 14px -6px rgb(13 16 26 / 0.34);
+    0 10px 24px -8px rgb(13 16 26 / 0.52), 0 3px 8px -5px rgb(13 16 26 / 0.34);
   --elevation-inset: inset 0 1px 3px rgb(13 16 26 / 0.45);
 }

@@ -53,14 +53,19 @@ export function PublicCardPanel({ token, snapshot, closeHref }: IProps) {
         >
           <div className="flex min-h-0 flex-1 flex-col">
             <CardPaneLayout
-              header={<CardPanelHeader isPreview onClose={close} />}
-              meta={
-                <>
-                  <CardMeta showEmpty card={card} column={column} />
-                  {column && (
-                    <ColumnTag title={column.title} color={column.color} />
-                  )}
-                </>
+              header={
+                <CardPanelHeader
+                  isPreview
+                  onClose={close}
+                  meta={
+                    <>
+                      <CardMeta card={card} column={column} />
+                      {column && (
+                        <ColumnTag title={column.title} color={column.color} />
+                      )}
+                    </>
+                  }
+                />
               }
               attachments={
                 <PublicAttachments

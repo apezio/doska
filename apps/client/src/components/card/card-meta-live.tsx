@@ -10,7 +10,10 @@ interface IProps {
   className?: string
 }
 
-/** `CardMeta` for a card the viewer can edit: reads it live, writes edits back. */
+/**
+ * `CardMeta` for a card the viewer can edit: reads it live, writes edits back.
+ * An unset deadline or priority shows nothing — it is set from the card menu.
+ */
 export function CardMetaLive({ cardId, body, className }: IProps) {
   const { data: card = fallbackCard } = useCard(cardId)
   const { data: column } = useCardCol(cardId)
@@ -18,7 +21,6 @@ export function CardMetaLive({ cardId, body, className }: IProps) {
 
   return (
     <CardMeta
-      showEmpty
       card={card}
       column={column}
       body={body}

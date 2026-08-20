@@ -98,14 +98,14 @@ test.describe("a published board", () => {
       visitor.getByRole("button", { name: /^Add card to / })
     ).toHaveCount(0)
 
-    // A card still opens — read-only, so the panel has no Edit and no Delete.
+    // A card still opens — read-only, so the panel has no editing controls.
     await publicCard(visitor, published.cardTitle).click()
     await expect(
       visitor.getByRole("button", { name: "Close card" })
     ).toBeVisible()
     await expect(visitor.getByRole("button", { name: "Edit" })).toHaveCount(0)
     await expect(
-      visitor.getByRole("button", { name: "Delete card" })
+      visitor.getByRole("button", { name: "Card actions" })
     ).toHaveCount(0)
 
     await visitor.context().close()

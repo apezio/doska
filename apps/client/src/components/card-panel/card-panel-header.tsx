@@ -1,5 +1,5 @@
 import { Button, cn, useIsMobile } from "@doska/ui-kit"
-import { Eye, LocateFixed, PencilLine, Trash2, X } from "lucide-react"
+import { Eye, PencilLine, X } from "lucide-react"
 import type { ReactNode } from "react"
 import { hasOverlayTitleBar } from "@/lib/platform"
 import { useIsFullscreen } from "@/lib/hooks"
@@ -9,18 +9,20 @@ interface IProps {
   /** Omit where the card cannot be edited — the toggle has nothing to toggle to. */
   onTogglePreivew?: () => void
   isPreview: boolean
-  onDelete?: () => void
-  onReveal?: () => void
   actions?: ReactNode
+  /** The card's "⋯" menu, pinned to the far right of the row. */
+  menu?: ReactNode
+  /** Task progress, deadline, priority — and the column beside them. */
+  meta?: ReactNode
 }
 
 export function CardPanelHeader({
   onClose,
   isPreview,
   onTogglePreivew,
-  onDelete,
-  onReveal,
   actions,
+  menu,
+  meta,
 }: IProps) {
   const isMobile = useIsMobile()
   const isFullscreen = useIsFullscreen()
@@ -33,36 +35,7 @@ export function CardPanelHeader({
         windowControlsInset && "pl-24"
       )}
     >
-      <div className="flex justify-start gap-1">
-        {onReveal && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Reveal on board"
-            onClick={onReveal}
-          >
-            <LocateFixed />
-          </Button>
-        )}
-        {onDelete && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Delete card"
-            className="text-muted-foreground hover:text-destructive"
-            onClick={onDelete}
-          >
-            <Trash2 />
-          </Button>
-        )}
-      </div>
-      <div className="flex items-center justify-end gap-2">
-        {actions}
-        {onTogglePreivew && (
-          <Button variant="ghost" size="icon-sm" onClick={onTogglePreivew}>
-            {isPreview ? <PencilLine /> : <Eye />}
-          </Button>
-        )}
+      <div className="flex min-w-0 items-center gap-2">
         <Button
           variant="ghost"
           size="icon-sm"
@@ -71,6 +44,20 @@ export function CardPanelHeader({
         >
           <X />
         </Button>
+        {/* The chips shrink themselves on wider screens; here they have to
+            match the header buttons instead. */}
+        <div className="flex min-w-0 items-center gap-4 [&_svg]:size-4!">
+          {meta}
+        </div>
+      </div>
+      <div className="flex items-center justify-end gap-2">
+        {actions}
+        {onTogglePreivew && (
+          <Button variant="ghost" size="icon-sm" onClick={onTogglePreivew}>
+            {isPreview ? <PencilLine /> : <Eye />}
+          </Button>
+        )}
+        {menu}
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import { useState } from "react"
 import { MarkdownTextarea } from "../markdown"
 import { CardPaneLayout } from "./card-pane-layout"
 import { CardPanelHeader } from "./card-panel-header"
+import { CardPanelMenu } from "./card-panel-menu"
 import { CardBodyEditor } from "./card-body-editor"
 import { CardMetaLive } from "../card/card-meta-live"
 import { CardColumnPicker } from "./card-column-picker"
@@ -68,16 +69,23 @@ export function CardEditor({
                   isPreview={isPreview}
                   onClose={onClose}
                   onTogglePreivew={onTogglePreview}
-                  onDelete={onDelete}
-                  onReveal={onReveal}
                   actions={<AddAttachmentButton />}
+                  menu={
+                    <CardPanelMenu
+                      cardId={cardId}
+                      isPreview={isPreview}
+                      onEdit={onEdit}
+                      onReveal={onReveal}
+                      onDelete={onDelete}
+                    />
+                  }
+                  meta={
+                    <>
+                      <CardMetaLive cardId={cardId} body={body} />
+                      <CardColumnPicker cardId={cardId} />
+                    </>
+                  }
                 />
-              }
-              meta={
-                <>
-                  <CardMetaLive cardId={cardId} body={body} />
-                  <CardColumnPicker cardId={cardId} />
-                </>
               }
               attachments={
                 <CardAttachments

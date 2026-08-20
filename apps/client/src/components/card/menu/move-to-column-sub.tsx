@@ -1,15 +1,14 @@
 import { MenuContent, MenuItem, MenuSub, MenuSubTrigger } from "@doska/ui-kit"
 import { generateKeyBetween } from "fractional-indexing"
 import { ArrowRightLeft } from "lucide-react"
-import { useParams } from "wouter"
 import { useMoveCard } from "@doska/core/mutations"
 import { useBoard } from "@doska/core/queries"
 import { byPosition } from "@doska/core/utils"
-import { routes } from "@/lib/routes"
+import { useDeck } from "@/providers/deck/deck-context"
 
 /** Moves the card to the end of another column. */
 export function MoveToColumnSub({ cardId }: { cardId: string }) {
-  const { id: deckId } = useParams<typeof routes.deck.pattern>()
+  const { id: deckId } = useDeck()
   const { data: board } = useBoard(deckId)
   const { mutate: moveCard } = useMoveCard(deckId)
 

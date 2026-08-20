@@ -2,19 +2,22 @@ import { InvisibleInput } from "@doska/ui-kit"
 import { PageHeader } from "../../app/page-header"
 import { BoardActionsMenu } from "./board-actions-menu"
 import { SearchButton } from "./search-button"
+import { RowViewButton } from "./row-view-button"
 import { ShareButton } from "./share-button"
 import { SortMenu } from "./sort-menu"
-import type { Column } from "@doska/core/types"
+import type { Column, DashboardView } from "@doska/core/types"
 
 interface IProps {
   boardId: string
   title: string
   columns: Column[]
   sort: string[]
+  view: DashboardView
   onRename: (name: string) => void
   onDelete: () => void
   onReorderColumns: (changed: Column[]) => void
   onChangeSort: (sort: string[]) => void
+  onChangeView: (view: DashboardView) => void
 }
 
 export function DeckHeader({
@@ -22,10 +25,12 @@ export function DeckHeader({
   title,
   columns,
   sort,
+  view,
   onRename,
   onDelete,
   onReorderColumns,
   onChangeSort,
+  onChangeView,
 }: IProps) {
   return (
     <PageHeader>
@@ -38,6 +43,7 @@ export function DeckHeader({
 
       <div className="ml-auto flex items-center gap-1">
         <SearchButton boardId={boardId} />
+        <RowViewButton view={view} onChangeView={onChangeView} />
         <SortMenu sort={sort} onChangeSort={onChangeSort} />
         <ShareButton boardId={boardId} title={title} />
         <BoardActionsMenu

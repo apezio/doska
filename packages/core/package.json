@@ -18,6 +18,7 @@
     "./keys": "./src/data/keys.ts",
     "./landing-slot": "./src/data/landing-slot.ts",
     "./last-board": "./src/data/last-board.ts",
+    "./board-view": "./src/data/board-view.ts",
     "./mutations": "./src/data/mutations/index.ts",
     "./operations": "./src/api/operations/index.ts",
     "./public": "./src/api/public.ts",

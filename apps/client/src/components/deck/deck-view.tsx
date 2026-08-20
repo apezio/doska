@@ -15,6 +15,7 @@ import {
   type CardPatch,
 } from "@doska/core/mutations"
 import { useBoard } from "@doska/core/queries"
+import { setBoardView, useBoardView } from "@doska/core/board-view"
 import { useCallback } from "react"
 import { useDragEnd, useSyncShortcut } from "@/lib/hooks"
 import type { Dashboard } from "@doska/core/types"
@@ -39,6 +40,8 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
   const { mutate: setDashboardSort } = useSetDashboardSort()
 
   const { data: board, isPending } = useBoard(id)
+
+  const view = useBoardView(id)
 
   const { mutate: createCard } = useCreateCard(id)
   const { mutate: moveCard } = useMoveCard(id)
@@ -79,6 +82,8 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
       onRenameDashboard={(name) => renameDashboard({ id, name })}
       onDeleteDashboard={() => deleteDashboard(id)}
       onChangeSort={(sort) => setDashboardSort({ id, sort })}
+      view={view}
+      onChangeView={(next) => setBoardView(id, next)}
       onDragEnd={handleDragEnd}
       onPatchCard={patchCard}
     />

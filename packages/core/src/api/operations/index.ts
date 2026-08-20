@@ -1,6 +1,12 @@
 export { getDashboards } from "./get-dashboards"
 export { getBoard } from "./get-board"
-export { getDigest, groupByDeadline, upcomingBounds } from "./get-digest"
+export {
+  boardDigest,
+  getDigest,
+  groupBoardCards,
+  groupByDeadline,
+  upcomingBounds,
+} from "./get-digest"
 export { getCardDeckId } from "./get-card-deck-id"
 export { getCardCol } from "./get-card-col"
 export type { DigestCard, DigestFilter, DigestGroup } from "./get-digest"

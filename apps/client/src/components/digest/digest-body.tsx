@@ -56,8 +56,8 @@ export function DigestBody({
     <>
       {groups.map((g) => (
         <DigestGroup
-          key={g.date}
-          {...g}
+          key={`${g.kind}-${g.date}`}
+          group={g}
           openCardId={openCardId}
           onOpenCard={onOpenCard}
         />

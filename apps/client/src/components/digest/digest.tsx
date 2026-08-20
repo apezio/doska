@@ -1,8 +1,7 @@
-import { useState } from "react"
-import {
-  groupByDeadline,
-  type DigestCard,
-  type DigestFilter,
+import type {
+  DigestCard,
+  DigestFilter,
+  DigestGroup,
 } from "@doska/core/operations"
 import { DigestBody } from "./digest-body"
 import { DigestHeader } from "./digest-header"
@@ -10,10 +9,12 @@ import { DigestHeader } from "./digest-header"
 interface IProps {
   filter: DigestFilter
   onChangeFilter: (filter: DigestFilter) => void
-  entries: DigestCard[]
+  groups: DigestGroup[]
   isLoading: boolean
   /** A failed read renders as a failure, not as an empty week. */
   error: Error | null
+  hideDone: boolean
+  onToggleHideDone: () => void
   /** The card open in the panel, highlighted in the list. */
   openCardId: string | null
   onOpenCard: (entry: DigestCard) => void
@@ -23,23 +24,21 @@ interface IProps {
 export function Digest({
   filter,
   onChangeFilter,
-  entries,
+  groups,
   isLoading,
   error,
+  hideDone,
+  onToggleHideDone,
   openCardId,
   onOpenCard,
 }: IProps) {
-  const [hideDone, setHideDone] = useState(false)
-  const visible = hideDone ? entries.filter((e) => !e.isDone) : entries
-  const groups = groupByDeadline(visible)
-
   return (
     <div className="flex h-full min-h-0 flex-col">
       <DigestHeader
         filter={filter}
         onChangeFilter={onChangeFilter}
         hideDone={hideDone}
-        onToggleHideDone={() => setHideDone((v) => !v)}
+        onToggleHideDone={onToggleHideDone}
       />
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-10 sm:px-4">

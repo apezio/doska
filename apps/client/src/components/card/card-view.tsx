@@ -8,7 +8,13 @@ import {
   cn,
 } from "@doska/ui-kit"
 import type { DetailedHTMLProps, HTMLAttributes, ReactNode } from "react"
-import { cut, soleImage, useMarkers, type SoleImage } from "@doska/markdown"
+import {
+  cut,
+  soleImage,
+  taskProgress,
+  useMarkers,
+  type SoleImage,
+} from "@doska/markdown"
 import type { Card, Column } from "@doska/core/types"
 import { MarkdownCardPreview } from "../markdown"
 import { CardMeta } from "./card-meta"
@@ -26,7 +32,6 @@ interface IProps extends DetailedHTMLProps<
 > {
   card: Card
   column?: Column | null
-  prefix: string
   showBody: boolean
   isDragging?: boolean
   /** Flashes a ring, to point out the card a search result led to. */
@@ -56,7 +61,6 @@ interface IProps extends DetailedHTMLProps<
 export function CardView({
   card,
   column,
-  prefix,
   showBody,
   isDragging,
   isRevealed,
@@ -84,6 +88,9 @@ export function CardView({
       <MdImage src={image.source.url} alt={image.alt} className={FULL_BLEED} />
     )
 
+  const tasks = taskProgress(body)
+  const hasMeta = tasks.total > 0 || !!card.deadline || !!card.priority
+
   return (
     <div
       {...props}
@@ -102,8 +109,7 @@ export function CardView({
         ) : (
           <CardBase
             className={cn(
-              isDragging &&
-                "bg-card/70 shadow-e3 backdrop-blur-md"
+              isDragging && "bg-card/70 shadow-e3 backdrop-blur-md"
             )}
           >
             <CardHeader>
@@ -114,17 +120,18 @@ export function CardView({
                 </CardAction>
               )}
             </CardHeader>
-            <CardContent className={cn(!showBody && hasBody && "-mb-2")}>
-              <CardMeta
-                card={card}
-                column={column}
-                prefix={prefix}
-                onChangeDeadline={onChangeDeadline}
-                onChangePriority={onChangePriority}
-                className="mt-2"
-              />
-            </CardContent>
-
+            {hasMeta && (
+              <CardContent className={cn(!showBody && hasBody && "-mb-2")}>
+                <CardMeta
+                  card={card}
+                  column={column}
+                  tasks={tasks}
+                  onChangeDeadline={onChangeDeadline}
+                  onChangePriority={onChangePriority}
+                  className="mt-2"
+                />
+              </CardContent>
+            )}
             {hasBody && (
               <div
                 className={cn(

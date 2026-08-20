@@ -20,6 +20,7 @@ export function CardMetaLive({ cardId, body, className }: IProps) {
 
   return (
     <CardMeta
+      showEmpty
       card={card}
       column={column}
       prefix={prefix}

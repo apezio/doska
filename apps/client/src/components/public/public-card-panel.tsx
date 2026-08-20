@@ -58,7 +58,12 @@ export function PublicCardPanel({ token, snapshot, closeHref }: IProps) {
               header={<CardPanelHeader isPreview onClose={close} />}
               meta={
                 <>
-                  <CardMeta card={card} column={column} prefix={prefix} />
+                  <CardMeta
+                    showEmpty
+                    card={card}
+                    column={column}
+                    prefix={prefix}
+                  />
                   {column && (
                     <ColumnTag title={column.title} color={column.color} />
                   )}

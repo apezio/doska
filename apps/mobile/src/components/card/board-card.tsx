@@ -1,4 +1,3 @@
-import { cardDisplayId } from "@doska/contract/prefix"
 import type { Card } from "@doska/core/types"
 import { IconButton } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
@@ -29,8 +28,6 @@ export function BoardCard({ card, deckId, prefix, showBody, done }: IProps) {
         <Text className="flex-1 text-base font-sans-semibold leading-snug text-card-foreground">
           {card.title || "Untitled card"}
         </Text>
-        {/* Nested in the card's own Pressable, which it shadows: a tap here
-            opens the actions rather than the card. */}
         <IconButton
           icon={MoreHorizontal}
           label={`${card.title || "Untitled card"} actions`}
@@ -43,7 +40,6 @@ export function BoardCard({ card, deckId, prefix, showBody, done }: IProps) {
       <View className="border-t border-muted px-3 pt-2">
         <CardMeta
           cardId={card.id}
-          displayId={cardDisplayId(prefix, card.number) ?? ""}
           body={card.body}
           deadline={card.deadline}
           done={done}

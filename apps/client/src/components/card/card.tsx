@@ -3,7 +3,6 @@ import { useLocation } from "wouter"
 import type { CardPatch } from "@doska/core/mutations"
 import type { Card as CardData, Column } from "@doska/core/types"
 import { routes } from "@/lib/routes"
-import { useDeckPrefix } from "@/providers/deck/deck-context"
 import { useIsRevealed } from "@/providers/card-reveal/card-reveal-context"
 import { CardAttachments } from "./attachments/card-attachments"
 import { CardAttachmentImage } from "./attachments/card-attachment-image"
@@ -31,7 +30,6 @@ export const Card = memo(function Card({
   ...props
 }: IProps) {
   const [, navigate] = useLocation()
-  const prefix = useDeckPrefix()
   const id = card.id
   const isRevealed = useIsRevealed(id)
 
@@ -48,7 +46,6 @@ export const Card = memo(function Card({
         )}
         card={card}
         column={column}
-        prefix={prefix}
         showBody={showBody}
         isDragging={isDragging}
         isRevealed={isRevealed}

@@ -7,20 +7,19 @@ import { ROUTES } from "@/lib/routes"
 
 interface IProps {
   cardId: string
-  displayId: string
+  displayId?: string
   body: string
   deadline: string | null
   /** The card sits in the board's done column. */
   done: boolean
 }
 
-/** A card's id, task progress and deadline — the same row the web card shows. */
 export function CardMeta({ cardId, displayId, body, deadline, done }: IProps) {
   const tasks = taskProgress(body)
 
   return (
     <View className="flex-row items-center gap-4">
-      {displayId.length > 0 && (
+      {!!displayId && (
         <Text className="font-mono text-xs text-muted-foreground">
           #{displayId}
         </Text>

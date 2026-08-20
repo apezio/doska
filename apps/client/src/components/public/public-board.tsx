@@ -55,7 +55,6 @@ export function PublicBoard({ token, snapshot }: IProps) {
                 <CardView
                   card={card}
                   column={column}
-                  prefix={prefix}
                   showBody={showBody}
                   onClick={() => navigate(routes.card.to(card.id))}
                   attachments={

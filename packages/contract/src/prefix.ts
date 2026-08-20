@@ -30,8 +30,8 @@ export function derivePrefix(
  * board created before this feature may have no `prefix`.
  */
 export function cardDisplayId(
-  prefix: string,
-  number: number | null
+  prefix?: string,
+  number?: number | null
 ): string | null {
   if (number == null || !prefix) return null
   return `${prefix}-${number}`

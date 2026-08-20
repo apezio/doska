@@ -22,7 +22,6 @@ export function PublicBoard({ token, snapshot }: IProps) {
   // Collapsing is a way of reading the board, not of changing it, so a visitor
   // gets the toggle — it starts where the owner left it and goes nowhere.
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-  const prefix = dashboard.prefix ?? ""
 
   const grouped = groupCardsByColumn({ columns, cards })
   const sort = dashboard.sort ?? []
@@ -48,7 +47,6 @@ export function PublicBoard({ token, snapshot }: IProps) {
                 key={card.id}
                 cardId={card.id}
                 token={token}
-                prefix={prefix}
                 cards={cards}
                 columns={columns}
               >

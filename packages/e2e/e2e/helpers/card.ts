@@ -32,25 +32,28 @@ export function cardTitled(page: Page, title: string) {
     })
 }
 
-/** A card's copy-to-clipboard id chip. Only renders once the server stamps a number (needs a synced board). */
-export function cardIdButton(page: Page) {
-  return page.getByRole("button", { name: /^Copy card id / })
-}
-
 /**
- * The display id ("ROAD-12") shown on the card titled `title`. Only exists once
- * the server has stamped the card a number, so the board must be signed in.
+ * The display id ("12") of the card titled `title`, read off its search result
+ * — the one place the app still prints it. Only exists once the server has
+ * stamped the card a number, so the board must be signed in.
  */
 export async function cardDisplayId(
   page: Page,
   title: string
 ): Promise<string> {
-  const chip = card(page, title).getByRole("button", { name: /^Copy card id / })
+  await page.getByRole("button", { name: "Search cards" }).click()
+  const input = page.getByPlaceholder("Search cards")
+  await input.fill(title)
+
+  const row = page.getByRole("option").filter({ hasText: title }).first()
   // The number arrives on a sync round-trip, which the default expect timeout
   // can lose to under a loaded parallel run.
-  await expect(chip).toBeVisible({ timeout: 15_000 })
-  const label = (await chip.getAttribute("aria-label")) ?? ""
-  return label.replace("Copy card id ", "")
+  await expect(row).toContainText(/#\d+/, { timeout: 15_000 })
+  const [, id] = /#(\d+)/.exec((await row.textContent()) ?? "") ?? []
+
+  await page.keyboard.press("Escape")
+  await expect(input).toBeHidden()
+  return id
 }
 
 /**

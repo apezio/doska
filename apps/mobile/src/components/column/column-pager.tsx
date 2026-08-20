@@ -109,7 +109,6 @@ export function ColumnPager({ board: dashboard }: IProps) {
           deckId={deckId}
           column={column}
           width={width}
-          prefix={dashboard.prefix ?? ""}
           cards={board.cards
             .filter((card) => card.columnId === column.id)
             .sort(byPosition)}

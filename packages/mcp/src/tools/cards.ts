@@ -32,9 +32,8 @@ const priority = z
 const cardId = z
   .string()
   .describe(
-    "The card's own id. Display ids like ROAD-12 don't work here: " +
-      "the number is only allocated on first sync and the prefix is editable. " +
-      "Get the id from get_board or search_cards."
+    "The card's own id, from get_board or search_cards. " +
+      "A card's [[12]] reference number is not one."
   )
 
 const place = z
@@ -48,7 +47,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
       title: "Create card",
       description:
         "Add a card to a column. The body is Markdown in the board's " +
-        "dialect — task lists, [[ROAD-12]] card links, " +
+        "dialect — task lists, [[12]] card links, " +
         "==highlight==, and a -cut- line ending the board preview.",
       inputSchema: {
         boardId: z.string(),
@@ -83,8 +82,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
 
       // The server stamps the number on write; re-read to surface the id.
-      const { prefix } = await board.dashboard(boardId)
-      return reply(shapeCard(await board.card(boardId, card.id), prefix))
+      return reply(shapeCard(await board.card(boardId, card.id)))
     }
   )
 
@@ -114,7 +112,6 @@ export function registerCardTools(server: McpServer, board: Board): void {
       },
     },
     async ({ boardId, cardId, title, body, append, deadline, priority }) => {
-      const { prefix } = await board.dashboard(boardId)
       const existing = await board.card(boardId, cardId)
 
       let nextBody = body ?? existing.body
@@ -135,7 +132,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
         board.now()
       )
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
-      return reply(shapeCard(card, prefix))
+      return reply(shapeCard(card))
     }
   )
 
@@ -163,7 +160,6 @@ export function registerCardTools(server: McpServer, board: Board): void {
       },
     },
     async ({ boardId, cardId, columnId, place, anchorCardId }) => {
-      const { prefix } = await board.dashboard(boardId)
       const existing = await board.card(boardId, cardId)
       const target = columnId ?? existing.columnId
       if (columnId) await board.column(boardId, columnId)
@@ -182,7 +178,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
         board.now()
       )
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
-      return reply(shapeCard(card, prefix))
+      return reply(shapeCard(card))
     }
   )
 
@@ -201,7 +197,6 @@ export function registerCardTools(server: McpServer, board: Board): void {
       },
     },
     async ({ boardId, cardId, done }) => {
-      const { prefix } = await board.dashboard(boardId)
       const { columns, cards } = await board.board(boardId)
       const existing = await board.card(boardId, cardId)
 
@@ -215,7 +210,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
             : `Board ${boardId} has no column outside done to move this back to.`
         )
       if (existing.columnId === target.id)
-        return reply({ ...shapeCard(existing, prefix), column: target.title })
+        return reply({ ...shapeCard(existing), column: target.title })
 
       const card = touch(
         {
@@ -229,7 +224,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
         board.now()
       )
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
-      return reply({ ...shapeCard(card, prefix), column: target.title })
+      return reply({ ...shapeCard(card), column: target.title })
     }
   )
 
@@ -250,7 +245,6 @@ export function registerCardTools(server: McpServer, board: Board): void {
       },
     },
     async ({ boardId, cardId, index, checked }) => {
-      const { prefix } = await board.dashboard(boardId)
       const existing = await board.card(boardId, cardId)
       const before = taskProgress(existing.body)
       if (index >= before.total)
@@ -262,11 +256,11 @@ export function registerCardTools(server: McpServer, board: Board): void {
       // wouldn't reach the requested state, the box is already there.
       const toggled = toggleTaskByIndex(existing.body, index)
       const toggledTo = taskProgress(toggled).done > before.done
-      if (toggledTo !== checked) return reply(shapeCard(existing, prefix))
+      if (toggledTo !== checked) return reply(shapeCard(existing))
 
       const card = touch({ ...existing, body: toggled }, board.now())
       await board.pushBoard(boardId, [{ store: "cards", record: card }])
-      return reply(shapeCard(card, prefix))
+      return reply(shapeCard(card))
     }
   )
 

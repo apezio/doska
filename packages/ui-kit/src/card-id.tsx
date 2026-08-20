@@ -3,7 +3,7 @@ import { cn } from "./lib/cn"
 import { Check, Hash } from "lucide-react"
 
 /**
- * The card's human-readable id (`ROAD-12`) as a click-to-copy chip. Copying is
+ * The card's human-readable id (its number) as a click-to-copy chip. Copying is
  * a leaf action on the card, so the click is stopped from bubbling to the
  * card's open-detail handler. Briefly swaps to a check to confirm the copy.
  */

@@ -53,7 +53,6 @@ export async function readSince(
         id: r.id,
         title: r.title,
         position: r.position,
-        prefix: r.prefix,
         sort: r.sort,
         updatedAt: r.updatedAt,
         deletedAt: r.deletedAt,

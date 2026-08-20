@@ -8,11 +8,10 @@ import { CardMarkdown } from "./card-markdown"
 interface IProps {
   card: Card
   deckId: string
-  prefix: string
 }
 
 /** The card's body down to the cut marker, or nothing if it has no body. */
-export function CardPreview({ card, deckId, prefix }: IProps) {
+export function CardPreview({ card, deckId }: IProps) {
   const { mutate: updateCard } = useUpdateCard(card.id)
   // `hasMore` is the cut marker having fired: the rest opens in the card view.
   const { body: preview, applied: hasMore } = cut.cardRender(card.body)
@@ -21,7 +20,7 @@ export function CardPreview({ card, deckId, prefix }: IProps) {
 
   return (
     <View className="gap-1 border-t border-muted px-3 pt-2">
-      <CardMarkdown deckId={deckId} prefix={prefix}>
+      <CardMarkdown deckId={deckId}>
         <MarkdownView
           onToggleTask={(index) =>
             updateCard({ body: toggleTaskByIndex(card.body, index) })

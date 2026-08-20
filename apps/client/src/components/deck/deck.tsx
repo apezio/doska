@@ -25,8 +25,6 @@ interface IProps {
   onRenameColumn: (columnId: string, title: string) => void
   onDeleteColumn: (columnId: string) => void
   onRenameDashboard: (name: string) => void
-  onRenameDashboardPrefix: (prefix: string) => void
-  takenPrefixes: string[]
   onDeleteDashboard: () => void
   onChangeSort: (sort: string[]) => void
   onDragEnd: (result: DropResult) => void
@@ -46,8 +44,6 @@ export function Deck({
   onRenameColumn,
   onDeleteColumn,
   onRenameDashboard,
-  onRenameDashboardPrefix,
-  takenPrefixes,
   onDeleteDashboard,
   onChangeSort,
   onDragEnd,
@@ -77,10 +73,7 @@ export function Deck({
             <DeckHeader
               boardId={dashboard.id}
               title={dashboard.title}
-              prefix={dashboard.prefix ?? ""}
-              takenPrefixes={takenPrefixes}
               onRename={onRenameDashboard}
-              onRenamePrefix={onRenameDashboardPrefix}
               onDelete={onDeleteDashboard}
               columns={[...board.columns].sort(byPosition)}
               onReorderColumns={onReorderColumns}

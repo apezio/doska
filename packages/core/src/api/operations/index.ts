@@ -7,12 +7,6 @@ export { getCardCol } from "./get-card-col"
 export type { DigestCard, DigestFilter, DigestGroup } from "./get-digest"
 export { createDashboard } from "./create-dashboard"
 export { renameDashboard } from "./rename-dashboard"
-export {
-  setDashboardPrefix,
-  normalizePrefix,
-  prefixTaken,
-  validatePrefix,
-} from "./set-dashboard-prefix"
 export { setDashboardSort } from "./set-dashboard-sort"
 export { deleteDashboard } from "./delete-dashboard"
 export { dropBoardLocally } from "./drop-board-locally"

@@ -20,7 +20,6 @@ interface IProps {
   deckId: string
   column: ColumnType
   cards: Card[]
-  prefix: string
   width: number
   onToggleBody: () => void
   onAddCard: () => void
@@ -36,7 +35,6 @@ export function Column({
   deckId,
   column,
   cards,
-  prefix,
   width,
   onToggleBody,
   onAddCard,
@@ -57,13 +55,12 @@ export function Column({
         <BoardCard
           card={item}
           deckId={deckId}
-          prefix={prefix}
           showBody={showBody}
           done={column.done}
         />
       </View>
     ),
-    [column.id, column.done, deckId, prefix, showBody, registerHeight]
+    [column.id, column.done, deckId, showBody, registerHeight]
   )
 
   return (

@@ -23,7 +23,7 @@ an access token from there on. Same URL works for Claude Desktop and claude.ai.
 
 | Tool                             | What it does                                                                           |
 | -------------------------------- | -------------------------------------------------------------------------------------- |
-| `list_boards`                    | Every board with its id, title and card-id prefix                                      |
+| `list_boards`                    | Every board with its id and title                                                      |
 | `get_board`                      | One board in full: columns with color and done flag, each with its cards               |
 | `get_card`                       | One card, without pulling the whole board                                              |
 | `create_board`                   | New board with the default To Do / In Progress / Done columns                          |
@@ -40,11 +40,9 @@ an access token from there on. Same URL works for Claude Desktop and claude.ai.
 | `search_cards`                   | Across every board, by text, deadline range, priority, or column                       |
 | `list_upcoming`                  | The app's upcoming view: overdue first, then today, then out to 60 days                |
 
-Every tool addresses records by their opaque id. Display ids like `ROAD-12` come
-back on reads and are what people say out loud, but they don't work as input: the
-number is only allocated on the card's first sync, and the prefix is editable in
-board settings. `search_cards` matches them, so that's the way from a `ROAD-12`
-to an id you can write against.
+Every tool addresses records by their opaque id. A card also comes back with a
+`cardId` number, but that exists only so one card body can link to another as
+`[[12]]` — it is not input to any tool.
 
 The server also ships `instructions` (see `guide.ts`): the board's own concepts —
 the done column, deadlines, priority — and the Markdown dialect card bodies are

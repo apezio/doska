@@ -35,7 +35,7 @@ See [Accounts](/docs/accounts).
 
 | Tool                             | What it does                                                                           |
 | -------------------------------- | -------------------------------------------------------------------------------------- |
-| `list_boards`                    | Every board with its id, title and card-id prefix                                      |
+| `list_boards`                    | Every board with its id and title                                                      |
 | `get_board`                      | One board in full: columns with color and done flag, each with its cards               |
 | `get_card`                       | One card, without pulling the whole board                                              |
 | `create_board`                   | New board with the default To Do / In Progress / Done columns                          |

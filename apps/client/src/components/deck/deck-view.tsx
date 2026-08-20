@@ -12,10 +12,9 @@ import {
   useSetColumnColor,
   useSetColumnDone,
   useSetDashboardSort,
-  useUpdateDashboardPrefix,
   type CardPatch,
 } from "@doska/core/mutations"
-import { useBoard, useDashboards } from "@doska/core/queries"
+import { useBoard } from "@doska/core/queries"
 import { useCallback } from "react"
 import { useDragEnd, useSyncShortcut } from "@/lib/hooks"
 import type { Dashboard } from "@doska/core/types"
@@ -36,15 +35,8 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
   const { mutate: setColumnDone } = useSetColumnDone(id)
 
   const { mutate: renameDashboard } = useRenameDashboard()
-  const { mutate: updateDashboardPrefix } = useUpdateDashboardPrefix()
   const { mutate: deleteDashboard } = useDeleteDashboard()
   const { mutate: setDashboardSort } = useSetDashboardSort()
-
-  // Every other live board's prefix, for the uniqueness check when editing.
-  const { data: dashboards = [] } = useDashboards()
-  const takenPrefixes = dashboards
-    .filter((d) => d.id !== id)
-    .map((d) => d.prefix)
 
   const { data: board, isPending } = useBoard(id)
 
@@ -85,10 +77,6 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
       }
       onDeleteColumn={deleteColumn}
       onRenameDashboard={(name) => renameDashboard({ id, name })}
-      onRenameDashboardPrefix={(prefix) =>
-        updateDashboardPrefix({ id, prefix })
-      }
-      takenPrefixes={takenPrefixes}
       onDeleteDashboard={() => deleteDashboard(id)}
       onChangeSort={(sort) => setDashboardSort({ id, sort })}
       onDragEnd={handleDragEnd}

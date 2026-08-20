@@ -11,7 +11,6 @@ export interface DigestCard {
   card: Card
   boardId: string
   boardTitle: string
-  prefix: string
   columnTitle: string
   columnColor: string
   isDone: boolean
@@ -86,7 +85,6 @@ export async function getDigest(filter: DigestFilter): Promise<DigestCard[]> {
         card,
         boardId: board.id,
         boardTitle: board.title,
-        prefix: board.prefix,
         columnTitle: column.title,
         columnColor: column.color,
         isDone: column.done,

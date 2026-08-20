@@ -9,12 +9,9 @@ import type { Column } from "@doska/core/types"
 interface IProps {
   boardId: string
   title: string
-  prefix: string
-  takenPrefixes: string[]
   columns: Column[]
   sort: string[]
   onRename: (name: string) => void
-  onRenamePrefix: (prefix: string) => void
   onDelete: () => void
   onReorderColumns: (changed: Column[]) => void
   onChangeSort: (sort: string[]) => void
@@ -23,12 +20,9 @@ interface IProps {
 export function DeckHeader({
   boardId,
   title,
-  prefix,
-  takenPrefixes,
   columns,
   sort,
   onRename,
-  onRenamePrefix,
   onDelete,
   onReorderColumns,
   onChangeSort,
@@ -43,15 +37,12 @@ export function DeckHeader({
       />
 
       <div className="ml-auto flex items-center gap-1">
-        <SearchButton boardId={boardId} prefix={prefix} />
+        <SearchButton boardId={boardId} />
         <SortMenu sort={sort} onChangeSort={onChangeSort} />
         <ShareButton boardId={boardId} title={title} />
         <BoardActionsMenu
           title={title}
-          prefix={prefix}
-          takenPrefixes={takenPrefixes}
           columns={columns}
-          onRenamePrefix={onRenamePrefix}
           onDelete={onDelete}
           onReorderColumns={onReorderColumns}
         />

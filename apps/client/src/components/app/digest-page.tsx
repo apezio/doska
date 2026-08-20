@@ -16,7 +16,7 @@ export function DigestPage() {
   const { data: cardDeck } = useCardDeck(params?.id ?? null)
 
   const deck = useMemo(
-    () => ({ id: cardDeck?.id ?? "", prefix: cardDeck?.prefix ?? "", sort: [] }),
+    () => ({ id: cardDeck?.id ?? "", sort: [] }),
     [cardDeck]
   )
 

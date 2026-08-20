@@ -4,7 +4,6 @@ import { getCardCol } from "./get-card-col"
 /** The board a card belongs to. */
 export interface CardDeck {
   id: string
-  prefix: string
 }
 
 /**

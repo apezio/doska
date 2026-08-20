@@ -5,7 +5,7 @@ import { CardRefLink } from "./refs/card-ref-link"
 
 /**
  * Resolves the parts of a card body that need app data — attachment images and
- * `[[ROAD-12]]` card refs. Wrap anything rendering a body; image refs are scoped to
+ * `[[12]]` card refs. Wrap anything rendering a body; image refs are scoped to
  * the card that owns the attachment, so the card is as wide as this can go.
  */
 export function CardMarkdown({

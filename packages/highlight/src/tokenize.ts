@@ -1,5 +1,5 @@
 import { CUT_RE } from "@doska/markdown/core"
-import { nested, token, type Context } from "./context"
+import { nested, normalize, token, type Context } from "./context"
 import { inline } from "./inline"
 import type { Token, TokenKind } from "./kinds"
 
@@ -25,7 +25,7 @@ const PREFIXED: { re: RegExp; kind?: TokenKind }[] = [
 export interface TokenizeOptions {
   /**
    * Wikilink targets that resolve to a real card. Omit and every reference is
-   * drawn as live. Case is ignored.
+   * drawn as live. Case is ignored, as is any prefix an old id carried.
    */
   targets?: Iterable<string>
 }
@@ -70,7 +70,7 @@ export function tokenizeMarkdown(
   { targets }: TokenizeOptions = {}
 ): Token[][] {
   const ctx: Context = {
-    targets: new Set([...(targets ?? [])].map((t) => t.toLowerCase())),
+    targets: new Set([...(targets ?? [])].map(normalize)),
     base: [],
   }
   let inFence = false

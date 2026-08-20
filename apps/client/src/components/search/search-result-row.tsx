@@ -1,4 +1,4 @@
-import { cardDisplayId } from "@doska/contract/prefix"
+import { cardDisplayId } from "@doska/contract/card-id"
 import type { SearchHit, Segment } from "@doska/core/search"
 import { cn } from "@doska/ui-kit"
 import { useEffect, useRef } from "react"
@@ -20,7 +20,6 @@ function Segments({ segments }: { segments: Segment[] }) {
 interface IProps {
   id: string
   hit: SearchHit
-  prefix: string
   active: boolean
   onSelect: () => void
   onHighlight: () => void
@@ -29,7 +28,6 @@ interface IProps {
 export function SearchResultRow({
   id,
   hit,
-  prefix,
   active,
   onSelect,
   onHighlight,
@@ -41,7 +39,7 @@ export function SearchResultRow({
     if (active) ref.current?.scrollIntoView({ block: "nearest" })
   }, [active])
 
-  const displayId = cardDisplayId(prefix, hit.card.number)
+  const displayId = cardDisplayId(hit.card.number)
 
   return (
     <button

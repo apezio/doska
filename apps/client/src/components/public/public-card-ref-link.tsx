@@ -1,5 +1,5 @@
 import { useLocation } from "wouter"
-import { cardDisplayId } from "@doska/contract/prefix"
+import { refNumber } from "@doska/contract/card-id"
 import { columnHue, MdWikilink } from "@doska/ui-kit"
 import type { Card, Column } from "@doska/core/types"
 import { routes } from "@/lib/routes"
@@ -7,29 +7,25 @@ import { routes } from "@/lib/routes"
 interface IProps {
   displayId: string
   alias?: string
-  prefix: string
   cards: Card[]
   columns: Column[]
 }
 
 /**
- * A `[[ROAD-12]]` reference resolved against the snapshot. A reference to a card
+ * A `[[12]]` reference resolved against the snapshot. A reference to a card
  * on another board is unresolved here by construction — the payload only ever
  * holds this one board.
  */
 export function PublicCardRefLink({
   displayId,
   alias,
-  prefix,
   cards,
   columns,
 }: IProps) {
   const [, navigate] = useLocation()
 
-  const wanted = displayId.trim().toLowerCase()
-  const card = cards.find(
-    (one) => cardDisplayId(prefix, one.number)?.toLowerCase() === wanted
-  )
+  const wanted = refNumber(displayId)
+  const card = wanted == null ? undefined : cards.find((one) => one.number === wanted)
 
   if (!card)
     return (

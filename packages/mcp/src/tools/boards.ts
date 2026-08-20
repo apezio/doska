@@ -1,6 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { Change, Column, Dashboard } from "@doska/contract"
-import { derivePrefix } from "@doska/contract/prefix"
 import { z } from "zod"
 import { type Board, newId, positionAt, tombstone, touch } from "../board"
 import { reply } from "./reply"
@@ -38,12 +37,11 @@ export function registerBoardTools(server: McpServer, board: Board): void {
       },
     },
     async ({ boardId, bodies }) => {
-      const { prefix, title } = await board.dashboard(boardId)
+      const { title } = await board.dashboard(boardId)
       const { columns, cards } = await board.board(boardId)
       return reply({
         boardId,
         title,
-        prefix,
         columns: columns.map((column) => ({
           id: column.id,
           title: column.title,
@@ -53,7 +51,7 @@ export function registerBoardTools(server: McpServer, board: Board): void {
           cards: cards
             .filter((card) => card.columnId === column.id)
             .map((card) => {
-              const shaped = shapeCard(card, prefix)
+              const shaped = shapeCard(card)
               return bodies ? shaped : { ...shaped, body: undefined }
             }),
         })),
@@ -67,15 +65,14 @@ export function registerBoardTools(server: McpServer, board: Board): void {
       title: "Get card",
       description:
         "Read one card without pulling the whole board. Takes the card's " +
-        "own id — search_cards finds it from a ROAD-12 or a few words.",
+        "own id — search_cards finds it from a card number or a few words.",
       inputSchema: { boardId: z.string(), cardId: z.string() },
     },
     async ({ boardId, cardId }) => {
-      const { prefix } = await board.dashboard(boardId)
       const card = await board.card(boardId, cardId)
       const column = await board.column(boardId, card.columnId)
       return reply({
-        ...shapeCard(card, prefix),
+        ...shapeCard(card),
         column: { id: column.id, title: column.title, done: column.done },
       })
     }
@@ -98,10 +95,6 @@ export function registerBoardTools(server: McpServer, board: Board): void {
         id: newId("board"),
         title,
         position: positionAt(existing, "bottom"),
-        prefix: derivePrefix(
-          title,
-          existing.map((d) => d.prefix)
-        ),
         sort: [],
         updatedAt: board.now(),
         deletedAt: null,

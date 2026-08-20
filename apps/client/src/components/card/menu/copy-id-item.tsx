@@ -1,16 +1,14 @@
 import { MenuItem, MenuSeparator } from "@doska/ui-kit"
 import { Hash } from "lucide-react"
 import { useCard } from "@doska/core/queries"
-import { cardDisplayId } from "@doska/contract/prefix"
-import { useDeckPrefix } from "@/providers/deck/deck-context"
+import { cardDisplayId } from "@doska/contract/card-id"
 
-/** Copies the card's display id (`ROAD-12`). Nothing to copy on a board with
- *  no prefix, or a card that has never synced. */
+/** Copies the card's display id. Nothing to copy on a card that has never
+ *  synced — its number is stamped there. */
 export function CopyIdItem({ cardId }: { cardId: string }) {
   const { data: card } = useCard(cardId)
-  const prefix = useDeckPrefix()
 
-  const displayId = cardDisplayId(prefix, card?.number)
+  const displayId = cardDisplayId(card?.number)
   if (!displayId) return null
 
   return (

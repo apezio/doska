@@ -1,7 +1,12 @@
-import { test, expect } from "@playwright/test"
-import { addCard, cardIdButton, createBoard, signIn } from "../helpers"
+import { test, expect, type Page } from "@playwright/test"
+import { addCard, cardDisplayId, createBoard, signIn } from "../helpers"
 
-// The id chip only appears once the server stamps a number on sync, so these need a signed-in board.
+/** The card's "⋯" menu, which is where "Copy id" lives. */
+function openCardMenu(page: Page) {
+  return page.getByRole("button", { name: "Card actions" }).first().click()
+}
+
+// The id is only stamped by the server on sync, so these need a signed-in board.
 test.describe("card id", () => {
   // Playwright only recognises the clipboard permissions in chromium — firefox
   // and webkit reject `clipboard-read` at context creation.
@@ -17,15 +22,11 @@ test.describe("card id", () => {
       await createBoard(page)
       await addCard(page, "To Do")
 
-      const idButton = cardIdButton(page)
-      await expect(idButton).toBeVisible()
-      const id = (await idButton.getAttribute("aria-label"))?.replace(
-        "Copy card id ",
-        ""
-      )
-      expect(id).toMatch(/^[A-Z0-9]+-\d+$/)
+      const id = await cardDisplayId(page, "Untitled card")
+      expect(id).toMatch(/^\d+$/)
 
-      await idButton.click()
+      await openCardMenu(page)
+      await page.getByRole("menuitem", { name: "Copy id" }).click()
 
       // navigator.clipboard is on the real page, not Node's ambient Navigator type.
       const clipboard = await page.evaluate(() =>
@@ -39,13 +40,11 @@ test.describe("card id", () => {
     })
   })
 
-  test("the click doesn't also open the card", async ({ page }) => {
-    await signIn(page)
+  test("a card with no number yet offers nothing to copy", async ({ page }) => {
     await createBoard(page)
     await addCard(page, "To Do")
 
-    await expect(cardIdButton(page)).toBeVisible()
-    await cardIdButton(page).click()
-    await expect(page).not.toHaveURL(/\/c\//)
+    await openCardMenu(page)
+    await expect(page.getByRole("menuitem", { name: "Copy id" })).toHaveCount(0)
   })
 })

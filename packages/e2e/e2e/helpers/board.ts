@@ -1,6 +1,5 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test"
 import type { Dashboard } from "@doska/contract"
-import { derivePrefix } from "@doska/contract/prefix"
 import { dashboardSync, newerThan } from "./rpc"
 
 /* -------------------------------------------------------------------------- */
@@ -37,7 +36,7 @@ export function boardTitle(page: Page, name: string) {
   return deckHeader(page).getByText(name, { exact: true })
 }
 
-/** Opens the deck header's "⋯" menu — the prefix, reorder and delete live there. */
+/** Opens the deck header's "⋯" menu — reorder and delete live there. */
 export async function openBoardMenu(page: Page): Promise<void> {
   await deckHeader(page).getByRole("button", { name: "Board actions" }).click()
   await expect(page.getByRole("menu")).toBeVisible()
@@ -83,22 +82,6 @@ export async function deleteBoard(page: Page): Promise<void> {
     .click()
 }
 
-/**
- * The "Card prefix" entry in the board's "⋯" menu, which shows the prefix
- * currently set. The menu has to be open already.
- */
-export function prefixMenuItem(page: Page, prefix: string) {
-  return page.getByRole("menuitem", { name: `Card prefix ${prefix}` })
-}
-
-/** Opens the card-prefix modal from the board's "⋯" menu and returns its input. */
-export async function openPrefixEditor(page: Page, prefix: string) {
-  await openBoardMenu(page)
-  await prefixMenuItem(page, prefix).click()
-  const input = page.getByRole("textbox", { name: "Board prefix" })
-  await expect(input).toBeVisible()
-  return input
-}
 
 /** Opens the board named `name` from the sidebar's dashboards list. */
 export async function openBoardInSidebar(
@@ -155,7 +138,6 @@ export async function remoteCreateDashboard(
           id,
           title,
           position: "a5",
-          prefix: derivePrefix(title),
           sort: [],
           updatedAt: Date.now(),
           deletedAt: null,
@@ -192,7 +174,6 @@ export async function remoteRenameDashboard(
         record: {
           ...existing,
           title: toTitle,
-          prefix: derivePrefix(toTitle),
           updatedAt: newerThan(existing),
         },
       },

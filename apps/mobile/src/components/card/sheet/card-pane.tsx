@@ -94,7 +94,6 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
           cardId={cardId}
           body={body}
           deadline={content.deadline}
-          cardNumber={content.number}
         />
         <TextField
           multiline
@@ -110,7 +109,6 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
         <CardBody
           body={body}
           deckId={deck?.id ?? ""}
-          prefix={deck?.prefix ?? ""}
           isPreview={isPreview}
           onChangeBody={(value) => edit({ body: value })}
           onEdit={() => setPreview(false)}

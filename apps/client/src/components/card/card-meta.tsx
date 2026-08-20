@@ -1,5 +1,4 @@
-import { CardId, TaskIndicator, cn } from "@doska/ui-kit"
-import { cardDisplayId } from "@doska/contract/prefix"
+import { TaskIndicator, cn } from "@doska/ui-kit"
 import { taskProgress, type TaskProgress } from "@doska/markdown"
 import type { Card, Column } from "@doska/core/types"
 import { CardDeadline } from "./deadline/card-deadline"
@@ -9,7 +8,6 @@ interface IProps {
   card: Card
   /** The column the card sits in — a card in the done column reads as finished. */
   column?: Column | null
-  prefix?: string
   /** The unsaved body, for callers holding a draft — task progress tracks it live. */
   body?: string
   /** Already-counted progress, for a caller that needed the count itself. */
@@ -22,11 +20,10 @@ interface IProps {
   showEmpty?: boolean
 }
 
-/** A card's id, task progress, deadline and priority — on the board card and in its panel. */
+/** A card's task progress, deadline and priority — on the board card and in its panel. */
 export function CardMeta({
   card,
   column,
-  prefix,
   body,
   tasks,
   onChangeDeadline,
@@ -34,12 +31,10 @@ export function CardMeta({
   className,
   showEmpty,
 }: IProps) {
-  const displayId = cardDisplayId(prefix, card.number)
   const { done, total } = tasks ?? taskProgress(body ?? card.body)
 
   return (
     <div className={cn("flex items-center gap-4 text-sm", className)}>
-      {displayId && <CardId id={displayId} />}
       {total > 0 && <TaskIndicator done={done} total={total} />}
       {(showEmpty || !!card.deadline) && (
         <CardDeadline

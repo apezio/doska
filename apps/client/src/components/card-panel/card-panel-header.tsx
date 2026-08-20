@@ -31,7 +31,8 @@ export function CardPanelHeader({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-between gap-2 px-3 pt-[max(0.625rem,env(safe-area-inset-top))] pb-2",
+        "flex shrink-0 items-center justify-between gap-2 border-b",
+        "px-3 pt-[max(0.625rem,env(safe-area-inset-top))] pb-2",
         windowControlsInset && "pl-24"
       )}
     >

@@ -7,12 +7,11 @@ import { SearchResultRow } from "@/components/search/search-result-row"
 
 interface IProps {
   deckId: string
-  prefix: string
   query: string
   onSelect: (cardId: string) => void
 }
 
-export function SearchResults({ deckId, prefix, query, onSelect }: IProps) {
+export function SearchResults({ deckId, query, onSelect }: IProps) {
   const { data: board } = useBoard(deckId)
   const trimmed = query.trim()
 
@@ -49,11 +48,7 @@ export function SearchResults({ deckId, prefix, query, onSelect }: IProps) {
         </Text>
       }
       renderItem={({ item }) => (
-        <SearchResultRow
-          hit={item}
-          prefix={prefix}
-          onPress={() => onSelect(item.card.id)}
-        />
+        <SearchResultRow hit={item} onPress={() => onSelect(item.card.id)} />
       )}
     />
   )

@@ -1,4 +1,4 @@
-import { taskProgress } from "@doska/markdown"
+import { taskProgress, type TaskProgress } from "@doska/markdown"
 import { PriorityChip } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { Pressable, View } from "react-native"
@@ -13,34 +13,48 @@ interface IProps {
   priority: string
   /** The card sits in the board's done column. */
   done: boolean
+  /** Already-counted progress, for a caller that needed the count itself. */
+  tasks?: TaskProgress
 }
 
-/** A card's task progress, deadline and priority — the same row the web card
- * shows. */
-export function CardMeta({ cardId, body, deadline, priority, done }: IProps) {
-  const tasks = taskProgress(body)
+/** A card's task progress, deadline and priority. An unset deadline or priority
+ * shows nothing — it is set from the card's actions sheet. */
+export function CardMeta({
+  cardId,
+  body,
+  deadline,
+  priority,
+  done,
+  tasks,
+}: IProps) {
+  const { done: doneTasks, total } = tasks ?? taskProgress(body)
+  if (total === 0 && !deadline && !priority) return null
 
   return (
     <View className="flex-row items-center gap-4 py-2">
-      {tasks.total > 0 && <TaskCount {...tasks} />}
+      {total > 0 && <TaskCount done={doneTasks} total={total} />}
       {/* Nested in the board card's Pressable, which it shadows: the chip is
           the deadline control on the card as well as in its sheet. */}
-      <Pressable
-        onPress={() => router.push(ROUTES.cardDeadline(cardId))}
-        accessibilityRole="button"
-        accessibilityLabel="Due date"
-        hitSlop={6}
-      >
-        <DeadlineChip value={deadline} done={done} />
-      </Pressable>
-      <Pressable
-        onPress={() => router.push(ROUTES.cardPriority(cardId))}
-        accessibilityRole="button"
-        accessibilityLabel="Priority"
-        hitSlop={6}
-      >
-        <PriorityChip value={priority} />
-      </Pressable>
+      {!!deadline && (
+        <Pressable
+          onPress={() => router.push(ROUTES.cardDeadline(cardId))}
+          accessibilityRole="button"
+          accessibilityLabel="Due date"
+          hitSlop={6}
+        >
+          <DeadlineChip value={deadline} done={done} />
+        </Pressable>
+      )}
+      {!!priority && (
+        <Pressable
+          onPress={() => router.push(ROUTES.cardPriority(cardId))}
+          accessibilityRole="button"
+          accessibilityLabel="Priority"
+          hitSlop={6}
+        >
+          <PriorityChip value={priority} />
+        </Pressable>
+      )}
     </View>
   )
 }

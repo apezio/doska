@@ -1,7 +1,7 @@
 import { cardSoleImage } from "@doska/core/card-sole-image"
 import type { CardPatch } from "@doska/core/mutations"
 import type { Card } from "@doska/core/types"
-import { cut, soleImage, useMarkers } from "@doska/markdown"
+import { cut, soleImage, taskProgress, useMarkers } from "@doska/markdown"
 import { IconButton, Text } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import MoreHorizontal from "lucide-react-native/icons/ellipsis"
@@ -43,6 +43,9 @@ export const BoardCard = memo(function BoardCard({
     hasBody && !applied.includes(cut.name) ? soleImage(preview) : null
   const sole = cardSoleImage(hasBody, bodyImage, card.attachments ?? [])
   const bleedKey = sole?.source.kind === "attachment" ? sole.source.key : null
+
+  const tasks = taskProgress(card.body)
+  const hasMeta = tasks.total > 0 || !!card.deadline || !!card.priority
 
   const actions = (
     <IconButton
@@ -94,15 +97,18 @@ export const BoardCard = memo(function BoardCard({
         {actions}
       </View>
 
-      <View className="border-t border-muted px-3 pt-2">
-        <CardMeta
-          cardId={card.id}
-          body={card.body}
-          deadline={card.deadline}
-          priority={card.priority}
-          done={done}
-        />
-      </View>
+      {hasMeta && (
+        <View className="border-t border-muted px-3 pt-2">
+          <CardMeta
+            cardId={card.id}
+            body={card.body}
+            deadline={card.deadline}
+            priority={card.priority}
+            done={done}
+            tasks={tasks}
+          />
+        </View>
+      )}
 
       <CardAttachments cardId={card.id} isReadonly className="px-3" />
 

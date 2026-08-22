@@ -1,7 +1,8 @@
 import { groupByDeadline, type DigestCard } from "@doska/core/operations"
-import { deadlineLabel, longDate, weekday } from "@doska/core/utils"
-import { cn, EmptyState, Text } from "@doska/ui-kit-mobile"
-import { RefreshControl, SectionList, View } from "react-native"
+import { EmptyState } from "@doska/ui-kit-mobile"
+import { RefreshControl, SectionList } from "react-native"
+import { GroupHeading } from "@/components/upcoming/group-heading"
+import { toSection } from "@/components/upcoming/sections"
 import { UpcomingRow } from "@/components/upcoming/upcoming-row"
 import { useSyncRefresh } from "@/lib/use-sync-refresh"
 
@@ -14,15 +15,7 @@ interface IProps {
 export function UpcomingList({ cards, hideDone, boardIds }: IProps) {
   const { refreshing, onRefresh } = useSyncRefresh(boardIds)
   const visible = hideDone ? cards.filter((one) => !one.isDone) : cards
-  const sections = groupByDeadline(visible).map((group) => ({
-    title: group.date ? longDate(group.date) : "Overdue",
-    // Empty for the overdue group, which spans every date before today.
-    aside: group.date
-      ? `${weekday(group.date)} · ${deadlineLabel(group.date)}`
-      : "",
-    overdue: group.date === "",
-    data: group.entries,
-  }))
+  const sections = groupByDeadline(visible).map(toSection)
 
   if (sections.length === 0) return <EmptyState message="Nothing due." />
 
@@ -34,23 +27,7 @@ export function UpcomingList({ cards, hideDone, boardIds }: IProps) {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      renderSectionHeader={({ section }) => (
-        <View className="flex-row items-baseline gap-2 pt-3">
-          <Text
-            className={cn(
-              "text-xs font-sans-semibold uppercase",
-              section.overdue ? "text-destructive" : "text-muted-foreground"
-            )}
-          >
-            {section.title}
-          </Text>
-          {section.aside.length > 0 && (
-            <Text className="text-xs text-muted-foreground/70">
-              {section.aside}
-            </Text>
-          )}
-        </View>
-      )}
+      renderSectionHeader={({ section }) => <GroupHeading section={section} />}
       renderItem={({ item }) => <UpcomingRow entry={item} />}
     />
   )

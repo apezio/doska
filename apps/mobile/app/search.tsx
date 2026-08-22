@@ -23,7 +23,6 @@ export default function SearchScreen() {
       {board ? (
         <SearchResults
           deckId={board.id}
-          prefix={board.prefix}
           query={query}
           // Replace, so dismissing the card returns to the board rather than to
           // a search screen holding a query the user is done with.

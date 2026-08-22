@@ -5,13 +5,16 @@ import { Checkbox, cn, PriorityDot, Text } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { Pressable, View } from "react-native"
 import { TaskCount } from "@/components/card/task-count"
+import { ColumnSwatch } from "@/components/column/column-swatch"
 import { ROUTES } from "@/lib/routes"
 
 interface IProps {
   entry: DigestCard
+  /** Off inside a single board, where every row names the same board. */
+  showBoard?: boolean
 }
 
-export function UpcomingRow({ entry }: IProps) {
+export function UpcomingRow({ entry, showBoard = true }: IProps) {
   const { mutate: moveCardToColumn } = useMoveCardToColumn()
 
   // Null when the board has no done column, and then there is nowhere to send it.
@@ -50,9 +53,17 @@ export function UpcomingRow({ entry }: IProps) {
           </Text>
           <PriorityDot value={entry.card.priority} />
         </View>
-        <Text numberOfLines={1} className="text-xs text-muted-foreground">
-          {entry.boardTitle || "Untitled board"} · {entry.columnTitle}
-        </Text>
+        <View className="flex-row items-center gap-1.5">
+          <ColumnSwatch color={entry.columnColor} />
+          <Text
+            numberOfLines={1}
+            className="shrink text-xs text-muted-foreground"
+          >
+            {showBoard
+              ? `${entry.boardTitle || "Untitled board"} · ${entry.columnTitle}`
+              : entry.columnTitle}
+          </Text>
+        </View>
       </View>
       {tasks.total > 0 && <TaskCount {...tasks} />}
     </Pressable>

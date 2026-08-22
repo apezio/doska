@@ -1,4 +1,4 @@
-import { cardDisplayId } from "@doska/contract/prefix"
+import { cardDisplayId } from "@doska/contract/card-id"
 import type { SearchHit, Segment } from "@doska/core/search"
 import { Text } from "@doska/ui-kit-mobile"
 import { Pressable, View } from "react-native"
@@ -16,12 +16,11 @@ function Segments({ segments }: { segments: Segment[] }) {
 
 interface IProps {
   hit: SearchHit
-  prefix: string
   onPress: () => void
 }
 
-export function SearchResultRow({ hit, prefix, onPress }: IProps) {
-  const displayId = cardDisplayId(prefix, hit.card.number)
+export function SearchResultRow({ hit, onPress }: IProps) {
+  const displayId = cardDisplayId(hit.card.number)
 
   return (
     <Pressable

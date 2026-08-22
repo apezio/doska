@@ -4,6 +4,8 @@ import { ChevronRight } from "lucide-react"
 import { cn } from "./lib/cn"
 import { focusTriggerOnKeyboardClose } from "./lib/final-focus"
 
+type MenuActions = MenuPrimitive.Root.Actions
+
 function Menu({ ...props }: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="menu" {...props} />
 }
@@ -123,4 +125,5 @@ export {
   MenuSub,
   MenuSubTrigger,
   MenuSeparator,
+  type MenuActions,
 }

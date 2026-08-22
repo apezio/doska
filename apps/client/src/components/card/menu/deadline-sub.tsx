@@ -1,20 +1,30 @@
 import {
   MenuContent,
   MenuItem,
+  MenuSeparator,
   MenuSub,
   MenuSubTrigger,
   addDays,
   todayIso,
+  useIsMobile,
 } from "@doska/ui-kit"
 import { CalendarDays, Check } from "lucide-react"
+import { Suspense, lazy } from "react"
 import { useUpdateCard } from "@doska/core/mutations"
 import { useCard } from "@doska/core/queries"
 
-/** Presets rather than a calendar: a picker popover nested in the menu popup
- *  would count as an outside press and close the menu under itself. */
-export function DeadlineSub({ cardId }: { cardId: string }) {
+const DeadlineCalendar = lazy(() => import("./deadline-calendar"))
+
+export function DeadlineSub({
+  cardId,
+  closeMenu,
+}: {
+  cardId: string
+  closeMenu: () => void
+}) {
   const { data: card } = useCard(cardId)
   const { mutate: updateCard } = useUpdateCard(cardId)
+  const isMobile = useIsMobile()
 
   const value = card?.deadline ?? null
   const today = todayIso()
@@ -45,6 +55,33 @@ export function DeadlineSub({ cardId }: { cardId: string }) {
             {option.iso === value && <Check className="ml-auto" />}
           </MenuItem>
         ))}
+        {isMobile ? (
+          <label className="relative flex items-center px-3 py-1.5">
+            Pick a date…
+            <input
+              type="date"
+              value={value ?? ""}
+              onChange={(e) => updateCard({ deadline: e.target.value || null })}
+              onClick={(e) => e.currentTarget.showPicker?.()}
+              onBlur={closeMenu}
+              className="absolute inset-0 opacity-0"
+              aria-label="Pick a date"
+            />
+          </label>
+        ) : (
+          <>
+            <MenuSeparator />
+            <Suspense fallback={null}>
+              <DeadlineCalendar
+                value={value}
+                onSelect={(deadline) => {
+                  updateCard({ deadline })
+                  closeMenu()
+                }}
+              />
+            </Suspense>
+          </>
+        )}
       </MenuContent>
     </MenuSub>
   )

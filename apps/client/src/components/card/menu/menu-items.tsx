@@ -9,11 +9,17 @@ import { PrioritySub } from "./priority-sub"
 interface IProps {
   cardId: string
   onEdit: () => void
+  closeMenu: () => void
   align?: "start" | "center" | "end"
 }
 
 /** Everything the viewer can do to a card without opening it. */
-export function CardMenuItems({ cardId, onEdit, align = "end" }: IProps) {
+export function CardMenuItems({
+  cardId,
+  onEdit,
+  closeMenu,
+  align = "end",
+}: IProps) {
   return (
     <MenuContent align={align} onClick={(e) => e.stopPropagation()}>
       <MenuItem onClick={onEdit}>
@@ -22,7 +28,7 @@ export function CardMenuItems({ cardId, onEdit, align = "end" }: IProps) {
       </MenuItem>
       <MoveToColumnSub cardId={cardId} />
       <PrioritySub cardId={cardId} />
-      <DeadlineSub cardId={cardId} />
+      <DeadlineSub cardId={cardId} closeMenu={closeMenu} />
       <CopyIdItem cardId={cardId} />
       <MenuSeparator />
       <DeleteItem cardId={cardId} />

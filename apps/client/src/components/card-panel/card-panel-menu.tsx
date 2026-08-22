@@ -5,8 +5,10 @@ import {
   MenuItem,
   MenuSeparator,
   MenuTrigger,
+  type MenuActions,
 } from "@doska/ui-kit"
 import { LocateFixed, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { useRef } from "react"
 import { CopyIdItem } from "../card/menu/copy-id-item"
 import { DeadlineSub } from "../card/menu/deadline-sub"
 import { MoveToColumnSub } from "../card/menu/move-to-column-sub"
@@ -32,8 +34,10 @@ export function CardPanelMenu({
   onReveal,
   onDelete,
 }: IProps) {
+  const actionsRef = useRef<MenuActions>(null)
+
   return (
-    <Menu>
+    <Menu actionsRef={actionsRef}>
       <MenuTrigger
         render={
           <Button variant="ghost" size="icon-sm" aria-label="Card actions" />
@@ -54,7 +58,10 @@ export function CardPanelMenu({
         </MenuItem>
         <MoveToColumnSub cardId={cardId} />
         <PrioritySub cardId={cardId} />
-        <DeadlineSub cardId={cardId} />
+        <DeadlineSub
+          cardId={cardId}
+          closeMenu={() => actionsRef.current?.close()}
+        />
         <CopyIdItem cardId={cardId} />
         <MenuSeparator />
         <MenuItem

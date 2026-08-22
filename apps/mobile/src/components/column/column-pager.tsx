@@ -257,7 +257,6 @@ export function ColumnPager({ board: dashboard }: IProps) {
             deckId={deckId}
             column={column}
             width={width}
-            prefix={dashboard.prefix ?? ""}
             cards={place(cards, column.id)}
             gapIndex={gap?.columnId === column.id ? gap.index : null}
             gapHeight={drag?.height ?? 0}

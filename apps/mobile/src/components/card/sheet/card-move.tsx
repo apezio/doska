@@ -1,5 +1,5 @@
 import { useMoveCardToColumn } from "@doska/core/mutations"
-import { useBoard, useCard, useCardDeck } from "@doska/core/queries"
+import { useBoard, useCard, useCardDeckId } from "@doska/core/queries"
 import { byPosition } from "@doska/core/utils"
 import { Text } from "@doska/ui-kit-mobile"
 import { useTokens } from "@doska/ui-kit-mobile/tokens"
@@ -15,10 +15,10 @@ interface IProps {
 /** Moves the card between the columns of its own board — which is not
  * necessarily the open one, since Upcoming lists every board's cards. */
 export function CardMove({ cardId, onDone }: IProps) {
-  const { data: deck } = useCardDeck(cardId)
-  if (!deck) return null
+  const { data: deckId } = useCardDeckId(cardId)
+  if (!deckId) return null
 
-  return <Columns cardId={cardId} deckId={deck.id} onDone={onDone} />
+  return <Columns cardId={cardId} deckId={deckId} onDone={onDone} />
 }
 
 function Columns({ cardId, deckId, onDone }: IProps & { deckId: string }) {

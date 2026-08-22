@@ -5,18 +5,17 @@ import { CardRefLink } from "./refs/card-ref-link"
 
 interface IProps {
   cardId: string
-  /** The board the references resolve against — `[[ROAD-12]]` names a card on
+  /** The board the references resolve against — `[[12]]` names a card on
    * the same board, so this is as wide as a reference can reach. */
   deckId: string
-  prefix: string
   children: ReactNode
 }
 
 /**
  * Resolves the parts of a card body that need app data: `attachment:<key>`
- * image refs, and `[[ROAD-12]]` card refs.
+ * image refs, and `[[12]]` card refs.
  */
-export function CardMarkdown({ cardId, deckId, prefix, children }: IProps) {
+export function CardMarkdown({ cardId, deckId, children }: IProps) {
   const renderers = useMemo(
     () => ({
       renderImage: (key: string, alt: string) => (
@@ -26,16 +25,11 @@ export function CardMarkdown({ cardId, deckId, prefix, children }: IProps) {
       // against, and they render as the plain text they already are.
       renderWikilink: deckId
         ? (target: string, alias?: string) => (
-            <CardRefLink
-              deckId={deckId}
-              prefix={prefix}
-              displayId={target}
-              alias={alias}
-            />
+            <CardRefLink deckId={deckId} displayId={target} alias={alias} />
           )
         : undefined,
     }),
-    [cardId, deckId, prefix]
+    [cardId, deckId]
   )
 
   return (

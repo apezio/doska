@@ -65,7 +65,6 @@ interface IProps {
   /** Where to open the gap, or null for no gap in this column. */
   gapIndex?: number | null
   gapHeight?: number
-  prefix: string
   width: number
   onToggleBody: (columnId: string, showBody: boolean) => void
   onAddCard: (columnId: string) => void
@@ -84,7 +83,6 @@ export const Column = memo(function Column({
   cards,
   gapIndex = null,
   gapHeight = 0,
-  prefix,
   width,
   onToggleBody,
   onAddCard,
@@ -124,7 +122,6 @@ export const Column = memo(function Column({
           <BoardCard
             card={item.card}
             deckId={deckId}
-            prefix={prefix}
             showBody={showBody}
             done={column.done}
             onPatch={onPatchCard}
@@ -135,7 +132,6 @@ export const Column = memo(function Column({
       column.id,
       column.done,
       deckId,
-      prefix,
       showBody,
       registerHeight,
       onPatchCard,

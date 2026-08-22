@@ -12,9 +12,9 @@ export function Checkbox({ className, variant, ...props }: IProps) {
       data-slot="checkbox"
       className={cn(
         "flex size-4 shrink-0 items-center justify-center rounded border border-input",
-        "bg-transparent text-primary-foreground transition-colors outline-none dark:bg-input/30",
+        "bg-transparent text-primary transition-colors outline-none dark:text-primary-foreground",
         "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-        "data-checked:border-primary data-checked:bg-primary",
+        "data-checked:border-primary data-checked:bg-primary/10",
         "disabled:cursor-not-allowed disabled:opacity-50",
         variant === "dashed" && "border-dashed hover:border-foreground/40",
         className

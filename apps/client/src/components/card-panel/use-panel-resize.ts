@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 const WIDTH_KEY = "deck.cardPanelWidth"
 
 const DEFAULT_WIDTH = 448
-const MIN_WIDTH = 320
+const MIN_WIDTH = 360
 const MAX_WIDTH = 880
 
 /** Keeps the board usable no matter how far the handle is dragged. */

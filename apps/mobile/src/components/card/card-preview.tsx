@@ -12,12 +12,11 @@ const BOARD_MARKERS = [cut]
 interface IProps {
   card: Card
   deckId: string
-  prefix: string
   onPatch: (id: string, patch: CardPatch) => void
 }
 
 /** The card's body down to the cut marker, or nothing if it has no body. */
-export function CardPreview({ card, deckId, prefix, onPatch }: IProps) {
+export function CardPreview({ card, deckId, onPatch }: IProps) {
   const { body: preview, applied } = useMarkers(
     card.body,
     BOARD_MARKERS,
@@ -36,7 +35,7 @@ export function CardPreview({ card, deckId, prefix, onPatch }: IProps) {
 
   return (
     <View className="gap-1 border-t border-muted px-3 pt-2">
-      <CardMarkdown cardId={card.id} deckId={deckId} prefix={prefix}>
+      <CardMarkdown cardId={card.id} deckId={deckId}>
         <MarkdownView onToggleTask={toggleTask}>{preview}</MarkdownView>
       </CardMarkdown>
       {hasMore && (

@@ -36,9 +36,6 @@ export function CardAttachments({ cardId, isReadonly, className }: IProps) {
 
   const persist = (next: Attachment[]) => save({ attachments: next })
 
-  const rename = (id: string, name: string) =>
-    persist(attachments.map((a) => (a.id === id ? { ...a, name } : a)))
-
   async function remove(att: Attachment) {
     persist(attachments.filter((a) => a.id !== att.id))
     try {
@@ -74,12 +71,10 @@ export function CardAttachments({ cardId, isReadonly, className }: IProps) {
     <>
       <AttachmentList
         attachments={attachments}
-        urls={urls}
         pending={pending}
         error={error}
         className={className}
         onOpen={(att) => void open(att)}
-        onRename={isReadonly ? undefined : rename}
         onRemove={isReadonly ? undefined : (att) => void remove(att)}
       />
       <AttachmentViewer

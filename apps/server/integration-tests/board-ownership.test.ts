@@ -20,7 +20,6 @@ const push = (title: string, updatedAt: number) => ({
     id: "b1",
     title,
     position: "a",
-    prefix: "",
     updatedAt,
     deletedAt: null,
   },

@@ -13,7 +13,7 @@ import type {
 } from "./schemas"
 
 export * from "./schemas"
-export * from "./prefix"
+export * from "./card-id"
 export * from "./retention"
 export { contract } from "./contract"
 

@@ -33,11 +33,11 @@ const WEIGHTS: Record<keyof Fields, Tiers> = {
 const FIELDS = Object.keys(WEIGHTS) as (keyof Fields)[]
 
 /**
- * The only field-specific rule in this file: search is board-scoped, so the
- * card-id prefix is the same for every card and carries no information.
+ * The only field-specific rule in this file: a card id is digits, so a term
+ * still carrying an old board prefix ("road-12", "ROAD12") matches on its tail.
  */
 function numberTerm(term: string): string | null {
-  // A prefix can hold digits of its own ("UB5-12"), so cut at the dash rather
+  // A prefix could hold digits of its own ("UB5-12"), so cut at the dash rather
   // than at the letters; without a dash, only leading letters can be prefix.
   const dash = term.indexOf("-")
   const tail = dash === -1 ? term.replace(/^[a-z]+/, "") : term.slice(dash + 1)

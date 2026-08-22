@@ -1,8 +1,8 @@
 /**
  * Every route in `app/`, named once. The same file is addressed two ways:
- * `router` takes the path (`/board/prefix`), while `Stack.Screen` and
+ * `router` takes the path (`/board/reorder`), while `Stack.Screen` and
  * `Drawer.Screen` take the file name relative to their own layout
- * (`board/prefix`, or `index` for the drawer's own board screen).
+ * (`board/reorder`, or `index` for the drawer's own board screen).
  */
 export const ROUTES = {
   board: "/",
@@ -12,7 +12,6 @@ export const ROUTES = {
   signIn: "/sign-in",
   boardActions: "/board/actions",
   boardRename: "/board/rename",
-  boardPrefix: "/board/prefix",
   boardReorder: "/board/reorder",
   boardSort: "/board/sort",
   boardDelete: "/board/delete",
@@ -42,7 +41,6 @@ export const SCREENS = {
   signIn: "sign-in",
   boardActions: "board/actions",
   boardRename: "board/rename",
-  boardPrefix: "board/prefix",
   boardReorder: "board/reorder",
   boardSort: "board/sort",
   boardDelete: "board/delete",

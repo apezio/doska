@@ -23,8 +23,6 @@ export function PublicAttachments({ attachments, token, className }: IProps) {
     <>
       <AttachmentList
         attachments={attachments}
-        urls={urls}
-        source="token"
         className={className}
         onOpen={(att) => {
           if (isRenderableImage(att.mime)) setViewing(att)

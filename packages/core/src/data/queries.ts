@@ -152,11 +152,11 @@ export function useDigest(filter: DigestFilter) {
   })
 }
 
-/** The board an arbitrary card belongs to — see {@link api.getCardDeck}. */
-export function useCardDeck(id: string | null) {
+/** The board an arbitrary card belongs to — see {@link api.getCardDeckId}. */
+export function useCardDeckId(id: string | null) {
   return useQuery({
     queryKey: keys.cardDeck(id ?? ""),
-    queryFn: () => api.getCardDeck(id as string),
+    queryFn: () => api.getCardDeckId(id as string),
     enabled: id != null,
     networkMode: "always",
   })

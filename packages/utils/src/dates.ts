@@ -40,7 +40,8 @@ export function deadlineStatus(iso: string): DeadlineStatus {
 /** A soon deadline reads as relative time ("in 3 days") rather than a date. */
 export function deadlineRelative(iso: string): string {
   const days = daysUntil(iso)
-  if (days < 0) return "overdue"
+  if (days === -1) return "yesterday"
+  if (days < 0) return `${-days} days ago`
   if (days === 0) return "today"
   if (days === 1) return "tomorrow"
   return `in ${days} days`

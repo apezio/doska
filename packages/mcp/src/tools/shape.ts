@@ -1,5 +1,5 @@
 import type { Card } from "@doska/contract"
-import { cardDisplayId } from "@doska/contract/prefix"
+import { cardDisplayId } from "@doska/contract/card-id"
 import { taskProgress } from "@doska/markdown/core"
 
 /**
@@ -8,12 +8,12 @@ import { taskProgress } from "@doska/markdown/core"
  * only — the
  * bytes live behind the app's file endpoints, not the sync channel.
  */
-export function shapeCard(card: Card, prefix: string) {
+export function shapeCard(card: Card) {
   const { done, total } = taskProgress(card.body)
   return {
     id: card.id,
-    // The human-readable id automations reference, e.g. ROAD-12.
-    cardId: cardDisplayId(prefix, card.number),
+    // The human-readable id automations reference, e.g. 12.
+    cardId: cardDisplayId(card.number),
     title: card.title,
     body: card.body,
     deadline: card.deadline,

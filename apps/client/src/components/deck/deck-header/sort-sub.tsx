@@ -1,4 +1,4 @@
-import { Button, Menu, MenuContent, MenuItem, MenuTrigger } from "@doska/ui-kit"
+import { MenuContent, MenuItem, MenuSub, MenuSubTrigger } from "@doska/ui-kit"
 import { SORT_MODES, type SortKey } from "@doska/core/utils"
 import { CalendarClock, Check, Flag, ListFilter } from "lucide-react"
 
@@ -12,39 +12,22 @@ interface IProps {
   onChangeSort: (sort: string[]) => void
 }
 
-export function SortMenu({ sort, onChangeSort }: IProps) {
+/** The board's card ordering: any mix of the keys, or none for manual order. */
+export function SortSub({ sort, onChangeSort }: IProps) {
   function toggleSort(key: string) {
-    if (sort.includes(key)) {
-      onChangeSort(sort.filter((k) => k !== key))
-    } else {
-      onChangeSort([...sort, key])
-    }
+    if (sort.includes(key)) onChangeSort(sort.filter((k) => k !== key))
+    else onChangeSort([...sort, key])
   }
 
   return (
-    <Menu>
-      <MenuTrigger
-        openOnHover
-        closeDelay={200}
-        render={
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Sort cards"
-            className={
-              sort.length
-                ? "bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/15"
-                : "text-muted-foreground"
-            }
-          />
-        }
-      >
+    <MenuSub>
+      <MenuSubTrigger>
         <ListFilter />
-      </MenuTrigger>
-      <MenuContent>
+        Sort cards
+      </MenuSubTrigger>
+      <MenuContent align="start" sideOffset={2}>
         {SORT_MODES.map(({ id, label }) => {
           const Icon = ICONS[id]
-
           return (
             <MenuItem
               key={id}
@@ -58,6 +41,6 @@ export function SortMenu({ sort, onChangeSort }: IProps) {
           )
         })}
       </MenuContent>
-    </Menu>
+    </MenuSub>
   )
 }

@@ -91,18 +91,13 @@ test.describe("card search", () => {
     await createBoard(page)
     await seedCard(page, "To Do", "Ship the redesign")
 
-    const displayId = await cardDisplayId(page, "Ship the redesign")
-    const number = displayId.split("-")[1]
+    const number = await cardDisplayId(page, "Ship the redesign")
     // Titled off the first card's real number, so the decoy genuinely competes
     // with it whatever number the server stamped.
     const decoy = `Sprint ${number} planning`
     await seedCard(page, "To Do", decoy)
 
     await openSearch(page)
-    await searchInput(page).pressSequentially(displayId)
-    await expect(results(page).first()).toContainText("Ship the redesign")
-
-    await searchInput(page).fill("")
     await searchInput(page).pressSequentially(number)
     await expect(results(page)).toHaveCount(2)
     await expect(results(page).first()).toContainText("Ship the redesign")

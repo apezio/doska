@@ -1,20 +1,22 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/hero-dark-v2.png">
-  <source media="(prefers-color-scheme: light)" srcset=".github/assets/hero-light-v2.png">
-  <img alt="Doska: Kanban for your own projects" src=".github/assets/hero-light-v2.png" width="820">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset=".github/assets/logo-light.png">
+  <img alt="Doska" src=".github/assets/logo-light.png" width="180">
+</picture>
+<p></p>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/tagline-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset=".github/assets/tagline-light.png">
+  <img alt="Open source · self-hosted · Kanban board · Markdown cards" src=".github/assets/tagline-light.png" width="460">
 </picture>
 <p></p>
 
 <p align="center">
   <a href="https://github.com/romenkova/doska/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/romenkova/doska?color=9585ff&label=release"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/romenkova/doska?color=7b8199"></a>
-  <br>
-  <a href="https://github.com/romenkova/doska/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/romenkova/doska/build.yml?branch=main&label=build"></a>
-  <a href="https://github.com/romenkova/doska/actions/workflows/test.yml"><img alt="Unit tests" src="https://img.shields.io/github/actions/workflow/status/romenkova/doska/test.yml?branch=main&label=tests"></a>
-  <a href="https://github.com/romenkova/doska/actions/workflows/e2e.yml"><img alt="End-to-end tests" src="https://img.shields.io/github/actions/workflow/status/romenkova/doska/e2e.yml?branch=main&label=e2e"></a>
-  <a href="https://github.com/romenkova/doska/actions/workflows/selfhost.yml"><img alt="Self-host stack" src="https://img.shields.io/github/actions/workflow/status/romenkova/doska/selfhost.yml?branch=main&label=self-host%20smoke"></a>
 </p>
 <p></p>
 

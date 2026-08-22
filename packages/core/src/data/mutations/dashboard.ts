@@ -20,15 +20,6 @@ export function useRenameDashboard() {
   })
 }
 
-export function useUpdateDashboardPrefix() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, prefix }: { id: string; prefix: string }) =>
-      api.setDashboardPrefix(id, prefix),
-    onSettled: () => qc.invalidateQueries({ queryKey: keys.dashboards }),
-  })
-}
-
 export function useSetDashboardSort() {
   const qc = useQueryClient()
   return useMutation({

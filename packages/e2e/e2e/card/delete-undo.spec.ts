@@ -80,8 +80,9 @@ test.describe("deleting a card with undo", () => {
     await boardWithCard(page, "Panel delete")
     await openCard(page, "Panel delete")
 
-    // Exact: the board card's own accessible name reads "Panel delete Card actions".
-    await page.getByRole("button", { name: "Delete card", exact: true }).click()
+    // Scoped to the panel: the board card behind it has a menu of the same name.
+    await cardPanel(page).getByRole("button", { name: "Card actions" }).click()
+    await page.getByRole("menuitem", { name: "Delete" }).click()
 
     // The open card is gone, so the panel cannot stay open on it.
     await page.waitForURL((url) => !url.pathname.includes("/c/"))

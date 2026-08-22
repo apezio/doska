@@ -15,10 +15,9 @@ interface IProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   boardId: string
-  prefix: string
 }
 
-export function SearchModal({ open, onOpenChange, boardId, prefix }: IProps) {
+export function SearchModal({ open, onOpenChange, boardId }: IProps) {
   const [, navigate] = useLocation()
   const { data: board } = useBoard(boardId)
   const reveal = useRevealCard()
@@ -112,7 +111,7 @@ export function SearchModal({ open, onOpenChange, boardId, prefix }: IProps) {
         >
           {trimmed === "" ? (
             <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-              Search by title, notes, or card id
+              Search by title or notes
             </p>
           ) : hits.length === 0 ? (
             <p className="px-3 py-6 text-center text-sm text-muted-foreground">
@@ -124,7 +123,6 @@ export function SearchModal({ open, onOpenChange, boardId, prefix }: IProps) {
                 key={hit.card.id}
                 id={optionId(index)}
                 hit={hit}
-                prefix={prefix}
                 active={index === activeIndex}
                 onSelect={() => select(hit)}
                 onHighlight={() => setActiveIndex(index)}

@@ -7,34 +7,31 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from "@doska/ui-kit"
-import { ArrowRightLeft, Hash, MoreHorizontal, Trash2 } from "lucide-react"
+import { ArrowRightLeft, MoreHorizontal, Trash2 } from "lucide-react"
 import { ConfirmDialog } from "../../confirm-dialog"
 import { ReorderColumnsModal } from "../reorder-columns/reorder-columns-modal"
-import { PrefixModal } from "../prefix-modal"
+import { SortSub } from "./sort-sub"
 import type { Column } from "@doska/core/types"
 
 interface IProps {
   title: string
-  prefix: string
-  takenPrefixes: string[]
   columns: Column[]
-  onRenamePrefix: (prefix: string) => void
+  sort: string[]
+  onChangeSort: (sort: string[]) => void
   onDelete: () => void
   onReorderColumns: (changed: Column[]) => void
 }
 
 export function BoardActionsMenu({
   title,
-  prefix,
-  takenPrefixes,
   columns,
-  onRenamePrefix,
+  sort,
+  onChangeSort,
   onDelete,
   onReorderColumns,
 }: IProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [reorderOpen, setReorderOpen] = useState(false)
-  const [prefixOpen, setPrefixOpen] = useState(false)
 
   return (
     <>
@@ -52,15 +49,7 @@ export function BoardActionsMenu({
           <MoreHorizontal />
         </MenuTrigger>
         <MenuContent>
-          <MenuItem onClick={() => setPrefixOpen(true)}>
-            <Hash />
-            Card prefix
-            {prefix && (
-              <span className="ml-auto pl-4 font-mono text-muted-foreground">
-                {prefix}
-              </span>
-            )}
-          </MenuItem>
+          <SortSub sort={sort} onChangeSort={onChangeSort} />
           <MenuItem
             onClick={() => setReorderOpen(true)}
             disabled={columns.length < 2}
@@ -91,13 +80,6 @@ export function BoardActionsMenu({
         onOpenChange={setReorderOpen}
         columns={columns}
         onReorder={onReorderColumns}
-      />
-      <PrefixModal
-        open={prefixOpen}
-        onOpenChange={setPrefixOpen}
-        prefix={prefix}
-        taken={takenPrefixes}
-        onCommit={onRenamePrefix}
       />
     </>
   )

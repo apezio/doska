@@ -1,5 +1,5 @@
 import { taskProgress } from "@doska/markdown"
-import { PriorityChip, Text } from "@doska/ui-kit-mobile"
+import { PriorityChip } from "@doska/ui-kit-mobile"
 import { router } from "expo-router"
 import { Pressable, View } from "react-native"
 import { DeadlineChip } from "@/components/card/deadline-chip"
@@ -8,7 +8,6 @@ import { ROUTES } from "@/lib/routes"
 
 interface IProps {
   cardId: string
-  displayId: string
   body: string
   deadline: string | null
   priority: string
@@ -16,26 +15,16 @@ interface IProps {
   done: boolean
 }
 
-/** A card's id, task progress, deadline and priority — the same row the web
- * card shows. */
-export function CardMeta({
-  cardId,
-  displayId,
-  body,
-  deadline,
-  priority,
-  done,
-}: IProps) {
+/** A card's task progress, deadline and priority — the same row the web card
+ * shows. */
+export function CardMeta({ cardId, body, deadline, priority, done }: IProps) {
   const tasks = taskProgress(body)
 
   return (
     <View className="flex-row items-center gap-4 py-2">
-      {displayId.length > 0 && (
-        <Text className="font-mono text-xs text-muted-foreground">
-          #{displayId}
-        </Text>
-      )}
       {tasks.total > 0 && <TaskCount {...tasks} />}
+      {/* Nested in the board card's Pressable, which it shadows: the chip is
+          the deadline control on the card as well as in its sheet. */}
       <Pressable
         onPress={() => router.push(ROUTES.cardDeadline(cardId))}
         accessibilityRole="button"

@@ -206,7 +206,6 @@ describe("mcp is scoped to its token's user", () => {
             id: "b1",
             title: "From the web app",
             position: "a",
-            prefix: "WEB",
             updatedAt: 1_000,
             deletedAt: null,
           },

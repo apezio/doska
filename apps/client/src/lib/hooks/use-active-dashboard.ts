@@ -23,7 +23,6 @@ export function useActiveDashboard(deckId?: string) {
     id: deckId ?? "",
     title: "",
     position: generateKeyBetween(null, null),
-    prefix: "",
     sort: [],
     deletedAt: null,
     updatedAt: 0,

@@ -1,4 +1,3 @@
-import { cardDisplayId } from "@doska/contract/prefix"
 import { cardSoleImage } from "@doska/core/card-sole-image"
 import type { CardPatch } from "@doska/core/mutations"
 import type { Card } from "@doska/core/types"
@@ -19,7 +18,6 @@ const BOARD_MARKERS = [cut]
 interface IProps {
   card: Card
   deckId: string
-  prefix: string
   /** The card's column is collapsed, so only the title and meta show. */
   showBody: boolean
   /** The card sits in the board's done column. */
@@ -31,7 +29,6 @@ interface IProps {
 export const BoardCard = memo(function BoardCard({
   card,
   deckId,
-  prefix,
   showBody,
   done,
   onPatch,
@@ -100,7 +97,6 @@ export const BoardCard = memo(function BoardCard({
       <View className="border-t border-muted px-3 pt-2">
         <CardMeta
           cardId={card.id}
-          displayId={cardDisplayId(prefix, card.number) ?? ""}
           body={card.body}
           deadline={card.deadline}
           priority={card.priority}
@@ -111,12 +107,7 @@ export const BoardCard = memo(function BoardCard({
       <CardAttachments cardId={card.id} isReadonly className="px-3" />
 
       {showBody && (
-        <CardPreview
-          card={card}
-          deckId={deckId}
-          prefix={prefix}
-          onPatch={onPatch}
-        />
+        <CardPreview card={card} deckId={deckId} onPatch={onPatch} />
       )}
     </Pressable>
   )

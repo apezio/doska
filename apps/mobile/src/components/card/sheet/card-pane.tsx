@@ -5,7 +5,7 @@ import {
 } from "@doska/markdown"
 import type { Card } from "@doska/core/types"
 import { useCardRefOptions } from "@doska/core/card-refs"
-import { useCardDeck } from "@doska/core/queries"
+import { useCardDeckId } from "@doska/core/queries"
 import { cn, TextField } from "@doska/ui-kit-mobile"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { ScrollView, View } from "react-native"
@@ -35,7 +35,7 @@ interface IProps {
 export function CardPane({ cardId, content, onQueue }: IProps) {
   const insets = useSafeAreaInsets()
   const keyboard = useKeyboardHeight()
-  const { data: deck } = useCardDeck(cardId)
+  const { data: deckId } = useCardDeckId(cardId)
 
   const [draft, setDraft] = useState<Draft>({})
   // Decided at mount, never re-derived: once you type, `content.body` is no
@@ -50,7 +50,7 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
     onQueue(cardId, patch)
   }
 
-  const cardRefs = useCardRefOptions(deck?.id ?? "", deck?.prefix ?? "", cardId)
+  const cardRefs = useCardRefOptions(deckId ?? "", cardId)
   const refTargets = useMemo(
     () => cardRefs.map((option) => option.target),
     [cardRefs]
@@ -137,7 +137,6 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
           body={body}
           deadline={content.deadline}
           priority={content.priority}
-          cardNumber={content.number}
         />
         <CardAttachments
           cardId={cardId}
@@ -159,8 +158,7 @@ export function CardPane({ cardId, content, onQueue }: IProps) {
         <CardBody
           cardId={cardId}
           body={body}
-          deckId={deck?.id ?? ""}
-          prefix={deck?.prefix ?? ""}
+          deckId={deckId ?? ""}
           refTargets={refTargets}
           isPreview={isPreview}
           onChangeBody={(value) => edit({ body: value })}

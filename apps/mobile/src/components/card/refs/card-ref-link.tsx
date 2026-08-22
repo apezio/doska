@@ -7,18 +7,18 @@ import { ROUTES } from "@/lib/routes"
 
 interface IProps {
   deckId: string
-  prefix: string
   displayId: string
+  /** The label as in `[[12|Fix the sync bug]]`. */
   alias?: string
 }
 
 /**
- * A `[[ROAD-12]]` reference inside a card body: the card's title, led by a dot
+ * A `[[12]]` reference inside a card body: the card's title, led by a dot
  * in its column's color.
  */
-export function CardRefLink({ deckId, prefix, displayId, alias }: IProps) {
+export function CardRefLink({ deckId, displayId, alias }: IProps) {
   const tokens = useTokens()
-  const ref = useCardRef(deckId, prefix, displayId)
+  const ref = useCardRef(deckId, displayId)
 
   if (!ref)
     return (

@@ -5,9 +5,10 @@ import {
   Menu,
   MenuTrigger,
   useIsMobile,
+  type MenuActions,
 } from "@doska/ui-kit"
 import { MoreHorizontal } from "lucide-react"
-import type { ReactNode } from "react"
+import { useRef, type ReactNode } from "react"
 import { CardMenuItems } from "./menu-items"
 
 interface IProps {
@@ -16,8 +17,10 @@ interface IProps {
 }
 
 export function CardMenu({ cardId, onEdit }: IProps) {
+  const actionsRef = useRef<MenuActions>(null)
+
   return (
-    <Menu>
+    <Menu actionsRef={actionsRef}>
       <MenuTrigger
         render={
           <Button
@@ -30,7 +33,11 @@ export function CardMenu({ cardId, onEdit }: IProps) {
       >
         <MoreHorizontal />
       </MenuTrigger>
-      <CardMenuItems cardId={cardId} onEdit={onEdit} />
+      <CardMenuItems
+        cardId={cardId}
+        onEdit={onEdit}
+        closeMenu={() => actionsRef.current?.close()}
+      />
     </Menu>
   )
 }
@@ -42,13 +49,19 @@ export function CardContextMenu({
   onEdit,
 }: IProps & { children: ReactNode; isEnabled?: boolean }) {
   const isMobile = useIsMobile()
+  const actionsRef = useRef<MenuActions>(null)
 
   if (!isEnabled || isMobile) return children
 
   return (
-    <ContextMenu>
+    <ContextMenu actionsRef={actionsRef}>
       <ContextMenuTrigger>{children}</ContextMenuTrigger>
-      <CardMenuItems align="start" cardId={cardId} onEdit={onEdit} />
+      <CardMenuItems
+        align="start"
+        cardId={cardId}
+        onEdit={onEdit}
+        closeMenu={() => actionsRef.current?.close()}
+      />
     </ContextMenu>
   )
 }

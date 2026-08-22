@@ -18,9 +18,8 @@ const EDITOR_TEXT = "px-4 py-2 font-mono text-subheadline leading-[22px]"
 interface IProps {
   cardId: string
   body: string
-  /** The card's board, for the `[[ROAD-12]]` refs in its body. */
+  /** The card's board, for the `[[12]]` refs in its body. */
   deckId: string
-  prefix: string
   /** Refs that resolve, so the overlay can grey out the ones that do not. */
   refTargets: string[]
   isPreview: boolean
@@ -37,7 +36,6 @@ export function CardBody({
   cardId,
   body,
   deckId,
-  prefix,
   refTargets,
   isPreview,
   onChangeBody,
@@ -86,7 +84,7 @@ export function CardBody({
 
   return (
     <Pressable onPress={onEdit} className="grow px-4 py-2">
-      <CardMarkdown cardId={cardId} deckId={deckId} prefix={prefix}>
+      <CardMarkdown cardId={cardId} deckId={deckId}>
         <MarkdownView
           onToggleTask={(index) => onChangeBody(toggleTaskByIndex(body, index))}
         >

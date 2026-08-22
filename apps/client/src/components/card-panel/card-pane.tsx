@@ -24,8 +24,6 @@ export function CardPane({
   onReveal,
 }: IProps) {
   const [draft, setDraft] = useState<Draft>({})
-  // Decided at mount, never re-derived: once you type, `content.body` is no
-  // longer evidence the card opened with notes.
   const [isPreview, setPreview] = useState(() => Boolean(content.body.trim()))
 
   const edit = (patch: Draft) => {

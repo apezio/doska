@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useLocation, useRoute } from "wouter"
-import type { DigestFilter } from "@doska/core/operations"
+import { groupByDeadline, type DigestFilter } from "@doska/core/operations"
 import { sync } from "@doska/core/sync"
 import { useDashboards, useDigest } from "@doska/core/queries"
 import { routes } from "@/lib/routes"
@@ -12,6 +12,7 @@ export function DigestView() {
   const [, navigate] = useLocation()
   const [, params] = useRoute(routes.card.pattern)
   const [filter, setFilter] = useState<DigestFilter>("week")
+  const [hideDone, setHideDone] = useState(false)
 
   const { data: dashboards = [] } = useDashboards()
   const { data: entries = [], isPending, error } = useDigest(filter)
@@ -25,13 +26,17 @@ export function DigestView() {
     return () => void sync.watchBoards([])
   }, [boardIds])
 
+  const visible = hideDone ? entries.filter((e) => !e.isDone) : entries
+
   return (
     <Digest
       filter={filter}
       onChangeFilter={setFilter}
-      entries={entries}
+      groups={groupByDeadline(visible)}
       isLoading={isPending}
       error={error}
+      hideDone={hideDone}
+      onToggleHideDone={() => setHideDone((v) => !v)}
       openCardId={params?.id ?? null}
       onOpenCard={(entry) => navigate(routes.card.to(entry.card.id))}
     />

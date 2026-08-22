@@ -31,10 +31,10 @@ export const keys = {
   directory: ["directory"] as const,
   unclaimedLocalBoards: ["unclaimed-local-boards"] as const,
   /** Both sit under the board key, so a board invalidation refreshes them. */
-  cardRefOptions: (deckId: string, prefix: string) =>
-    ["board", deckId, "ref-options", prefix] as const,
-  cardRef: (deckId: string, prefix: string, displayId: string) =>
-    ["board", deckId, "ref", prefix, displayId] as const,
+  cardRefOptions: (deckId: string) =>
+    ["board", deckId, "ref-options"] as const,
+  cardRef: (deckId: string, displayId: string) =>
+    ["board", deckId, "ref", displayId] as const,
 }
 
 /**

@@ -29,10 +29,10 @@ export function CardBodyEditor({
   onChangeBody,
   overlayContainer,
 }: IProps) {
-  const { id: deckId, prefix } = useDeck()
+  const { id: deckId } = useDeck()
   const { data: card } = useCard(cardId)
   const { addFiles } = useUploads()
-  const cardRefs = useCardRefOptions(deckId, prefix, cardId)
+  const cardRefs = useCardRefOptions(deckId, cardId)
   const attachments = card?.attachments
 
   const slashCommands = useMemo(

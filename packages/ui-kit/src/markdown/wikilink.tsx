@@ -3,7 +3,7 @@ import type { KeyboardEvent, MouseEvent } from "react"
 import { cn } from "../lib/cn"
 
 interface IProps {
-  /** The raw `[[target]]`, e.g. `ROAD-12`. */
+  /** The raw `[[target]]`, e.g. `12`. */
   target: string
   /** What to show for the target — either resolved, or written into the text. */
   label?: string

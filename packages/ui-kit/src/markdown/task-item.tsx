@@ -24,7 +24,7 @@ export function MdTaskItem({
       className={cn(
         "my-[0.2rem] -ml-4 list-none",
         "[&>p]:m-0 [&>p:first-of-type]:inline",
-        checked && "text-muted-foreground"
+        checked && "text-muted-foreground/70 dark:text-muted-foreground"
       )}
     >
       {/* The item may sit inside a card's open-detail handler. */}

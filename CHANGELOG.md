@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.20.0] - 2026-08-22
+
+### Added
+
+- Row view: a board can be shown as one list of rows grouped by deadline,
+  overdue first and undated last. 
+
+### Changed
+
+- UI simplification.
+- `@doska/client-db` has a SQLite adapter for futute integration with mobile.
+
+### Removed
+
+- Board prefixes. 
+
+### Fixed
+
+- The trash listed empty untitled cards, columns and boards.
+
 ## [0.19.0] - 2026-08-17
 
 ### Added

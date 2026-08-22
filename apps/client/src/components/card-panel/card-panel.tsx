@@ -2,7 +2,7 @@ import { useIsMobile } from "@doska/ui-kit"
 import { useCallback, useEffect, useState } from "react"
 import { useLocation, useRoute } from "wouter"
 import { routes } from "@/lib/routes"
-import { useDeck, useDeckSort } from "@/providers/deck/deck-context"
+import { useDeck } from "@/providers/deck/deck-context"
 import { useRevealCard } from "@/providers/card-reveal/card-reveal-context"
 import { useCardDeleteToast } from "@/components/toasts/card-delete/use-card-delete-toast"
 import { CardPane } from "./card-pane"
@@ -40,13 +40,6 @@ export function CardPanel({ closeHref }: IProps) {
     navigate(closeHref)
   }, [flush, navigate, closeHref])
 
-  const deckSort = useDeckSort()
-
-  const closeAndReveal = useCallback(() => {
-    close()
-    if (card && !!deckSort.length) reveal(card)
-  }, [close, card, deckSort, reveal])
-
   useEffect(() => {
     if (isOpen && content?.deletedAt) close()
   }, [isOpen, content?.deletedAt, close])
@@ -54,7 +47,7 @@ export function CardPanel({ closeHref }: IProps) {
   return (
     <CardPanelShell
       isOpen={isOpen}
-      onClose={closeAndReveal}
+      onClose={close}
       onClosed={() => setLastCard(null)}
     >
       {card && content && (
@@ -63,7 +56,7 @@ export function CardPanel({ closeHref }: IProps) {
           cardId={card}
           content={content}
           onQueue={queue}
-          onClose={closeAndReveal}
+          onClose={close}
           onDelete={() => {
             deleteCard(card)
             showCardDeleteToast(card, {

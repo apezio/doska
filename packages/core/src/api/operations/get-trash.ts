@@ -27,9 +27,7 @@ export function expiryLabel(expiresAt: number): string {
 
 /**
  * What the trash shows: one entry per deletion the user performed, newest
- * first. A deletion cascades, so only the topmost tombstone of each is listed —
- * the cards inside a deleted column are part of that column's entry, not
- * separate rows. Restoring an entry brings its cascade back with it.
+ * first.
  */
 export async function getTrash(): Promise<TrashEntry[]> {
   const [dashboards, columns, cards] = await Promise.all([
@@ -50,6 +48,8 @@ export async function getTrash(): Promise<TrashEntry[]> {
     const deletedAt = dashboard.deletedAt
     if (deletedAt === null) continue
     const own = columns.filter((c) => c.dashboardId === dashboard.id)
+    const cardCount = own.reduce((n, c) => n + cardsIn(c.id), 0)
+    if (!dashboard.title.trim() && cardCount === 0) continue
     entries.push({
       kind: "dashboards",
       id: dashboard.id,
@@ -57,7 +57,7 @@ export async function getTrash(): Promise<TrashEntry[]> {
       context: "Board",
       deletedAt,
       expiresAt: deletedAt + RETENTION_MS,
-      cardCount: own.reduce((n, c) => n + cardsIn(c.id), 0),
+      cardCount,
     })
   }
 
@@ -65,6 +65,8 @@ export async function getTrash(): Promise<TrashEntry[]> {
     const deletedAt = column.deletedAt
     const board = boardById.get(column.dashboardId)
     if (deletedAt === null || !board || !live(board)) continue
+    const cardCount = cardsIn(column.id)
+    if (!column.title.trim() && cardCount === 0) continue
     entries.push({
       kind: "columns",
       id: column.id,
@@ -72,7 +74,7 @@ export async function getTrash(): Promise<TrashEntry[]> {
       context: board.title || "Untitled board",
       deletedAt,
       expiresAt: deletedAt + RETENTION_MS,
-      cardCount: cardsIn(column.id),
+      cardCount,
     })
   }
 
@@ -86,6 +88,12 @@ export async function getTrash(): Promise<TrashEntry[]> {
       !live(column) ||
       !board ||
       !live(board)
+    )
+      continue
+    if (
+      !card.title.trim() &&
+      !card.body.trim() &&
+      card.attachments.length === 0
     )
       continue
     entries.push({

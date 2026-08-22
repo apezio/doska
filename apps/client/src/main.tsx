@@ -26,9 +26,6 @@ import "./index.css"
 
 const root = createRoot(document.getElementById("root")!)
 
-// A share link is a different application on the same bundle: its visitor has
-// no account, so seeding a local database and starting a sync loop for them
-// would be writing to a browser that never asked for any of it.
 const isPublicLink = routes.public.matches(window.location.pathname)
 
 trackAppHeight()
@@ -54,7 +51,6 @@ if (isPublicLink) {
 
   initExternalLinks()
 
-  // Not awaited: the answer only affects eviction policy, never this render.
   if (!isDesktop()) void requestPersistentStorage()
 
   root.render(

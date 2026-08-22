@@ -12,17 +12,23 @@ interface IProps {
 
 /** A markdown task's box. */
 export function Checkbox({ checked, onPress, className }: IProps) {
-  const { primaryForeground } = useTokens()
+  const { dark, primary, primaryForeground } = useTokens()
 
   const box = (
     <View
       className={cn(
         "size-5 items-center justify-center rounded-[5px] border",
-        checked ? "border-primary bg-primary" : "border-input",
+        checked ? "border-primary bg-checkbox-fill" : "border-input",
         className
       )}
     >
-      {checked && <Check size={14} strokeWidth={3} color={primaryForeground} />}
+      {checked && (
+        <Check
+          size={14}
+          strokeWidth={3}
+          color={dark ? primaryForeground : primary}
+        />
+      )}
     </View>
   )
 

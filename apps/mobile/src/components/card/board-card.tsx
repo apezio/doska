@@ -2,10 +2,11 @@ import { cardSoleImage } from "@doska/core/card-sole-image"
 import type { CardPatch } from "@doska/core/mutations"
 import type { Card } from "@doska/core/types"
 import { cut, soleImage, taskProgress, useMarkers } from "@doska/markdown"
-import { IconButton, Text } from "@doska/ui-kit-mobile"
+import { cn, IconButton, Text } from "@doska/ui-kit-mobile"
+import { useTokens } from "@doska/ui-kit-mobile/tokens"
 import { router } from "expo-router"
 import MoreHorizontal from "lucide-react-native/icons/ellipsis"
-import { memo } from "react"
+import { memo, type ReactNode } from "react"
 import { Pressable, View } from "react-native"
 import { CardAttachmentImage } from "@/components/card/attachments/card-attachment-image"
 import { CardAttachments } from "@/components/card/attachments/card-attachments"
@@ -23,6 +24,14 @@ interface IProps {
   /** The card sits in the board's done column. */
   done: boolean
   onPatch: (id: string, patch: CardPatch) => void
+  /** Opens the title row, for a checkbox or the like. */
+  lead?: ReactNode
+  /** Opens the meta row, for the card's column or board. */
+  metaLead?: ReactNode
+  /** Off where a card whose whole body is one image should still read as an
+   * ordinary card, as in the digest. */
+  imageCard?: boolean
+  className?: string
 }
 
 /** A board card: title, meta row, then the cut-truncated body preview. */
@@ -32,7 +41,12 @@ export const BoardCard = memo(function BoardCard({
   showBody,
   done,
   onPatch,
+  lead,
+  metaLead,
+  imageCard = true,
+  className,
 }: IProps) {
+  const { elevation1 } = useTokens()
   const { body: preview, applied } = useMarkers(
     card.body,
     BOARD_MARKERS,
@@ -41,11 +55,14 @@ export const BoardCard = memo(function BoardCard({
   const hasBody = preview.trim().length > 0
   const bodyImage =
     hasBody && !applied.includes(cut.name) ? soleImage(preview) : null
-  const sole = cardSoleImage(hasBody, bodyImage, card.attachments ?? [])
+  const sole = imageCard
+    ? cardSoleImage(hasBody, bodyImage, card.attachments ?? [])
+    : null
   const bleedKey = sole?.source.kind === "attachment" ? sole.source.key : null
 
   const tasks = taskProgress(card.body)
-  const hasMeta = tasks.total > 0 || !!card.deadline || !!card.priority
+  const hasMeta =
+    !!metaLead || tasks.total > 0 || !!card.deadline || !!card.priority
 
   const actions = (
     <IconButton
@@ -61,6 +78,7 @@ export const BoardCard = memo(function BoardCard({
     return (
       <Pressable
         onPress={() => router.push(ROUTES.card(card.id))}
+        style={{ boxShadow: elevation1 }}
         className="overflow-hidden rounded-xl border border-card-ring bg-card active:opacity-70"
       >
         {!!card.title && (
@@ -88,17 +106,22 @@ export const BoardCard = memo(function BoardCard({
   return (
     <Pressable
       onPress={() => router.push(ROUTES.card(card.id))}
-      className="gap-2 overflow-hidden rounded-xl border border-card-ring bg-card py-2 active:opacity-70"
+      style={{ boxShadow: elevation1 }}
+      className={cn(
+        "gap-2 overflow-hidden rounded-xl border border-card-ring bg-card py-2 active:opacity-70",
+        className
+      )}
     >
       <View className="flex-row items-start gap-2 px-3">
-        <Text className="flex-1 text-lg font-sans-semibold text-card-foreground">
+        {lead}
+        <Text className="flex-1 text-lg font-sans-semibold leading-snug text-card-foreground">
           {card.title || "Untitled card"}
         </Text>
         {actions}
       </View>
 
       {hasMeta && (
-        <View className="border-t border-muted px-3 pt-2">
+        <View className="border-t border-border px-3 pt-2">
           <CardMeta
             cardId={card.id}
             body={card.body}
@@ -106,11 +129,14 @@ export const BoardCard = memo(function BoardCard({
             priority={card.priority}
             done={done}
             tasks={tasks}
+            lead={metaLead}
           />
         </View>
       )}
 
-      <CardAttachments cardId={card.id} isReadonly className="px-3" />
+      {showBody && (
+        <CardAttachments cardId={card.id} isReadonly className="px-3" />
+      )}
 
       {showBody && (
         <CardPreview card={card} deckId={deckId} onPatch={onPatch} />

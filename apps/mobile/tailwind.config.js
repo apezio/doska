@@ -47,6 +47,8 @@ module.exports = {
         "quote-bar": color("quote-bar"),
         "card-ring": color("card-ring"),
         "button-muted": color("button-muted"),
+        "checkbox-fill": color("checkbox-fill"),
+        "column-neutral": color("column-neutral"),
         deadline: {
           overdue: color("deadline-overdue"),
           soon: color("deadline-soon"),

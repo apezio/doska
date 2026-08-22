@@ -34,7 +34,7 @@ export function CardPreview({ card, deckId, onPatch }: IProps) {
   if (!preview.trim()) return null
 
   return (
-    <View className="gap-1 border-t border-muted px-3 pt-2">
+    <View className="gap-1 border-t border-border px-3 pt-2">
       <CardMarkdown cardId={card.id} deckId={deckId}>
         <MarkdownView onToggleTask={toggleTask}>{preview}</MarkdownView>
       </CardMarkdown>

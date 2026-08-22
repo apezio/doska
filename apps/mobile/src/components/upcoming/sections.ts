@@ -3,8 +3,10 @@ import { deadlineLabel, longDate, weekday } from "@doska/core/utils"
 
 export interface GroupSection {
   title: string
-  /** The weekday and the countdown, empty for the dateless piles. */
-  aside: string
+  /** The heading's weekday, empty for the dateless piles. */
+  day: string
+  /** The countdown beside it, empty for the dateless piles. */
+  countdown: string
   kind: DigestGroup["kind"]
 }
 
@@ -12,6 +14,7 @@ export interface GroupSection {
 export function toSection(group: DigestGroup): GroupSection & {
   data: DigestGroup["entries"]
 } {
+  const dated = group.kind === "date"
   return {
     title:
       group.kind === "overdue"
@@ -19,10 +22,8 @@ export function toSection(group: DigestGroup): GroupSection & {
         : group.kind === "undated"
           ? "No deadline"
           : longDate(group.date),
-    aside:
-      group.kind === "date"
-        ? `${weekday(group.date)} · ${deadlineLabel(group.date)}`
-        : "",
+    day: dated ? weekday(group.date) : "",
+    countdown: dated ? deadlineLabel(group.date) : "",
     kind: group.kind,
     data: group.entries,
   }

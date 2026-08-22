@@ -1,5 +1,6 @@
 import { taskProgress, type TaskProgress } from "@doska/markdown"
 import { PriorityChip } from "@doska/ui-kit-mobile"
+import type { ReactNode } from "react"
 import { router } from "expo-router"
 import { Pressable, View } from "react-native"
 import { DeadlineChip } from "@/components/card/deadline-chip"
@@ -15,6 +16,8 @@ interface IProps {
   done: boolean
   /** Already-counted progress, for a caller that needed the count itself. */
   tasks?: TaskProgress
+  /** Opens the row, for the card's column or board. */
+  lead?: ReactNode
 }
 
 /** A card's task progress, deadline and priority. An unset deadline or priority
@@ -26,12 +29,14 @@ export function CardMeta({
   priority,
   done,
   tasks,
+  lead,
 }: IProps) {
   const { done: doneTasks, total } = tasks ?? taskProgress(body)
-  if (total === 0 && !deadline && !priority) return null
+  if (!lead && total === 0 && !deadline && !priority) return null
 
   return (
     <View className="flex-row items-center gap-4 py-2">
+      {lead}
       {total > 0 && <TaskCount done={doneTasks} total={total} />}
       {/* Nested in the board card's Pressable, which it shadows: the chip is
           the deadline control on the card as well as in its sheet. */}

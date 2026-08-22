@@ -18,6 +18,11 @@
 
   --card-ring: #343c541a;
   --button-muted: #676d7f0d;
+
+  /* Tailwind v3 cannot put an opacity modifier on a `var()` colour, so the
+     translucent shades the web writes as `/10` are their own tokens here. */
+  --checkbox-fill: #725cff1a;
+  --column-neutral: #606a8566;
 }
 
 .dark:root {
@@ -30,4 +35,7 @@
 
   --card-ring: #f7f7f81a;
   --button-muted: #ffffff0a;
+
+  --checkbox-fill: #9585ff26;
+  --column-neutral: #9299b066;
 }

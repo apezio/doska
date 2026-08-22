@@ -21,7 +21,7 @@ export function CardPaneHeader({ cardId, body, deadline, priority }: IProps) {
   const { data: column } = useCardCol(cardId)
 
   return (
-    <View className="flex-row items-center gap-4 border-b border-muted px-4 pb-2.5 pt-5">
+    <View className="flex-row items-center gap-4 border-b border-border px-4 pb-2.5 pt-5">
       <CardMeta
         cardId={cardId}
         body={body}

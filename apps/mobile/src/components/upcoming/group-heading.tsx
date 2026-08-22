@@ -7,18 +7,25 @@ export function GroupHeading({ section }: { section: GroupSection }) {
     <View className="flex-row items-baseline gap-2 pt-3">
       <Text
         className={cn(
-          "text-xs font-sans-semibold uppercase",
+          "text-base font-sans-bold",
           section.kind === "overdue"
             ? "text-destructive"
-            : "text-muted-foreground"
+            : section.kind === "undated"
+              ? "text-muted-foreground"
+              : "text-foreground"
         )}
       >
         {section.title}
       </Text>
-      {section.aside.length > 0 && (
-        <Text className="text-xs text-muted-foreground/70">
-          {section.aside}
-        </Text>
+      {section.kind === "date" && (
+        <>
+          <Text className="text-footnote text-muted-foreground">
+            {section.day}
+          </Text>
+          <Text className="text-footnote text-muted-foreground">
+            {section.countdown}
+          </Text>
+        </>
       )}
     </View>
   )

@@ -15,9 +15,7 @@ interface IProps {
 export function PublicAttachments({ attachments, token, className }: IProps) {
   const [viewing, setViewing] = useState<Attachment | null>(null)
 
-  const urls = Object.fromEntries(
-    attachments.map((a) => [a.key, publicAttachmentUrl(token, a.key)])
-  )
+  const urlFor = (att: Attachment) => publicAttachmentUrl(token, att.key)
 
   return (
     <>
@@ -26,19 +24,16 @@ export function PublicAttachments({ attachments, token, className }: IProps) {
         className={className}
         onOpen={(att) => {
           if (isRenderableImage(att.mime)) setViewing(att)
-          else window.open(urls[att.key], "_blank")
+          else window.open(urlFor(att), "_blank")
         }}
       />
       <AttachmentViewer
         attachment={viewing}
-        src={viewing ? urls[viewing.key] : null}
+        src={viewing ? urlFor(viewing) : null}
         source="token"
         onClose={() => setViewing(null)}
         onDownload={() => {
-          if (!viewing) return
-          const url = urls[viewing.key]
-          if (!url) throw new Error("no url for this attachment")
-          window.open(url, "_blank")
+          if (viewing) window.open(urlFor(viewing), "_blank")
         }}
       />
     </>

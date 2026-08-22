@@ -32,7 +32,7 @@ interface IProps extends React.ComponentProps<"textarea"> {
    * component's list and vanish again when the preview closes.
    */
   renderPreview: ComponentType<PreviewProps>
-  value?: string
+  value: string
   markers?: Marker[]
   onToggleTask?: (value: string) => void
   /** Enables the `/` slash command menu. Off by default. */
@@ -41,7 +41,6 @@ interface IProps extends React.ComponentProps<"textarea"> {
   highlight?: boolean
   /** Overrides the default slash commands. */
   slashCommands?: SlashCommand[]
-  /** Required when `slashMenu` is on, to apply inserted commands. */
   onChangeValue?: (value: string) => void
   /** Targets the `[[` wikilink menu can offer. Omit to disable the menu. */
   wikilinks?: WikilinkOption[]
@@ -56,7 +55,6 @@ interface IProps extends React.ComponentProps<"textarea"> {
 }
 
 const NO_MARKERS: Marker[] = []
-const NOOP = () => {}
 
 export function MarkdownTextarea({
   isPreview,
@@ -73,27 +71,23 @@ export function MarkdownTextarea({
   overlayContainer,
   ...props
 }: IProps) {
-  const value = typeof props.value === "string" ? props.value : ""
+  const value = props.value
   const { body } = useMarkers(value, markers, "preview")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  useCutLine(textareaRef, {
-    value,
-    onChangeValue: onChangeValue ?? NOOP,
-    enabled: !isPreview && Boolean(onChangeValue),
-  })
+  useCutLine(textareaRef, { value, onChangeValue, enabled: !isPreview })
 
   useListContinuation(textareaRef, {
     value,
-    onChangeValue: onChangeValue ?? NOOP,
-    enabled: !isPreview && Boolean(onChangeValue),
+    onChangeValue,
+    enabled: !isPreview,
   })
 
   useCaretScroll(textareaRef, !isPreview)
 
   const handlePaste = usePasteFiles(textareaRef, {
     value,
-    onChangeValue: onChangeValue ?? NOOP,
+    onChangeValue,
     onPasteFiles,
   })
 
@@ -152,20 +146,20 @@ export function MarkdownTextarea({
           highlight && "text-transparent caret-foreground"
         )}
       />
-      {slashMenu && (
+      {slashMenu && onChangeValue && (
         <SlashMenu
           textareaRef={textareaRef}
           value={value}
-          onChangeValue={onChangeValue ?? NOOP}
+          onChangeValue={onChangeValue}
           commands={slashCommands}
           overlayContainer={overlayContainer}
         />
       )}
-      {wikilinks && wikilinks.length > 0 && (
+      {wikilinks && wikilinks.length > 0 && onChangeValue && (
         <WikilinkMenu
           textareaRef={textareaRef}
           value={value}
-          onChangeValue={onChangeValue ?? NOOP}
+          onChangeValue={onChangeValue}
           options={wikilinks}
         />
       )}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Check, Copy } from "lucide-react"
 import { cn } from "../lib/cn"
+import { copyText } from "../lib/copy-text"
 
 export function MdCodeBlock({
   value,
@@ -17,7 +18,7 @@ export function MdCodeBlock({
   async function copy(e: React.MouseEvent) {
     // The block may sit inside a card's open-detail handler.
     e.stopPropagation()
-    await navigator.clipboard?.writeText(value)
+    if (!(await copyText(value))) return
     setCopied(true)
     clearTimeout(timer.current)
     timer.current = setTimeout(() => setCopied(false), 1000)

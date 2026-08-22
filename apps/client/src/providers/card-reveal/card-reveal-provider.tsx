@@ -18,23 +18,23 @@ const PANEL_SETTLE_MS = 300
 
 export function CardRevealProvider({ children }: { children: ReactNode }) {
   const [revealed, setRevealed] = useState<string | null>(null)
-  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const flashTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const scrollTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useEffect(
     () => () => {
-      clearTimeout(flashTimer.current ?? undefined)
-      clearTimeout(scrollTimer.current ?? undefined)
+      clearTimeout(flashTimer.current)
+      clearTimeout(scrollTimer.current)
     },
     []
   )
 
   const reveal = useCallback((id: string) => {
     setRevealed(id)
-    clearTimeout(flashTimer.current ?? undefined)
+    clearTimeout(flashTimer.current)
     flashTimer.current = setTimeout(() => setRevealed(null), FLASH_MS)
 
-    clearTimeout(scrollTimer.current ?? undefined)
+    clearTimeout(scrollTimer.current)
     scrollTimer.current = setTimeout(() => {
       document
         .querySelector(`[data-rfd-draggable-id="${id}"]`)

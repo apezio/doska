@@ -42,8 +42,8 @@ function remember(token: string, board: PublicBoard, now: number): void {
   // Insertion order is age order here (an entry is never updated in place), so
   // the first key is the oldest.
   if (snapshots.size >= CACHE_MAX) {
-    const oldest = snapshots.keys().next().value
-    if (oldest !== undefined) snapshots.delete(oldest)
+    const [oldest] = snapshots.keys()
+    snapshots.delete(oldest)
   }
   snapshots.set(token, { board, expiresAt: now + CACHE_TTL_MS })
 }

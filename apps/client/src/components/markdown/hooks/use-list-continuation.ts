@@ -3,7 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from "react"
 
 interface Options {
   value: string
-  onChangeValue: (value: string) => void
+  onChangeValue?: (value: string) => void
   enabled?: boolean
 }
 
@@ -22,6 +22,7 @@ export function useListContinuation(
     (e: KeyboardEvent) => {
       if (e.key !== "Enter" || e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)
         return
+      if (!onChangeValue) return
       const textarea = ref.current
       if (!textarea || textarea.selectionStart !== textarea.selectionEnd) return
 

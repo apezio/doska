@@ -2,8 +2,7 @@ import { useLayoutEffect, useRef } from "react"
 
 interface Options {
   value: string
-  onChangeValue: (value: string) => void
-  /** Persists pasted files and returns Markdown to splice at the caret, or null. */
+  onChangeValue?: (value: string) => void
   onPasteFiles?: (files: File[]) => Promise<string | null>
 }
 
@@ -30,7 +29,7 @@ export function usePasteFiles(
   }, [ref, value])
 
   return (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    if (!onPasteFiles) return
+    if (!onPasteFiles || !onChangeValue) return
     const files = Array.from(e.clipboardData.files)
     if (files.length === 0) return // plain text: let the default paste run
     e.preventDefault()

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Button, cn } from "@doska/ui-kit"
+import { Button, cn, copyText } from "@doska/ui-kit"
 import { Check, Copy, Globe } from "lucide-react"
 import { useBoardMembers, usePublicBoardStatus } from "@doska/core/queries"
 import { usePublishBoard, useUnpublishBoard } from "@doska/core/mutations"
@@ -28,7 +28,8 @@ export function PublicLink({ boardId }: IProps) {
   const busy = isPending || isPublishing || isUnpublishing
 
   function copy() {
-    void navigator.clipboard.writeText(url).then(() => {
+    void copyText(url).then((ok) => {
+      if (!ok) return
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     })

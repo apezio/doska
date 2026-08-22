@@ -6,6 +6,7 @@ import {
   type MouseEvent,
 } from "react"
 import { cn } from "../lib/cn"
+import { copyText } from "../lib/copy-text"
 
 export function MdInlineCode({ children }: { children: string }) {
   const [copied, setCopied] = useState(false)
@@ -16,7 +17,7 @@ export function MdInlineCode({ children }: { children: string }) {
   async function copy(e: MouseEvent | KeyboardEvent) {
     // The code may sit inside a card's open-detail handler.
     e.stopPropagation()
-    await navigator.clipboard?.writeText(children)
+    if (!(await copyText(children))) return
     setCopied(true)
     clearTimeout(timer.current)
     timer.current = setTimeout(() => setCopied(false), 1000)

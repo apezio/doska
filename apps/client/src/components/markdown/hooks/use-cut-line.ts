@@ -1,8 +1,9 @@
+import { copyText } from "@doska/ui-kit"
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react"
 
 interface Options {
   value: string
-  onChangeValue: (value: string) => void
+  onChangeValue?: (value: string) => void
   enabled?: boolean
 }
 
@@ -48,6 +49,7 @@ export function useCutLine(
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key !== "x" || !(e.metaKey || e.ctrlKey)) return
+      if (!onChangeValue) return
       const textarea = ref.current
       if (!textarea || textarea.selectionStart !== textarea.selectionEnd) return
 
@@ -56,9 +58,11 @@ export function useCutLine(
         textarea.value,
         textarea.selectionStart
       )
-      void navigator.clipboard?.writeText(clipboard)
-      pendingCaret.current = caret
-      onChangeValue(next)
+      void copyText(clipboard).then((ok) => {
+        if (!ok) return
+        pendingCaret.current = caret
+        onChangeValue(next)
+      })
     },
     [ref, onChangeValue]
   )

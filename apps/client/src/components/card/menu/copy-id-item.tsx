@@ -1,4 +1,4 @@
-import { MenuItem, MenuSeparator } from "@doska/ui-kit"
+import { copyText, MenuItem, MenuSeparator } from "@doska/ui-kit"
 import { Hash } from "lucide-react"
 import { useCard } from "@doska/core/queries"
 import { cardDisplayId } from "@doska/contract/card-id"
@@ -14,7 +14,7 @@ export function CopyIdItem({ cardId }: { cardId: string }) {
   return (
     <>
       <MenuSeparator />
-      <MenuItem onClick={() => void navigator.clipboard?.writeText(displayId)}>
+      <MenuItem onClick={() => void copyText(displayId)}>
         <Hash />
         Copy id
       </MenuItem>

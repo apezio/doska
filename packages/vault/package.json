@@ -1,0 +1,27 @@
+{
+  "name": "@doska/vault",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@doska/contract": "workspace:*",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@doska/configs": "workspace:*",
+    "@types/node": "^22",
+    "eslint": "^10",
+    "typescript": "~6",
+    "vitest": "^4.1.10"
+  }
+}

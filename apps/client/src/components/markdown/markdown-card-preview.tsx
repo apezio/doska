@@ -32,7 +32,7 @@ export function MarkdownCardPreview({
               ? (index) => onChangeBody(toggleTaskByIndex(body, index))
               : undefined
           }
-          className="preview text-foreground/90"
+          className="preview line-clamp-1 text-sm text-foreground/90"
         >
           {preview}
         </Markdown>

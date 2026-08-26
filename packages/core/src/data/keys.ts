@@ -12,6 +12,8 @@ export const keys = {
   /** The bare key is the invalidation prefix for every filter's digest. */
   digest: ["digest"] as const,
   digestFilter: (filter: DigestFilter) => ["digest", filter] as const,
+  /** Under the digest prefix: it goes stale on exactly the same writes. */
+  openCards: ["digest", "open-cards"] as const,
   cardDeck: (id: string) => ["card-deck", id] as const,
   cardCol: (id: string) => ["card-col", id] as const,
   session: ["session"] as const,
@@ -31,8 +33,7 @@ export const keys = {
   directory: ["directory"] as const,
   unclaimedLocalBoards: ["unclaimed-local-boards"] as const,
   /** Both sit under the board key, so a board invalidation refreshes them. */
-  cardRefOptions: (deckId: string) =>
-    ["board", deckId, "ref-options"] as const,
+  cardRefOptions: (deckId: string) => ["board", deckId, "ref-options"] as const,
   cardRef: (deckId: string, displayId: string) =>
     ["board", deckId, "ref", displayId] as const,
 }

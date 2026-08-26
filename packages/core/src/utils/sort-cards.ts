@@ -22,6 +22,19 @@ const comparators: Record<SortKey, (a: Card, b: Card) => number> = {
   deadline: byDeadline,
 }
 
+/**
+ * Priority, then the card's number, then id: a total order for lists that rank
+ * by priority alone, such as the digest piles and the sidebar's open cards.
+ */
+export function byPriorityThenNumber(a: Card, b: Card): number {
+  const rank = priorityRank(a.priority) - priorityRank(b.priority)
+  if (rank !== 0) return rank
+  const numberA = a.number ?? Infinity
+  const numberB = b.number ?? Infinity
+  if (numberA !== numberB) return numberA - numberB
+  return a.id < b.id ? -1 : 1
+}
+
 function isSortKey(key: string): key is SortKey {
   return key in comparators
 }

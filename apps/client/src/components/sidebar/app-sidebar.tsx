@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useLocation, useParams, useRouter } from "wouter"
 import {
   Button,
@@ -17,7 +18,7 @@ import {
 import { useAuth, useDashboardNav } from "@/lib/hooks"
 import { routes } from "@/lib/routes"
 import { AppSidebarHeader } from "./app-sidebar-header"
-import { DashboardsList } from "./dashboards-list"
+import { DashboardsList, type SidebarView } from "./dashboards-list"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { SidebarAccount } from "./sidebar-account"
 import { SettingsButton } from "@/components/settings/settings-button"
@@ -27,6 +28,7 @@ export function AppSidebar() {
   const { data: dashboards = [] } = useDashboards()
   const { selectDashboard, createAndOpenDashboard } = useDashboardNav()
   const { authed } = useAuth()
+  const [view, setView] = useState<SidebarView>("dashboards")
   const { data: sharedIds = [] } = useSharedBoards(authed === true)
   const { data: publishedIds = [] } = usePublishedBoards(authed === true)
 
@@ -72,6 +74,8 @@ export function AppSidebar() {
           sharedIds={sharedIds}
           publishedIds={publishedIds}
           onSelectDashboard={(d) => selectDashboard(d.id)}
+          view={view}
+          onChangeView={setView}
         />
       </SidebarContent>
       <SidebarFooter>

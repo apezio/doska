@@ -152,6 +152,15 @@ export function useDigest(filter: DigestFilter) {
   })
 }
 
+/** To Do and In Progress cards across every board, for the sidebar. */
+export function useOpenCards() {
+  return useQuery({
+    queryKey: keys.openCards,
+    queryFn: () => api.getOpenCards(),
+    networkMode: "always",
+  })
+}
+
 /** The board an arbitrary card belongs to — see {@link api.getCardDeckId}. */
 export function useCardDeckId(id: string | null) {
   return useQuery({

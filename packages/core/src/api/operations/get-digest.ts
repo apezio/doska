@@ -1,7 +1,11 @@
-import { priorityRank } from "@doska/tokens/priority"
 import { UPCOMING_DAYS } from "@doska/utils/dates"
 import type { Board, Card, Column } from "../../types"
-import { addDays, byPosition, todayIso } from "../../utils"
+import {
+  addDays,
+  byPosition,
+  byPriorityThenNumber,
+  todayIso,
+} from "../../utils"
 import { db } from "../db/db"
 import { live } from "./live"
 
@@ -106,16 +110,9 @@ export interface DigestGroup {
   entries: DigestCard[]
 }
 
-/**
- * Priority, then the card's number.
- */
+/** Priority, then the card's number. */
 function byPriority(a: DigestCard, b: DigestCard): number {
-  const rank = priorityRank(a.card.priority) - priorityRank(b.card.priority)
-  if (rank !== 0) return rank
-  const numberA = a.card.number ?? Infinity
-  const numberB = b.card.number ?? Infinity
-  if (numberA !== numberB) return numberA - numberB
-  return a.card.id < b.card.id ? -1 : 1
+  return byPriorityThenNumber(a.card, b.card)
 }
 
 /**

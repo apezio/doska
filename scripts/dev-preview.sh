@@ -247,9 +247,18 @@ fi
 
 # Only offsets that are actually running: dev.pids exists while a stack is up,
 # so this never starts a preview nobody asked for. Never block the git command.
-for pids in /tmp/doska-preview-"\$(basename "\$top")"-*/dev.pids; do
+#
+# The offset must parse as digits. The canonical checkout's basename is a
+# PREFIX of other worktrees' (doska / doska-newfeatures), so the glob alone
+# matches a sibling's state dir and \`\${x##*-}\` reads its offset as
+# "newfeatures-1". Left unchecked, a post-rewrite there would \`restart\` the
+# canonical root onto the sibling's ports and fight its live preview.
+base="\$(basename "\$top")"
+for pids in /tmp/doska-preview-"\$base"-*/dev.pids; do
   [ -e "\$pids" ] || continue
-  off="\${pids%/dev.pids}"; off="\${off##*-}"
+  dir="\${pids%/dev.pids}"
+  off="\${dir##*/}"; off="\${off#doska-preview-\$base-}"
+  case "\$off" in ''|*[!0-9]*) continue ;; esac
   PORT_OFFSET="\$off" "\$top/scripts/dev-preview.sh" "\$verb" || true
 done
 exit 0

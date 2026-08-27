@@ -34,7 +34,7 @@ interface IProps {
   onChangeSort: (sort: string[]) => void
   view: DashboardView
   onChangeView: (view: DashboardView) => void
-  onDragEnd: (result: DropResult) => void
+  onDragEnd: (result: DropResult, boardUnderPointer: string | null) => void
   onPatchCard: (id: string, patch: CardPatch) => void
 }
 
@@ -69,9 +69,9 @@ export function Deck({
   const sort = dashboard.sort ?? []
   const { hold, release, place } = useLandingSlot(sort.length > 0)
 
-  useOnBoardDrop((result) => {
+  useOnBoardDrop((result, boardUnderPointer) => {
     hold(result)
-    onDragEnd(result)
+    onDragEnd(result, boardUnderPointer)
   })
 
   return (

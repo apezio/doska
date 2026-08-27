@@ -20,7 +20,7 @@ export function useDragEnd(
   return function handleDragEnd(
     { source, destination, draggableId }: DropResult,
     /** The board whose sidebar row the card was let go over, if any. */
-    boardUnderPointer: string | null = null
+    boardUnderPointer: string | null
   ) {
     if (!board) return
 

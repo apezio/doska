@@ -51,7 +51,8 @@ describe("useDragEnd", () => {
         drop({
           source: { droppableId: "todo", index: 1 },
           destination: { droppableId: "todo", index: 0 },
-        })
+        }),
+        null
       )
 
       expect(moveCard).toHaveBeenCalledTimes(1)
@@ -72,7 +73,8 @@ describe("useDragEnd", () => {
         drop({
           source: { droppableId: "todo", index: 0 },
           destination: { droppableId: "doing", index: 1 },
-        })
+        }),
+        null
       )
 
       expect(moveCard).toHaveBeenCalledTimes(1)
@@ -104,7 +106,8 @@ describe("useDragEnd", () => {
         drop({
           source: { droppableId: "todo", index: 0 },
           destination: { droppableId: "todo", index: 2 },
-        })
+        }),
+        null
       )
 
       expect(moveCard).toHaveBeenCalledTimes(1)
@@ -130,7 +133,8 @@ describe("useDragEnd", () => {
           drop({
             source: { droppableId: "todo", index: 0 },
             destination: { droppableId: "doing", index: destIndex },
-          })
+          }),
+          null
         )
       }
 

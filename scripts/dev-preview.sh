@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Doska live-preview dev stack.
 #
+# Offset 0 is THE canonical dev server for this box (host dev.internal) and it
+# belongs to the integration checkout — $HOME/doska on branch `working`.
+# Feature worktrees never own it; they run their own preview with PORT_OFFSET>=1.
+# start() refuses offset 0 anywhere else, so a feature worktree cannot quietly
+# become the thing the operator is testing.
+#
 # Runs the three processes a preview needs, from whichever worktree this script
 # lives in, on ports that never collide with the staging deploy (3000/5432/8080):
 #
@@ -9,10 +15,12 @@
 #   web  Vite dev server + HMR           $WEB_HOST:5173 (HTTPS/HTTP2)
 #
 # Usage:
-#   scripts/dev-preview.sh start | stop | restart | status | logs | check | url
+#   scripts/dev-preview.sh start | stop | restart | reload | status | logs | check | url
 #
 # Second preview, for a parallel feature in another worktree (see CLAUDE.md):
 #   PORT_OFFSET=1 scripts/dev-preview.sh start     # 5174 / 3101 / 5434
+#
+#   scripts/dev-preview.sh reload                  # after an integration into `working`
 #
 # Env overrides: WEB_HOST (default 127.0.0.1), PORT_OFFSET (default 0).
 set -uo pipefail
@@ -23,6 +31,12 @@ WEB_HOST="${WEB_HOST:-127.0.0.1}"
 WEB_PORT=$((5173 + OFFSET))
 API_PORT=$((3100 + OFFSET))
 PG_PORT=$((5433 + OFFSET))
+
+# The canonical dev server: offset 0, integration checkout, staging branch. Not
+# env-overridable on purpose — the point is that no session can redefine which
+# checkout the operator's dev URL is served from.
+CANONICAL_ROOT="$HOME/doska"
+CANONICAL_BRANCH="working"
 
 # Node 22 is required (see .nvmrc); the system node is older.
 NVM_BIN="$HOME/.nvm/versions/node/v22.23.2/bin"
@@ -129,8 +143,85 @@ CFG
 
 port_up() { (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null; }
 
+# Offset 0 is the canonical dev server (see the header). Anywhere else it is a
+# feature preview and must take an offset.
+assert_may_own_canonical() {
+  [ "$OFFSET" = "0" ] || return 0
+  local branch
+  branch="$(git -C "$ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')"
+  if [ "$(cd "$ROOT" && pwd -P)" = "$(cd "$CANONICAL_ROOT" 2>/dev/null && pwd -P)" ] \
+     && [ "$branch" = "$CANONICAL_BRANCH" ]; then
+    return 0
+  fi
+  cat >&2 <<MSG
+refusing: offset 0 is the canonical dev server for this box and it belongs to
+  $CANONICAL_ROOT (branch $CANONICAL_BRANCH)
+but this is
+  $ROOT (branch $branch)
+
+A feature worktree runs its own preview beside it:
+  PORT_OFFSET=1 scripts/dev-preview.sh start      # 5174 / 3101 / 5434
+Your feature reaches the canonical URL by being integrated into \`$CANONICAL_BRANCH\`,
+not by serving it from here. See CLAUDE.md.
+MSG
+  exit 1
+}
+
+# Fingerprint of the things a running stack cannot hot-reload: dependencies and
+# migrations. Recorded at start, compared by `reload` after an integration.
+deps_fingerprint() {
+  {
+    cat "$ROOT/pnpm-lock.yaml"
+    find "$ROOT/apps" "$ROOT/packages" -maxdepth 2 -name package.json -exec cat {} +
+    cat "$ROOT/apps/server/drizzle/meta/_journal.json"
+  } 2>/dev/null | sha256sum | cut -d' ' -f1
+}
+
+# A post-merge hook in the canonical checkout is what makes an integration show
+# up on the dev URL without anyone remembering to restart anything. Hooks live in
+# the COMMON git dir, so every worktree of this repo runs it — hence the guard
+# inside the hook body. Only ever writes a hook that is missing or is ours.
+install_merge_hook() {
+  local common hook marker
+  common="$(git -C "$ROOT" rev-parse --git-common-dir 2>/dev/null)" || return 0
+  case "$common" in /*) ;; *) common="$ROOT/$common" ;; esac
+  [ -d "$common/hooks" ] || return 0
+  marker="# managed by scripts/dev-preview.sh"
+  for hook in post-merge post-checkout; do
+    if [ -e "$common/hooks/$hook" ] && ! grep -qF "$marker" "$common/hooks/$hook" 2>/dev/null; then
+      echo "note: $common/hooks/$hook exists and is not ours — leaving it alone;"
+      echo "      run 'scripts/dev-preview.sh reload' by hand after an integration."
+      continue
+    fi
+    # Written via a temp file and mv(1): the hook itself calls back into this
+    # script, which reinstalls the hook — truncating a file bash is still
+    # reading would corrupt the run. Replacing the inode leaves it intact.
+    cat > "$common/hooks/$hook.new" <<HOOK
+#!/usr/bin/env bash
+$marker — refresh the canonical dev server after an integration.
+# Shared by every worktree of this repo, so do nothing unless this IS the
+# canonical checkout on the staging branch, and never block the git command.
+# git exports GIT_DIR/GIT_WORK_TREE/GIT_INDEX_FILE into hooks, which would
+# otherwise override the -C of every git command run below us.
+# git runs a post-merge/post-checkout hook with cwd at the top of the working
+# tree the command ran in — that is how we tell "integrated into the canonical
+# checkout" from "a feature worktree merged something".
+[ "\$(pwd -P)" = "$CANONICAL_ROOT" ] || exit 0
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX
+cd "$CANONICAL_ROOT" 2>/dev/null || exit 0
+[ "\$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" = "$CANONICAL_BRANCH" ] || exit 0
+[ -x "$CANONICAL_ROOT/scripts/dev-preview.sh" ] || exit 0
+"$CANONICAL_ROOT/scripts/dev-preview.sh" reload || true
+exit 0
+HOOK
+    chmod +x "$common/hooks/$hook.new"
+    mv -f "$common/hooks/$hook.new" "$common/hooks/$hook"
+  done
+}
+
 start() {
   if running; then echo "already running"; status; return 0; fi
+  assert_may_own_canonical
   # A second preview means a second *worktree*. Two offsets in one worktree
   # would fight over apps/server/.env and apps/client/.vite/, and the offset-0
   # api would be restarted onto the wrong port by its own watcher.
@@ -144,6 +235,8 @@ start() {
   write_server_env
   write_vite_config
   : > "$PIDFILE"
+  deps_fingerprint > "$STATE/deps.sha"
+  install_merge_hook
 
   cd "$ROOT/apps/server" || exit 1
   setsid node_modules/.bin/tsx --env-file-if-exists=.env src/serve-dev.ts >> "$LOG" 2>&1 &
@@ -175,6 +268,30 @@ stop() {
   echo "stopped"
 }
 
+# `reload` is the post-integration step: Vite HMR and `tsx watch` already picked
+# up every source file the merge changed, so the only thing left to decide is
+# whether dependencies or migrations moved — those a running stack cannot absorb.
+reload() {
+  if ! running; then
+    echo "preview is not running — nothing to reload"
+    status
+    return 0
+  fi
+  local now prev
+  now="$(deps_fingerprint)"
+  prev="$(cat "$STATE/deps.sha" 2>/dev/null || echo none)"
+  if [ "$now" = "$prev" ]; then
+    echo "reload: no restart needed — Vite HMR and tsx watch already serve the current checkout"
+    status
+    return 0
+  fi
+  echo "reload: dependencies or migrations changed — installing and restarting"
+  ( cd "$ROOT" && CI=true pnpm install ) \
+    || echo "reload: pnpm install FAILED — the preview may be broken until it is fixed"
+  stop
+  start
+}
+
 running() {
   [ -f "$PIDFILE" ] || return 1
   while read -r p; do kill -0 "$p" 2>/dev/null || return 1; done < "$PIDFILE"
@@ -196,11 +313,15 @@ check() {
   local branch dirty behind ahead verdict=CLEAN
   branch="$(git rev-parse --abbrev-ref HEAD)"
   dirty="$(git status --porcelain)"
-  git fetch -q origin main 2>/dev/null
-  read -r behind ahead < <(git rev-list --left-right --count origin/main...HEAD | tr '\t' ' ')
+  read -r behind ahead < <(git rev-list --left-right --count "$CANONICAL_BRANCH"...HEAD | tr '\t' ' ')
 
   echo "worktree: $ROOT"
   echo "branch:   $branch"
+  if [ "$(cd "$ROOT" && pwd -P)" = "$(cd "$CANONICAL_ROOT" 2>/dev/null && pwd -P)" ]; then
+    echo "role:     CANONICAL dev server (offset 0) — integration checkout, do not develop here"
+  else
+    echo "role:     feature worktree — preview with PORT_OFFSET=1; reach the canonical URL by integrating into $CANONICAL_BRANCH"
+  fi
   if [ -n "$dirty" ]; then
     verdict=DIRTY
     echo "state:    DIRTY — unfinished work lives here, do NOT overwrite it:"
@@ -208,7 +329,7 @@ check() {
   else
     echo "state:    clean"
   fi
-  echo "vs main:  $behind behind, $ahead ahead"
+  echo "vs $CANONICAL_BRANCH: $behind behind, $ahead ahead"
   [ "$behind" != "0" ] && verdict="${verdict}/BEHIND"
   echo "verdict:  $verdict"
   echo
@@ -219,9 +340,10 @@ case "${1:-status}" in
   start) start ;;
   stop) stop ;;
   restart) stop; start ;;
+  reload) reload ;;
   status) status ;;
   check) check ;;
   logs) tail -f "$LOG" ;;
   url) echo "https://$WEB_HOST:$WEB_PORT/" ;;
-  *) echo "usage: $0 start|stop|restart|status|check|logs|url"; exit 1 ;;
+  *) echo "usage: $0 start|stop|restart|reload|status|check|logs|url"; exit 1 ;;
 esac

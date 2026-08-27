@@ -3,16 +3,34 @@
 Read this before touching anything. The operator should only ever have to say
 *what feature they want*; everything below is already agreed.
 
-## The live preview
+## The flow
 
-One worktree is always the operator's live preview. They keep it open in a
-browser and watch changes appear as you type them.
+```
+feature worktree            ──YES COMMIT──▶  claude/<mission>
+  ~/missclaude-worktrees/<mission>              │
+  own preview, PORT_OFFSET=1                    │ YES INTEGRATE (integrator, ff-only)
+                                                ▼
+canonical dev server        ◀─auto-reload──   working          ← what dev.internal serves
+  $HOME/doska, offset 0                    │
+                                                │ YES RELEASE (separate, gated)
+                                                ▼
+                                              main  ──▶ tagged release ──▶ doska.forked.net
+```
+
+Nothing reaches the operator's dev URL except by being committed on a feature
+branch and integrated into `working`. That is the whole point of the layout.
+
+## The canonical dev server
+
+One checkout is always the operator's dev server. They keep it open in a browser
+and it shows **`working`** — every feature that has been integrated so far,
+coexisting, ready to be tested together.
 
 | | |
 |---|---|
-| worktree | `$HOME/missclaude-worktrees/doska-newfeatures` (branch `claude/doska-newfeatures`) |
-| URL | <https://127.0.0.1:5173/> — self-signed cert, accept the warning once per browser |
-| control | `scripts/dev-preview.sh start\|stop\|restart\|status\|check\|logs\|url` |
+| checkout | `$HOME/doska` (branch `working`) — the integration checkout, **not** a place to develop |
+| URL | <https://127.0.0.1:5173/> on host `dev.internal` — self-signed cert, accept the warning once per browser |
+| control | `scripts/dev-preview.sh start\|stop\|restart\|reload\|status\|check\|logs\|url` |
 | web | Vite + HMR on `127.0.0.1:5173`, HTTPS/HTTP2 — client edits hot-reload, no restart |
 | api | `127.0.0.1:3100` under `tsx watch` — server edits restart it automatically |
 | db | PGlite on `127.0.0.1:5433`, data in `apps/server/pgdata/` |
@@ -22,27 +40,43 @@ browser and watch changes appear as you type them.
 the script on every start and are gitignored. Do not hand-edit them; change the
 script instead. Staging owns ports 3000 / 5432 / 8080 — never touch those.
 
-**Keep 5173 running.** Restart it only when the script says something is DOWN.
-Client changes need no restart; server changes restart themselves.
+**Offset 0 belongs to this checkout and nowhere else.** `start` refuses to run at
+offset 0 from any other worktree or any other branch, so a feature worktree
+cannot quietly become the thing the operator is looking at. Keep 5173 running;
+restart it only when the script says something is DOWN.
+
+`working` is **local only**. It carries this file and `scripts/dev-preview.sh`,
+both of which hardcode the box's public IP and `$HOME` paths, and
+`apezio/doska` is public. Never push it.
+
+## Your own preview, in your own worktree
+
+A feature worker develops in its mission worktree
+(`~/missclaude-worktrees/<mission>`, branch `claude/<mission>`) and previews it
+on its own ports:
+
+    PORT_OFFSET=1 scripts/dev-preview.sh start     # 5174 / 3101 / 5434
+
+Tell the operator that second URL when you hand off. Two features previewing at
+once means two worktrees and two offsets — never two offsets in one worktree.
 
 ## Working a feature
 
 1. **Pre-flight:** `scripts/dev-preview.sh check`.
    - `verdict: CLEAN` → work here.
    - `verdict: DIRTY` → someone's unfinished feature lives here. **Preserve it.**
-     Do not stash, revert, or build on top of it. Use a different worktree with
-     `PORT_OFFSET=1 scripts/dev-preview.sh start` (5174 / 3101 / 5434) and tell
-     the operator the second URL.
-   - `BEHIND` → the preview must be synced to current `main` before new work
-     starts. Ask the operator for the exact phrase `YES REBASE`, then rebase
-     this branch onto `main`.
-   - If the stack is DOWN, `scripts/dev-preview.sh start`.
-2. **Build it in the preview worktree** so the operator sees each change land
-   live. Never develop a normal feature request anywhere else.
-3. **Leave it uncommitted.** While the operator reviews: no commit, no push, no
-   merge, no rebase, no touching `main`, no deploy, no restarting services.
-4. **Hand off with the URL**, e.g.
-   *"Preview ready: <https://127.0.0.1:5173/> — <what changed, where to look>."*
+     Do not stash, revert, or build on top of it. Ask the operator for a fresh
+     mission worktree rather than sharing this one.
+   - `BEHIND` → this branch is behind `working` and must be synced before new
+     work starts. Ask the operator for the exact phrase `YES REBASE`, then
+     rebase this branch onto `working`.
+2. **Build it in your own worktree**, with your own preview running, so the
+   operator can watch each change land. Never develop in `$HOME/doska`:
+   it is the integration checkout, and the rails hook blocks writes into it.
+3. **Leave it uncommitted while the operator reviews:** no commit, no push, no
+   merge, no rebase, no touching `working` or `main`, no deploy.
+4. **Hand off with your preview URL**, e.g.
+   *"Preview ready: <https://127.0.0.1:5174/> — <what changed, where to look>."*
    Deep-link to the affected board/card when there is one.
 
 ## When the operator approves
@@ -50,24 +84,48 @@ Client changes need no restart; server changes restart themselves.
 Approval is any of "looks good", "approved", "ship it", or equivalent. Then:
 
 1. Commit **only that feature's files** — explicit paths, never `git add .`
-   or `-A`. Nothing unrelated rides along.
+   or `-A`. Nothing unrelated rides along. The hook needs the typed phrase
+   `YES COMMIT` first.
 2. Run the relevant tests (`pnpm test` for the touched package; `pnpm lint` and
    `pnpm type-check` when the change is broad).
-3. Get it into `main`.
-4. Return the preview worktree to clean, current `main`, restart the preview,
-   and confirm the URL is back up.
+3. Say **"ready for integrator"** and stop. Getting the commit into `working` is
+   the integrator session's job, not yours — never merge it yourself.
 
-**Rails caveat, and it is not optional:** a hook enforces that feature-worker
-sessions never commit, rebase, push, merge, or deploy on their own. The
-operator's "ship it" is the go-ahead, but the hook still needs the exact typed
-phrases — `YES COMMIT` before step 1, `YES REBASE` before a rebase — and step 3
-belongs to the integrator session (say **"ready for integrator"**). Ask for the
-phrase in one line; do not argue with the hook and do not work around it.
+Ask for a phrase in one line; do not argue with the hook and do not work around
+it.
+
+## Integrating (integrator session only)
+
+The integrator runs in `$HOME/doska` on `working` (`claude-miss-integrator`
+refuses to start anywhere else) and does not write feature code.
+
+1. Review the feature branch's diff; confirm the changed files are the expected
+   ones.
+2. On the typed phrase `YES INTEGRATE`: `git merge --ff-only claude/<mission>`.
+   Fast-forward only — never a merge commit, never a rebase, never a force-push.
+3. The merge's `post-merge` hook calls `scripts/dev-preview.sh reload`, so
+   <https://127.0.0.1:5173/> shows the result within seconds: Vite HMR and
+   `tsx watch` have already absorbed the source changes, and the stack is
+   restarted (with a `pnpm install`) only when dependencies or migrations moved.
+4. Log what landed, and tell the operator the dev URL is ready for manual
+   testing.
+
+Several finished features can sit in `working` at once — that is what it is for.
+
+## Promoting to main (separate, gated)
+
+Manual testing on the dev URL happens on `working`. Only after that, and only on
+the typed phrase `YES RELEASE`, does the integrator fast-forward `main` to
+`working` and push `main` to `origin` — a distinct action from integrating, and
+never bundled into one. `main` is what the staging deploy below tracks.
 
 ## Never
 
+- Never run the preview at offset 0 outside `$HOME/doska` on `working`.
+- Never develop in `$HOME/doska`, and never push `working`.
 - Never mix two unrelated unfinished features in one worktree.
-- Never commit, push, merge, deploy, or modify `main` unless explicitly asked.
+- Never commit, push, merge, deploy, or modify `working` or `main` unless
+  explicitly asked, with the phrase.
 - Never overwrite or discard someone else's uncommitted work.
 - Never expose the API or DB beyond loopback; only Vite binds an outside IP, and
   only one specific IP — never `0.0.0.0`.
@@ -86,7 +144,7 @@ to rediscover it, or mistake it for the preview.
 | web | nginx serves the built `apps/client/dist`; `:8080` plain, `:443` TLS |
 | api | `doska-server.service` (systemd) on `127.0.0.1:3000` |
 | db | postgres on `127.0.0.1:5432` |
-| version | tagged releases; it tracks `main` and lags the preview on purpose |
+| version | tagged releases; it tracks `main` and lags `working` on purpose |
 
 Its `origin` is `github.com/romenkova/doska`, **not** the `apezio/doska` that
 `$HOME/doska` pushes to. Deploying is the operator's call and their

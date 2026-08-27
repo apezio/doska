@@ -71,4 +71,37 @@ describe("CardFile", () => {
 
     expect(saved.patchFor(card)).toBeNull()
   })
+
+  it("carries the number and attachments the board owns", () => {
+    const card = makeCard({
+      columnId: "col-1",
+      title: "Ship it",
+      number: 12,
+      attachments: [
+        {
+          id: "a1",
+          name: "plan.pdf",
+          key: "att/00000000-0000-0000-0000-000000000000.pdf",
+          mime: "application/pdf",
+          size: 10,
+        },
+      ],
+    })
+    const parsed = CardFile.parse(CardFile.fromCard(card).text)
+
+    expect(CardFile.fromCard(card).text).toContain("number: 12\n")
+    expect(parsed.number).toBe("12")
+    expect(parsed.attachments).toEqual(card.attachments)
+    expect(parsed.patchFor(card)).toBeNull()
+  })
+
+  it("keeps frontmatter keys the user added", () => {
+    const card = makeCard({ columnId: "col-1", title: "Ship it" })
+    const parsed = CardFile.parse(
+      `---\nid: ${card.id}\ntitle: Ship it\ntags: [ops]\n---\n`
+    )
+
+    expect(parsed.extra).toEqual({ tags: ["ops"] })
+    expect(CardFile.fromCard(card, parsed.extra).text).toContain("tags:")
+  })
 })

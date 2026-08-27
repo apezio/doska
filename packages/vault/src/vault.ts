@@ -39,7 +39,7 @@ export interface VaultOptions {
 
 /**
  * A board mirrored to a folder: one folder per column, one Markdown file per
- * card, deleted cards under `.trash`.
+ * card, deleted cards under `_trash`.
  *
  * Any change on either side runs one pass over the whole tree. That makes a
  * card moved between folders indistinguishable from a delete plus a create,
@@ -139,7 +139,7 @@ export class Vault {
     if (changed) this.onBoardChange?.()
   }
 
-  /** Files under `.trash` whose card is still live: someone dragged them there. */
+  /** Files under `_trash` whose card is still live: someone dragged them there. */
   private async trashed(
     cards: Map<string, Card>,
     taken: Set<string>
@@ -173,6 +173,7 @@ export class Vault {
       body: file.card.body,
       deadline: file.card.deadline,
       priority: file.card.priority,
+      extra: file.card.extra,
     })
 
     await this.board.updateCard(id, {
@@ -231,7 +232,7 @@ export class Vault {
     }
 
     // The card is ahead of the file only when the file wasn't the one to move.
-    const wanted = CardFile.fromCard(card)
+    const wanted = CardFile.fromCard(card, file.card.extra)
     if (!changed && wanted.text !== file.text) {
       await folder.save(wanted, file.path)
       this.written.set(card.id, { path: file.path, text: wanted.text })

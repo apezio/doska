@@ -112,7 +112,7 @@ describe("Vault", () => {
     expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(true)
   })
 
-  it("deletes the card whose file was dragged into .trash", async () => {
+  it("deletes the card whose file was dragged into _trash", async () => {
     const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
     await vault.sync()
 

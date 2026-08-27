@@ -8,12 +8,17 @@ import {
   type VaultFs,
 } from "./column-folder"
 
-const TRASH = ".trash"
+/**
+ * Cards deleted on either side land here. Not `.trash`: Tauri's fs scope sets
+ * `require_literal_leading_dot` on unix, so a dotfolder inside the vault is
+ * unreachable however wide the grant is.
+ */
+const TRASH = "_trash"
 
 /** The board, as much of it as the vault needs. The app wires this to its store. */
 export interface VaultBoard {
-  columns(): Promise<Column[]>
-  cards(columnId: string): Promise<Card[]>
+  /** The board's live columns and cards. */
+  load(): Promise<{ columns: Column[]; cards: Card[] }>
   createCard(columnId: string): Promise<string>
   updateCard(id: string, patch: CardPatch): Promise<void>
   moveCardToColumn(id: string, columnId: string): Promise<void>
@@ -28,6 +33,8 @@ export interface VaultOptions {
   root: string
   /** Called after the vault changed the board, so the app can refetch. */
   onBoardChange?: () => void
+  /** A sync that failed. Nothing above the watcher can catch these. */
+  onError?: (error: unknown) => void
 }
 
 /**
@@ -43,6 +50,7 @@ export class Vault {
   private readonly board: VaultBoard
   private readonly root: string
   private readonly onBoardChange?: () => void
+  private readonly onError?: (error: unknown) => void
 
   /** What the vault last wrote per card, so its own writes don't read back as
    * user edits. Empty at startup, which is what makes the file win the first
@@ -52,17 +60,20 @@ export class Vault {
   private running = false
   private queued = false
 
-  constructor({ fs, board, root, onBoardChange }: VaultOptions) {
+  constructor({ fs, board, root, onBoardChange, onError }: VaultOptions) {
     this.fs = fs
     this.board = board
     this.root = root
     this.onBoardChange = onBoardChange
+    this.onError = onError
   }
 
   /** Watches the folder. Returns a function that stops watching. */
   async watch(): Promise<() => void> {
     await this.sync()
-    return this.fs.watch(this.root, () => void this.sync())
+    return this.fs.watch(this.root, () => {
+      this.sync().catch((error: unknown) => this.onError?.(error))
+    })
   }
 
   /** Brings the folder and the board back into agreement, both ways. */
@@ -83,19 +94,14 @@ export class Vault {
   }
 
   private async pass(): Promise<void> {
-    const columns = await this.board.columns()
-    const folders = columns.map(
+    const board = await this.board.load()
+    const folders = board.columns.map(
       (column) => new ColumnFolder(this.fs, this.root, column)
     )
     await this.fs.mkdir(`${this.root}/${TRASH}`)
     for (const folder of folders) await folder.ensure()
 
-    const cards = new Map<string, Card>()
-    for (const folder of folders) {
-      for (const card of await this.board.cards(folder.columnId)) {
-        cards.set(card.id, card)
-      }
-    }
+    const cards = new Map(board.cards.map((card) => [card.id, card]))
 
     const inTrash = new Set<string>()
     let changed = await this.trashed(cards, inTrash)
@@ -117,7 +123,8 @@ export class Vault {
 
     const byColumn = new Map(folders.map((f) => [f.columnId, f]))
     for (const card of cards.values()) {
-      if (await this.reconcile(card, files.get(card.id), byColumn)) changed = true
+      if (await this.reconcile(card, files.get(card.id), byColumn))
+        changed = true
     }
 
     // Whatever is left has no live card behind it any more. The file keeps its
@@ -188,7 +195,10 @@ export class Vault {
       const folder = byColumn.get(card.columnId)
       if (!folder) return false
       const file = CardFile.fromCard(card)
-      this.written.set(card.id, { path: await folder.save(file), text: file.text })
+      this.written.set(card.id, {
+        path: await folder.save(file),
+        text: file.text,
+      })
       return false
     }
 

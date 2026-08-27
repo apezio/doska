@@ -109,14 +109,14 @@ describe("Vault", () => {
     await vault.sync()
 
     expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(false)
-    expect(fs.files.has(`${ROOT}/.trash/ship_it.md`)).toBe(true)
+    expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(true)
   })
 
   it("deletes the card whose file was dragged into .trash", async () => {
     const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
     await vault.sync()
 
-    await fs.rename(`${ROOT}/to_do/ship_it.md`, `${ROOT}/.trash/ship_it.md`)
+    await fs.rename(`${ROOT}/to_do/ship_it.md`, `${ROOT}/_trash/ship_it.md`)
     await vault.sync()
 
     expect(board.deleted).toEqual([card.id])
@@ -155,8 +155,8 @@ describe("Vault", () => {
     board.cardsById.delete(second.id)
     await vault.sync()
 
-    expect(fs.files.has(`${ROOT}/.trash/ship_it.md`)).toBe(true)
-    expect(fs.files.has(`${ROOT}/.trash/ship_it_2.md`)).toBe(true)
+    expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(true)
+    expect(fs.files.has(`${ROOT}/_trash/ship_it_2.md`)).toBe(true)
   })
 
   it("syncs again when the watcher fires", async () => {

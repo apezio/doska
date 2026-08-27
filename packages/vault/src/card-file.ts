@@ -66,7 +66,11 @@ export class CardFile {
     } catch {
       return new CardFile({ body: source })
     }
-    if (typeof fields !== "object" || fields === null || Array.isArray(fields)) {
+    if (
+      typeof fields !== "object" ||
+      fields === null ||
+      Array.isArray(fields)
+    ) {
       return new CardFile({ body: source })
     }
 

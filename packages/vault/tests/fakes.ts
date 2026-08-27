@@ -100,14 +100,11 @@ export class FakeBoard implements VaultBoard {
     return card
   }
 
-  columns() {
-    return Promise.resolve(this.cols)
-  }
-
-  cards(columnId: string) {
-    return Promise.resolve(
-      [...this.cardsById.values()].filter((c) => c.columnId === columnId)
-    )
+  load() {
+    return Promise.resolve({
+      columns: this.cols,
+      cards: [...this.cardsById.values()],
+    })
   }
 
   createCard(columnId: string) {

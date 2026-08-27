@@ -239,7 +239,7 @@ export class Vault {
     const have = new Set((await this.fs.readDir(dir)) ?? [])
 
     for (const card of cards) {
-      for (const attachment of card.attachments) {
+      for (const attachment of card.attachments ?? []) {
         const name = fileNameOf(attachment.key)
         if (have.has(name)) continue
         try {

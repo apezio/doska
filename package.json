@@ -9,6 +9,7 @@
   },
   "packageManager": "pnpm@11.17.0",
   "scripts": {
+    "pnpm:devPreinstall": "bash scripts/guard-install.sh",
     "dev": "turbo run dev --filter=!desktop --filter=!mobile",
     "build": "turbo run build --filter=!desktop --filter=!mobile",
     "desktop": "pnpm --filter desktop dev",

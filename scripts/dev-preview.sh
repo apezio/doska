@@ -1,28 +1,23 @@
 #!/usr/bin/env bash
-# Doska live-preview dev stack.
+# Doska dev preview — exactly ONE, served from the canonical checkout.
 #
-# Previews are temporary and per-mission. There is no permanent dev server on
-# this box: offset 0 (5173/3100/5433) is retired and start() refuses it, so a
-# mission worktree always takes PORT_OFFSET>=1 and 5173 stays free for Vite's
-# stock default. Day-to-day the deployed site is what you look at.
-#
-# Runs the three processes a preview needs, from whichever worktree this script
-# lives in, on ports that never collide with the staging deploy (3000/5432/8080):
+# There is one permanent dev server on this box. It runs from the main (canonical)
+# worktree on the `working` branch and is the only preview anyone looks at:
 #
 #   db   PGlite over a Postgres socket   127.0.0.1:5434   (apps/server/pgdata)
 #   api  Fastify under `tsx watch`       127.0.0.1:3101   (restarts on server edits)
-#   web  Vite dev server + HMR           $WEB_HOST:5173 (HTTPS/HTTP2)
+#   web  Vite dev server + HMR           $WEB_HOST:5174   (HTTPS/HTTP2)
 #
-# Usage:
+# Mission worktrees never start a preview of their own: `start` refuses outside
+# the canonical checkout, there are no port offsets, and a feature becomes
+# visible on :5174 the moment it is integrated into `working` (the post-merge
+# hook reloads the one preview; Vite HMR / tsx watch pick the sources up).
+# Workers still run tests / type-check / lint in their own worktrees.
+#
+# Usage (from any worktree; lifecycle verbs only act on the canonical checkout):
 #   scripts/dev-preview.sh start | stop | restart | reload | status | logs | check | url
 #
-# Every preview takes an offset (see CLAUDE.md); a parallel one takes the next:
-#   PORT_OFFSET=1 scripts/dev-preview.sh start     # 5174 / 3101 / 5434
-#   PORT_OFFSET=2 scripts/dev-preview.sh start     # 5175 / 3102 / 5435
-#
-#   PORT_OFFSET=1 scripts/dev-preview.sh stop      # when the mission is done
-#
-# Env overrides: WEB_HOST (default 127.0.0.1), PORT_OFFSET (default 1; 0 refused).
+# Env overrides: WEB_HOST (default 127.0.0.1). PORT_OFFSET is no longer honoured.
 #
 # Box-specific values (the address the operator's browser reaches this box on,
 # and anything else that should not live in a public repo) go in the main
@@ -34,12 +29,12 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# The integration checkout and the staging branch. Not about serving anything:
-# CANONICAL_ROOT is where every worktree's node_modules symlinks to, so vite's
-# fs.allow needs it; it holds the box-local config below; and CANONICAL_BRANCH is
-# what `check` measures a mission against. The integration checkout is by
-# definition the repo's main worktree, which git reports first; deriving it keeps
-# this script path-free.
+# The integration checkout and the staging branch. CANONICAL_ROOT is the ONLY
+# place a preview runs from; it is also where every worktree's node_modules
+# symlinks to, and it holds the box-local config below. CANONICAL_BRANCH is what
+# `check` measures a mission against. The integration checkout is by definition
+# the repo's main worktree, which git reports first; deriving it keeps this
+# script path-free.
 CANONICAL_ROOT="$(git -C "$ROOT" worktree list --porcelain 2>/dev/null | awk '/^worktree /{print substr($0,10); exit}')"
 CANONICAL_ROOT="${CANONICAL_ROOT:-$ROOT}"
 CANONICAL_BRANCH="working"
@@ -55,11 +50,19 @@ done
 [ -n "$_env_web_host" ] && WEB_HOST="$_env_web_host"
 unset _env_web_host _conf
 
-OFFSET="${PORT_OFFSET:-1}"
+# Fixed ports. 5173/3000/5432 are not ours (Vite's stock default and the staging
+# deploy), so the one preview lives one above them. No offsets: a second preview
+# is exactly what this script exists to prevent.
 WEB_HOST="${WEB_HOST:-127.0.0.1}"
-WEB_PORT=$((5173 + OFFSET))
-API_PORT=$((3100 + OFFSET))
-PG_PORT=$((5433 + OFFSET))
+WEB_PORT=5174
+API_PORT=3101
+PG_PORT=5434
+
+# The preview's identity is the canonical checkout, so every worktree's copy of
+# this script talks about the same one. Lifecycle verbs additionally require
+# being run from it (see assert_canonical); config files are written into it.
+IS_CANONICAL=0
+[ "$(cd "$ROOT" && pwd -P)" = "$(cd "$CANONICAL_ROOT" && pwd -P)" ] && IS_CANONICAL=1
 
 # Node 22 is required (see .nvmrc); the system node is older.
 NVM_BIN="$HOME/.nvm/versions/node/v22.23.2/bin"
@@ -75,7 +78,7 @@ CERTDIR="$HOME/.cache/doska-dev-cert"
 CERT="$CERTDIR/$WEB_HOST.crt"
 CERTKEY="$CERTDIR/$WEB_HOST.key"
 
-STATE="/tmp/doska-preview-$(basename "$ROOT")-$OFFSET"
+STATE="/tmp/doska-preview"
 mkdir -p "$STATE"
 LOG="$STATE/dev.log"
 PIDFILE="$STATE/dev.pids"
@@ -124,10 +127,6 @@ write_vite_config() {
   # both. It lives in apps/client/.vite/, already covered by .gitignore, so it
   # never shows up in git status.
   #
-  # CLIENT is written as an absolute path on purpose: node_modules here is a
-  # symlink into the main checkout, so a __dirname-relative path resolves
-  # through the symlink and Vite ends up serving the main checkout's source
-  # instead of this worktree's.
   CFGDIR="$ROOT/apps/client/.vite"
   mkdir -p "$CFGDIR"
   cat > "$CFGDIR/vite.config.dev.ts" <<CFG
@@ -142,8 +141,8 @@ export default mergeConfig(base, defineConfig({
   root: CLIENT,
   resolve: { alias: { "@": path.resolve(CLIENT, "src") } },
   server: {
-    // One specific IP, never 0.0.0.0, so a preview can't shadow anything else
-    // on this box and two previews can coexist.
+    // One specific IP, never 0.0.0.0, so the preview can't shadow anything
+    // else on this box.
     host: "$WEB_HOST",
     allowedHosts: true,
     port: $WEB_PORT,
@@ -151,9 +150,7 @@ export default mergeConfig(base, defineConfig({
     // Setting https is what makes Vite serve HTTP/2 (see ensure_dev_cert).
     // The /api proxy below still works: Vite terminates h2 and forwards h1.
     https: { key: "$CERTKEY", cert: "$CERT" },
-    // node_modules symlinks into the main checkout, so Vite's default fs.allow
-    // (this worktree only) 403s the font files.
-    fs: { allow: [CLIENT, "$ROOT", "$CANONICAL_ROOT"] },
+    fs: { allow: [CLIENT, "$ROOT"] },
     proxy: Object.fromEntries(
       ["/api", "/mcp", "/.well-known"].map((p) => [p, "http://127.0.0.1:$API_PORT"])
     ),
@@ -166,23 +163,25 @@ CFG
 
 port_up() { (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null; }
 
-# There is no permanent dev server on this box. Offset 0 (5173/3100/5433) is
-# retired: previews are temporary, per-mission, and start at offset 1. 5173 is
-# also Vite's stock default, so leaving it free keeps `pnpm dev` unambiguous.
-assert_offset_is_a_preview() {
-  [ "$OFFSET" = "0" ] || return 0
+# The one preview runs from the canonical checkout, full stop. A mission
+# worktree that wants to see its work integrates it into `working`.
+assert_canonical() {
+  [ "$IS_CANONICAL" = 1 ] && return 0
   cat >&2 <<MSG
-refusing: offset 0 (5173/3100/5433) is not used on this box — there is no
-permanent dev server. A preview is temporary and belongs to one mission
-worktree, so give it an offset:
+refusing: previews run only from the canonical checkout ($CANONICAL_ROOT).
+This is a mission worktree ($ROOT); it never starts a Vite server of its own.
 
-  PORT_OFFSET=1 scripts/dev-preview.sh start      # 5174 / 3101 / 5434
-  PORT_OFFSET=2 scripts/dev-preview.sh start      # 5175 / 3102 / 5435
-
-Day-to-day, the deployed site is the thing to look at. See CLAUDE.md.
+The one dev preview is https://$WEB_HOST:$WEB_PORT/ — it serves branch
+'$CANONICAL_BRANCH' and shows your feature as soon as it is integrated there.
+Run tests / type-check / lint here; see CLAUDE.md.
 MSG
   exit 1
 }
+# PORT_OFFSET used to pick a per-worktree preview. There is only one now.
+if [ -n "${PORT_OFFSET:-}" ] && [ "$PORT_OFFSET" != "1" ]; then
+  echo "refusing: PORT_OFFSET=$PORT_OFFSET — there is one preview, on 5174/3101/5434; offsets are gone (see CLAUDE.md)." >&2
+  exit 1
+fi
 
 # The two things a running stack cannot hot-reload, fingerprinted separately
 # because they need very different responses. Recorded at start, compared by
@@ -198,10 +197,10 @@ deps_fingerprint() {
   } 2>/dev/null | sha256sum | cut -d' ' -f1
 }
 
-# Keeping a preview in step with git. The hooks live in the COMMON git dir, so
-# one install covers every worktree of this repo — and each hook acts on the
-# worktree the git command actually ran in, at whatever offsets that worktree
-# has running. Installing from the canonical checkout is enough for all of them.
+# Keeping the preview in step with git. The hooks live in the COMMON git dir, so
+# one install covers every worktree of this repo — and each hook acts only when
+# the git command ran in the canonical checkout (a merge into `working`, a branch
+# switch there, a rebase there); in a mission worktree they are a no-op.
 #
 #   post-merge     an integration landed  -> reload (fingerprint decides)
 #   post-checkout  a branch switch        -> reload
@@ -262,22 +261,14 @@ if [ "\$KIND" = post-rewrite ]; then
   verb=restart
 fi
 
-# Only offsets that are actually running: dev.pids exists while a stack is up,
-# so this never starts a preview nobody asked for. Never block the git command.
-#
-# The offset must parse as digits. The canonical checkout's basename is a
-# PREFIX of other worktrees' (doska / doska-newfeatures), so the glob alone
-# matches a sibling's state dir and \`\${x##*-}\` reads its offset as
-# "newfeatures-1". Left unchecked, a post-rewrite there would \`restart\` the
-# canonical root onto the sibling's ports and fight its live preview.
-base="\$(basename "\$top")"
-for pids in /tmp/doska-preview-"\$base"-*/dev.pids; do
-  [ -e "\$pids" ] || continue
-  dir="\${pids%/dev.pids}"
-  off="\${dir##*/}"; off="\${off#doska-preview-\$base-}"
-  case "\$off" in ''|*[!0-9]*) continue ;; esac
-  PORT_OFFSET="\$off" "\$top/scripts/dev-preview.sh" "\$verb" || true
-done
+# Only the canonical checkout has a preview, and only if one is actually up
+# (dev.pids exists while a stack is running), so this never starts a preview
+# nobody asked for and never touches anything from a mission worktree. Never
+# block the git command.
+canon="\$(git -C "\$top" worktree list --porcelain 2>/dev/null | awk '/^worktree /{print substr(\$0,10); exit}')"
+[ -n "\$canon" ] && [ "\$(cd "\$canon" && pwd -P)" = "\$top" ] || exit 0
+[ -e /tmp/doska-preview/dev.pids ] || exit 0
+"\$top/scripts/dev-preview.sh" "\$verb" || true
 exit 0
 HOOK
     chmod +x "$common/hooks/$hook.new"
@@ -286,20 +277,8 @@ HOOK
 }
 
 start() {
+  assert_canonical
   if running; then echo "already running"; status; return 0; fi
-  assert_offset_is_a_preview
-  # A second preview means a second *worktree*. Two offsets in one worktree
-  # would fight over apps/server/.env and apps/client/.vite/, and one api would
-  # be restarted onto the other's port by its own watcher.
-  for other in /tmp/doska-preview-"$(basename "$ROOT")"-*/dev.pids; do
-    [ -e "$other" ] || continue
-    dir="${other%/dev.pids}"; off="${dir##*/}"; off="${off#doska-preview-$(basename "$ROOT")-}"
-    case "$off" in ''|*[!0-9]*) continue ;; esac
-    [ "$off" = "$OFFSET" ] && continue
-    echo "refusing: offset $off is already running in this worktree ($ROOT)."
-    echo "Run the second offset from a different worktree — see CLAUDE.md."
-    exit 1
-  done
   : > "$LOG"
   ensure_dev_cert
   write_server_env
@@ -328,6 +307,7 @@ start() {
 }
 
 stop() {
+  assert_canonical
   if [ -f "$PIDFILE" ]; then
     while read -r p; do
       [ -n "$p" ] || continue
@@ -344,12 +324,14 @@ stop() {
 # whether migrations or dependencies moved — those a running stack cannot absorb.
 #
 # Migrations: restart, they run at server boot.
-# Dependencies: do NOT install here. `pnpm install` rewrites the shared
-# node_modules store that every worktree symlinks into, and a running preview
-# in ANY worktree dies mid-resolve when it does — measured, not theoretical.
-# Restarting this stack would recover only this one. So say what is needed and
-# let the operator run it once, when no one is mid-review.
+# Dependencies: `pnpm install` rewrites node_modules under the running stack,
+# which dies mid-resolve when it does — so the install happens with the stack
+# stopped, then it is started again. This is safe precisely because there is
+# only one preview and it is this one; nothing else on the box uses these
+# modules live (worktrees symlink here, but scripts/guard-install.sh keeps
+# them from installing into it).
 reload() {
+  assert_canonical
   if ! running; then
     echo "reload: preview is not running — nothing to reload"
     status
@@ -360,19 +342,12 @@ reload() {
   mig_now="$(migrations_fingerprint)"; mig_prev="$(cat "$STATE/migrations.sha" 2>/dev/null || echo none)"
 
   if [ "$deps_now" != "$deps_prev" ]; then
-    cat <<MSG
-
-  ┌─ dependencies changed in this integration ────────────────────────────┐
-  │ Run this once, when no preview is mid-review — it rewrites the shared │
-  │ node_modules store and briefly kills EVERY running preview on the box:│
-  │                                                                       │
-  │   cd $CANONICAL_ROOT && CI=true pnpm install
-  │   $CANONICAL_ROOT/scripts/dev-preview.sh restart
-  │                                                                       │
-  │ Every other worktree's preview needs a restart after it too.          │
-  └───────────────────────────────────────────────────────────────────────┘
-
-MSG
+    echo "reload: dependencies changed — stopping, installing, restarting"
+    stop
+    ( cd "$ROOT" && CI=true pnpm install ) > "$STATE/install.log" 2>&1 \
+      || { echo "reload: pnpm install FAILED — see $STATE/install.log; preview left stopped"; exit 1; }
+    start
+    return 0
   fi
 
   if [ "$mig_now" != "$mig_prev" ]; then
@@ -412,9 +387,9 @@ check() {
   echo "worktree: $ROOT"
   echo "branch:   $branch"
   if [ "$(cd "$ROOT" && pwd -P)" = "$(cd "$CANONICAL_ROOT" 2>/dev/null && pwd -P)" ]; then
-    echo "role:     integration checkout — integrate here, do not develop here"
+    echo "role:     canonical checkout — the one preview (https://$WEB_HOST:$WEB_PORT/) runs from here"
   else
-    echo "role:     mission worktree — preview with PORT_OFFSET=1 while you work on it"
+    echo "role:     mission worktree — no preview here; integrate into $CANONICAL_BRANCH to see it on https://$WEB_HOST:$WEB_PORT/"
   fi
   if [ -n "$dirty" ]; then
     verdict=DIRTY
@@ -433,11 +408,11 @@ check() {
 case "${1:-status}" in
   start) start ;;
   stop) stop ;;
-  restart) stop; start ;;
+  restart) assert_canonical; stop; start ;;
   reload) reload ;;
   status) status ;;
   check) check ;;
-  logs) tail -f "$LOG" ;;
+  logs) assert_canonical; tail -f "$LOG" ;;
   url) echo "https://$WEB_HOST:$WEB_PORT/" ;;
   *) echo "usage: $0 start|stop|restart|reload|status|check|logs|url"; exit 1 ;;
 esac

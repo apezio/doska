@@ -1,62 +1,32 @@
-import {
-  Menu,
-  MenuContent,
-  MenuItem,
-  MenuTrigger,
-  PRIORITIES,
-  PriorityChip,
-  cn,
-} from "@doska/ui-kit"
-import { Check, Flag } from "lucide-react"
+import { PriorityInput } from "@doska/ui-kit"
+import { PRIORITY_MAX, PRIORITY_MIN } from "@doska/contract"
 
 interface IProps {
-  value: string
-  onChange?: (priority: string) => void
+  value: number
+  /** Omit where the viewer cannot edit the card — the number then just shows. */
+  onChange?: (priority: number) => void
   className?: string
 }
 
-/** Card priority as a color-coded chip. */
+/**
+ * A card's priority where it lives: in the title row, left of the "⋯" menu.
+ * Clicking the number edits it in place; the card itself stays closed, so the
+ * click must not reach the card underneath.
+ */
 export function CardPriority({ value, onChange, className }: IProps) {
-  if (!onChange) return <PriorityChip value={value} className={className} />
-
-  const isSet = PRIORITIES.some((p) => p.id === value)
-
   return (
-    <span onClick={(e) => e.stopPropagation()} className="inline-flex">
-      <Menu>
-        <MenuTrigger
-          render={
-            <button
-              type="button"
-              aria-label="Card priority"
-              className={cn(
-                "-m-1.5 inline-flex cursor-pointer items-center p-1.5 md:m-0 md:p-0",
-                className
-              )}
-            />
-          }
-        >
-          {isSet ? (
-            <PriorityChip value={value} />
-          ) : (
-            <Flag className="size-4 text-muted-foreground hover:text-foreground md:size-3.5" />
-          )}
-        </MenuTrigger>
-        <MenuContent align="start">
-          <MenuItem onClick={() => onChange("")}>
-            <Flag className="size-4 text-muted-foreground md:size-3.5" />
-            No priority
-            {!isSet && <Check className="ml-auto" />}
-          </MenuItem>
-          {PRIORITIES.map((option) => (
-            <MenuItem key={option.id} onClick={() => onChange(option.id)}>
-              <PriorityChip value={option.id} />
-              {option.label}
-              {option.id === value && <Check className="ml-auto" />}
-            </MenuItem>
-          ))}
-        </MenuContent>
-      </Menu>
+    <span
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      className="inline-flex"
+    >
+      <PriorityInput
+        value={value}
+        onChange={onChange}
+        min={PRIORITY_MIN}
+        max={PRIORITY_MAX}
+        className={className}
+      />
     </span>
   )
 }

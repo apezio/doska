@@ -3,7 +3,6 @@ import { taskProgress, type TaskProgress } from "@doska/markdown"
 import type { ReactNode } from "react"
 import type { Card, Column } from "@doska/core/types"
 import { CardDeadline } from "./deadline/card-deadline"
-import { CardPriority } from "./priority/card-priority"
 
 interface IProps {
   card: Card
@@ -15,21 +14,21 @@ interface IProps {
   tasks?: TaskProgress
   /** Omit to show the deadline without a picker. */
   onChangeDeadline?: (deadline: string | null) => void
-  /** Omit to show the priority without a picker. */
-  onChangePriority?: (priority: string) => void
   className?: string
   showEmpty?: boolean
   lead?: ReactNode
 }
 
-/** A card's task progress, deadline and priority — on the board card and in its panel. */
+/**
+ * A card's task progress and deadline — on the board card and in its panel.
+ * Priority is not here: it sits in the title row, beside the "⋯" menu.
+ */
 export function CardMeta({
   card,
   column,
   body,
   tasks,
   onChangeDeadline,
-  onChangePriority,
   className,
   showEmpty,
   lead,
@@ -46,9 +45,6 @@ export function CardMeta({
           value={card.deadline}
           onChange={onChangeDeadline}
         />
-      )}
-      {(showEmpty || !!card.priority) && (
-        <CardPriority value={card.priority} onChange={onChangePriority} />
       )}
     </div>
   )

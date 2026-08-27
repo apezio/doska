@@ -151,14 +151,14 @@ export async function editCardBody(
   await closeCard(page)
 }
 
-/** The priority trigger/chip on the board card titled `title`. */
+/** The editable priority number in the title row of the card titled `title`. */
 export function cardPriorityButton(page: Page, title: string) {
   return card(page, title).getByRole("button", { name: "Card priority" })
 }
 
-/** The priority chip's accessible label ("Priority: High"), or null when unset. */
-export function cardPriorityLabel(page: Page, title: string) {
-  return card(page, title).locator('[aria-label^="Priority:"]')
+/** The priority number the card titled `title` shows — "–" when it has none. */
+export function cardPriorityText(page: Page, title: string) {
+  return cardPriorityButton(page, title).innerText()
 }
 
 export async function openCardMenu(page: Page, title: string): Promise<void> {
@@ -168,17 +168,23 @@ export async function openCardMenu(page: Page, title: string): Promise<void> {
   await expect(menu(page, "Card actions")).toBeVisible()
 }
 
+/**
+ * Types `priority` (0-100) into the number in the card's title row. Passing an
+ * empty string clears it back to none.
+ */
 export async function setCardPriority(
   page: Page,
   title: string,
-  label: string
+  priority: number | ""
 ): Promise<void> {
-  await openCardMenu(page, title)
-  await menu(page, "Card actions")
-    .getByRole("menuitem", { name: "Priority", exact: true })
-    .click()
-  await menu(page, "Priority").getByRole("menuitem", { name: label }).click()
-  await expect(menu(page, "Card actions")).toBeHidden()
+  await cardPriorityButton(page, title).click()
+  const field = card(page, title).getByRole("textbox", {
+    name: "Card priority",
+  })
+  await expect(field).toBeFocused()
+  await field.fill(String(priority))
+  await field.press("Enter")
+  await expect(field).toBeHidden()
 }
 
 export type DeadlinePreset = "No deadline" | "Today" | "Tomorrow" | "In a week"
@@ -252,7 +258,7 @@ export async function remoteAddCard(
           columnId: col.record.id,
           number: null,
           deadline: null,
-          priority: "",
+          priority: 0,
           attachments: [],
           updatedAt: Date.now(),
           deletedAt: null,

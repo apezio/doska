@@ -9,7 +9,7 @@ const card = (id: string, columnId: string, fields: Partial<Card> = {}): Card =>
     title: id,
     body: "",
     columnId,
-    priority: "",
+    priority: 0,
     deadline: null,
     number: null,
     attachments: [],
@@ -88,9 +88,9 @@ describe("useDragEnd", () => {
       // among the moved card's same-priority tier regardless. Documented as
       // actual behavior per explicit direction, not endorsed as correct.
       const cards = [
-        card("moved", "todo", { position: "a0", priority: "high" }),
-        card("b", "todo", { position: "a1", priority: "high" }),
-        card("c", "todo", { position: "a3", priority: "low" }),
+        card("moved", "todo", { position: "a0", priority: 75 }),
+        card("b", "todo", { position: "a1", priority: 75 }),
+        card("c", "todo", { position: "a3", priority: 25 }),
       ]
       const moveCard = vi.fn()
       const handleDragEnd = useDragEnd(board(cards), moveCard, ["priority"])
@@ -108,9 +108,9 @@ describe("useDragEnd", () => {
 
     it("a cross-column drop lands above the destination's top regardless of destination.index, when the moved card ties with nothing there", () => {
       const cards = [
-        card("moved", "todo", { position: "a0", priority: "medium" }),
-        card("top", "doing", { position: "a0", priority: "high" }),
-        card("bottom", "doing", { position: "a1", priority: "low" }),
+        card("moved", "todo", { position: "a0", priority: 50 }),
+        card("top", "doing", { position: "a0", priority: 75 }),
+        card("bottom", "doing", { position: "a1", priority: 25 }),
       ]
       const moveCard = vi.fn()
       const handleDragEnd = useDragEnd(board(cards), moveCard, ["priority"])

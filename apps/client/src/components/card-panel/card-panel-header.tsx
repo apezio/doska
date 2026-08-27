@@ -9,10 +9,11 @@ interface IProps {
   /** Omit where the card cannot be edited — the toggle has nothing to toggle to. */
   onTogglePreivew?: () => void
   isPreview: boolean
+  /** Sits left of the "⋯": the priority number, and any header buttons. */
   actions?: ReactNode
   /** The card's "⋯" menu, pinned to the far right of the row. */
   menu?: ReactNode
-  /** Task progress, deadline, priority — and the column beside them. */
+  /** Task progress, deadline — and the column beside them. */
   meta?: ReactNode
 }
 

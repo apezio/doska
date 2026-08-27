@@ -27,8 +27,10 @@ Deadlines
   today, then the next 60 days. list_upcoming returns exactly that set.
 
 Priority
-- A card may carry one of high, medium or low, or none at all. Pass null on
-  create_card or update_card for none; search_cards filters by it.
+- A card carries an integer 0-100, higher is more important; 0 is none. Pass 0
+  or null on create_card or update_card for none; search_cards filters with
+  priorityMin / priorityMax.
+- Cards migrated from the old high/medium/low scale read 75 / 50 / 25.
 - It is an ordering hint, not a deadline: a board can be sorted by priority, and
   nothing expires when one is set.
 

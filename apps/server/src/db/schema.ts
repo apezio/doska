@@ -95,7 +95,8 @@ export const cards = pgTable(
     position: text("position").notNull(),
     number: integer("number"),
     deadline: text("deadline"),
-    priority: text("priority").notNull().default(""),
+    /** 0–100, higher is more important; 0 for none. See `@doska/contract`. */
+    priority: integer("priority").notNull().default(0),
     attachments: jsonb("attachments")
       .$type<Attachment[]>()
       .notNull()

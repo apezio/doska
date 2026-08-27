@@ -1,3 +1,4 @@
+import { toPriority } from "@doska/contract"
 import { runtime } from "../../runtime"
 import { cards as seedCards, seedColumns, seedDashboards } from "../../seed"
 import type { Card, Column, Dashboard } from "../../types"
@@ -46,39 +47,61 @@ function revive<T extends { deletedAt: number | null; updatedAt: number }>(
   return { ...record, deletedAt: null, updatedAt: stamp() }
 }
 
+/**
+ * Brings a stored card up to the current shape. Only `priority` needs it: cards
+ * written before it became a number hold the old `high`/`medium`/`low`/`""`
+ * enum. Migrating on read keeps the store untouched until the card is next
+ * written — at which point the normalised value is what gets saved.
+ */
+function migrateCard(card: Card): Card {
+  const priority = toPriority(card.priority)
+  return priority === card.priority ? card : { ...card, priority }
+}
+
+function migrateCards(cards: Card[]): Card[] {
+  return cards.map(migrateCard)
+}
+
 export const db = {
-  getCard(id: string): Promise<Card | undefined> {
-    return runtime().db.get<Card>(CARDS, id)
+  async getCard(id: string): Promise<Card | undefined> {
+    const card = await runtime().db.get<Card>(CARDS, id)
+    return card && migrateCard(card)
   },
-  getCards(columnId?: string): Promise<Card[]> {
-    return runtime().db.getAll<Card>(
-      CARDS,
-      columnId
-        ? {
-            index: CARDS_BY_COLUMN,
-            range: { lower: columnId, upper: columnId },
-          }
-        : undefined
+  async getCards(columnId?: string): Promise<Card[]> {
+    return migrateCards(
+      await runtime().db.getAll<Card>(
+        CARDS,
+        columnId
+          ? {
+              index: CARDS_BY_COLUMN,
+              range: { lower: columnId, upper: columnId },
+            }
+          : undefined
+      )
     )
   },
-  getCardsByNumber(num?: number): Promise<Card[]> {
-    return runtime().db.getAll<Card>(
-      CARDS,
-      num
-        ? {
-            index: CARDS_BY_NUMBER,
-            range: { lower: num, upper: num },
-          }
-        : undefined
+  async getCardsByNumber(num?: number): Promise<Card[]> {
+    return migrateCards(
+      await runtime().db.getAll<Card>(
+        CARDS,
+        num
+          ? {
+              index: CARDS_BY_NUMBER,
+              range: { lower: num, upper: num },
+            }
+          : undefined
+      )
     )
   },
   /** Cards deadlined within `[from, to]` (inclusive `YYYY-MM-DD` bounds), in
    * date order. Spans every board — the index is global. */
-  getCardsByDeadline(from: string, to: string): Promise<Card[]> {
-    return runtime().db.getAll<Card>(CARDS, {
-      index: CARDS_BY_DEADLINE,
-      range: { lower: from, upper: to },
-    })
+  async getCardsByDeadline(from: string, to: string): Promise<Card[]> {
+    return migrateCards(
+      await runtime().db.getAll<Card>(CARDS, {
+        index: CARDS_BY_DEADLINE,
+        range: { lower: from, upper: to },
+      })
+    )
   },
   setCard(card: Card): Promise<void> {
     return runtime().db.set(CARDS, card.id, card)

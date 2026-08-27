@@ -396,7 +396,7 @@ describe("the payload", () => {
           ...card("card1", "col1"),
           record: {
             ...card("card1", "col1").record,
-            priority: "high",
+            priority: 75,
             updatedAt: now + 1,
           },
         },
@@ -409,7 +409,7 @@ describe("the payload", () => {
     expect(body.dashboard.sort).toEqual(["priority"])
     expect(
       body.cards.find((c: { id: string }) => c.id === "card1").priority
-    ).toBe("high")
+    ).toBe(75)
   })
 
   test("another board's records never appear", async () => {

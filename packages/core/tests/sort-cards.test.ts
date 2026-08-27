@@ -8,7 +8,7 @@ const card = (id: string, fields: Partial<Card> = {}): Card =>
     position: id,
     title: id,
     body: "",
-    priority: "",
+    priority: 0,
     deadline: null,
     ...fields,
   }) as Card
@@ -23,15 +23,41 @@ describe("sortCards", () => {
     expect(sortCards(cards, [])).toBe(cards)
   })
 
-  it("orders by priority, unset last", () => {
+  it("orders by priority, highest first and unset last", () => {
     const cards = [
       card("none"),
-      card("low", { priority: "low" }),
-      card("high", { priority: "high" }),
-      card("med", { priority: "medium" }),
+      card("low", { priority: 25 }),
+      card("high", { priority: 75 }),
+      card("med", { priority: 50 }),
     ]
 
     expect(ids(cards, ["priority"])).toEqual(["high", "med", "low", "none"])
+  })
+
+  it("separates neighbouring numbers the old scale would have tied", () => {
+    const cards = [
+      card("b", { priority: 50 }),
+      card("a", { priority: 51 }),
+      card("c", { priority: 49 }),
+    ]
+
+    expect(ids(cards, ["priority"])).toEqual(["a", "b", "c"])
+  })
+
+  it("ranks a card left on the retired enum by what it migrates to", () => {
+    const cards = [
+      card("none"),
+      card("legacy-high", { priority: "high" as unknown as number }),
+      card("eighty", { priority: 80 }),
+      card("ten", { priority: 10 }),
+    ]
+
+    expect(ids(cards, ["priority"])).toEqual([
+      "eighty",
+      "legacy-high",
+      "ten",
+      "none",
+    ])
   })
 
   it("orders by deadline ascending, null last", () => {
@@ -46,9 +72,9 @@ describe("sortCards", () => {
 
   it("breaks a priority tie with the next key", () => {
     const cards = [
-      card("a", { priority: "high", deadline: "2026-09-01" }),
-      card("b", { priority: "high", deadline: "2026-08-15" }),
-      card("c", { priority: "low", deadline: "2026-01-01" }),
+      card("a", { priority: 75, deadline: "2026-09-01" }),
+      card("b", { priority: 75, deadline: "2026-08-15" }),
+      card("c", { priority: 25, deadline: "2026-01-01" }),
     ]
 
     expect(ids(cards, ["priority", "deadline"])).toEqual(["b", "a", "c"])
@@ -56,8 +82,8 @@ describe("sortCards", () => {
 
   it("falls back to position once every key ties", () => {
     const cards = [
-      card("second", { position: "a1", priority: "high" }),
-      card("first", { position: "a0", priority: "high" }),
+      card("second", { position: "a1", priority: 75 }),
+      card("first", { position: "a0", priority: 75 }),
     ]
 
     expect(ids(cards, ["priority"])).toEqual(["first", "second"])
@@ -65,16 +91,16 @@ describe("sortCards", () => {
 
   it("floats a blank card above every key", () => {
     const cards = [
-      card("high", { priority: "high" }),
+      card("high", { priority: 75 }),
       card("blank", { title: "  ", body: "" }),
-      card("low", { priority: "low" }),
+      card("low", { priority: 25 }),
     ]
 
     expect(ids(cards, ["priority"])).toEqual(["blank", "high", "low"])
   })
 
   it("keeps a titled card without a priority below the ranked ones", () => {
-    const cards = [card("none"), card("high", { priority: "high" })]
+    const cards = [card("none"), card("high", { priority: 75 })]
 
     expect(ids(cards, ["priority"])).toEqual(["high", "none"])
   })
@@ -93,9 +119,9 @@ describe("sortCards", () => {
 })
 
 describe("sameSortGroup", () => {
-  const high = card("a", { priority: "high", deadline: "2026-09-01" })
-  const alsoHigh = card("b", { priority: "high", deadline: "2026-08-15" })
-  const low = card("c", { priority: "low" })
+  const high = card("a", { priority: 75, deadline: "2026-09-01" })
+  const alsoHigh = card("b", { priority: 75, deadline: "2026-08-15" })
+  const low = card("c", { priority: 25 })
 
   it("groups cards no key can separate", () => {
     expect(sameSortGroup(high, alsoHigh, ["priority"])).toBe(true)

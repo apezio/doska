@@ -19,7 +19,7 @@ const card = (id: string, columnId: string, fields: Partial<Card> = {}): Card =>
     columnId,
     title: id,
     body: "",
-    priority: "",
+    priority: 0,
     number: null,
     deletedAt: null,
     ...fields,
@@ -62,9 +62,9 @@ describe("groupOpenCards", () => {
   it("orders each pile by priority, then number", () => {
     const cards = [
       card("none", "b1-todo", { number: 1 }),
-      card("low", "b1-todo", { priority: "low", number: 2 }),
-      card("high-2", "b2-todo", { priority: "high", number: 2 }),
-      card("high-1", "b1-todo", { priority: "high", number: 1 }),
+      card("low", "b1-todo", { priority: 25, number: 2 }),
+      card("high-2", "b2-todo", { priority: 75, number: 2 }),
+      card("high-1", "b1-todo", { priority: 75, number: 1 }),
     ]
 
     expect(ids(groupOpenCards(cards, columns, boards).todo)).toEqual([

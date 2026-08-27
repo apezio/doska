@@ -14,6 +14,7 @@ import type {
 
 export * from "./schemas"
 export * from "./card-id"
+export * from "./priority"
 export * from "./retention"
 export { contract } from "./contract"
 

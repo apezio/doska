@@ -4,6 +4,7 @@ import { MarkdownTextarea } from "../markdown"
 import { CardPaneLayout } from "./card-pane-layout"
 import { CardPanelHeader } from "./card-panel-header"
 import { CardPanelMenu } from "./card-panel-menu"
+import { CardPanelPriority } from "./card-panel-priority"
 import { CardBodyEditor } from "./card-body-editor"
 import { CardMetaLive } from "../card/card-meta-live"
 import { CardAttachments } from "../card/attachments/card-attachments"
@@ -68,7 +69,12 @@ export function CardEditor({
                   isPreview={isPreview}
                   onClose={onClose}
                   onTogglePreivew={onTogglePreview}
-                  actions={<AddAttachmentButton />}
+                  actions={
+                    <>
+                      <AddAttachmentButton />
+                      <CardPanelPriority cardId={cardId} />
+                    </>
+                  }
                   menu={
                     <CardPanelMenu
                       cardId={cardId}

@@ -12,7 +12,7 @@ interface IProps {
 
 /**
  * `CardMeta` for a card the viewer can edit: reads it live, writes edits back.
- * An unset deadline or priority shows nothing — it is set from the card menu.
+ * An unset deadline shows nothing — it is set from the card menu.
  */
 export function CardMetaLive({ cardId, body, className }: IProps) {
   const { data: card = fallbackCard } = useCard(cardId)
@@ -25,7 +25,6 @@ export function CardMetaLive({ cardId, body, className }: IProps) {
       column={column}
       body={body}
       onChangeDeadline={(deadline) => updateCard({ deadline })}
-      onChangePriority={(priority) => updateCard({ priority })}
       className={className}
     />
   )

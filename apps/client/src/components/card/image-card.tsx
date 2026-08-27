@@ -10,7 +10,7 @@ import type { ReactNode } from "react"
 interface IProps {
   title: string
   isDragging?: boolean
-  /** Top-right slot: the card menu where there is one. */
+  /** Top-right slot: the priority number and the card menu. */
   action?: ReactNode
   /** The image, already resolved by the caller. */
   children: ReactNode
@@ -31,18 +31,12 @@ export function ImageCard({ title, isDragging, action, children }: IProps) {
       {title ? (
         <CardHeader className="pb-2">
           <CardTitle>{title}</CardTitle>
-          {action && (
-            <CardAction className="flex items-center gap-1">
-              {action}
-            </CardAction>
-          )}
+          <CardAction className="flex items-center gap-1">{action}</CardAction>
         </CardHeader>
       ) : (
-        action && (
-          <div className="absolute top-1 right-1 z-10 rounded-md bg-card/70 backdrop-blur-sm">
-            {action}
-          </div>
-        )
+        <div className="absolute top-1 right-1 z-10 flex items-center gap-1 rounded-md bg-card/70 px-1 backdrop-blur-sm">
+          {action}
+        </div>
       )}
       {children}
     </CardBase>

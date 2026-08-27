@@ -4,6 +4,7 @@ import { useLocation, useRoute } from "wouter"
 import type { PublicBoard as Snapshot } from "@doska/contract"
 import { routes } from "@/lib/routes"
 import { CardMeta } from "../card/card-meta"
+import { CardPriority } from "../card/priority/card-priority"
 import { CardPaneLayout } from "../card-panel/card-pane-layout"
 import { CardPanelHeader } from "../card-panel/card-panel-header"
 import { CardPanelShell } from "../card-panel/card-panel-shell"
@@ -57,6 +58,7 @@ export function PublicCardPanel({ token, snapshot, closeHref }: IProps) {
                 <CardPanelHeader
                   isPreview
                   onClose={close}
+                  actions={<CardPriority value={card.priority} />}
                   meta={
                     <>
                       <CardMeta card={card} column={column} />

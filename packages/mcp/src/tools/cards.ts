@@ -1,7 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import type { Card } from "@doska/contract"
+import { PRIORITY_MAX, PRIORITY_MIN, PRIORITY_NONE, type Card } from "@doska/contract"
 import { taskProgress, toggleTaskByIndex } from "@doska/markdown/core"
-import { PRIORITIES } from "@doska/tokens/priority"
 import { z } from "zod"
 import {
   type Board,
@@ -22,12 +21,16 @@ const deadline = z
   .nullable()
   .describe("Calendar date, no time — this is what the upcoming view lists")
 
-export const PRIORITY_IDS = PRIORITIES.map((p) => p.id) as [string, ...string[]]
-
 const priority = z
-  .enum(PRIORITY_IDS)
+  .number()
+  .int()
+  .min(PRIORITY_MIN)
+  .max(PRIORITY_MAX)
   .nullable()
-  .describe("How important the card is; null or omitted for none")
+  .describe(
+    "How important the card is, 0-100 (higher is more important); 0, null " +
+      "or omitted for none"
+  )
 
 const cardId = z
   .string()
@@ -74,7 +77,7 @@ export function registerCardTools(server: McpServer, board: Board): void {
         columnId,
         number: null,
         deadline: deadline ?? null,
-        priority: priority ?? "",
+        priority: priority ?? PRIORITY_NONE,
         attachments: [],
         updatedAt: board.now(),
         deletedAt: null,
@@ -92,7 +95,8 @@ export function registerCardTools(server: McpServer, board: Board): void {
       title: "Update card",
       description:
         "Edit a card's title, body, deadline, or priority. Omitted fields " +
-        "are left alone; pass a null deadline or priority to clear it. " +
+        "are left alone; pass a null deadline, or a null or 0 priority, to " +
+        "clear it. " +
         "`append` adds to the end " +
         "of the body instead of replacing it, which is the safe way to add " +
         "a note to a card you haven't read.",
@@ -127,7 +131,9 @@ export function registerCardTools(server: McpServer, board: Board): void {
           body: nextBody,
           deadline: deadline === undefined ? existing.deadline : deadline,
           priority:
-            priority === undefined ? existing.priority : (priority ?? ""),
+            priority === undefined
+              ? existing.priority
+              : (priority ?? PRIORITY_NONE),
         },
         board.now()
       )

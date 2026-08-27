@@ -18,6 +18,7 @@ import {
 import type { Card, Column } from "@doska/core/types"
 import { MarkdownCardPreview } from "../markdown"
 import { CardMeta } from "./card-meta"
+import { CardPriority } from "./priority/card-priority"
 import { ImageCard } from "./image-card"
 import { cardSoleImage } from "./sole-image"
 
@@ -48,7 +49,8 @@ interface IProps extends DetailedHTMLProps<
   /** Omit to leave the body's task checkboxes inert. */
   onChangeBody?: (body: string) => void
   onChangeDeadline?: (deadline: string | null) => void
-  onChangePriority?: (priority: string) => void
+  /** Omit to show the priority number without letting the viewer edit it. */
+  onChangePriority?: (priority: number) => void
   /** The card's attachments, drawn by whoever can resolve their URLs. */
   attachments?: ReactNode
   /** Draws an `attachment:<key>` image; the app and a public board find it differently. */
@@ -92,6 +94,14 @@ export function CardView({
   const bodyImage = hasBody && !hasMore ? soleImage(preview) : null
   const image = imageCard ? cardSoleImage(hasBody, bodyImage, files) : null
 
+  /** The title row's right-hand end: the priority number, then the card menu. */
+  const titleAction = (
+    <>
+      <CardPriority value={card.priority} onChange={onChangePriority} />
+      {action}
+    </>
+  )
+
   const drawImage = (image: SoleImage) =>
     image.source.kind === "attachment" ? (
       renderAttachmentImage(image.source.key, image.alt, FULL_BLEED)
@@ -100,8 +110,7 @@ export function CardView({
     )
 
   const tasks = taskProgress(body)
-  const hasMeta =
-    !!metaLead || tasks.total > 0 || !!card.deadline || !!card.priority
+  const hasMeta = !!metaLead || tasks.total > 0 || !!card.deadline
 
   return (
     <div
@@ -116,7 +125,11 @@ export function CardView({
     >
       {wrapCard(
         image ? (
-          <ImageCard title={title} isDragging={isDragging} action={action}>
+          <ImageCard
+            title={title}
+            isDragging={isDragging}
+            action={titleAction}
+          >
             {drawImage(image)}
           </ImageCard>
         ) : (
@@ -130,11 +143,9 @@ export function CardView({
                 {lead}
                 <span>{title || "Untitled card"}</span>
               </CardTitle>
-              {action && (
-                <CardAction className="flex items-center gap-1">
-                  {action}
-                </CardAction>
-              )}
+              <CardAction className="flex items-center gap-1">
+                {titleAction}
+              </CardAction>
             </CardHeader>
             {hasMeta && (
               <CardContent>
@@ -144,7 +155,6 @@ export function CardView({
                   tasks={tasks}
                   lead={metaLead}
                   onChangeDeadline={onChangeDeadline}
-                  onChangePriority={onChangePriority}
                   className="mt-2"
                 />
               </CardContent>

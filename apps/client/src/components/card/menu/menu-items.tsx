@@ -4,7 +4,6 @@ import { CopyIdItem } from "./copy-id-item"
 import { DeadlineSub } from "./deadline-sub"
 import { DeleteItem } from "./delete-item"
 import { MoveToColumnSub } from "./move-to-column-sub"
-import { PrioritySub } from "./priority-sub"
 
 interface IProps {
   cardId: string
@@ -27,7 +26,6 @@ export function CardMenuItems({
         Edit
       </MenuItem>
       <MoveToColumnSub cardId={cardId} />
-      <PrioritySub cardId={cardId} />
       <DeadlineSub cardId={cardId} closeMenu={closeMenu} />
       <CopyIdItem cardId={cardId} />
       <MenuSeparator />

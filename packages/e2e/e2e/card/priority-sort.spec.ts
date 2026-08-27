@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test"
 import {
   addCard,
-  cardPriorityLabel,
+  cardPriorityButton,
+  cardPriorityText,
   columnCardTitles,
   createBoard,
   dragCardByTitle,
@@ -11,18 +12,50 @@ import {
 } from "../helpers"
 
 test.describe("card priority and board sort", () => {
-  test("setting a priority from the board card's meta row shows the chip", async ({
+  test("the number in a card's title row is editable in place", async ({
     page,
   }) => {
     await createBoard(page)
     await addCard(page, "To Do")
 
-    await setCardPriority(page, "Untitled card", "High")
+    await expect(cardPriorityButton(page, "Untitled card")).toHaveText("–")
 
-    await expect(cardPriorityLabel(page, "Untitled card")).toHaveAttribute(
-      "aria-label",
-      "Priority: High"
-    )
+    await setCardPriority(page, "Untitled card", 70)
+
+    await expect(cardPriorityButton(page, "Untitled card")).toHaveText("70")
+  })
+
+  test("an edit survives a reload, and clearing it goes back to none", async ({
+    page,
+  }) => {
+    await createBoard(page)
+    await addCard(page, "To Do")
+    await setCardPriority(page, "Untitled card", 42)
+
+    await page.reload()
+    await expect(cardPriorityButton(page, "Untitled card")).toHaveText("42")
+
+    await setCardPriority(page, "Untitled card", "")
+    await expect(cardPriorityButton(page, "Untitled card")).toHaveText("–")
+  })
+
+  test("a value above the scale is held at 100", async ({ page }) => {
+    await createBoard(page)
+    await addCard(page, "To Do")
+
+    await setCardPriority(page, "Untitled card", 999)
+
+    await expect(cardPriorityButton(page, "Untitled card")).toHaveText("100")
+  })
+
+  test("editing the number does not open the card", async ({ page }) => {
+    await createBoard(page)
+    await addCard(page, "To Do")
+
+    await setCardPriority(page, "Untitled card", 30)
+
+    await expect(page.getByPlaceholder("Notes")).toBeHidden()
+    expect(await cardPriorityText(page, "Untitled card")).toBe("30")
   })
 
   test("sorting by priority orders a column and puts unset cards last", async ({
@@ -34,9 +67,9 @@ test.describe("card priority and board sort", () => {
       await addCard(page, "To Do")
       await retitleCard(page, "Untitled card", title)
     }
-    await setCardPriority(page, "High", "High")
-    await setCardPriority(page, "Medium", "Medium")
-    await setCardPriority(page, "Low", "Low")
+    await setCardPriority(page, "High", 90)
+    await setCardPriority(page, "Medium", 50)
+    await setCardPriority(page, "Low", 10)
 
     await toggleSort(page, "Sort by priority")
 
@@ -54,9 +87,9 @@ test.describe("card priority and board sort", () => {
       await addCard(page, "To Do")
       await retitleCard(page, "Untitled card", title)
     }
-    await setCardPriority(page, "High", "High")
-    await setCardPriority(page, "Medium", "Medium")
-    await setCardPriority(page, "Low", "Low")
+    await setCardPriority(page, "High", 90)
+    await setCardPriority(page, "Medium", 50)
+    await setCardPriority(page, "Low", 10)
     await toggleSort(page, "Sort by priority")
     await expect
       .poll(() => columnCardTitles(page, "To Do"))
@@ -76,11 +109,11 @@ test.describe("card priority and board sort", () => {
 
     await addCard(page, "In Progress")
     await retitleCard(page, "Untitled card", "Existing")
-    await setCardPriority(page, "Existing", "High")
+    await setCardPriority(page, "Existing", 90)
 
     await addCard(page, "To Do")
     await retitleCard(page, "Untitled card", "Mover")
-    await setCardPriority(page, "Mover", "Low")
+    await setCardPriority(page, "Mover", 10)
 
     await toggleSort(page, "Sort by priority")
     await expect
@@ -89,7 +122,7 @@ test.describe("card priority and board sort", () => {
 
     await dragCardByTitle(page, "Mover", ["ArrowRight"])
 
-    // Sorted: "Mover" (low) ranks below "Existing" (high).
+    // Sorted: "Mover" (10) ranks below "Existing" (90).
     await expect
       .poll(() => columnCardTitles(page, "In Progress"))
       .toEqual(["Existing", "Mover"])

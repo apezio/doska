@@ -12,7 +12,6 @@ import { useRef } from "react"
 import { CopyIdItem } from "../card/menu/copy-id-item"
 import { DeadlineSub } from "../card/menu/deadline-sub"
 import { MoveToColumnSub } from "../card/menu/move-to-column-sub"
-import { PrioritySub } from "../card/menu/priority-sub"
 
 interface IProps {
   cardId: string
@@ -57,7 +56,6 @@ export function CardPanelMenu({
           Reveal on board
         </MenuItem>
         <MoveToColumnSub cardId={cardId} />
-        <PrioritySub cardId={cardId} />
         <DeadlineSub
           cardId={cardId}
           closeMenu={() => actionsRef.current?.close()}

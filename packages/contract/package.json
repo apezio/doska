@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./card-id": "./src/card-id.ts",
+    "./priority": "./src/priority.ts",
     "./retention": "./src/retention.ts"
   },
   "scripts": {

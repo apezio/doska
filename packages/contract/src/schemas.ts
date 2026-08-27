@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { PRIORITY_MAX, PRIORITY_MIN, PRIORITY_NONE, toPriority } from "./priority"
 
 /**
  * Entity schemas shared by client and server
@@ -27,6 +28,14 @@ export const AttachmentSchema = z.object({
   size: z.number(),
 })
 
+/**
+ * A card's priority on the wire. Accepts anything the field has ever held and
+ * normalises it, so a card written by an older client migrates as it is read.
+ */
+export const PrioritySchema = z
+  .preprocess(toPriority, z.number().int().min(PRIORITY_MIN).max(PRIORITY_MAX))
+  .default(PRIORITY_NONE)
+
 export const CardSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -41,8 +50,12 @@ export const CardSchema = z.object({
   number: z.number().nullable().default(null),
   /** Optional deadline as an ISO date string (`YYYY-MM-DD`); `null` when unset. */
   deadline: z.string().nullable().default(null),
-  /** Importance: `high` / `medium` / `low`, empty for none. See `PRIORITIES`. */
-  priority: z.string().default(""),
+  /**
+   * Importance as an integer 0–100, `0` for none. Older records — and older
+   * clients pushing over sync — carry the retired `high`/`medium`/`low`/`""`
+   * enum, so the field is read through `toPriority` rather than rejected.
+   */
+  priority: PrioritySchema,
   /** Attached files; travels with the card's last-writer-wins record. */
   attachments: z.array(AttachmentSchema).default([]),
   updatedAt: z.number(),

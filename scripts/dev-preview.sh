@@ -1,62 +1,65 @@
 #!/usr/bin/env bash
 # Doska live-preview dev stack.
 #
-# Offset 0 is THE canonical dev server for this box, and it belongs to the
-# integration checkout — the repo's main worktree on branch `working`.
-# Feature worktrees never own it; they run their own preview with PORT_OFFSET>=1.
-# start() refuses offset 0 anywhere else, so a feature worktree cannot quietly
-# become the thing the operator is testing.
+# Previews are temporary and per-mission. There is no permanent dev server on
+# this box: offset 0 (5173/3100/5433) is retired and start() refuses it, so a
+# mission worktree always takes PORT_OFFSET>=1 and 5173 stays free for Vite's
+# stock default. Day-to-day the deployed site is what you look at.
 #
 # Runs the three processes a preview needs, from whichever worktree this script
 # lives in, on ports that never collide with the staging deploy (3000/5432/8080):
 #
-#   db   PGlite over a Postgres socket   127.0.0.1:5433   (apps/server/pgdata)
-#   api  Fastify under `tsx watch`       127.0.0.1:3100   (restarts on server edits)
+#   db   PGlite over a Postgres socket   127.0.0.1:5434   (apps/server/pgdata)
+#   api  Fastify under `tsx watch`       127.0.0.1:3101   (restarts on server edits)
 #   web  Vite dev server + HMR           $WEB_HOST:5173 (HTTPS/HTTP2)
 #
 # Usage:
 #   scripts/dev-preview.sh start | stop | restart | reload | status | logs | check | url
 #
-# Second preview, for a parallel feature in another worktree (see CLAUDE.md):
+# Every preview takes an offset (see CLAUDE.md); a parallel one takes the next:
 #   PORT_OFFSET=1 scripts/dev-preview.sh start     # 5174 / 3101 / 5434
+#   PORT_OFFSET=2 scripts/dev-preview.sh start     # 5175 / 3102 / 5435
 #
-#   scripts/dev-preview.sh reload                  # after an integration into `working`
+#   PORT_OFFSET=1 scripts/dev-preview.sh stop      # when the mission is done
 #
-# Env overrides: WEB_HOST (default 127.0.0.1), PORT_OFFSET (default 0).
+# Env overrides: WEB_HOST (default 127.0.0.1), PORT_OFFSET (default 1; 0 refused).
 #
 # Box-specific values (the address the operator's browser reaches this box on,
-# and anything else that should not live in a public repo) go in
-# scripts/dev-preview.local.sh, which is gitignored and sourced below if present:
+# and anything else that should not live in a public repo) go in the main
+# worktree's scripts/dev-preview.local.sh — gitignored, sourced below, and shared
+# by every worktree:
 #
 #   WEB_HOST=203.0.113.7
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Untracked, box-specific overrides (WEB_HOST, ...). Env still wins over it.
-LOCAL_CONF="$ROOT/scripts/dev-preview.local.sh"
-if [ -f "$LOCAL_CONF" ]; then
-  _env_web_host="${WEB_HOST:-}"
-  # shellcheck source=/dev/null
-  . "$LOCAL_CONF"
-  [ -n "$_env_web_host" ] && WEB_HOST="$_env_web_host"
-  unset _env_web_host
-fi
+# The integration checkout and the staging branch. Not about serving anything:
+# CANONICAL_ROOT is where every worktree's node_modules symlinks to, so vite's
+# fs.allow needs it; it holds the box-local config below; and CANONICAL_BRANCH is
+# what `check` measures a mission against. The integration checkout is by
+# definition the repo's main worktree, which git reports first; deriving it keeps
+# this script path-free.
+CANONICAL_ROOT="$(git -C "$ROOT" worktree list --porcelain 2>/dev/null | awk '/^worktree /{print substr($0,10); exit}')"
+CANONICAL_ROOT="${CANONICAL_ROOT:-$ROOT}"
+CANONICAL_BRANCH="working"
 
-OFFSET="${PORT_OFFSET:-0}"
+# Untracked, box-specific overrides (WEB_HOST, ...). It lives in the main
+# worktree and serves every worktree, so a mission does not need its own copy;
+# a per-worktree file still wins if one exists. An explicit env var beats both.
+_env_web_host="${WEB_HOST:-}"
+for _conf in "$CANONICAL_ROOT/scripts/dev-preview.local.sh" "$ROOT/scripts/dev-preview.local.sh"; do
+  # shellcheck source=/dev/null
+  [ -f "$_conf" ] && . "$_conf"
+done
+[ -n "$_env_web_host" ] && WEB_HOST="$_env_web_host"
+unset _env_web_host _conf
+
+OFFSET="${PORT_OFFSET:-1}"
 WEB_HOST="${WEB_HOST:-127.0.0.1}"
 WEB_PORT=$((5173 + OFFSET))
 API_PORT=$((3100 + OFFSET))
 PG_PORT=$((5433 + OFFSET))
-
-# The canonical dev server: offset 0, integration checkout, staging branch. Not
-# env-overridable on purpose — the point is that no session can redefine which
-# checkout the operator's dev URL is served from. The integration checkout is by
-# definition the repo's main worktree, which git reports first; deriving it here
-# keeps this script free of any absolute path.
-CANONICAL_ROOT="$(git -C "$ROOT" worktree list --porcelain 2>/dev/null | awk '/^worktree /{print substr($0,10); exit}')"
-CANONICAL_ROOT="${CANONICAL_ROOT:-$ROOT}"
-CANONICAL_BRANCH="working"
 
 # Node 22 is required (see .nvmrc); the system node is older.
 NVM_BIN="$HOME/.nvm/versions/node/v22.23.2/bin"
@@ -163,26 +166,20 @@ CFG
 
 port_up() { (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null; }
 
-# Offset 0 is the canonical dev server (see the header). Anywhere else it is a
-# feature preview and must take an offset.
-assert_may_own_canonical() {
+# There is no permanent dev server on this box. Offset 0 (5173/3100/5433) is
+# retired: previews are temporary, per-mission, and start at offset 1. 5173 is
+# also Vite's stock default, so leaving it free keeps `pnpm dev` unambiguous.
+assert_offset_is_a_preview() {
   [ "$OFFSET" = "0" ] || return 0
-  local branch
-  branch="$(git -C "$ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')"
-  if [ "$(cd "$ROOT" && pwd -P)" = "$(cd "$CANONICAL_ROOT" 2>/dev/null && pwd -P)" ] \
-     && [ "$branch" = "$CANONICAL_BRANCH" ]; then
-    return 0
-  fi
   cat >&2 <<MSG
-refusing: offset 0 is the canonical dev server for this box and it belongs to
-  $CANONICAL_ROOT (branch $CANONICAL_BRANCH)
-but this is
-  $ROOT (branch $branch)
+refusing: offset 0 (5173/3100/5433) is not used on this box — there is no
+permanent dev server. A preview is temporary and belongs to one mission
+worktree, so give it an offset:
 
-A feature worktree runs its own preview beside it:
   PORT_OFFSET=1 scripts/dev-preview.sh start      # 5174 / 3101 / 5434
-Your feature reaches the canonical URL by being integrated into \`$CANONICAL_BRANCH\`,
-not by serving it from here. See CLAUDE.md.
+  PORT_OFFSET=2 scripts/dev-preview.sh start      # 5175 / 3102 / 5435
+
+Day-to-day, the deployed site is the thing to look at. See CLAUDE.md.
 MSG
   exit 1
 }
@@ -290,15 +287,19 @@ HOOK
 
 start() {
   if running; then echo "already running"; status; return 0; fi
-  assert_may_own_canonical
+  assert_offset_is_a_preview
   # A second preview means a second *worktree*. Two offsets in one worktree
-  # would fight over apps/server/.env and apps/client/.vite/, and the offset-0
-  # api would be restarted onto the wrong port by its own watcher.
-  if [ "$OFFSET" != "0" ] && [ -f "/tmp/doska-preview-$(basename "$ROOT")-0/dev.pids" ]; then
-    echo "refusing: offset 0 is already running in this worktree ($ROOT)."
-    echo "Run the offset from a different worktree — see CLAUDE.md."
+  # would fight over apps/server/.env and apps/client/.vite/, and one api would
+  # be restarted onto the other's port by its own watcher.
+  for other in /tmp/doska-preview-"$(basename "$ROOT")"-*/dev.pids; do
+    [ -e "$other" ] || continue
+    dir="${other%/dev.pids}"; off="${dir##*/}"; off="${off#doska-preview-$(basename "$ROOT")-}"
+    case "$off" in ''|*[!0-9]*) continue ;; esac
+    [ "$off" = "$OFFSET" ] && continue
+    echo "refusing: offset $off is already running in this worktree ($ROOT)."
+    echo "Run the second offset from a different worktree — see CLAUDE.md."
     exit 1
-  fi
+  done
   : > "$LOG"
   ensure_dev_cert
   write_server_env
@@ -411,9 +412,9 @@ check() {
   echo "worktree: $ROOT"
   echo "branch:   $branch"
   if [ "$(cd "$ROOT" && pwd -P)" = "$(cd "$CANONICAL_ROOT" 2>/dev/null && pwd -P)" ]; then
-    echo "role:     CANONICAL dev server (offset 0) — integration checkout, do not develop here"
+    echo "role:     integration checkout — integrate here, do not develop here"
   else
-    echo "role:     feature worktree — preview with PORT_OFFSET=1; reach the canonical URL by integrating into $CANONICAL_BRANCH"
+    echo "role:     mission worktree — preview with PORT_OFFSET=1 while you work on it"
   fi
   if [ -n "$dirty" ]; then
     verdict=DIRTY

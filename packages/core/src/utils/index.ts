@@ -12,6 +12,15 @@ export {
 export { groupCardsByColumn } from "./group-cards"
 export { initials } from "./initials"
 export { byPosition, keyBetween } from "./position"
+export {
+  flattenDashboards,
+  isSelfOrDescendant,
+  moveToIndex,
+  moveToParent,
+  parentOf,
+  type DashboardMove,
+  type DashboardRow,
+} from "./dashboard-tree"
 export { isAuthed, subscribeAuthed } from "./is-authed"
 export {
   byPriorityThenNumber,

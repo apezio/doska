@@ -15,6 +15,7 @@ import {
   usePublishedBoards,
   useSharedBoards,
 } from "@doska/core/queries"
+import { useMoveDashboard } from "@doska/core/mutations"
 import { useAuth, useDashboardNav } from "@/lib/hooks"
 import { routes } from "@/lib/routes"
 import { AppSidebarHeader } from "./app-sidebar-header"
@@ -27,6 +28,7 @@ export function AppSidebar() {
   const [location, navigate] = useLocation()
   const { data: dashboards = [] } = useDashboards()
   const { selectDashboard, createAndOpenDashboard } = useDashboardNav()
+  const { mutate: moveDashboard } = useMoveDashboard()
   const { authed } = useAuth()
   const [view, setView] = useState<SidebarView>("dashboards")
   const { data: sharedIds = [] } = useSharedBoards(authed === true)
@@ -74,6 +76,7 @@ export function AppSidebar() {
           sharedIds={sharedIds}
           publishedIds={publishedIds}
           onSelectDashboard={(d) => selectDashboard(d.id)}
+          onMoveDashboard={moveDashboard}
           view={view}
           onChangeView={setView}
         />

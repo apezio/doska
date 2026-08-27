@@ -96,6 +96,7 @@ export function registerBoardTools(server: McpServer, board: Board): void {
         title,
         position: positionAt(existing, "bottom"),
         sort: [],
+        parentId: null,
         updatedAt: board.now(),
         deletedAt: null,
       }

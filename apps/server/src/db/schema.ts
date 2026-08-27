@@ -57,6 +57,7 @@ export const dashboards = pgTable(
     title: text("title").notNull(),
     position: text("position").notNull(),
     sort: jsonb("sort").$type<string[]>().notNull().default([]),
+    parentId: text("parent_id"),
     ownerId: text("owner_id"),
     publicToken: text("public_token").unique(),
     publishedAt: bigint("published_at", { mode: "number" }),

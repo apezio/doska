@@ -85,6 +85,12 @@ export const DashboardSchema = z.object({
   title: z.string(),
   position: z.string(),
   sort: z.array(z.string()).default([]),
+  /**
+   * The board this one is nested under in the sidebar, or null at the top
+   * level. Purely organisational: nesting changes where a board sits in the
+   * list and nothing about its contents. `position` orders siblings.
+   */
+  parentId: z.string().nullable().default(null),
   updatedAt: z.number(),
   deletedAt: z.number().nullable(),
 })

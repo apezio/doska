@@ -20,6 +20,7 @@ export async function createDashboard(name: string): Promise<Dashboard> {
     title: name,
     position,
     sort: [],
+    parentId: null,
     updatedAt: stamp(),
     deletedAt: null,
   }

@@ -37,6 +37,7 @@ export async function applyOne(
       title: record.title,
       position: record.position,
       sort: record.sort,
+      parentId: record.parentId,
       ownerId: userId,
       updatedAt: record.updatedAt,
       deletedAt: record.deletedAt,

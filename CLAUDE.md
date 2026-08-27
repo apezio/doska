@@ -74,6 +74,24 @@ phrase in one line; do not argue with the hook and do not work around it.
 - Never `pkill -f` a pattern that also matches your own shell command; kill the
   PIDs in `/tmp/doska-preview-*/dev.pids` instead.
 
+## The staging deploy
+
+Separate from the preview, and **not yours to touch** — listed so no session has
+to rediscover it, or mistake it for the preview.
+
+| | |
+|---|---|
+| URL | <https://doska.forked.net> |
+| checkout | `/opt/doska/repo`, owned by user `doska` (read it with `sudo -u doska git -C /opt/doska/repo ...`; plain `git` refuses on dubious ownership) |
+| web | nginx serves the built `apps/client/dist`; `:8080` plain, `:443` TLS |
+| api | `doska-server.service` (systemd) on `127.0.0.1:3000` |
+| db | postgres on `127.0.0.1:5432` |
+| version | tagged releases; it tracks `main` and lags the preview on purpose |
+
+Its `origin` is `github.com/romenkova/doska`, **not** the `apezio/doska` that
+`$HOME/doska` pushes to. Deploying is the operator's call and their
+procedure — never build into `/opt/doska`, never restart `doska-server`.
+
 ## Repo facts worth knowing
 
 - pnpm workspace + turbo; Node 22 (`.nvmrc`) — the system `node` is older, the
@@ -83,3 +101,13 @@ phrase in one line; do not argue with the hook and do not work around it.
   not the worktree. Absolute paths only in dev config.
 - The stock `pnpm dev` is unusable on this box: it hardcodes the API proxy to
   :3000 and the PGlite socket to :5432, both owned by staging.
+- `pnpm` needs `CI=true` in an agent shell, or it aborts with
+  `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` when it wants to purge
+  `node_modules`. `pnpm` itself comes from `corepack` after `. ~/.nvm/nvm.sh`.
+- turbo caches test results across worktrees — a green `pnpm test` may be
+  `FULL TURBO` from another tree. Use `pnpm test --force` when the run is the
+  evidence for a claim.
+- Two remotes are in play, and `apezio/doska` is **public**. This file and
+  `scripts/dev-preview.sh` both hardcode the box's public IP `127.0.0.1`
+  and `$HOME` paths, so pushing them publishes that. Confirm with the
+  operator before any push that carries these files.

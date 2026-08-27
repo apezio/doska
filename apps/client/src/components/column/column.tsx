@@ -40,6 +40,7 @@ export function Column({
     <Droppable droppableId={id}>
       {(provided, snapshot) => (
         <ColumnView
+          id={id}
           title={title}
           color={color}
           done={done}

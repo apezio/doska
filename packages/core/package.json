@@ -12,6 +12,7 @@
     "./auth-client": "./src/api/auth-client.ts",
     "./bootstrap": "./src/bootstrap.ts",
     "./card-refs": "./src/data/card-refs.ts",
+    "./column-widths": "./src/data/column-widths.ts",
     "./constants": "./src/api/constants.ts",
     "./db": "./src/api/db/db.ts",
     "./fetch": "./src/api/fetch.ts",

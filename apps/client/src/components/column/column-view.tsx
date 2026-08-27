@@ -2,10 +2,13 @@ import type { DroppableProvidedProps } from "@hello-pangea/dnd"
 import type { ReactNode, Ref } from "react"
 import { Button, cn } from "@doska/ui-kit"
 import { Check, FoldVertical, Plus, UnfoldVertical } from "lucide-react"
+import { ColumnFrame } from "./column-frame"
 import { ColumnSwatch } from "./column-swatch"
 import { ColumnTitle } from "./column-title"
 
 interface IProps {
+  /** The column's id — the frame files its remembered width under it. */
+  id: string
   title: string
   color: string
   done: boolean
@@ -26,6 +29,7 @@ interface IProps {
 
 /** A column: its head, then the box holding its cards. */
 export function ColumnView({
+  id,
   title,
   color,
   done,
@@ -40,11 +44,7 @@ export function ColumnView({
   children,
 }: IProps) {
   return (
-    <div
-      role="group"
-      aria-label={title}
-      className="flex w-full max-w-none shrink-0 snap-center flex-col overflow-y-auto overscroll-y-contain pb-6 xs:max-w-sm"
-    >
+    <ColumnFrame id={id} title={title}>
       <div
         className={cn(
           "sticky top-0 z-10 flex h-15 shrink-0 items-center justify-between gap-2 px-4 py-3 md:px-0",
@@ -107,6 +107,6 @@ export function ColumnView({
           {children}
         </div>
       </div>
-    </div>
+    </ColumnFrame>
   )
 }

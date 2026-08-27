@@ -34,6 +34,7 @@ export function PublicBoard({ token, snapshot }: IProps) {
         return (
           <ColumnView
             key={column.id}
+            id={column.id}
             title={column.title}
             color={column.color}
             done={column.done}

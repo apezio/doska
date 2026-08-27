@@ -72,7 +72,7 @@ describe("CardFile", () => {
     expect(saved.patchFor(card)).toBeNull()
   })
 
-  it("carries the number and attachments the board owns", () => {
+  it("carries the number the board owns", () => {
     const card = makeCard({
       columnId: "col-1",
       title: "Ship it",
@@ -87,12 +87,68 @@ describe("CardFile", () => {
         },
       ],
     })
-    const parsed = CardFile.parse(CardFile.fromCard(card).text)
+    const text = CardFile.fromCard(card).text
+    const parsed = CardFile.parse(text)
 
-    expect(CardFile.fromCard(card).text).toContain("number: 12\n")
+    expect(text).toContain("number: 12\n")
     expect(parsed.number).toBe(12)
-    expect(parsed.attachments).toEqual(card.attachments)
     expect(parsed.patchFor(card)).toBeNull()
+
+    // Name and path, not the board's struct, and never read back.
+    expect(text).toContain("name: plan.pdf")
+    expect(text).toContain(
+      "file: ../_files/00000000-0000-0000-0000-000000000000.pdf"
+    )
+    expect(text).not.toContain("mime:")
+    expect(parsed.attachments).toEqual([])
+  })
+
+  it("leaves an attachment out of the frontmatter when the body shows it", () => {
+    const key = "att/00000000-0000-0000-0000-000000000000.png"
+    const card = makeCard({
+      columnId: "col-1",
+      title: "Ship it",
+      body: `![a shot](attachment:${key})`,
+      attachments: [
+        { id: "a1", name: "shot.png", key, mime: "image/png", size: 3 },
+      ],
+    })
+    const text = CardFile.fromCard(card).text
+
+    expect(text).not.toContain("attachments:")
+    expect(text).toContain(
+      "![a shot](../_files/00000000-0000-0000-0000-000000000000.png)"
+    )
+  })
+
+  it("points image refs at the mirrored file, and back again", () => {
+    const key = "att/00000000-0000-0000-0000-000000000000.png"
+    const card = makeCard({
+      columnId: "col-1",
+      title: "Ship it",
+      body: `before\n\n![a shot](attachment:${key})\n\nafter`,
+    })
+    const text = CardFile.fromCard(card).text
+
+    expect(text).toContain(
+      "![a shot](../_files/00000000-0000-0000-0000-000000000000.png)"
+    )
+    expect(text).not.toContain("attachment:")
+    // Symmetric, or the rewrite reads back as an edit on the next pass.
+    expect(CardFile.parse(text).patchFor(card)).toBeNull()
+  })
+
+  it("leaves ordinary image links alone", () => {
+    const card = makeCard({
+      columnId: "col-1",
+      title: "Ship it",
+      body: "![logo](https://example.com/a.png)\n\n![local](./notes/b.png)",
+    })
+    const text = CardFile.fromCard(card).text
+
+    expect(text).toContain("![logo](https://example.com/a.png)")
+    expect(text).toContain("![local](./notes/b.png)")
+    expect(CardFile.parse(text).patchFor(card)).toBeNull()
   })
 
   it("keeps frontmatter keys the user added", () => {

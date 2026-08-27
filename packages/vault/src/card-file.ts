@@ -3,6 +3,36 @@ import { parse, stringify } from "yaml"
 
 const FENCE = "---"
 
+/** Attachments mirror into `<root>/_files`, one level up from a card file. */
+export const FILES = "_files"
+const FILES_REF = `../${FILES}/`
+
+/** An attachment's name inside `_files`. Keys are `att/<uuid>.<ext>`. */
+export function fileNameOf(key: string): string {
+  return key.slice(key.indexOf("/") + 1)
+}
+
+const ATTACHMENT_SRC = /(!\[[^\]]*\]\()attachment:att\/([^)\s]+\))/g
+const FILE_SRC = /(!\[[^\]]*\]\()\.\.\/_files\/([^)\s]+\))/g
+
+/**
+ * Image refs, on disk and back. The app stores `attachment:att/<uuid>.png`,
+ * which resolves to nothing outside the app, so a mirrored body points at the
+ * mirrored file instead. Both directions, or the rewritten body reads back as
+ * an edit and overwrites the card's real one every pass.
+ */
+function toFileRefs(body: string): string {
+  return body.replace(ATTACHMENT_SRC, (_, open: string, rest: string) => {
+    return `${open}${FILES_REF}${rest}`
+  })
+}
+
+function toAttachmentRefs(body: string): string {
+  return body.replace(FILE_SRC, (_, open: string, rest: string) => {
+    return `${open}attachment:att/${rest}`
+  })
+}
+
 /** Keys the vault owns. Anything else in the frontmatter is the user's. */
 const KNOWN = ["id", "number", "title", "deadline", "priority", "attachments"]
 
@@ -26,10 +56,6 @@ function numberOf(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-function attachmentsOf(value: unknown): Attachment[] {
-  return Array.isArray(value) ? (value as Attachment[]) : []
-}
-
 /**
  * A card as a Markdown file: its fields as YAML frontmatter, then the body.
  * Converts both ways, so this is the only place that knows how a card looks on
@@ -45,8 +71,8 @@ export class CardFile {
   readonly body: string
   readonly deadline: string
   readonly priority: string
-  /** Carried through untouched: the files themselves live outside the vault,
-   * so hand-editing this can only break the card. */
+  /** Write-only: `parse` never reads these back, so hand-editing the list
+   * can't break the card. The board owns them. */
   readonly attachments: Attachment[]
   /** Frontmatter keys the vault doesn't know, kept so the user's own notes to
    * self survive a rewrite. */
@@ -92,20 +118,20 @@ export class CardFile {
   static parse(source: string): CardFile {
     const lines = source.replace(/\r\n?/g, "\n").split("\n")
     const close = lines[0] === FENCE ? lines.indexOf(FENCE, 1) : -1
-    if (close === -1) return new CardFile({ body: source })
+    if (close === -1) return new CardFile({ body: toAttachmentRefs(source) })
 
     let fields: unknown
     try {
       fields = parse(lines.slice(1, close).join("\n"))
     } catch {
-      return new CardFile({ body: source })
+      return new CardFile({ body: toAttachmentRefs(source) })
     }
     if (
       typeof fields !== "object" ||
       fields === null ||
       Array.isArray(fields)
     ) {
-      return new CardFile({ body: source })
+      return new CardFile({ body: toAttachmentRefs(source) })
     }
 
     const front = fields as Record<string, unknown>
@@ -118,25 +144,34 @@ export class CardFile {
       id: text(front.id),
       number: numberOf(front.number),
       title: text(front.title),
-      body: lines.slice(close + 1).join("\n"),
+      body: toAttachmentRefs(lines.slice(close + 1).join("\n")),
       deadline: text(front.deadline),
       priority: text(front.priority),
-      attachments: attachmentsOf(front.attachments),
       extra,
     })
   }
 
   get text(): string {
+    const body = toFileRefs(this.body)
     const front: Record<string, unknown> = { id: this.id }
     if (this.number !== null) front.number = this.number
     front.title = this.title
     if (this.deadline) front.deadline = this.deadline
     if (this.priority) front.priority = this.priority
-    if (this.attachments.length > 0) front.attachments = this.attachments
+    // Only the ones the body doesn't already show, and name and path only:
+    // nothing reads this back, it is here so a person can find a file that
+    // nothing in the text points at.
+    const unshown = this.attachments
+      .map((attachment) => ({
+        name: attachment.name,
+        file: FILES_REF + fileNameOf(attachment.key),
+      }))
+      .filter((attachment) => !body.includes(attachment.file))
+    if (unshown.length > 0) front.attachments = unshown
     Object.assign(front, this.extra)
 
-    const body = this.body ? `${this.body}\n` : ""
-    return `${FENCE}\n${stringify(front, { lineWidth: 0 })}${FENCE}\n${body}`
+    const trailing = body ? `${body}\n` : ""
+    return `${FENCE}\n${stringify(front, { lineWidth: 0 })}${FENCE}\n${trailing}`
   }
 
   /** What this file changes about `card`, or null when it says the same. */

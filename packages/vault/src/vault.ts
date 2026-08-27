@@ -1,5 +1,5 @@
 import type { Card, Column } from "@doska/contract"
-import { CardFile, type CardPatch } from "./card-file"
+import { CardFile, FILES, fileNameOf, type CardPatch } from "./card-file"
 import {
   claim,
   ColumnFolder,
@@ -32,9 +32,16 @@ export interface VaultBoard {
   restoreCard(id: string): Promise<void>
 }
 
+/** The attachment bytes behind a card's keys. The vault only ever reads. */
+export interface VaultFiles {
+  get(cardId: string, key: string): Promise<Uint8Array>
+}
+
 export interface VaultOptions {
   fs: VaultFs
   board: VaultBoard
+  /** Mirrors attachments into `_files`. Left out, the vault syncs text only. */
+  files?: VaultFiles
   /** The folder the board lives in. */
   root: string
   /** Called after the vault changed the board, so the app can refetch. */
@@ -54,6 +61,7 @@ export interface VaultOptions {
 export class Vault {
   private readonly fs: VaultFs
   private readonly board: VaultBoard
+  private readonly files?: VaultFiles
   private readonly root: string
   private readonly onBoardChange?: () => void
   private readonly onError?: (error: unknown) => void
@@ -70,17 +78,24 @@ export class Vault {
   private running = false
   private queued = false
 
-  constructor({ fs, board, root, onBoardChange, onError }: VaultOptions) {
+  constructor({ fs, board, files, root, onBoardChange, onError }: VaultOptions) {
     this.fs = fs
     this.board = board
+    this.files = files
     this.root = root
     this.onBoardChange = onBoardChange
     this.onError = onError
   }
 
-  /** Watches the folder. Returns a function that stops watching. */
+  /**
+   * Watches the folder. Returns a function that stops watching.
+   *
+   * A first sync that fails is reported, not thrown: the caller can't tell it
+   * from a folder it can't watch at all, and unmounting over one bad pass
+   * loses the folder the user picked.
+   */
   async watch(): Promise<() => void> {
-    await this.sync()
+    await this.sync().catch((error: unknown) => this.onError?.(error))
     return this.fs.watch(this.root, () => {
       this.sync().catch((error: unknown) => this.onError?.(error))
     })
@@ -103,6 +118,20 @@ export class Vault {
     }
   }
 
+  private trashPath(name: string): string {
+    return `${this.root}/${TRASH}/${name}.md`
+  }
+
+  /**
+   * Whether the vault is the one that put this file in the trash. A card whose
+   * record points there was deleted through the app, so the same card turning
+   * up live again is a restore rather than someone dragging its file in.
+   */
+  private isTrashed(id: string): boolean {
+    const path = this.written.get(id)?.path
+    return path !== undefined && dirOf(path) === `${this.root}/${TRASH}`
+  }
+
   private async pass(): Promise<void> {
     // A root that isn't there any more is not an empty board: bail, or a
     // folder that was moved or unmounted would trash every card on it.
@@ -118,6 +147,7 @@ export class Vault {
     for (const folder of folders) await this.fs.mkdir(folder.path)
 
     const cards = new Map(board.cards.map((card) => [card.id, card]))
+    await this.mirrorFiles(board.cards)
 
     const inTrash = new Set<string>()
     let changed = await this.trashed(cards, inTrash)
@@ -162,10 +192,10 @@ export class Vault {
       // yet. Without `last` the file was never written, which is a first pass,
       // not a delete.
       if (!found && last && !wiped.has(dirOf(last.path))) {
-        const name = claim(stemOf(last.path), inTrash)
-        await this.fs.write(`${this.root}/${TRASH}/${name}.md`, last.text)
+        const path = this.trashPath(claim(stemOf(last.path), inTrash))
+        await this.fs.write(path, last.text)
         await this.board.deleteCard(card.id)
-        this.written.delete(card.id)
+        this.written.set(card.id, { path, text: last.text })
         changed = true
         continue
       }
@@ -178,7 +208,7 @@ export class Vault {
 
       // The vault didn't put this file here, so the user did: it came back out
       // of the trash. The card comes back with it, into the folder it landed in.
-      if (!this.written.has(id)) {
+      if (!this.written.has(id) || this.isTrashed(id)) {
         await this.board.restoreCard(id)
         await this.board.moveCardToColumn(id, folder.columnId)
         changed = true
@@ -187,13 +217,41 @@ export class Vault {
 
       // The file keeps its own name: its id is in the frontmatter, so nothing
       // needs it in the name.
-      const name = claim(stemOf(file.path), inTrash)
-      await this.fs.rename(file.path, `${this.root}/${TRASH}/${name}.md`)
-      this.written.delete(id)
+      const path = this.trashPath(claim(stemOf(file.path), inTrash))
+      await this.fs.rename(file.path, path)
+      this.written.set(id, { path, text: file.text })
     }
 
     await this.writeMeta()
     if (changed) this.onBoardChange?.()
+  }
+
+  /**
+   * Copies each card's attachments into `_files`, so the image refs the card
+   * bodies point at resolve in an editor. Names come from the key, so a file
+   * already there is the same file and never needs writing twice.
+   */
+  private async mirrorFiles(cards: Card[]): Promise<void> {
+    if (!this.files) return
+
+    const dir = `${this.root}/${FILES}`
+    await this.fs.mkdir(dir)
+    const have = new Set((await this.fs.readDir(dir)) ?? [])
+
+    for (const card of cards) {
+      for (const attachment of card.attachments) {
+        const name = fileNameOf(attachment.key)
+        if (have.has(name)) continue
+        try {
+          const bytes = await this.files.get(card.id, attachment.key)
+          await this.fs.writeBytes(`${dir}/${name}`, bytes)
+          have.add(name)
+        } catch {
+          // Signed out or offline is the ordinary case here, not a broken
+          // sync: leave the ref dangling and let the next pass pick it up.
+        }
+      }
+    }
   }
 
   private serialize(): string {
@@ -245,19 +303,40 @@ export class Vault {
     if (!names) return false
 
     let changed = false
+    const present = new Set<string>()
     for (const name of names) {
       if (!name.endsWith(".md")) continue
       taken.add(stemOf(name).toLowerCase())
-      const text = await this.fs.read(`${this.root}/${TRASH}/${name}`)
+      const path = `${this.root}/${TRASH}/${name}`
+      present.add(path)
+      const text = await this.fs.read(path)
       if (text === null) continue
       const id = CardFile.parse(text).id
       if (!id || !cards.has(id)) continue
 
+      // The card is live and the vault is what trashed its file: it was
+      // restored in the app. Drop the copy and let the pass write the card
+      // back into its column, the same way it writes any card with no file.
+      if (this.written.get(id)?.path === path) {
+        await this.fs.remove(path)
+        present.delete(path)
+        this.written.delete(id)
+        continue
+      }
+
       await this.board.deleteCard(id)
       cards.delete(id)
-      this.written.delete(id)
+      this.written.set(id, { path, text })
       changed = true
     }
+
+    // Records for copies someone emptied out of `_trash` by hand. Left behind,
+    // they would keep growing `_meta.json` for cards that are long gone.
+    const stale = [...this.written]
+      .filter(([id, entry]) => this.isTrashed(id) && !present.has(entry.path))
+      .map(([id]) => id)
+    for (const id of stale) this.written.delete(id)
+
     return changed
   }
 

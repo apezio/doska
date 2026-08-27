@@ -6,9 +6,13 @@ export interface VaultFs {
   /** The file's text, or null when it isn't there. */
   read(path: string): Promise<string | null>
   write(path: string, content: string): Promise<void>
+  /** Writes an attachment. Separate from `write`: these aren't text. */
+  writeBytes(path: string, bytes: Uint8Array): Promise<void>
   /** Creates a folder and any missing parents; fine if it's already there. */
   mkdir(path: string): Promise<void>
   rename(from: string, to: string): Promise<void>
+  /** Deletes a file. A file that isn't there is not an error. */
+  remove(path: string): Promise<void>
   /** One level of a folder, or null when the folder isn't there. */
   readDir(path: string): Promise<string[] | null>
   /** Watches a folder and everything under it. */

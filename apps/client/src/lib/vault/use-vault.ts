@@ -1,3 +1,4 @@
+import { activeStorage } from "@doska/core/attachments"
 import { keys } from "@doska/core/keys"
 import {
   createCard,
@@ -7,7 +8,7 @@ import {
   restore,
   updateCard,
 } from "@doska/core/operations"
-import { Vault, type VaultBoard } from "@doska/vault"
+import { Vault, type VaultBoard, type VaultFiles } from "@doska/vault"
 import { useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useState } from "react"
 import { isDesktop } from "../platform"
@@ -26,6 +27,14 @@ async function ignore(root: string): Promise<void> {
 
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause)
+}
+
+/** Attachment bytes come from whichever backend the app is on. */
+const vaultFiles: VaultFiles = {
+  async get(cardId, key) {
+    const blob = await activeStorage().get(cardId, key)
+    return new Uint8Array(await blob.arrayBuffer())
+  },
 }
 
 function boardOps(boardId: string): VaultBoard {
@@ -61,6 +70,7 @@ export function useVault(boardId: string) {
     const vault = new Vault({
       fs: tauriFs,
       board: boardOps(boardId),
+      files: vaultFiles,
       root: path,
       onError: (cause) => setError(message(cause)),
       onBoardChange: () => {
@@ -90,10 +100,10 @@ export function useVault(boardId: string) {
       .then((stopWatch) => {
         if (!live) return stopWatch()
         unwatch = stopWatch
-        setError(null)
       })
-      // A remembered folder can stop being readable between launches: it was
-      // moved, or the scope grant behind it was lost. Either way, unmount.
+      // Only a folder that can't be watched at all lands here: it was moved
+      // between launches, or the scope grant behind it was lost. A pass that
+      // merely failed reports through `onError` and keeps the mount.
       .catch((cause: unknown) => {
         if (!live) return
         setError(message(cause))

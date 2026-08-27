@@ -19,6 +19,11 @@ export const tauriFs: VaultFs = {
     await writeTextFile(path, content)
   },
 
+  async writeBytes(path, bytes) {
+    const { writeFile } = await import("@tauri-apps/plugin-fs")
+    await writeFile(path, bytes)
+  },
+
   async mkdir(path) {
     const { mkdir } = await import("@tauri-apps/plugin-fs")
     await mkdir(path, { recursive: true })
@@ -27,6 +32,11 @@ export const tauriFs: VaultFs = {
   async rename(from, to) {
     const { rename } = await import("@tauri-apps/plugin-fs")
     await rename(from, to)
+  },
+
+  async remove(path) {
+    const { exists, remove } = await import("@tauri-apps/plugin-fs")
+    if (await exists(path)) await remove(path)
   },
 
   async readDir(path) {

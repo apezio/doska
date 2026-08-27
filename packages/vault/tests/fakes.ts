@@ -1,6 +1,6 @@
 import type { Card, Column } from "@doska/contract"
 import type { VaultFs } from "../src/column-folder"
-import type { VaultBoard } from "../src/vault"
+import type { VaultBoard, VaultFiles } from "../src/vault"
 
 /** Files keyed by path; folders are implied by the paths under them. */
 export class MemoryFs implements VaultFs {
@@ -17,6 +17,11 @@ export class MemoryFs implements VaultFs {
     return Promise.resolve()
   }
 
+  writeBytes(path: string, bytes: Uint8Array) {
+    this.files.set(path, `bytes:${bytes.length}`)
+    return Promise.resolve()
+  }
+
   mkdir(path: string) {
     this.dirs.add(path)
     return Promise.resolve()
@@ -28,6 +33,11 @@ export class MemoryFs implements VaultFs {
       this.files.delete(from)
       this.files.set(to, content)
     }
+    return Promise.resolve()
+  }
+
+  remove(path: string) {
+    this.files.delete(path)
     return Promise.resolve()
   }
 
@@ -56,6 +66,18 @@ export class MemoryFs implements VaultFs {
   /** Pretends the folder changed, the way the real watcher would. */
   touch() {
     this.listener?.()
+  }
+}
+
+/** Attachment bytes, and a count of how often each key was fetched. */
+export class FakeFiles implements VaultFiles {
+  readonly fetched: string[] = []
+  failing = false
+
+  get(_cardId: string, key: string) {
+    this.fetched.push(key)
+    if (this.failing) return Promise.reject(new Error("signed out"))
+    return Promise.resolve(new Uint8Array([1, 2, 3]))
   }
 }
 

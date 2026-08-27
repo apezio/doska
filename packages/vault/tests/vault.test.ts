@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { Vault } from "../src/vault"
-import { FakeBoard, makeCard, makeColumn, MemoryFs } from "./fakes"
+import { FakeBoard, FakeFiles, makeCard, makeColumn, MemoryFs } from "./fakes"
 
 const ROOT = "/vault"
 const TODO = makeColumn("col-todo", "To do")
@@ -171,6 +171,23 @@ describe("Vault", () => {
     stop()
   })
 
+  it("keeps watching when the first sync fails", async () => {
+    const errors: unknown[] = []
+    const failing = new Vault({
+      fs,
+      board: Object.assign(board, {
+        load: () => Promise.reject(new Error("board is busy")),
+      }),
+      root: ROOT,
+      onError: (error) => errors.push(error),
+    })
+
+    const stop = await failing.watch()
+
+    expect(errors).toHaveLength(1)
+    stop()
+  })
+
   it("trashes the card whose file was deleted", async () => {
     const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
     await vault.sync()
@@ -272,5 +289,179 @@ describe("Vault", () => {
 
     expect(fs.files.get(`${ROOT}/to_do/ship_it_2.md`)).toContain("two")
     expect(fs.files.has(`${ROOT}/to_do/ship_it_3.md`)).toBe(false)
+  })
+})
+
+describe("Vault restore", () => {
+  let fs: MemoryFs
+  let board: FakeBoard
+  let vault: Vault
+
+  beforeEach(() => {
+    fs = new MemoryFs()
+    void fs.mkdir(ROOT)
+    board = new FakeBoard([TODO, DONE])
+    vault = new Vault({ fs, board, root: ROOT })
+  })
+
+  it("writes the file back when the card is restored in the app", async () => {
+    const card = board.add(
+      makeCard({ columnId: TODO.id, title: "Ship it", body: "soon" })
+    )
+    await vault.sync()
+    await board.deleteCard(card.id)
+    await vault.sync()
+    expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(true)
+
+    await board.restoreCard(card.id)
+    await vault.sync()
+
+    expect(fs.files.get(`${ROOT}/to_do/ship_it.md`)).toContain("soon")
+    // The copy has to go, or the next pass reads it as a card dragged to the
+    // trash and deletes the card straight back out again.
+    expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(false)
+    expect(board.cardsById.has(card.id)).toBe(true)
+  })
+
+  it("leaves the restored card alone on later passes", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+    await board.deleteCard(card.id)
+    await vault.sync()
+    await board.restoreCard(card.id)
+    await vault.sync()
+    await vault.sync()
+
+    expect(board.cardsById.has(card.id)).toBe(true)
+    expect(board.deleted).toEqual([card.id])
+  })
+
+  it("restores into the column the card was moved to while deleted", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+    await board.deleteCard(card.id)
+    await vault.sync()
+
+    await board.restoreCard(card.id)
+    await board.moveCardToColumn(card.id, DONE.id)
+    await vault.sync()
+
+    expect(fs.files.has(`${ROOT}/done/ship_it.md`)).toBe(true)
+    expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(false)
+  })
+
+  it("still deletes a live card whose file is dragged into _trash", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    const text = fs.files.get(`${ROOT}/to_do/ship_it.md`)!
+    await fs.remove(`${ROOT}/to_do/ship_it.md`)
+    await fs.write(`${ROOT}/_trash/ship_it.md`, text)
+    await vault.sync()
+
+    expect(board.cardsById.has(card.id)).toBe(false)
+
+    // And that copy is the vault's business now, so restoring in the app
+    // brings the file back rather than re-deleting the card.
+    await board.restoreCard(card.id)
+    await vault.sync()
+    expect(board.cardsById.has(card.id)).toBe(true)
+    expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(true)
+  })
+
+  it("forgets a trash copy someone emptied by hand", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+    await board.deleteCard(card.id)
+    await vault.sync()
+
+    await fs.remove(`${ROOT}/_trash/ship_it.md`)
+    await vault.sync()
+
+    expect(fs.files.get(`${ROOT}/_meta.json`)).not.toContain(card.id)
+  })
+})
+
+describe("Vault attachments", () => {
+  const KEY = "att/00000000-0000-0000-0000-000000000000.png"
+
+  let fs: MemoryFs
+  let board: FakeBoard
+  let files: FakeFiles
+  let vault: Vault
+
+  beforeEach(() => {
+    fs = new MemoryFs()
+    void fs.mkdir(ROOT)
+    board = new FakeBoard([TODO, DONE])
+    files = new FakeFiles()
+    vault = new Vault({ fs, board, files, root: ROOT })
+  })
+
+  it("mirrors a card's attachments into _files, once", async () => {
+    board.add(
+      makeCard({
+        columnId: TODO.id,
+        title: "Ship it",
+        body: `![shot](attachment:${KEY})`,
+        attachments: [
+          { id: "a1", name: "shot.png", key: KEY, mime: "image/png", size: 3 },
+        ],
+      })
+    )
+    await vault.sync()
+
+    expect(fs.files.has(`${ROOT}/_files/${KEY.slice(4)}`)).toBe(true)
+    expect(
+      fs.files.get(`${ROOT}/to_do/ship_it.md`)
+    ).toContain(`![shot](../_files/${KEY.slice(4)})`)
+
+    // A file already there is the same file: no second fetch.
+    await vault.sync()
+    expect(files.fetched).toEqual([KEY])
+  })
+
+  it("syncs the text anyway when the bytes can't be fetched", async () => {
+    files.failing = true
+    board.add(
+      makeCard({
+        columnId: TODO.id,
+        title: "Ship it",
+        attachments: [
+          { id: "a1", name: "shot.png", key: KEY, mime: "image/png", size: 3 },
+        ],
+      })
+    )
+    await vault.sync()
+
+    expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(true)
+    expect(fs.files.has(`${ROOT}/_files/${KEY.slice(4)}`)).toBe(false)
+    // Nothing was cached, so the next pass tries again.
+    await vault.sync()
+    expect(files.fetched).toEqual([KEY, KEY])
+  })
+
+  it("keeps the app's ref when the file around it is edited", async () => {
+    const card = board.add(
+      makeCard({
+        columnId: TODO.id,
+        title: "Ship it",
+        body: `![shot](attachment:${KEY})`,
+        attachments: [
+          { id: "a1", name: "shot.png", key: KEY, mime: "image/png", size: 3 },
+        ],
+      })
+    )
+    await vault.sync()
+
+    // An edit is what sends the file's body back to the board, so it is the
+    // pass that would clobber the ref with the on-disk rewrite of it.
+    const path = `${ROOT}/to_do/ship_it.md`
+    await fs.write(path, `${fs.files.get(path)!}a note\n`)
+    await vault.sync()
+
+    expect(board.cardsById.get(card.id)?.body).toBe(
+      `![shot](attachment:${KEY})\na note`
+    )
   })
 })

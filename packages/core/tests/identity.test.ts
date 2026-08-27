@@ -73,6 +73,12 @@ function seedAccountA() {
 
 const remaining = () => [...rows.keys()].sort()
 
+/** What the desktop sign-in screen writes before it signs in. */
+const useServer = (url: string) => kvStore.set("deck:server-url", url)
+
+const SERVER_A = "https://a.example.com"
+const SERVER_B = "https://b.example.com"
+
 beforeEach(() => {
   rows.clear()
   kvStore.clear()
@@ -177,6 +183,83 @@ describe("hasUnclaimedLocalBoards", () => {
     })
 
     const { hasUnclaimedLocalBoards } = await import("../src/api/identity")
+    expect(await hasUnclaimedLocalBoards()).toBe(true)
+  })
+})
+
+describe("reconcileIdentity across servers", () => {
+  it("adopts local boards when a second server is signed in to", async () => {
+    useServer(SERVER_A)
+    seedAccountA()
+    rows.set(`${META_STORE}/deck:user-id:${SERVER_A}`, "user-a")
+    rows.delete(`${META_STORE}/deck:user-id`)
+
+    // The same person, the same login, a different server's id for them.
+    useServer(SERVER_B)
+    const { reconcileIdentity } = await import("../src/api/identity")
+    expect(await reconcileIdentity("user-a-on-b")).toBe(false)
+
+    expect(inStore(DASHBOARDS)).toEqual(["board-a"])
+    expect(rows.get(`${META_STORE}/deck:user-id:${SERVER_B}`)).toBe(
+      "user-a-on-b"
+    )
+    expect(reset).not.toHaveBeenCalled()
+  })
+
+  it("still wipes when a different user signs in to the same server", async () => {
+    useServer(SERVER_A)
+    seedAccountA()
+    rows.set(`${META_STORE}/deck:user-id:${SERVER_A}`, "user-a")
+    rows.delete(`${META_STORE}/deck:user-id`)
+
+    const { reconcileIdentity } = await import("../src/api/identity")
+    expect(await reconcileIdentity("user-b")).toBe(true)
+
+    expect(inStore(DASHBOARDS)).toEqual([])
+    expect(reset).toHaveBeenCalledOnce()
+  })
+
+  it("moves an unscoped id onto the server in use", async () => {
+    useServer(SERVER_A)
+    seedAccountA()
+
+    const { migrateUserKey, reconcileIdentity } = await import(
+      "../src/api/identity"
+    )
+    await migrateUserKey()
+    // Same account, so the move has to land before the comparison or this wipes.
+    expect(await reconcileIdentity("user-a")).toBe(false)
+
+    expect(inStore(DASHBOARDS)).toEqual(["board-a"])
+    expect(rows.get(`${META_STORE}/deck:user-id:${SERVER_A}`)).toBe("user-a")
+    expect(rows.has(`${META_STORE}/deck:user-id`)).toBe(false)
+    expect(reset).not.toHaveBeenCalled()
+  })
+
+  it("doesn't let a moved id reach a second server", async () => {
+    useServer(SERVER_A)
+    seedAccountA()
+
+    const { migrateUserKey, reconcileIdentity } = await import(
+      "../src/api/identity"
+    )
+    await migrateUserKey()
+    await reconcileIdentity("user-a")
+
+    useServer(SERVER_B)
+    expect(await reconcileIdentity("user-a-on-b")).toBe(false)
+    expect(inStore(DASHBOARDS)).toEqual(["board-a"])
+    expect(reset).not.toHaveBeenCalled()
+  })
+})
+
+describe("hasUnclaimedLocalBoards", () => {
+  it("counts boards as unclaimed on a server never signed in to", async () => {
+    useServer(SERVER_A)
+    seedAccountA()
+
+    const { hasUnclaimedLocalBoards } = await import("../src/api/identity")
+    useServer(SERVER_B)
     expect(await hasUnclaimedLocalBoards()).toBe(true)
   })
 })

@@ -6,7 +6,7 @@
 #
 #   db   PGlite over a Postgres socket   127.0.0.1:5433   (apps/server/pgdata)
 #   api  Fastify under `tsx watch`       127.0.0.1:3100   (restarts on server edits)
-#   web  Vite dev server + HMR           $WEB_HOST:5173
+#   web  Vite dev server + HMR           $WEB_HOST:5173 (HTTPS/HTTP2)
 #
 # Usage:
 #   scripts/dev-preview.sh start | stop | restart | status | logs | check | url
@@ -28,12 +28,39 @@ PG_PORT=$((5433 + OFFSET))
 NVM_BIN="$HOME/.nvm/versions/node/v22.23.2/bin"
 [ -d "$NVM_BIN" ] && export PATH="$NVM_BIN:$PATH"
 
+# TLS, and it is a performance feature, not a security one. Vite only speaks
+# HTTP/2 when server.https is set, and without HTTP/2 a refresh is ~200 separate
+# module revalidations squeezed through the browser's 6-connection HTTP/1.1
+# limit — ~4s at 60ms RTT, ~8s at 120ms. Over HTTP/2 they multiplex on one
+# connection: ~0.9s and ~1.6s. Self-signed, so each browser accepts the warning
+# once. Cached outside the repo and outside /tmp so it survives reboots.
+CERTDIR="$HOME/.cache/doska-dev-cert"
+CERT="$CERTDIR/$WEB_HOST.crt"
+CERTKEY="$CERTDIR/$WEB_HOST.key"
+
 STATE="/tmp/doska-preview-$(basename "$ROOT")-$OFFSET"
 mkdir -p "$STATE"
 LOG="$STATE/dev.log"
 PIDFILE="$STATE/dev.pids"
 
 # --- generated dev-only files (both gitignored) -----------------------------
+
+ensure_dev_cert() {
+  # Regenerated only when missing or expired. SAN must carry the IP, not just
+  # CN — browsers ignore CN for host matching.
+  if [ -f "$CERT" ] && [ -f "$CERTKEY" ] \
+     && openssl x509 -checkend 604800 -noout -in "$CERT" >/dev/null 2>&1; then
+    return 0
+  fi
+  mkdir -p "$CERTDIR"
+  echo "generating self-signed dev cert for $WEB_HOST (valid 825 days)"
+  openssl req -x509 -newkey rsa:2048 -nodes -days 825 \
+    -keyout "$CERTKEY" -out "$CERT" \
+    -subj "/CN=$WEB_HOST" \
+    -addext "subjectAltName=IP:$WEB_HOST,DNS:localhost,IP:127.0.0.1" \
+    >/dev/null 2>&1 || { echo "failed to generate dev cert"; exit 1; }
+  chmod 600 "$CERTKEY"
+}
 
 write_server_env() {
   # apps/server/.env is gitignored. Regenerated on every start so the ports
@@ -49,7 +76,7 @@ FILE_DIR_OVERRIDE=filedata
 AUTH_LOGIN=admin
 AUTH_PASSWORD=dev
 AUTH_SECRET=dev-only-secret-not-for-production
-AUTH_TRUSTED_ORIGINS=http://$WEB_HOST:$WEB_PORT,http://localhost:$WEB_PORT
+AUTH_TRUSTED_ORIGINS=https://$WEB_HOST:$WEB_PORT,https://localhost:$WEB_PORT
 AUTH_RATE_LIMIT=off
 ENV
 }
@@ -84,6 +111,9 @@ export default mergeConfig(base, defineConfig({
     allowedHosts: true,
     port: $WEB_PORT,
     strictPort: true,
+    // Setting https is what makes Vite serve HTTP/2 (see ensure_dev_cert).
+    // The /api proxy below still works: Vite terminates h2 and forwards h1.
+    https: { key: "$CERTKEY", cert: "$CERT" },
     // node_modules symlinks into the main checkout, so Vite's default fs.allow
     // (this worktree only) 403s the font files.
     fs: { allow: [CLIENT, "$ROOT", "$HOME/doska"] },
@@ -110,6 +140,7 @@ start() {
     exit 1
   fi
   : > "$LOG"
+  ensure_dev_cert
   write_server_env
   write_vite_config
   : > "$PIDFILE"
@@ -154,8 +185,8 @@ status() {
   printf 'db  (%s):        %s\n' "$PG_PORT" "$(port_up "$PG_PORT" && echo up || echo DOWN)"
   printf 'api (%s):        %s\n' "$API_PORT" "$(curl -s -m 3 "http://127.0.0.1:$API_PORT/api/version" || echo DOWN)"
   printf 'web (%s:%s): %s\n' "$WEB_HOST" "$WEB_PORT" \
-    "$(curl -s -m 3 -o /dev/null -w '%{http_code}' "http://$WEB_HOST:$WEB_PORT/" || echo DOWN)"
-  printf 'url:               %s\n' "http://$WEB_HOST:$WEB_PORT/"
+    "$(curl -sk -m 3 -o /dev/null -w '%{http_code}' "https://$WEB_HOST:$WEB_PORT/" || echo DOWN)"
+  printf 'url:               %s\n' "https://$WEB_HOST:$WEB_PORT/"
 }
 
 # `check` is the pre-flight a session runs before starting a feature: is this
@@ -191,6 +222,6 @@ case "${1:-status}" in
   status) status ;;
   check) check ;;
   logs) tail -f "$LOG" ;;
-  url) echo "http://$WEB_HOST:$WEB_PORT/" ;;
+  url) echo "https://$WEB_HOST:$WEB_PORT/" ;;
   *) echo "usage: $0 start|stop|restart|status|check|logs|url"; exit 1 ;;
 esac

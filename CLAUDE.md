@@ -11,9 +11,9 @@ browser and watch changes appear as you type them.
 | | |
 |---|---|
 | worktree | `$HOME/missclaude-worktrees/doska-newfeatures` (branch `claude/doska-newfeatures`) |
-| URL | <http://127.0.0.1:5173/> |
+| URL | <https://127.0.0.1:5173/> — self-signed cert, accept the warning once per browser |
 | control | `scripts/dev-preview.sh start\|stop\|restart\|status\|check\|logs\|url` |
-| web | Vite + HMR on `127.0.0.1:5173` — client edits hot-reload, no restart |
+| web | Vite + HMR on `127.0.0.1:5173`, HTTPS/HTTP2 — client edits hot-reload, no restart |
 | api | `127.0.0.1:3100` under `tsx watch` — server edits restart it automatically |
 | db | PGlite on `127.0.0.1:5433`, data in `apps/server/pgdata/` |
 | sign-in | `admin` / `dev` (only needed to test sync; the app works signed out) |
@@ -42,7 +42,7 @@ Client changes need no restart; server changes restart themselves.
 3. **Leave it uncommitted.** While the operator reviews: no commit, no push, no
    merge, no rebase, no touching `main`, no deploy, no restarting services.
 4. **Hand off with the URL**, e.g.
-   *"Preview ready: <http://127.0.0.1:5173/> — <what changed, where to look>."*
+   *"Preview ready: <https://127.0.0.1:5173/> — <what changed, where to look>."*
    Deep-link to the affected board/card when there is one.
 
 ## When the operator approves

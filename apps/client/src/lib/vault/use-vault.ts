@@ -29,7 +29,7 @@ function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause)
 }
 
-/** Attachment bytes come from whichever backend the app is on. */
+/** Attachment bytes come from backend. */
 const vaultFiles: VaultFiles = {
   async get(cardId, key) {
     const blob = await activeStorage().get(cardId, key)
@@ -51,9 +51,6 @@ function boardOps(boardId: string): VaultBoard {
 /**
  * Mirrors a board to a folder the user picks: one folder per column, one
  * Markdown file per card, edits flowing both ways.
- *
- * The folder is remembered per board and remounted on load, which works across
- * launches because the desktop app restores dialog-granted fs scopes.
  */
 export function useVault(boardId: string) {
   const qc = useQueryClient()
@@ -61,6 +58,16 @@ export function useVault(boardId: string) {
     isDesktop() ? localStorage.getItem(pathKey(boardId)) : null
   )
   const [error, setError] = useState<string | null>(null)
+
+  // TODO: that would be better to invalidate exact queries for the board
+  // but it's a big change
+  const invalidate = useCallback(() => {
+    qc.invalidateQueries({ queryKey: keys.boards })
+    qc.invalidateQueries({ queryKey: keys.cards })
+    qc.invalidateQueries({ queryKey: keys.cardCols })
+    qc.invalidateQueries({ queryKey: keys.digest })
+    qc.invalidateQueries({ queryKey: keys.trash })
+  }, [qc])
 
   useEffect(() => {
     if (!path) return
@@ -75,17 +82,10 @@ export function useVault(boardId: string) {
       onError: (cause) => setError(message(cause)),
       onBoardChange: () => {
         setError(null)
-        qc.invalidateQueries({ queryKey: keys.boards })
-        qc.invalidateQueries({ queryKey: keys.cards })
-        qc.invalidateQueries({ queryKey: keys.cardCols })
-        qc.invalidateQueries({ queryKey: keys.digest })
-        qc.invalidateQueries({ queryKey: keys.trash })
+        invalidate()
       },
     })
 
-    // The watcher only reports the folder. Board edits reach the vault through
-    // the cache instead, or a card created in the app would sit there until
-    // something happened on disk.
     const off = qc.getQueryCache().subscribe((event) => {
       if (event.type !== "updated" || event.action.type !== "success") return
       if (event.query.queryKey[0] !== keys.boards[0]) return
@@ -101,9 +101,6 @@ export function useVault(boardId: string) {
         if (!live) return stopWatch()
         unwatch = stopWatch
       })
-      // Only a folder that can't be watched at all lands here: it was moved
-      // between launches, or the scope grant behind it was lost. A pass that
-      // merely failed reports through `onError` and keeps the mount.
       .catch((cause: unknown) => {
         if (!live) return
         setError(message(cause))
@@ -116,12 +113,10 @@ export function useVault(boardId: string) {
       off()
       unwatch?.()
     }
-  }, [boardId, path, qc])
+  }, [boardId, path, qc, invalidate])
 
   const mount = useCallback(async () => {
     const { open } = await import("@tauri-apps/plugin-dialog")
-    // `recursive` is what widens the granted fs scope from `folder/*` to
-    // `folder/**`. Without it every card file, one level down, is out of scope.
     const picked = await open({ directory: true, recursive: true })
     if (typeof picked !== "string") return
 

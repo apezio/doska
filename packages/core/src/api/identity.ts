@@ -6,13 +6,19 @@ import { getServerUrl } from "./server"
 import { sync } from "./sync"
 import type { Dashboard } from "../types"
 
-/** Whose data the local store currently holds, per sync server. The same login
- * on two servers is two different accounts, and one signing in must not be read
- * as the other coming back. Web has a single origin, so it stays unscoped. */
+/** Whose data the local store currently holds, per sync server */
 const USER_KEY = "deck:user-id"
 
+/** Same server typed two ways is one scope, so drop what doesn't identify it. */
+function serverScope(): string {
+  return getServerUrl()
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/+$/, "")
+}
+
 function userKey(): string {
-  const server = getServerUrl()
+  const server = serverScope()
   return server ? `${USER_KEY}:${server}` : USER_KEY
 }
 
@@ -22,9 +28,7 @@ function stampedUser(): Promise<string | undefined> {
 
 /**
  * Moves the unscoped id an older build left behind onto the server it was
- * stamped against. At boot only, and before anything reads it: the sign-in
- * screen sets the server URL before it signs in, so running this any later
- * would file the old server's id under the new one and wipe the board.
+ * stamped against.
  */
 export async function migrateUserKey(): Promise<void> {
   const key = userKey()

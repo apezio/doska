@@ -1,21 +1,17 @@
 import type { Column } from "@doska/contract"
 import { CardFile } from "./card-file"
+import { snakeName, stemOf } from "./utils"
 
 /** The filesystem, as much of it as the vault needs. */
 export interface VaultFs {
-  /** The file's text, or null when it isn't there. */
   read(path: string): Promise<string | null>
   write(path: string, content: string): Promise<void>
-  /** Writes an attachment. Separate from `write`: these aren't text. */
+  /** Writes an attachment */
   writeBytes(path: string, bytes: Uint8Array): Promise<void>
-  /** Creates a folder and any missing parents; fine if it's already there. */
   mkdir(path: string): Promise<void>
   rename(from: string, to: string): Promise<void>
-  /** Deletes a file. A file that isn't there is not an error. */
   remove(path: string): Promise<void>
-  /** One level of a folder, or null when the folder isn't there. */
   readDir(path: string): Promise<string[] | null>
-  /** Watches a folder and everything under it. */
   watch(path: string, listener: () => void): Promise<() => void>
 }
 
@@ -24,29 +20,6 @@ export interface VaultFile {
   path: string
   text: string
   card: CardFile
-}
-
-/**
- * A title as a name on disk: lowercase, words joined by underscores. Letters of
- * any script survive, so a Cyrillic title doesn't come out as one long run of
- * underscores.
- */
-export function snakeName(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, "_")
-    .slice(0, 60)
-    .replace(/^_+|_+$/g, "")
-}
-
-/** The folder a file sits in. */
-export function dirOf(path: string): string {
-  return path.slice(0, path.lastIndexOf("/"))
-}
-
-/** A file's name without its `.md`. */
-export function stemOf(path: string): string {
-  return path.slice(path.lastIndexOf("/") + 1).replace(/\.md$/, "")
 }
 
 /**
@@ -107,13 +80,10 @@ export class ColumnFolder {
     return to
   }
 
-  /** The name follows the title, so renaming a card renames its file. Returns
-   * where the file ended up. */
   async retitle(path: string, card: CardFile): Promise<string> {
     const wanted = snakeName(card.title) || "card"
     const stem = stemOf(path)
-    // `name_2` counts as `name`: a file that took a collision suffix is not out
-    // of date, and renaming it every pass would walk that number up for ever.
+    // `name_2` counts as `name`
     const suffix = stem.slice(wanted.length)
     if (stem.startsWith(wanted) && /^(_\d+)?$/.test(suffix)) return path
 

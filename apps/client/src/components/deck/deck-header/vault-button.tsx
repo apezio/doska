@@ -1,5 +1,11 @@
 import { useState } from "react"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@doska/ui-kit"
+import {
+  Button,
+  cn,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@doska/ui-kit"
 import { Folder, FolderSync } from "lucide-react"
 import { useVault } from "@/lib/vault/use-vault"
 import { VaultModal } from "./vault-modal"
@@ -24,13 +30,10 @@ export function VaultButton({ boardId }: IProps) {
       variant="ghost"
       size="icon-sm"
       aria-label={label}
-      className={
-        error
-          ? "text-destructive"
-          : path
-            ? "text-foreground"
-            : "text-muted-foreground"
-      }
+      className={cn(
+        error && "text-destructive",
+        !error && path ? "text-foreground" : "text-muted-foreground"
+      )}
       onClick={() => setOpen(true)}
     >
       {path ? <FolderSync /> : <Folder />}

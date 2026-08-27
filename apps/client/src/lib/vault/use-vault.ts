@@ -4,6 +4,7 @@ import {
   deleteCard,
   getBoard,
   moveCardToColumn,
+  restore,
   updateCard,
 } from "@doska/core/operations"
 import { Vault, type VaultBoard } from "@doska/vault"
@@ -25,6 +26,7 @@ function boardOps(boardId: string): VaultBoard {
     updateCard,
     moveCardToColumn,
     deleteCard: (id) => deleteCard(boardId, id),
+    restoreCard: (id) => restore("cards", id),
   }
 }
 
@@ -61,6 +63,15 @@ export function useVault(boardId: string) {
       },
     })
 
+    // The watcher only reports the folder. Board edits reach the vault through
+    // the cache instead, or a card created in the app would sit there until
+    // something happened on disk.
+    const off = qc.getQueryCache().subscribe((event) => {
+      if (event.type !== "updated" || event.action.type !== "success") return
+      if (event.query.queryKey[0] !== keys.boards[0]) return
+      vault.sync().catch((cause: unknown) => setError(message(cause)))
+    })
+
     void vault
       .watch()
       .then((unwatch) => {
@@ -78,6 +89,7 @@ export function useVault(boardId: string) {
 
     return () => {
       live = false
+      off()
       stop.current?.()
       stop.current = null
     }

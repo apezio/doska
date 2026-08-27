@@ -14,6 +14,7 @@ describe("Vault", () => {
 
   beforeEach(() => {
     fs = new MemoryFs()
+    void fs.mkdir(ROOT)
     board = new FakeBoard([TODO, DONE])
     changes = 0
     vault = new Vault({
@@ -131,7 +132,8 @@ describe("Vault", () => {
     const offline = `${fs.files.get(path)!}written while away\n`
     await fs.write(path, offline)
 
-    // A fresh vault has no memory of what it wrote last run.
+    // A restart: it reads back what it wrote from `_meta.json`, so the edit
+    // reads as an edit and not as a whole new file.
     await new Vault({ fs, board, root: ROOT }).sync()
 
     expect(board.cardsById.get(card.id)?.body).toBe("written while away")
@@ -167,5 +169,81 @@ describe("Vault", () => {
 
     await vi.waitFor(() => expect(board.cardsById.size).toBe(1))
     stop()
+  })
+
+  it("trashes the card whose file was deleted", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    fs.files.delete(`${ROOT}/to_do/ship_it.md`)
+    await vault.sync()
+
+    expect(board.cardsById.has(card.id)).toBe(false)
+    expect(fs.files.get(`${ROOT}/_trash/ship_it.md`)).toContain(
+      `id: ${card.id}`
+    )
+    expect(changes).toBe(1)
+  })
+
+  it("leaves the board alone when the folder itself is gone", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    fs.wipe()
+    await vault.sync()
+
+    expect(board.cardsById.has(card.id)).toBe(true)
+  })
+
+  it("restores the files of a folder emptied all at once", async () => {
+    const one = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    const two = board.add(makeCard({ columnId: TODO.id, title: "Ship more" }))
+    await vault.sync()
+
+    fs.files.delete(`${ROOT}/to_do/ship_it.md`)
+    fs.files.delete(`${ROOT}/to_do/ship_more.md`)
+    await vault.sync()
+
+    expect(board.cardsById.has(one.id)).toBe(true)
+    expect(board.cardsById.has(two.id)).toBe(true)
+    expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(true)
+    expect(fs.files.has(`${ROOT}/to_do/ship_more.md`)).toBe(true)
+  })
+
+  it("trashes the last card in a column when its file is deleted", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    fs.files.delete(`${ROOT}/to_do/ship_it.md`)
+    await vault.sync()
+
+    expect(board.cardsById.has(card.id)).toBe(false)
+  })
+
+  it("brings the card back when its file is dragged out of the trash", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    await fs.rename(`${ROOT}/to_do/ship_it.md`, `${ROOT}/_trash/ship_it.md`)
+    await vault.sync()
+    expect(board.cardsById.has(card.id)).toBe(false)
+
+    await fs.rename(`${ROOT}/_trash/ship_it.md`, `${ROOT}/done/ship_it.md`)
+    await vault.sync()
+
+    expect(board.cardsById.get(card.id)?.columnId).toBe(DONE.id)
+  })
+
+  it("knows what it wrote last run", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    // A restart: same folder, same board, a vault that remembers nothing.
+    const next = new Vault({ fs, board, root: ROOT })
+    fs.files.delete(`${ROOT}/to_do/ship_it.md`)
+    await next.sync()
+
+    expect(board.cardsById.has(card.id)).toBe(false)
+    expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(true)
   })
 })

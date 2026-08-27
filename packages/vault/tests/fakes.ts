@@ -47,6 +47,12 @@ export class MemoryFs implements VaultFs {
     })
   }
 
+  /** The root gone from under the vault: an unmounted drive, a moved folder. */
+  wipe() {
+    this.files.clear()
+    this.dirs.clear()
+  }
+
   /** Pretends the folder changed, the way the real watcher would. */
   touch() {
     this.listener?.()
@@ -87,6 +93,7 @@ export function makeColumn(id: string, title: string): Column {
 
 export class FakeBoard implements VaultBoard {
   readonly cardsById = new Map<string, Card>()
+  readonly trashed = new Map<string, Card>()
   readonly deleted: string[] = []
 
   private readonly cols: Column[]
@@ -126,8 +133,19 @@ export class FakeBoard implements VaultBoard {
   }
 
   deleteCard(id: string) {
+    const card = this.cardsById.get(id)
+    if (card) this.trashed.set(id, card)
     this.deleted.push(id)
     this.cardsById.delete(id)
+    return Promise.resolve()
+  }
+
+  restoreCard(id: string) {
+    const card = this.trashed.get(id)
+    if (card) {
+      this.trashed.delete(id)
+      this.cardsById.set(id, card)
+    }
     return Promise.resolve()
   }
 }

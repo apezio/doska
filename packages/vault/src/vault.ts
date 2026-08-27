@@ -315,6 +315,7 @@ export class Vault {
         }
       } else {
         await this.board.moveCardToColumn(card.id, folder.columnId)
+        this.written.set(card.id, { path: file.path, text: file.text })
         changed = true
       }
       return changed

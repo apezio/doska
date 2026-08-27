@@ -79,6 +79,21 @@ describe("Vault", () => {
     expect(changes).toBe(1)
   })
 
+  it("lets the app move a card again after its file was dragged", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    await fs.rename(`${ROOT}/to_do/ship_it.md`, `${ROOT}/done/ship_it.md`)
+    await vault.sync()
+
+    await board.moveCardToColumn(card.id, TODO.id)
+    await vault.sync()
+
+    expect(board.cardsById.get(card.id)?.columnId).toBe(TODO.id)
+    expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(true)
+    expect(fs.files.has(`${ROOT}/done/ship_it.md`)).toBe(false)
+  })
+
   it("moves the file when the card is dragged to another column", async () => {
     const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
     await vault.sync()

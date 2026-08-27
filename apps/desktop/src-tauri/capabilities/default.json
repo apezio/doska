@@ -11,7 +11,11 @@
     "updater:default",
     "process:default",
     "opener:default",
+    "dialog:default",
+    "fs:allow-write-file",
     "fs:allow-exists",
+    "fs:allow-watch",
+    "fs:allow-unwatch",
     "fs:allow-download-read-recursive",
     "fs:allow-download-write-recursive",
     {

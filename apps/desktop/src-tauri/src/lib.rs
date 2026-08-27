@@ -5,6 +5,8 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_persisted_scope::init())
         .setup(|app| {
             // Updater + process (relaunch) are desktop-only.
             #[cfg(desktop)]

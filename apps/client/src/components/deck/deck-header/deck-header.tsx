@@ -6,6 +6,7 @@ import { SearchButton } from "./search-button"
 import { RowViewButton } from "./row-view-button"
 import { ShareButton } from "./share-button"
 import type { Column, DashboardView } from "@doska/core/types"
+import { TestButton } from "./test-button"
 
 interface IProps {
   boardId: string
@@ -45,6 +46,7 @@ export function DeckHeader({
       />
 
       <div className="ml-auto flex items-center gap-1">
+        <TestButton boardId={boardId} />
         {onAddCard && (
           <Button
             variant="ghost"

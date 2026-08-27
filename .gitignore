@@ -51,3 +51,6 @@ apps/desktop/src-tauri/gen/schemas
 plan
 
 .selfhost-prev-compose.yml
+
+# Box-specific dev-preview overrides (WEB_HOST etc); never committed
+scripts/dev-preview.local.sh

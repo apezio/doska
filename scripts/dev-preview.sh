@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Doska live-preview dev stack.
 #
-# Offset 0 is THE canonical dev server for this box (host dev.internal) and it
-# belongs to the integration checkout — $HOME/doska on branch `working`.
+# Offset 0 is THE canonical dev server for this box, and it belongs to the
+# integration checkout — the repo's main worktree on branch `working`.
 # Feature worktrees never own it; they run their own preview with PORT_OFFSET>=1.
 # start() refuses offset 0 anywhere else, so a feature worktree cannot quietly
 # become the thing the operator is testing.
@@ -23,9 +23,26 @@
 #   scripts/dev-preview.sh reload                  # after an integration into `working`
 #
 # Env overrides: WEB_HOST (default 127.0.0.1), PORT_OFFSET (default 0).
+#
+# Box-specific values (the address the operator's browser reaches this box on,
+# and anything else that should not live in a public repo) go in
+# scripts/dev-preview.local.sh, which is gitignored and sourced below if present:
+#
+#   WEB_HOST=203.0.113.7
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Untracked, box-specific overrides (WEB_HOST, ...). Env still wins over it.
+LOCAL_CONF="$ROOT/scripts/dev-preview.local.sh"
+if [ -f "$LOCAL_CONF" ]; then
+  _env_web_host="${WEB_HOST:-}"
+  # shellcheck source=/dev/null
+  . "$LOCAL_CONF"
+  [ -n "$_env_web_host" ] && WEB_HOST="$_env_web_host"
+  unset _env_web_host
+fi
+
 OFFSET="${PORT_OFFSET:-0}"
 WEB_HOST="${WEB_HOST:-127.0.0.1}"
 WEB_PORT=$((5173 + OFFSET))
@@ -34,8 +51,11 @@ PG_PORT=$((5433 + OFFSET))
 
 # The canonical dev server: offset 0, integration checkout, staging branch. Not
 # env-overridable on purpose — the point is that no session can redefine which
-# checkout the operator's dev URL is served from.
-CANONICAL_ROOT="$HOME/doska"
+# checkout the operator's dev URL is served from. The integration checkout is by
+# definition the repo's main worktree, which git reports first; deriving it here
+# keeps this script free of any absolute path.
+CANONICAL_ROOT="$(git -C "$ROOT" worktree list --porcelain 2>/dev/null | awk '/^worktree /{print substr($0,10); exit}')"
+CANONICAL_ROOT="${CANONICAL_ROOT:-$ROOT}"
 CANONICAL_BRANCH="working"
 
 # Node 22 is required (see .nvmrc); the system node is older.
@@ -130,7 +150,7 @@ export default mergeConfig(base, defineConfig({
     https: { key: "$CERTKEY", cert: "$CERT" },
     // node_modules symlinks into the main checkout, so Vite's default fs.allow
     // (this worktree only) 403s the font files.
-    fs: { allow: [CLIENT, "$ROOT", "$HOME/doska"] },
+    fs: { allow: [CLIENT, "$ROOT", "$CANONICAL_ROOT"] },
     proxy: Object.fromEntries(
       ["/api", "/mcp", "/.well-known"].map((p) => [p, "http://127.0.0.1:$API_PORT"])
     ),

@@ -10,8 +10,8 @@ feature worktree            ──YES COMMIT──▶  claude/<mission>
   ~/missclaude-worktrees/<mission>              │
   own preview, PORT_OFFSET=1                    │ YES INTEGRATE (integrator, ff-only)
                                                 ▼
-canonical dev server        ◀─auto-reload──   working          ← what dev.internal serves
-  $HOME/doska, offset 0                    │
+canonical dev server        ◀─auto-reload──   working          ← what the dev URL serves
+  main worktree, offset 0                       │
                                                 │ YES RELEASE (separate, gated)
                                                 ▼
                                               main  ──▶ tagged release ──▶ doska.forked.net
@@ -28,10 +28,10 @@ coexisting, ready to be tested together.
 
 | | |
 |---|---|
-| checkout | `$HOME/doska` (branch `working`) — the integration checkout, **not** a place to develop |
-| URL | <https://127.0.0.1:5173/> on host `dev.internal` — self-signed cert, accept the warning once per browser |
+| checkout | the repo's **main worktree**, branch `working` — the integration checkout, **not** a place to develop |
+| URL | `scripts/dev-preview.sh url` prints it — self-signed cert, accept the warning once per browser |
 | control | `scripts/dev-preview.sh start\|stop\|restart\|reload\|status\|check\|logs\|url` |
-| web | Vite + HMR on `127.0.0.1:5173`, HTTPS/HTTP2 — client edits hot-reload, no restart |
+| web | Vite + HMR on `$WEB_HOST:5173`, HTTPS/HTTP2 — client edits hot-reload, no restart |
 | api | `127.0.0.1:3100` under `tsx watch` — server edits restart it automatically |
 | db | PGlite on `127.0.0.1:5433`, data in `apps/server/pgdata/` |
 | sign-in | `admin` / `dev` (only needed to test sync; the app works signed out) |
@@ -40,14 +40,20 @@ coexisting, ready to be tested together.
 the script on every start and are gitignored. Do not hand-edit them; change the
 script instead. Staging owns ports 3000 / 5432 / 8080 — never touch those.
 
+`$WEB_HOST` is the address the operator's browser reaches this box on. It
+defaults to `127.0.0.1` and is set for real in `scripts/dev-preview.local.sh`,
+which is gitignored — box-specific values stay out of the public repo. The
+canonical checkout is not configured anywhere: the script derives it from
+`git worktree list`, whose first entry is always the main worktree.
+
 **Offset 0 belongs to this checkout and nowhere else.** `start` refuses to run at
 offset 0 from any other worktree or any other branch, so a feature worktree
 cannot quietly become the thing the operator is looking at. Keep 5173 running;
 restart it only when the script says something is DOWN.
 
-`working` is **local only**. It carries this file and `scripts/dev-preview.sh`,
-both of which hardcode the box's public IP and `$HOME` paths, and
-`apezio/doska` is public. Never push it.
+`working` is **local only** — it is the shared staging branch, and releasing is
+a separate gated step (see below). Never push it; `main` is the only branch that
+goes to `origin`, and `apezio/doska` is public.
 
 ## Your own preview, in your own worktree
 
@@ -79,12 +85,13 @@ rewrite.
      work starts. Ask the operator for the exact phrase `YES REBASE`, then
      rebase this branch onto `working`.
 2. **Build it in your own worktree**, with your own preview running, so the
-   operator can watch each change land. Never develop in `$HOME/doska`:
+   operator can watch each change land. Never develop in the main worktree:
    it is the integration checkout, and the rails hook blocks writes into it.
 3. **Leave it uncommitted while the operator reviews:** no commit, no push, no
    merge, no rebase, no touching `working` or `main`, no deploy.
 4. **Hand off with your preview URL**, e.g.
-   *"Preview ready: <https://127.0.0.1:5174/> — <what changed, where to look>."*
+   *"Preview ready: <the URL `PORT_OFFSET=1 scripts/dev-preview.sh url` prints>
+   — <what changed, where to look>."*
    Deep-link to the affected board/card when there is one.
 
 ## When the operator approves
@@ -104,7 +111,7 @@ it.
 
 ## Integrating (integrator session only)
 
-The integrator runs in `$HOME/doska` on `working` (`claude-miss-integrator`
+The integrator runs in the main worktree on `working` (`claude-miss-integrator`
 refuses to start anywhere else) and does not write feature code.
 
 1. Review the feature branch's diff; confirm the changed files are the expected
@@ -112,7 +119,7 @@ refuses to start anywhere else) and does not write feature code.
 2. On the typed phrase `YES INTEGRATE`: `git merge --ff-only claude/<mission>`.
    Fast-forward only — never a merge commit, never a rebase, never a force-push.
 3. The merge's `post-merge` hook calls `scripts/dev-preview.sh reload`, so
-   <https://127.0.0.1:5173/> shows the result within seconds — Vite HMR and
+   the dev URL shows the result within seconds — Vite HMR and
    `tsx watch` have already absorbed the source changes. `reload` restarts the
    stack only when the integration moved **migrations**, and when it moved
    **dependencies** it prints the `pnpm install` to run rather than running it:
@@ -133,8 +140,8 @@ never bundled into one. `main` is what the staging deploy below tracks.
 
 ## Never
 
-- Never run the preview at offset 0 outside `$HOME/doska` on `working`.
-- Never develop in `$HOME/doska`, and never push `working`.
+- Never run the preview at offset 0 outside the main worktree on `working`.
+- Never develop in the main worktree, and never push `working`.
 - Never mix two unrelated unfinished features in one worktree.
 - Never commit, push, merge, deploy, or modify `working` or `main` unless
   explicitly asked, with the phrase.
@@ -159,14 +166,14 @@ to rediscover it, or mistake it for the preview.
 | version | tagged releases; it tracks `main` and lags `working` on purpose |
 
 Its `origin` is `github.com/romenkova/doska`, **not** the `apezio/doska` that
-`$HOME/doska` pushes to. Deploying is the operator's call and their
+this checkout pushes to. Deploying is the operator's call and their
 procedure — never build into `/opt/doska`, never restart `doska-server`.
 
 ## Repo facts worth knowing
 
 - pnpm workspace + turbo; Node 22 (`.nvmrc`) — the system `node` is older, the
   script puts `~/.nvm/versions/node/v22.23.2/bin` first.
-- `node_modules` in every worktree symlinks into `$HOME/doska`, so paths
+- `node_modules` in every worktree symlinks into the main worktree, so paths
   resolved via `__dirname` through `node_modules` land in the **main checkout**,
   not the worktree. Absolute paths only in dev config.
 - The stock `pnpm dev` is unusable on this box: it hardcodes the API proxy to
@@ -177,7 +184,6 @@ procedure — never build into `/opt/doska`, never restart `doska-server`.
 - turbo caches test results across worktrees — a green `pnpm test` may be
   `FULL TURBO` from another tree. Use `pnpm test --force` when the run is the
   evidence for a claim.
-- Two remotes are in play, and `apezio/doska` is **public**. This file and
-  `scripts/dev-preview.sh` both hardcode the box's public IP `127.0.0.1`
-  and `$HOME` paths, so pushing them publishes that. Confirm with the
-  operator before any push that carries these files.
+- Two remotes are in play, and `apezio/doska` is **public**. Keep it that way:
+  no host addresses and no absolute paths in tracked files — they belong in
+  `scripts/dev-preview.local.sh`. Re-read a diff for them before any push.

@@ -5,15 +5,17 @@ export function Column({
   title,
   color,
   count,
+  className,
   children,
 }: {
   title: string
   color: string
   count: number
+  className?: string
   children: ReactNode
 }) {
   return (
-    <section className="flex w-[90vw] max-w-90 shrink-0 flex-col">
+    <section className={cn("flex w-[90vw] max-w-90 shrink-0 flex-col", className)}>
       <div className="mb-3 flex items-center gap-2 px-1 text-sm text-muted-foreground uppercase">
         <span
           className="size-2.5 rounded-full"

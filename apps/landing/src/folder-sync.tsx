@@ -1,59 +1,55 @@
 import { useEffect, useState } from "react"
 import { AnimatePresence, MotionConfig, motion } from "motion/react"
-import { Card, CardHeader, CardTitle, cn, columnHue } from "@doska/ui-kit"
+import { Card, CardHeader, CardTitle, cn } from "@doska/ui-kit"
+import { Column } from "./column"
 
 type ColumnId = "todo" | "doing"
-type Card = { id: string; title: string; column: ColumnId }
+type CardItem = { id: string; title: string; column: ColumnId }
+type Scene = { cards: CardItem[]; changed?: string }
 
 const columns: { id: ColumnId; name: string; color: string }[] = [
   { id: "todo", name: "Todo", color: "violet" },
   { id: "doing", name: "Doing", color: "green" },
 ]
 
-const docs: Card = { id: "docs", title: "Ship the docs page", column: "todo" }
-const sync: Card = { id: "sync", title: "Sync on save", column: "doing" }
+const docs: CardItem = {
+  id: "docs",
+  title: "Add the docs",
+  column: "todo",
+}
+const sync: CardItem = { id: "sync", title: "Sync on save", column: "doing" }
+const banner = { id: "banner", title: "Offline banner" }
 
-const scenes: { cards: Card[]; changed?: string }[] = [
+/** Played through once, then the board is the visitor's to drag. */
+const scenes: Scene[] = [
   {
     cards: [docs, sync],
   },
   {
-    cards: [
-      docs,
-      { id: "banner", title: "Offline banner", column: "todo" },
-      sync,
-    ],
-    changed: "banner",
+    cards: [docs, { ...banner, column: "todo" }, sync],
+    changed: banner.id,
   },
   {
-    cards: [
-      docs,
-      sync,
-      { id: "banner", title: "Offline banner", column: "doing" },
-    ],
-    changed: "banner",
+    cards: [docs, sync, { ...banner, column: "doing" }],
+    changed: banner.id,
   },
 ]
 
-const SCENE_MS = 2800
+const handOver: Scene = { ...scenes[scenes.length - 1], changed: undefined }
 
-/** Cards and their files travel between columns and folders, not just fade. */
-const transition = { type: "spring", stiffness: 320, damping: 34 } as const
+const SCENE_MS = 2800
+/** How far a card has to travel sideways before the drop counts as a move. */
+const DROP_PX = 60
+/** Only the card the script moved is the visitor's to move. */
+const draggableId = banner.id
+
+/** No bounce: an overshoot on a card that has just flown looks like a glitch. */
+const transition = { type: "spring", duration: 0.5, bounce: 0 } as const
 
 const enter = {
   initial: { opacity: 0, y: 6 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -6 },
-}
-
-/**
- * A card crosses between columns, so it gets no y offset: any offset on the
- * incoming element is added to the layout flight and bends it into an arc.
- */
-const cardEnter = {
-  initial: { opacity: 0, scale: 0.96 },
-  animate: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.96 },
 }
 
 function fileName(title: string) {
@@ -66,84 +62,124 @@ function fileName(title: string) {
 }
 
 /**
- * The pitch as a demo: the same three cards shown as a board and as the folder
- * it syncs to, with one edit played out on both sides at once.
+ * The pitch as a demo: the same cards shown as a board and as the folder it
+ * syncs to. It plays the scripted edit once, then hands the board over — drag
+ * a card and the file follows it.
  */
 export function FolderSync() {
-  // Last scene first, so the prerendered HTML is the finished state and
-  // reduced-motion visitors keep it.
-  const [scene, setScene] = useState(scenes.length - 1)
+  const [view, setView] = useState(scenes[0])
+  const [live, setLive] = useState(false)
 
+  // Reduced motion skips the script entirely: the board still starts at the
+  // baseline scene, and dragging works either way.
   useEffect(() => {
+    if (live) return
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
 
-    const timer = setInterval(
-      () => setScene((i) => (i + 1) % scenes.length),
-      SCENE_MS
-    )
-    return () => clearInterval(timer)
-  }, [])
+    let scene = 0
+    const timer = setInterval(() => {
+      scene += 1
+      if (scene < scenes.length) {
+        setView(scenes[scene])
+        return
+      }
+      clearInterval(timer)
+      setView(handOver)
+      setLive(true)
+    }, SCENE_MS)
 
-  const { cards, changed } = scenes[scene]
+    return () => clearInterval(timer)
+  }, [live])
+
+  function move(id: string, columnId: ColumnId) {
+    setLive(true)
+    setView((current) => {
+      const card = current.cards.find((one) => one.id === id)
+      const target = columns.find((column) => column.id === columnId)
+      if (!card || !target || card.column === columnId) return current
+
+      return {
+        cards: current.cards.map((one) =>
+          one.id === id ? { ...one, column: columnId } : one
+        ),
+        changed: id,
+      }
+    })
+  }
 
   return (
     <MotionConfig reducedMotion="user" transition={transition}>
       <div className="mt-6">
         <div className="grid gap-4 md:grid-cols-2">
-          <MiniBoard cards={cards} changed={changed} />
-          <FileTree cards={cards} changed={changed} />
+          <MiniBoard cards={view.cards} changed={view.changed} onMove={move} />
+          <FileTree cards={view.cards} changed={view.changed} />
         </div>
       </div>
     </MotionConfig>
   )
 }
 
-function MiniBoard({ cards, changed }: { cards: Card[]; changed?: string }) {
+function MiniBoard({
+  cards,
+  changed,
+  onMove,
+}: {
+  cards: CardItem[]
+  changed?: string
+  onMove: (id: string, columnId: ColumnId) => void
+}) {
   return (
-    <div className="flex h-36 gap-3 overflow-hidden rounded-2xl border bg-background p-3 sm:h-40">
-      {columns.map((column) => (
-        <section key={column.id} className="flex-1">
-          <div className="mb-2 flex items-center gap-1.5 px-1 text-[11px] text-muted-foreground uppercase">
-            <span
-              className="size-2 rounded-full"
-              style={{
-                background: `oklch(0.72 0.14 ${columnHue(column.color)})`,
-              }}
-            />
-            <span className="font-heading font-bold">{column.name}</span>
-          </div>
-          <div className="flex flex-col gap-2">
-            {/* Default mode, not popLayout: popLayout takes the leaving card
-                out of flow, and the shifted origin bends the flight. */}
-            <AnimatePresence initial={false}>
-              {cards
-                .filter((card) => card.column === column.id)
-                .map((card) => (
-                  <motion.div
-                    key={card.id}
-                    // Shared id across the two columns: the card flies over
-                    // rather than vanishing here and appearing there.
-                    layoutId={card.id}
-                    {...cardEnter}
-                  >
-                    {/* The app's own card, so the demo shows the real thing. */}
-                    <Card
-                      className={cn(
-                        card.id === changed && "ring-2 ring-primary/60"
-                      )}
-                    >
-                      <CardHeader>
-                        <CardTitle className="text-sm font-bold text-balance">
-                          <h3>{card.title}</h3>
-                        </CardTitle>
-                      </CardHeader>
-                    </Card>
-                  </motion.div>
-                ))}
-            </AnimatePresence>
-          </div>
-        </section>
-      ))}
+    // Fixed height on both panes: adding a card must not reflow the page.
+    <div className="flex h-44 gap-3">
+      {columns.map((column) => {
+        const inColumn = cards.filter((card) => card.column === column.id)
+
+        return (
+          <Column
+            key={column.id}
+            title={column.name}
+            color={column.color}
+            count={inColumn.length}
+            className="w-auto max-w-none flex-1"
+          >
+            {inColumn.map((card) => (
+              <motion.div
+                key={card.id}
+                // Shared id across the two columns: the card flies over rather
+                // than vanishing here and appearing there.
+                layoutId={card.id}
+                drag={card.id === draggableId}
+                dragSnapToOrigin
+                dragElastic={0.15}
+                whileDrag={{ zIndex: 10, cursor: "grabbing" }}
+                // Which column it landed in comes from how far it went, not
+                // from hit-testing: two columns, one axis that matters.
+                onDragEnd={(_, info) => {
+                  if (Math.abs(info.offset.x) < DROP_PX) return
+                  const next = columns[info.offset.x > 0 ? 1 : 0]
+                  onMove(card.id, next.id)
+                }}
+                className={cn(card.id === draggableId && "cursor-grab")}
+              >
+                <Card
+                  className={cn(
+                    "mb-3",
+                    card.id === changed && "ring-2 ring-primary/60"
+                  )}
+                >
+                  <CardHeader>
+                    <CardTitle className="text-balance">
+                      <div className="line-clamp-1 text-sm lg:text-base">
+                        {card.title}
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                </Card>
+              </motion.div>
+            ))}
+          </Column>
+        )
+      })}
     </div>
   )
 }
@@ -153,7 +189,7 @@ function MiniBoard({ cards, changed }: { cards: Card[]; changed?: string }) {
  * folder is then a reorder inside a single list — the row keeps its identity
  * and slides, instead of unmounting in one group and remounting in another.
  */
-function treeRows(cards: Card[]) {
+function treeRows(cards: CardItem[]) {
   const rows: { key: string; text: string; cardId?: string }[] = []
 
   columns.forEach((column, columnIndex) => {
@@ -178,9 +214,9 @@ function treeRows(cards: Card[]) {
   return rows
 }
 
-function FileTree({ cards, changed }: { cards: Card[]; changed?: string }) {
+function FileTree({ cards, changed }: { cards: CardItem[]; changed?: string }) {
   return (
-    <div className="h-42 overflow-x-auto rounded-2xl border bg-background p-3 font-mono text-sm leading-relaxed whitespace-pre sm:h-40">
+    <div className="h-44 overflow-x-auto rounded-3xl border bg-background p-4 font-mono text-sm leading-relaxed whitespace-pre">
       <div className="text-muted-foreground">roadmap/</div>
       {/* popLayout so a leaving row drops out of the flow instead of holding
           its line while the rows below it slide. */}

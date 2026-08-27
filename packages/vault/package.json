@@ -19,6 +19,8 @@
   },
   "devDependencies": {
     "@doska/configs": "workspace:*",
+    "@doska/core": "workspace:*",
+    "@doska/ports": "workspace:*",
     "@types/node": "^22",
     "eslint": "^10",
     "typescript": "~6",

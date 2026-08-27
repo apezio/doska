@@ -79,6 +79,10 @@ const useServer = (url: string) => kvStore.set("deck:server-url", url)
 const SERVER_A = "https://a.example.com"
 const SERVER_B = "https://b.example.com"
 
+/** The user key is scoped by host, not by the URL as typed. */
+const HOST_A = "a.example.com"
+const HOST_B = "b.example.com"
+
 beforeEach(() => {
   rows.clear()
   kvStore.clear()
@@ -191,7 +195,7 @@ describe("reconcileIdentity across servers", () => {
   it("adopts local boards when a second server is signed in to", async () => {
     useServer(SERVER_A)
     seedAccountA()
-    rows.set(`${META_STORE}/deck:user-id:${SERVER_A}`, "user-a")
+    rows.set(`${META_STORE}/deck:user-id:${HOST_A}`, "user-a")
     rows.delete(`${META_STORE}/deck:user-id`)
 
     // The same person, the same login, a different server's id for them.
@@ -200,16 +204,14 @@ describe("reconcileIdentity across servers", () => {
     expect(await reconcileIdentity("user-a-on-b")).toBe(false)
 
     expect(inStore(DASHBOARDS)).toEqual(["board-a"])
-    expect(rows.get(`${META_STORE}/deck:user-id:${SERVER_B}`)).toBe(
-      "user-a-on-b"
-    )
+    expect(rows.get(`${META_STORE}/deck:user-id:${HOST_B}`)).toBe("user-a-on-b")
     expect(reset).not.toHaveBeenCalled()
   })
 
   it("still wipes when a different user signs in to the same server", async () => {
     useServer(SERVER_A)
     seedAccountA()
-    rows.set(`${META_STORE}/deck:user-id:${SERVER_A}`, "user-a")
+    rows.set(`${META_STORE}/deck:user-id:${HOST_A}`, "user-a")
     rows.delete(`${META_STORE}/deck:user-id`)
 
     const { reconcileIdentity } = await import("../src/api/identity")
@@ -223,16 +225,29 @@ describe("reconcileIdentity across servers", () => {
     useServer(SERVER_A)
     seedAccountA()
 
-    const { migrateUserKey, reconcileIdentity } = await import(
-      "../src/api/identity"
-    )
+    const { migrateUserKey, reconcileIdentity } =
+      await import("../src/api/identity")
     await migrateUserKey()
     // Same account, so the move has to land before the comparison or this wipes.
     expect(await reconcileIdentity("user-a")).toBe(false)
 
     expect(inStore(DASHBOARDS)).toEqual(["board-a"])
-    expect(rows.get(`${META_STORE}/deck:user-id:${SERVER_A}`)).toBe("user-a")
+    expect(rows.get(`${META_STORE}/deck:user-id:${HOST_A}`)).toBe("user-a")
     expect(rows.has(`${META_STORE}/deck:user-id`)).toBe(false)
+    expect(reset).not.toHaveBeenCalled()
+  })
+
+  it("reads one server typed two ways as one account", async () => {
+    useServer(SERVER_A)
+    seedAccountA()
+    rows.set(`${META_STORE}/deck:user-id:${HOST_A}`, "user-a")
+    rows.delete(`${META_STORE}/deck:user-id`)
+
+    useServer(`http://${HOST_A}/`)
+    const { reconcileIdentity } = await import("../src/api/identity")
+    expect(await reconcileIdentity("user-a")).toBe(false)
+
+    expect(inStore(DASHBOARDS)).toEqual(["board-a"])
     expect(reset).not.toHaveBeenCalled()
   })
 
@@ -240,9 +255,8 @@ describe("reconcileIdentity across servers", () => {
     useServer(SERVER_A)
     seedAccountA()
 
-    const { migrateUserKey, reconcileIdentity } = await import(
-      "../src/api/identity"
-    )
+    const { migrateUserKey, reconcileIdentity } =
+      await import("../src/api/identity")
     await migrateUserKey()
     await reconcileIdentity("user-a")
 

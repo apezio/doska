@@ -290,6 +290,109 @@ describe("Vault", () => {
     expect(fs.files.get(`${ROOT}/to_do/ship_it_2.md`)).toContain("two")
     expect(fs.files.has(`${ROOT}/to_do/ship_it_3.md`)).toBe(false)
   })
+
+  it("makes a second card out of a copy of a card's file", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    const copy = `${ROOT}/to_do/ship_it copy.md`
+    await fs.write(copy, fs.files.get(`${ROOT}/to_do/ship_it.md`)!)
+    await vault.sync()
+
+    const ids = [...board.cardsById.keys()]
+    expect(ids).toHaveLength(2)
+    const other = ids.find((id) => id !== card.id)!
+    expect(fs.files.get(copy)).toContain(`id: ${other}`)
+  })
+
+  it("leaves files that aren't Markdown, and dotfiles, alone", async () => {
+    await vault.sync()
+    await fs.write(`${ROOT}/to_do/notes.txt`, "not a card\n")
+    await fs.write(`${ROOT}/to_do/.hidden.md`, "not a card\n")
+    await vault.sync()
+
+    expect(board.cardsById.size).toBe(0)
+    expect(fs.files.get(`${ROOT}/to_do/notes.txt`)).toBe("not a card\n")
+    expect(fs.files.get(`${ROOT}/to_do/.hidden.md`)).toBe("not a card\n")
+  })
+
+  it("keeps the name a user gave the file by hand", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    await fs.rename(`${ROOT}/to_do/ship_it.md`, `${ROOT}/to_do/my_notes.md`)
+    await vault.sync()
+    await vault.sync()
+
+    expect(fs.files.has(`${ROOT}/to_do/my_notes.md`)).toBe(true)
+    expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(false)
+    expect(board.cardsById.get(card.id)?.title).toBe("Ship it")
+    expect(board.deleted).toEqual([])
+  })
+
+  it("cuts a long title down to a filename", async () => {
+    board.add(makeCard({ columnId: TODO.id, title: "a".repeat(100) }))
+    await vault.sync()
+
+    expect(fs.files.has(`${ROOT}/to_do/${"a".repeat(60)}.md`)).toBe(true)
+  })
+
+  it("gives an untitled card a file anyway", async () => {
+    board.add(makeCard({ columnId: TODO.id }))
+    await vault.sync()
+
+    expect(fs.files.has(`${ROOT}/to_do/card.md`)).toBe(true)
+  })
+
+  it("folds syncs that overlap into one extra pass", async () => {
+    board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    const load = vi.spyOn(board, "load")
+
+    await Promise.all([vault.sync(), vault.sync(), vault.sync()])
+
+    // The two that arrived mid-pass collapse into the single queued one.
+    expect(load).toHaveBeenCalledTimes(2)
+  })
+
+  it("writes nothing on a pass that changes nothing", async () => {
+    board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    const write = vi.spyOn(fs, "write")
+    await vault.sync()
+
+    expect(write).not.toHaveBeenCalled()
+  })
+
+  it("starts over when _meta.json is unreadable", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    await fs.write(`${ROOT}/_meta.json`, "{ not json")
+    fs.files.delete(`${ROOT}/to_do/ship_it.md`)
+    // Nothing is known to have been written, so the file reads as missing
+    // rather than as deleted: the card keeps it.
+    await new Vault({ fs, board, root: ROOT }).sync()
+
+    expect(board.cardsById.has(card.id)).toBe(true)
+    expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(true)
+  })
+
+  it("skips _files when there is nothing to fetch bytes from", async () => {
+    board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    expect(await fs.readDir(`${ROOT}/_files`)).toBeNull()
+  })
+
+  it("names a folder after its column when the title has no letters", async () => {
+    const odd = makeColumn("col-odd", "***")
+    const only = new FakeBoard([odd])
+    only.add(makeCard({ columnId: odd.id, title: "Ship it" }))
+    await new Vault({ fs, board: only, root: ROOT }).sync()
+
+    expect(fs.files.has(`${ROOT}/${odd.id}/ship_it.md`)).toBe(true)
+  })
 })
 
 describe("Vault restore", () => {
@@ -412,9 +515,9 @@ describe("Vault attachments", () => {
     await vault.sync()
 
     expect(fs.files.has(`${ROOT}/_files/${KEY.slice(4)}`)).toBe(true)
-    expect(
-      fs.files.get(`${ROOT}/to_do/ship_it.md`)
-    ).toContain(`![shot](../_files/${KEY.slice(4)})`)
+    expect(fs.files.get(`${ROOT}/to_do/ship_it.md`)).toContain(
+      `![shot](../_files/${KEY.slice(4)})`
+    )
 
     // A file already there is the same file: no second fetch.
     await vault.sync()

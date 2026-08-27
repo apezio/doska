@@ -181,41 +181,73 @@ deps_fingerprint() {
   } 2>/dev/null | sha256sum | cut -d' ' -f1
 }
 
-# A post-merge hook in the canonical checkout is what makes an integration show
-# up on the dev URL without anyone remembering to restart anything. Hooks live in
-# the COMMON git dir, so every worktree of this repo runs it — hence the guard
-# inside the hook body. Only ever writes a hook that is missing or is ours.
-install_merge_hook() {
+# Keeping a preview in step with git. The hooks live in the COMMON git dir, so
+# one install covers every worktree of this repo — and each hook acts on the
+# worktree the git command actually ran in, at whatever offsets that worktree
+# has running. Installing from the canonical checkout is enough for all of them.
+#
+#   post-merge     an integration landed  -> reload (fingerprint decides)
+#   post-checkout  a branch switch        -> reload
+#   post-rewrite   a rebase               -> RESTART, unconditionally
+#
+# A rebase is why post-rewrite is separate. It rewrites the tree under a running
+# Vite, which applies partial HMR updates and can leave the module graph
+# initialising out of order — observed as `runtime used before installRuntime()`
+# from packages/core, and a white page that survives a refresh. HMR can patch
+# edits; it cannot recover a history rewrite. Only a restart clears it.
+install_preview_hooks() {
   local common hook marker
   common="$(git -C "$ROOT" rev-parse --git-common-dir 2>/dev/null)" || return 0
   case "$common" in /*) ;; *) common="$ROOT/$common" ;; esac
   [ -d "$common/hooks" ] || return 0
   marker="# managed by scripts/dev-preview.sh"
-  for hook in post-merge post-checkout; do
+  for hook in post-merge post-checkout post-rewrite; do
     if [ -e "$common/hooks/$hook" ] && ! grep -qF "$marker" "$common/hooks/$hook" 2>/dev/null; then
       echo "note: $common/hooks/$hook exists and is not ours — leaving it alone;"
       echo "      run 'scripts/dev-preview.sh reload' by hand after an integration."
       continue
     fi
-    # Written via a temp file and mv(1): the hook itself calls back into this
-    # script, which reinstalls the hook — truncating a file bash is still
-    # reading would corrupt the run. Replacing the inode leaves it intact.
+    # Written via a temp file and mv(1): the hook calls back into this script,
+    # which reinstalls the hooks — truncating a file bash is still reading would
+    # corrupt the run. Replacing the inode leaves it intact.
     cat > "$common/hooks/$hook.new" <<HOOK
 #!/usr/bin/env bash
-$marker — refresh the canonical dev server after an integration.
-# Shared by every worktree of this repo, so do nothing unless this IS the
-# canonical checkout on the staging branch, and never block the git command.
+$marker — keep this worktree's preview in step with git.
+KIND=$hook
+
 # git exports GIT_DIR/GIT_WORK_TREE/GIT_INDEX_FILE into hooks, which would
-# otherwise override the -C of every git command run below us.
-# git runs a post-merge/post-checkout hook with cwd at the top of the working
-# tree the command ran in — that is how we tell "integrated into the canonical
-# checkout" from "a feature worktree merged something".
-[ "\$(pwd -P)" = "$CANONICAL_ROOT" ] || exit 0
+# otherwise override the -C of every git command below.
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX
-cd "$CANONICAL_ROOT" 2>/dev/null || exit 0
-[ "\$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" = "$CANONICAL_BRANCH" ] || exit 0
-[ -x "$CANONICAL_ROOT/scripts/dev-preview.sh" ] || exit 0
-"$CANONICAL_ROOT/scripts/dev-preview.sh" reload || true
+
+# git runs these hooks with cwd at the top of the working tree the command ran
+# in — that is how a hook shared by every worktree knows which preview to touch.
+top="\$(pwd -P)"
+[ -x "\$top/scripts/dev-preview.sh" ] || exit 0
+
+gitdir="\$(git -C "\$top" rev-parse --git-dir 2>/dev/null)" || exit 0
+case "\$gitdir" in /*) ;; *) gitdir="\$top/\$gitdir" ;; esac
+
+# Mid-rebase, git fires post-checkout once per replayed commit. Restarting a
+# stack on each of those would be absurd; post-rewrite handles it once at the end.
+if [ -d "\$gitdir/rebase-merge" ] || [ -d "\$gitdir/rebase-apply" ]; then
+  exit 0
+fi
+
+verb=reload
+if [ "\$KIND" = post-rewrite ]; then
+  # post-rewrite also fires for \`commit --amend\` (\$1 = amend), which is an
+  # ordinary edit HMR handles fine. Only a rebase needs the restart.
+  [ "\$1" = rebase ] || exit 0
+  verb=restart
+fi
+
+# Only offsets that are actually running: dev.pids exists while a stack is up,
+# so this never starts a preview nobody asked for. Never block the git command.
+for pids in /tmp/doska-preview-"\$(basename "\$top")"-*/dev.pids; do
+  [ -e "\$pids" ] || continue
+  off="\${pids%/dev.pids}"; off="\${off##*-}"
+  PORT_OFFSET="\$off" "\$top/scripts/dev-preview.sh" "\$verb" || true
+done
 exit 0
 HOOK
     chmod +x "$common/hooks/$hook.new"
@@ -241,7 +273,7 @@ start() {
   : > "$PIDFILE"
   deps_fingerprint > "$STATE/deps.sha"
   migrations_fingerprint > "$STATE/migrations.sha"
-  install_merge_hook
+  install_preview_hooks
 
   cd "$ROOT/apps/server" || exit 1
   setsid node_modules/.bin/tsx --env-file-if-exists=.env src/serve-dev.ts >> "$LOG" 2>&1 &

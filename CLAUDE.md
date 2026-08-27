@@ -60,6 +60,14 @@ on its own ports:
 Tell the operator that second URL when you hand off. Two features previewing at
 once means two worktrees and two offsets — never two offsets in one worktree.
 
+Your preview keeps itself in step with git: a `post-rewrite` hook **restarts** it
+after a rebase, and `post-merge`/`post-checkout` reload it. The rebase case is
+not optional politeness — a rebase rewrites the tree under a running Vite, which
+applies partial HMR updates and can leave the module graph initialising out of
+order (`runtime used before installRuntime()` from `packages/core`, and a white
+page that survives a refresh). HMR patches edits; it cannot recover a history
+rewrite.
+
 ## Working a feature
 
 1. **Pre-flight:** `scripts/dev-preview.sh check`.

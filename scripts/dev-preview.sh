@@ -228,8 +228,12 @@ gitdir="\$(git -C "\$top" rev-parse --git-dir 2>/dev/null)" || exit 0
 case "\$gitdir" in /*) ;; *) gitdir="\$top/\$gitdir" ;; esac
 
 # Mid-rebase, git fires post-checkout once per replayed commit. Restarting a
-# stack on each of those would be absurd; post-rewrite handles it once at the end.
-if [ -d "\$gitdir/rebase-merge" ] || [ -d "\$gitdir/rebase-apply" ]; then
+# stack on each of those would be absurd; post-rewrite handles it once at the
+# end. post-rewrite is exempt from this check because git still has
+# \$gitdir/rebase-merge on disk when it runs the hook (measured) — treating that
+# as "in progress" would skip the very case the hook exists for.
+if [ "\$KIND" != post-rewrite ] \\
+   && { [ -d "\$gitdir/rebase-merge" ] || [ -d "\$gitdir/rebase-apply" ]; }; then
   exit 0
 fi
 

@@ -10,6 +10,9 @@ export interface OpenCard {
   card: Card
   boardId: string
   boardTitle: string
+  columnTitle: string
+  /** The column's palette color id; empty when it has none. */
+  columnColor: string
   stage: OpenCardStage
 }
 
@@ -65,7 +68,14 @@ export function groupOpenCards(
     if (!stage) continue
     const column = columnById.get(card.columnId)!
     const board = boardById.get(column.dashboardId)!
-    const entry = { card, boardId: board.id, boardTitle: board.title, stage }
+    const entry = {
+      card,
+      boardId: board.id,
+      boardTitle: board.title,
+      columnTitle: column.title,
+      columnColor: column.color ?? "",
+      stage,
+    }
     if (stage === "todo") todo.push(entry)
     else doing.push(entry)
   }

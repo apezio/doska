@@ -18,7 +18,11 @@ export function useRenameColumn(deckId: string) {
   return useMutation({
     mutationFn: ({ id, title }: { id: string; title: string }) =>
       api.renameColumn(id, title),
-    onSettled: () => qc.invalidateQueries({ queryKey: keys.board(deckId) }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: keys.board(deckId) })
+      // The digest and the sidebar's Cards list both name the column.
+      qc.invalidateQueries({ queryKey: keys.digest })
+    },
   })
 }
 
@@ -50,7 +54,12 @@ export function useSetColumnColor(deckId: string) {
     deckId,
     ({ id, color }: { id: string; color: string }) =>
       api.setColumnColor(id, color),
-    { apply: (board, { id, color }) => patchColumn(board, id, { color }) }
+    {
+      apply: (board, { id, color }) => patchColumn(board, id, { color }),
+      // The sidebar's Cards list tints each row with its column's color, and
+      // reads it from the digest prefix rather than the board.
+      also: () => [keys.digest],
+    }
   )
 }
 

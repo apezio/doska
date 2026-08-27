@@ -1,5 +1,8 @@
+import type { CSSProperties } from "react"
 import { useLocation } from "wouter"
 import {
+  cn,
+  columnHue,
   PriorityDot,
   SidebarGroupLabel,
   SidebarMenu,
@@ -39,22 +42,47 @@ export function SidebarCardsList() {
           <div key={key}>
             <SidebarGroupLabel>{label}</SidebarGroupLabel>
             <SidebarMenu>
-              {data[key].map((entry) => (
-                <SidebarMenuItem key={entry.card.id}>
-                  <SidebarMenuButton
-                    tooltip={entry.card.title}
-                    onClick={() => openCard(entry)}
-                  >
-                    <PriorityDot value={entry.card.priority} />
-                    <span className="truncate">
-                      {entry.card.title || "Untitled card"}
-                    </span>
-                    <span className="ml-auto truncate text-xs text-muted-foreground">
-                      {entry.boardTitle || "Untitled board"}
-                    </span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {data[key].map((entry) => {
+                // Two boards' To Do columns can be tinted differently, so the
+                // accent is per card, not per stage. Uncolored stays neutral,
+                // but keeps the stripe's width so titles line up.
+                const hue = columnHue(entry.columnColor)
+                return (
+                  <SidebarMenuItem key={entry.card.id}>
+                    <SidebarMenuButton
+                      tooltip={
+                        entry.columnTitle
+                          ? `${entry.card.title} — ${entry.columnTitle}`
+                          : entry.card.title
+                      }
+                      onClick={() => openCard(entry)}
+                      style={
+                        hue === null
+                          ? undefined
+                          : ({ "--card-h": hue } as CSSProperties)
+                      }
+                      className={cn(
+                        "rounded-l-sm border-l-2",
+                        hue === null
+                          ? "border-transparent"
+                          : [
+                              "border-[oklch(0.62_0.15_var(--card-h))]",
+                              "bg-[oklch(0.72_0.14_var(--card-h)/0.10)]",
+                              "hover:bg-[oklch(0.72_0.14_var(--card-h)/0.20)]",
+                            ]
+                      )}
+                    >
+                      <PriorityDot value={entry.card.priority} />
+                      <span className="truncate">
+                        {entry.card.title || "Untitled card"}
+                      </span>
+                      <span className="ml-auto truncate text-xs text-muted-foreground">
+                        {entry.boardTitle || "Untitled board"}
+                      </span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </div>
         ) : null

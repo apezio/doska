@@ -19,7 +19,7 @@ mission worktree            ──YES COMMIT──▶  claude/<mission>
 ```
 
 There is **exactly one dev preview on this box**: `scripts/dev-preview.sh`
-running from the canonical checkout (`/home/apex/doska`, branch `working`) on
+running from the canonical checkout (the main worktree, branch `working`) on
 `https://$WEB_HOST:5174/`. It is permanent. Feature worktrees **never** start a
 Vite server or take a port of their own — a feature becomes visible on that one
 URL the moment it is integrated into `working`, via HMR/reload. Nothing reaches
@@ -175,8 +175,9 @@ procedure — never build into `/opt/doska`, never restart `doska-server`.
 
 ## Repo facts worth knowing
 
-- pnpm workspace + turbo; Node 22 (`.nvmrc`) — the system `node` is older, the
-  script puts `~/.nvm/versions/node/v22.23.2/bin` first.
+- pnpm workspace + turbo; Node 22 (`.nvmrc`) — if the system `node` is older,
+  `NODE_BIN` in `scripts/dev-preview.local.sh` names a Node 22 bin dir the
+  script puts first on `PATH`.
 - `node_modules` in every worktree symlinks into the main worktree, so paths
   resolved via `__dirname` through `node_modules` land in the **main checkout**,
   not the worktree. Absolute paths only in dev config.

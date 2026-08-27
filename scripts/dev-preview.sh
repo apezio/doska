@@ -25,6 +25,7 @@
 # by every worktree:
 #
 #   WEB_HOST=203.0.113.7
+#   NODE_BIN=$HOME/.nvm/versions/node/v22.x.y/bin
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -39,7 +40,7 @@ CANONICAL_ROOT="$(git -C "$ROOT" worktree list --porcelain 2>/dev/null | awk '/^
 CANONICAL_ROOT="${CANONICAL_ROOT:-$ROOT}"
 CANONICAL_BRANCH="working"
 
-# Untracked, box-specific overrides (WEB_HOST, ...). It lives in the main
+# Untracked, box-specific overrides (WEB_HOST, NODE_BIN, ...). It lives in the main
 # worktree and serves every worktree, so a mission does not need its own copy;
 # a per-worktree file still wins if one exists. An explicit env var beats both.
 _env_web_host="${WEB_HOST:-}"
@@ -64,9 +65,9 @@ PG_PORT=5434
 IS_CANONICAL=0
 [ "$(cd "$ROOT" && pwd -P)" = "$(cd "$CANONICAL_ROOT" && pwd -P)" ] && IS_CANONICAL=1
 
-# Node 22 is required (see .nvmrc); the system node is older.
-NVM_BIN="$HOME/.nvm/versions/node/v22.23.2/bin"
-[ -d "$NVM_BIN" ] && export PATH="$NVM_BIN:$PATH"
+# Node 22 is required (see .nvmrc). If the system node is older, point NODE_BIN
+# at a Node 22 bin directory in dev-preview.local.sh; it is put first on PATH.
+[ -n "${NODE_BIN:-}" ] && [ -d "$NODE_BIN" ] && export PATH="$NODE_BIN:$PATH"
 
 # TLS, and it is a performance feature, not a security one. Vite only speaks
 # HTTP/2 when server.https is set, and without HTTP/2 a refresh is ~200 separate

@@ -128,3 +128,17 @@ export function moveToIndex(
     ),
   }
 }
+
+/**
+ * The board list as it reads once `move` lands: only the moved board's record
+ * changes — its children follow it by reference, exactly as the write does —
+ * and the list stays in the flat position order `getDashboards` hands out.
+ */
+export function applyMove(
+  dashboards: Dashboard[],
+  { id, parentId, position }: DashboardMove
+): Dashboard[] {
+  return dashboards
+    .map((d) => (d.id === id ? { ...d, parentId, position } : d))
+    .sort(byPosition)
+}

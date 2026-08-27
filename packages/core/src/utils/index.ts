@@ -13,6 +13,7 @@ export { groupCardsByColumn } from "./group-cards"
 export { initials } from "./initials"
 export { byPosition, keyBetween } from "./position"
 export {
+  applyMove,
   flattenDashboards,
   isSelfOrDescendant,
   moveToIndex,

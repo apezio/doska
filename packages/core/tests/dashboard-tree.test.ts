@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { Dashboard } from "../src/types"
 import {
+  applyMove,
   flattenDashboards,
   isSelfOrDescendant,
   moveToIndex,
@@ -157,5 +158,50 @@ describe("moveToIndex (drop between rows)", () => {
   it("refuses a slot inside the board's own subtree", () => {
     // A just before A2 would make A its own grandchild.
     expect(moveToIndex(tree, "A", 1)).toBeNull()
+  })
+})
+
+describe("applyMove", () => {
+  it("lands the move in the tree the sidebar reads", () => {
+    // A1 out of A's group and onto the top level, between B (a1) and C (a2).
+    const next = applyMove(tree, { id: "A1", parentId: null, position: "a1V" })
+
+    expect(idsOf(flattenDashboards(next))).toEqual([
+      "A",
+      "  A2",
+      "B",
+      "A1",
+      "C",
+      "  C1",
+    ])
+    expect(next.find((d) => d.id === "A1")).toMatchObject({
+      parentId: null,
+      position: "a1V",
+    })
+  })
+
+  it("keeps the cache in the flat position order the query hands out", () => {
+    const next = applyMove(tree, { id: "A1", parentId: null, position: "a1V" })
+
+    expect(next.map((d) => d.position)).toEqual(
+      [...next.map((d) => d.position)].sort()
+    )
+  })
+
+  it("leaves the other boards — and the children that follow by reference — alone", () => {
+    const next = applyMove(tree, { id: "A", parentId: "C", position: "a3" })
+
+    // Only the moved board's record changes; A1/A2 still name A as their parent.
+    for (const d of next) {
+      if (d.id !== "A") expect(d).toBe(tree.find((t) => t.id === d.id))
+    }
+    expect(flattenDashboards(next).map((r) => r.dashboard.id)).toEqual([
+      "B",
+      "C",
+      "C1",
+      "A",
+      "A1",
+      "A2",
+    ])
   })
 })

@@ -167,13 +167,17 @@ MSG
   exit 1
 }
 
-# Fingerprint of the things a running stack cannot hot-reload: dependencies and
-# migrations. Recorded at start, compared by `reload` after an integration.
+# The two things a running stack cannot hot-reload, fingerprinted separately
+# because they need very different responses. Recorded at start, compared by
+# `reload` after an integration.
+migrations_fingerprint() {
+  cat "$ROOT/apps/server/drizzle/meta/_journal.json" 2>/dev/null \
+    | sha256sum | cut -d' ' -f1
+}
 deps_fingerprint() {
   {
     cat "$ROOT/pnpm-lock.yaml"
     find "$ROOT/apps" "$ROOT/packages" -maxdepth 2 -name package.json -exec cat {} +
-    cat "$ROOT/apps/server/drizzle/meta/_journal.json"
   } 2>/dev/null | sha256sum | cut -d' ' -f1
 }
 
@@ -236,6 +240,7 @@ start() {
   write_vite_config
   : > "$PIDFILE"
   deps_fingerprint > "$STATE/deps.sha"
+  migrations_fingerprint > "$STATE/migrations.sha"
   install_merge_hook
 
   cd "$ROOT/apps/server" || exit 1
@@ -268,28 +273,51 @@ stop() {
   echo "stopped"
 }
 
-# `reload` is the post-integration step: Vite HMR and `tsx watch` already picked
-# up every source file the merge changed, so the only thing left to decide is
-# whether dependencies or migrations moved — those a running stack cannot absorb.
+# `reload` is the post-integration step: Vite HMR and `tsx watch` have already
+# picked up every source file the merge changed, so the only question left is
+# whether migrations or dependencies moved — those a running stack cannot absorb.
+#
+# Migrations: restart, they run at server boot.
+# Dependencies: do NOT install here. `pnpm install` rewrites the shared
+# node_modules store that every worktree symlinks into, and a running preview
+# in ANY worktree dies mid-resolve when it does — measured, not theoretical.
+# Restarting this stack would recover only this one. So say what is needed and
+# let the operator run it once, when no one is mid-review.
 reload() {
   if ! running; then
-    echo "preview is not running — nothing to reload"
+    echo "reload: preview is not running — nothing to reload"
     status
     return 0
   fi
-  local now prev
-  now="$(deps_fingerprint)"
-  prev="$(cat "$STATE/deps.sha" 2>/dev/null || echo none)"
-  if [ "$now" = "$prev" ]; then
-    echo "reload: no restart needed — Vite HMR and tsx watch already serve the current checkout"
-    status
+  local deps_now deps_prev mig_now mig_prev
+  deps_now="$(deps_fingerprint)";      deps_prev="$(cat "$STATE/deps.sha" 2>/dev/null || echo none)"
+  mig_now="$(migrations_fingerprint)"; mig_prev="$(cat "$STATE/migrations.sha" 2>/dev/null || echo none)"
+
+  if [ "$deps_now" != "$deps_prev" ]; then
+    cat <<MSG
+
+  ┌─ dependencies changed in this integration ────────────────────────────┐
+  │ Run this once, when no preview is mid-review — it rewrites the shared │
+  │ node_modules store and briefly kills EVERY running preview on the box:│
+  │                                                                       │
+  │   cd $CANONICAL_ROOT && CI=true pnpm install
+  │   $CANONICAL_ROOT/scripts/dev-preview.sh restart
+  │                                                                       │
+  │ Every other worktree's preview needs a restart after it too.          │
+  └───────────────────────────────────────────────────────────────────────┘
+
+MSG
+  fi
+
+  if [ "$mig_now" != "$mig_prev" ]; then
+    echo "reload: migrations changed — restarting so they run at server boot"
+    stop
+    start
     return 0
   fi
-  echo "reload: dependencies or migrations changed — installing and restarting"
-  ( cd "$ROOT" && CI=true pnpm install ) \
-    || echo "reload: pnpm install FAILED — the preview may be broken until it is fixed"
-  stop
-  start
+
+  echo "reload: no restart needed — Vite HMR and tsx watch already serve the current checkout"
+  status
 }
 
 running() {

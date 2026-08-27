@@ -104,9 +104,13 @@ refuses to start anywhere else) and does not write feature code.
 2. On the typed phrase `YES INTEGRATE`: `git merge --ff-only claude/<mission>`.
    Fast-forward only — never a merge commit, never a rebase, never a force-push.
 3. The merge's `post-merge` hook calls `scripts/dev-preview.sh reload`, so
-   <https://127.0.0.1:5173/> shows the result within seconds: Vite HMR and
-   `tsx watch` have already absorbed the source changes, and the stack is
-   restarted (with a `pnpm install`) only when dependencies or migrations moved.
+   <https://127.0.0.1:5173/> shows the result within seconds — Vite HMR and
+   `tsx watch` have already absorbed the source changes. `reload` restarts the
+   stack only when the integration moved **migrations**, and when it moved
+   **dependencies** it prints the `pnpm install` to run rather than running it:
+   an install rewrites the node_modules store every worktree symlinks into and
+   kills every running preview on the box, so it is the operator's call, once,
+   when nobody is mid-review.
 4. Log what landed, and tell the operator the dev URL is ready for manual
    testing.
 

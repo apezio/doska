@@ -9,6 +9,7 @@ import { AddColumn } from "../column/add-column"
 import { DraggableCard } from "../card/draggable-card"
 import { BoardView } from "./board-view"
 import { DragStateProvider } from "./drag-state"
+import { ResizeStateProvider } from "./resize-state"
 import { DeckHeader } from "./deck-header/deck-header"
 import { DeckRowsView } from "./deck-rows-view"
 import { SyncIndicator } from "./sync-indicator"
@@ -58,6 +59,7 @@ export function Deck({
   onPatchCard,
 }: IProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const [isResizing, setIsResizing] = useState(false)
 
   const grouped = groupCardsByColumn(board)
   const orderedColumns = [...board.columns].sort(byPosition)
@@ -66,81 +68,86 @@ export function Deck({
 
   return (
     <DragStateProvider value={isDragging}>
-      <DragDropContext
-        onDragStart={() => setIsDragging(true)}
-        onDragEnd={(result) => {
-          setIsDragging(false)
-          hold(result)
-          onDragEnd(result)
-        }}
-      >
-        <BoardView
-          isLoading={isLoading}
-          isDragging={isDragging}
-          footer={<SyncIndicator />}
-          header={
-            <DeckHeader
-              boardId={dashboard.id}
-              title={dashboard.title}
-              onRename={onRenameDashboard}
-              onDelete={onDeleteDashboard}
-              columns={orderedColumns}
-              onReorderColumns={onReorderColumns}
-              sort={sort}
-              onChangeSort={onChangeSort}
-              view={view}
-              onChangeView={onChangeView}
-              onAddCard={
-                orderedColumns[0]
-                  ? () => onAddAndOpenCard(orderedColumns[0].id)
-                  : undefined
-              }
-            />
-          }
+      <ResizeStateProvider value={setIsResizing}>
+        <DragDropContext
+          onDragStart={() => setIsDragging(true)}
+          onDragEnd={(result) => {
+            setIsDragging(false)
+            hold(result)
+            onDragEnd(result)
+          }}
         >
-          {view === "rows" ? (
-            <DeckRowsView board={board} title={dashboard.title} />
-          ) : (
-            <>
-              {grouped.map(({ column, cards }) => {
-                const ordered = place(sortCards(cards, sort), column.id)
-                const showBody = !column.collapsed
-                return (
-                  <Column
-                    key={column.id}
-                    id={column.id}
-                    title={column.title}
-                    color={column.color}
-                    showBody={showBody}
-                    onToggleBody={() => onToggleBody(column.id, showBody)}
-                    onAddCard={() => onAddCard(column.id)}
-                    onRename={(title) => onRenameColumn(column.id, title)}
-                    onChangeColor={(color) =>
-                      onChangeColumnColor(column.id, color)
-                    }
-                    done={column.done}
-                    onChangeDone={(done) => onChangeColumnDone(column.id, done)}
-                    onDelete={() => onDeleteColumn(column.id)}
-                  >
-                    {ordered.map((card, index) => (
-                      <DraggableCard
-                        key={card.id}
-                        card={card}
-                        column={column}
-                        index={index}
-                        showBody={showBody}
-                        onPatch={onPatchCard}
-                        onDropSettled={release}
-                      />
-                    ))}
-                  </Column>
-                )
-              })}
-              <AddColumn onAdd={onAddColumn} />
-            </>
-          )}
-        </BoardView>
-      </DragDropContext>
+          <BoardView
+            isLoading={isLoading}
+            // A column resize fights snapping the same way a card drag does.
+            isDragging={isDragging || isResizing}
+            footer={<SyncIndicator />}
+            header={
+              <DeckHeader
+                boardId={dashboard.id}
+                title={dashboard.title}
+                onRename={onRenameDashboard}
+                onDelete={onDeleteDashboard}
+                columns={orderedColumns}
+                onReorderColumns={onReorderColumns}
+                sort={sort}
+                onChangeSort={onChangeSort}
+                view={view}
+                onChangeView={onChangeView}
+                onAddCard={
+                  orderedColumns[0]
+                    ? () => onAddAndOpenCard(orderedColumns[0].id)
+                    : undefined
+                }
+              />
+            }
+          >
+            {view === "rows" ? (
+              <DeckRowsView board={board} title={dashboard.title} />
+            ) : (
+              <>
+                {grouped.map(({ column, cards }) => {
+                  const ordered = place(sortCards(cards, sort), column.id)
+                  const showBody = !column.collapsed
+                  return (
+                    <Column
+                      key={column.id}
+                      id={column.id}
+                      title={column.title}
+                      color={column.color}
+                      showBody={showBody}
+                      onToggleBody={() => onToggleBody(column.id, showBody)}
+                      onAddCard={() => onAddCard(column.id)}
+                      onRename={(title) => onRenameColumn(column.id, title)}
+                      onChangeColor={(color) =>
+                        onChangeColumnColor(column.id, color)
+                      }
+                      done={column.done}
+                      onChangeDone={(done) =>
+                        onChangeColumnDone(column.id, done)
+                      }
+                      onDelete={() => onDeleteColumn(column.id)}
+                    >
+                      {ordered.map((card, index) => (
+                        <DraggableCard
+                          key={card.id}
+                          card={card}
+                          column={column}
+                          index={index}
+                          showBody={showBody}
+                          onPatch={onPatchCard}
+                          onDropSettled={release}
+                        />
+                      ))}
+                    </Column>
+                  )
+                })}
+                <AddColumn onAdd={onAddColumn} />
+              </>
+            )}
+          </BoardView>
+        </DragDropContext>
+      </ResizeStateProvider>
     </DragStateProvider>
   )
 }

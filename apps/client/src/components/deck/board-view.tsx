@@ -7,7 +7,7 @@ interface IProps {
   /** The columns. */
   children: ReactNode
   isLoading?: boolean
-  /** Suppresses snapping, which fights a drag in progress. */
+  /** Suppresses snapping, which fights a drag or a column resize in progress. */
   isDragging?: boolean
   /** Pinned to the bottom-right corner — the sync indicator, where there is one. */
   footer?: ReactNode

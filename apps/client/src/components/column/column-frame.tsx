@@ -1,5 +1,6 @@
 import { cn } from "@doska/ui-kit"
-import type { CSSProperties, ReactNode } from "react"
+import { useEffect, type CSSProperties, type ReactNode } from "react"
+import { useReportResizing } from "../deck/resize-state"
 import { ColumnResizeHandle } from "./column-resize-handle"
 import { useColumnResize } from "./use-column-resize"
 
@@ -24,6 +25,16 @@ interface IProps {
 export function ColumnFrame({ id, title, children }: IProps) {
   const { width, isResizing, onStartResizing, onNudge, onReset } =
     useColumnResize(id)
+
+  // The board suppresses snap scrolling while this is true — snapping fights a
+  // drag on a column edge exactly as it fights a card drag. The cleanup clears
+  // it whichever way the drag ends, including an unmount mid-drag.
+  const reportResizing = useReportResizing()
+  useEffect(() => {
+    if (!isResizing) return
+    reportResizing(true)
+    return () => reportResizing(false)
+  }, [isResizing, reportResizing])
 
   return (
     <div

@@ -62,10 +62,10 @@ describe("Vault", () => {
     const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
     await vault.sync()
 
-    await board.updateCard(card.id, { title: "Shipped" })
+    await board.updateCard(card.id, { body: "shipped" })
     await vault.sync()
 
-    expect(fs.files.get(`${ROOT}/to_do/ship_it.md`)).toContain("title: Shipped")
+    expect(fs.files.get(`${ROOT}/to_do/ship_it.md`)).toContain("shipped")
   })
 
   it("moves the card when its file is dragged to another folder", async () => {
@@ -245,5 +245,32 @@ describe("Vault", () => {
 
     expect(board.cardsById.has(card.id)).toBe(false)
     expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(true)
+  })
+
+  it("renames the file when the card is retitled", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    await board.updateCard(card.id, { title: "Ship it later" })
+    await vault.sync()
+
+    expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(false)
+    expect(fs.files.get(`${ROOT}/to_do/ship_it_later.md`)).toContain(
+      "title: Ship it later"
+    )
+  })
+
+  it("leaves a file that only took a collision suffix alone", async () => {
+    board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    const second = board.add(
+      makeCard({ columnId: TODO.id, title: "Ship it", body: "one" })
+    )
+    await vault.sync()
+
+    await board.updateCard(second.id, { body: "two" })
+    await vault.sync()
+
+    expect(fs.files.get(`${ROOT}/to_do/ship_it_2.md`)).toContain("two")
+    expect(fs.files.has(`${ROOT}/to_do/ship_it_3.md`)).toBe(false)
   })
 })

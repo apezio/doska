@@ -107,6 +107,21 @@ export class ColumnFolder {
     return to
   }
 
+  /** The name follows the title, so renaming a card renames its file. Returns
+   * where the file ended up. */
+  async retitle(path: string, card: CardFile): Promise<string> {
+    const wanted = snakeName(card.title) || "card"
+    const stem = stemOf(path)
+    // `name_2` counts as `name`: a file that took a collision suffix is not out
+    // of date, and renaming it every pass would walk that number up for ever.
+    const suffix = stem.slice(wanted.length)
+    if (stem.startsWith(wanted) && /^(_\d+)?$/.test(suffix)) return path
+
+    const to = `${this.path}/${this.freeName(card)}`
+    await this.fs.rename(path, to)
+    return to
+  }
+
   private freeName(card: CardFile): string {
     return `${claim(snakeName(card.title) || "card", this.used)}.md`
   }

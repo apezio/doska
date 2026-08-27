@@ -332,8 +332,9 @@ export class Vault {
     // The card is ahead of the file only when the file wasn't the one to move.
     const wanted = CardFile.fromCard(card, file.card.extra)
     if (!changed && wanted.text !== file.text) {
-      await folder.save(wanted, file.path)
-      this.written.set(card.id, { path: file.path, text: wanted.text })
+      const path = await folder.retitle(file.path, wanted)
+      await folder.save(wanted, path)
+      this.written.set(card.id, { path, text: wanted.text })
     }
     return changed
   }

@@ -15,6 +15,15 @@ import { tauriFs } from "./tauri-fs"
 
 const pathKey = (boardId: string) => `deck:vault:${boardId}`
 
+/**
+ * Rust-side, because the fs plugin can't
+ * touch a dotfile in a folder the picker granted.
+ */
+async function ignore(root: string): Promise<void> {
+  const { invoke } = await import("@tauri-apps/api/core")
+  await invoke("ignore_vault", { dir: root })
+}
+
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause)
 }
@@ -103,6 +112,7 @@ export function useVault(boardId: string) {
     if (typeof picked !== "string") return
 
     setError(null)
+    await ignore(picked).catch((cause: unknown) => setError(message(cause)))
     localStorage.setItem(pathKey(boardId), picked)
     setPath(picked)
   }, [boardId])

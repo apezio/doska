@@ -70,12 +70,14 @@ with a private install in your worktree — the guard prints the two commands �
 and say so at hand-off; the canonical install happens once, on integration.
 
 The preview keeps itself in step with git in the canonical checkout: a
-`post-merge` hook reloads it after an integration, `post-checkout` after a
-branch switch, and `post-rewrite` **restarts** it after a rebase (a rebase
-rewrites the tree under a running Vite, which applies partial HMR updates and
-can leave the module graph initialising out of order — `runtime used before
-installRuntime()` from `packages/core`, and a white page that survives a
-refresh). Those hooks are no-ops in mission worktrees.
+`post-merge` hook reloads it after an integration, and `post-checkout` and
+`post-rewrite` **restart** it after a branch switch or a rebase. Both rewrite the tree under a
+running Vite, which applies partial HMR updates and can leave the module graph
+initialising out of order — `runtime used before installRuntime()` from
+`packages/core`, or a cached module that no longer carries an export its
+importers ask for (`does not provide an export named X`, typically via an
+`export *` barrel). Either way: a white page that survives a refresh. Those
+hooks are no-ops in mission worktrees.
 
 ## Working a feature
 
@@ -139,6 +141,17 @@ Manual testing happens on `working`, on the one preview. Only after that,
 and only on the typed phrase `YES RELEASE`, does the integrator fast-forward `main` to
 `working` and push `main` to `origin` — a distinct action from integrating, and
 never bundled into one. `main` is what the staging deploy below tracks.
+
+Release **without moving the working tree**:
+
+```
+git branch -f main working    # main is not checked out here, so this is the ff
+git push origin main
+```
+
+Never `git checkout main` to do it. The canonical checkout is what the one
+preview serves from, and a branch switch there can move the tree backwards
+under a running Vite — see the white page in the hooks section above.
 
 ## Never
 

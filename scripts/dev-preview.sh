@@ -261,6 +261,17 @@ if [ "\$KIND" = post-rewrite ]; then
   [ "\$1" = rebase ] || exit 0
   verb=restart
 fi
+if [ "\$KIND" = post-checkout ]; then
+  # \$3 is 1 for a branch switch, 0 for \`git checkout -- path\` (HMR's job).
+  # A switch can move the tree *backwards*, and reload trusts HMR with every
+  # source change — but a module that loses an export under a running Vite
+  # leaves its importers holding a cached copy that no longer satisfies them
+  # (\`does not provide an export named X\`), which is a white page that
+  # survives a refresh. An \`export *\` barrel hits this without changing at
+  # all. Switches here are rare, so the restart costs nothing.
+  { [ "\$3" = 1 ] && [ "\$1" != "\$2" ]; } || exit 0
+  verb=restart
+fi
 
 # Only the canonical checkout has a preview, and only if one is actually up
 # (dev.pids exists while a stack is running), so this never starts a preview

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { AnimatePresence, MotionConfig, motion } from "motion/react"
-import { cn, columnHue } from "@doska/ui-kit"
+import { Card, CardHeader, CardTitle, cn, columnHue } from "@doska/ui-kit"
 
 type ColumnId = "todo" | "doing"
 type Card = { id: string; title: string; column: ColumnId }
@@ -125,12 +125,19 @@ function MiniBoard({ cards, changed }: { cards: Card[]; changed?: string }) {
                     // rather than vanishing here and appearing there.
                     layoutId={card.id}
                     {...cardEnter}
-                    className={cn(
-                      "rounded-lg border bg-card px-2.5 py-2 text-sm shadow-xs",
-                      card.id === changed && "ring-2 ring-primary/60"
-                    )}
                   >
-                    {card.title}
+                    {/* The app's own card, so the demo shows the real thing. */}
+                    <Card
+                      className={cn(
+                        card.id === changed && "ring-2 ring-primary/60"
+                      )}
+                    >
+                      <CardHeader>
+                        <CardTitle className="text-sm font-bold text-balance">
+                          <h3>{card.title}</h3>
+                        </CardTitle>
+                      </CardHeader>
+                    </Card>
                   </motion.div>
                 ))}
             </AnimatePresence>

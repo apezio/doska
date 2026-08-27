@@ -3,17 +3,6 @@ import { ExternalLink } from "lucide-react"
 import { SiGithub } from "react-icons/si"
 import { DownloadMenu } from "./download-menu"
 import { app, repo } from "./links"
-import { Typewriter } from "./typewriter"
-
-// Each reads as the tail of "A Kanban board …". The first is what SSR and
-// reduced-motion visitors see, so it's the plainest of them.
-const phrases = [
-  "made of Markdown",
-  "your agent can edit",
-  "that works offline",
-  "you can share",
-  "you can self-host",
-]
 
 export function Hero() {
   return (
@@ -23,13 +12,12 @@ export function Hero() {
           Open source · local-first
         </p>
         <h1 className="max-w-2xl text-4xl font-black tracking-tight sm:text-5xl">
-          A Kanban board <Typewriter phrases={phrases} />
+          Kanban in a folder <br />
+          of markdown files
         </h1>
         <p className="mt-5 max-w-xl text-base text-pretty text-muted-foreground sm:text-lg">
-          Boards live in your browser, so the UI is instant and works offline.
-          <br />
-          For anything you want to keep or share with others, run the sync
-          server you host yourself.
+          Works with no server. <br />
+          Sync when you want it, to a server you own.
         </p>
         <div className="mt-7 flex flex-wrap items-center gap-3">
           <Button
@@ -51,10 +39,6 @@ export function Hero() {
           </Button>
           <DownloadMenu />
         </div>
-        <p className="mt-8 font-mono text-xs text-muted-foreground">
-          ↓ this is a demo, not a real board. "Open in browser" runs the whole
-          thing: no signup, no install
-        </p>
       </section>
     </div>
   )

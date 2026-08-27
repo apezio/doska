@@ -1,4 +1,4 @@
-import { app, repo, roadmap } from "./links"
+import { app, repo,  } from "./links"
 
 /**
  * The page's copy, written the way a real card body is written — the same
@@ -39,8 +39,7 @@ of seconds or on \`⌘\`+\`S\`.`,
 off. A shared board syncs to everyone on it.`,
 
   publicLink: `Publish a board to a read-only link: no account, nothing kept in
-the visitor's browser. Turn it off and the link is dead.\\
-[This project's roadmap](${roadmap}) is one of them.`,
+the visitor's browser. Turn it off and the link is dead.`,
 
   accounts: `The admin adds accounts, sets passwords, deactivates. Nobody signs
 themselves up.`,

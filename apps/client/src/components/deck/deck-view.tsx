@@ -4,6 +4,7 @@ import {
   useDeleteColumn,
   useDeleteDashboard,
   useMoveCard,
+  useMoveCardToBoard,
   useSaveCard,
   useMoveColumn,
   useRenameColumn,
@@ -48,6 +49,7 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
 
   const { mutate: createCard } = useCreateCard(id)
   const { mutate: moveCard } = useMoveCard(id)
+  const { mutate: moveCardToBoard } = useMoveCardToBoard()
   const { mutate: createColumn } = useCreateColumn(id)
   const { mutate: moveColumn } = useMoveColumn(id)
   const { mutate: renameColumn } = useRenameColumn(id)
@@ -59,7 +61,12 @@ export function DeckView({ dashboard }: { dashboard: Dashboard }) {
     [saveCard]
   )
 
-  const handleDragEnd = useDragEnd(board, moveCard, dashboard.sort ?? [])
+  const handleDragEnd = useDragEnd(
+    board,
+    moveCard,
+    dashboard.sort ?? [],
+    moveCardToBoard
+  )
 
   return (
     <Deck

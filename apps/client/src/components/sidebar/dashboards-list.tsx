@@ -10,6 +10,10 @@ import {
 } from "@doska/ui-kit"
 import { Globe, Users } from "lucide-react"
 import { type Dashboard } from "@doska/core/types"
+import {
+  BOARD_DROP_ATTR,
+  useBoardUnderPointer,
+} from "@/providers/board-dnd/board-dnd-context"
 import { SidebarCardsList } from "./sidebar-cards-list"
 
 /** What the sidebar's list shows: the boards, or the open cards across them. */
@@ -39,6 +43,7 @@ export function DashboardsList({
   view,
   onChangeView,
 }: IProps) {
+  const overBoard = useBoardUnderPointer()
   if (!dashboards.length) return null
   const shared = new Set(sharedIds)
   const published = new Set(publishedIds)
@@ -66,6 +71,15 @@ export function DashboardsList({
             {dashboards.map((dashboard) => (
               <SidebarMenuItem key={dashboard.id}>
                 <SidebarMenuButton
+                  // A card dropped on this row moves to that board. The drag
+                  // context reads the row under the pointer; the board you are
+                  // already on is not a target.
+                  {...(dashboard.id !== activeDashboardId && {
+                    [BOARD_DROP_ATTR]: dashboard.id,
+                  })}
+                  className={cn(
+                    overBoard === dashboard.id && "ring-2 ring-ring"
+                  )}
                   isActive={dashboard.id === activeDashboardId}
                   tooltip={dashboard.title}
                   onClick={() => onSelectDashboard(dashboard)}

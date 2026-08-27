@@ -14,14 +14,25 @@ import {
 export function useDragEnd(
   board: Board | undefined,
   moveCard: (changed: Card[]) => void,
-  sort: string[]
+  sort: string[],
+  moveCardToBoard: (vars: { id: string; boardId: string }) => void
 ) {
-  return function handleDragEnd({
-    source,
-    destination,
-    draggableId,
-  }: DropResult) {
-    if (!destination || !board) return
+  return function handleDragEnd(
+    { source, destination, draggableId }: DropResult,
+    /** The board whose sidebar row the card was let go over, if any. */
+    boardUnderPointer: string | null = null
+  ) {
+    if (!board) return
+
+    // Let go over another board in the sidebar. That row is not a droppable —
+    // see BoardDndProvider — so this arrives beside the drag result.
+    if (boardUnderPointer) {
+      const card = board.cards.find((c) => c.id === draggableId)
+      if (card) moveCardToBoard({ id: card.id, boardId: boardUnderPointer })
+      return
+    }
+
+    if (!destination) return
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index

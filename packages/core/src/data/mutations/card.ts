@@ -83,6 +83,27 @@ export function useMoveCardToColumn() {
 }
 
 /**
+ * Moves one card to another board, landing it at the top of that board's first
+ * column. Both boards' caches go stale, so the card leaves one and appears in
+ * the other without a reload.
+ */
+export function useMoveCardToBoard() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, boardId }: { id: string; boardId: string }) =>
+      api.moveCardToBoard(id, boardId),
+    onSettled: (_data, _err, { id }) => {
+      // `cardWriteKeys` carries the bare board prefix: every board refreshes,
+      // which is what a card crossing between two of them needs.
+      for (const key of cardWriteKeys(id))
+        qc.invalidateQueries({ queryKey: key })
+      qc.invalidateQueries({ queryKey: keys.cardCol(id) })
+      qc.invalidateQueries({ queryKey: keys.cardDeck(id) })
+    },
+  })
+}
+
+/**
  * Persists a reordered board (computed by the drag handler). The cache is
  * written up front not for latency (the write is instant) but for timing:
  * @hello-pangea/dnd needs the new order committed within the drop event.

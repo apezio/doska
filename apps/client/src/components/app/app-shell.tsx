@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components"
 import { CardRevealProvider } from "@/providers/card-reveal/card-reveal-provider"
 import { CardPanel } from "@/components/card-panel/card-panel"
 import { DeckProvider } from "@/providers/deck/deck-context"
+import { BoardDndProvider } from "@/providers/board-dnd/board-dnd"
 import { useUndoShortcut } from "@/lib/hooks"
 import { routes } from "@/lib/routes"
 
@@ -25,17 +26,19 @@ export function AppShell({ deck, cardCloseHref, children }: IProps) {
       <CardRevealProvider>
         {/* `--app-height` tracks the keyboard on touch devices; `svh` elsewhere. */}
         <SidebarProvider className="h-(--app-height,100svh)">
-          <AppSidebar />
-          <SidebarInset
-            className={cn(
-              "min-w-0 overflow-hidden border border-border",
-              "md:peer-data-[state=collapsed]:border-0",
-              "md:transition-[margin,border-radius] md:duration-200 md:ease-linear",
-              isCardOpen && "md:mr-0 md:peer-data-[state=collapsed]:border-r"
-            )}
-          >
-            {children}
-          </SidebarInset>
+          <BoardDndProvider>
+            <AppSidebar />
+            <SidebarInset
+              className={cn(
+                "min-w-0 overflow-hidden border border-border",
+                "md:peer-data-[state=collapsed]:border-0",
+                "md:transition-[margin,border-radius] md:duration-200 md:ease-linear",
+                isCardOpen && "md:mr-0 md:peer-data-[state=collapsed]:border-r"
+              )}
+            >
+              {children}
+            </SidebarInset>
+          </BoardDndProvider>
           {cardCloseHref && <CardPanel closeHref={cardCloseHref} />}
         </SidebarProvider>
       </CardRevealProvider>

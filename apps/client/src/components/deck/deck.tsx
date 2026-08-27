@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { DragDropContext, type DropResult } from "@hello-pangea/dnd"
+import type { DropResult } from "@hello-pangea/dnd"
 import type { Board, Dashboard, DashboardView } from "@doska/core/types"
 import { byPosition, groupCardsByColumn, sortCards } from "@doska/core/utils"
 import type { CardPatch } from "@doska/core/mutations"
@@ -8,8 +8,9 @@ import { Column } from "../column/column"
 import { AddColumn } from "../column/add-column"
 import { DraggableCard } from "../card/draggable-card"
 import { BoardView } from "./board-view"
-import { DragStateProvider } from "./drag-state"
+import { useIsBoardDragging } from "./drag-state"
 import { ResizeStateProvider } from "./resize-state"
+import { useOnBoardDrop } from "@/providers/board-dnd/board-dnd-context"
 import { DeckHeader } from "./deck-header/deck-header"
 import { DeckRowsView } from "./deck-rows-view"
 import { SyncIndicator } from "./sync-indicator"
@@ -58,7 +59,9 @@ export function Deck({
   onDragEnd,
   onPatchCard,
 }: IProps) {
-  const [isDragging, setIsDragging] = useState(false)
+  // The drag context spans the sidebar too, so a card can be dropped on
+  // another board; the board only says what a drop means.
+  const isDragging = useIsBoardDragging()
   const [isResizing, setIsResizing] = useState(false)
 
   const grouped = groupCardsByColumn(board)
@@ -66,88 +69,80 @@ export function Deck({
   const sort = dashboard.sort ?? []
   const { hold, release, place } = useLandingSlot(sort.length > 0)
 
+  useOnBoardDrop((result) => {
+    hold(result)
+    onDragEnd(result)
+  })
+
   return (
-    <DragStateProvider value={isDragging}>
-      <ResizeStateProvider value={setIsResizing}>
-        <DragDropContext
-          onDragStart={() => setIsDragging(true)}
-          onDragEnd={(result) => {
-            setIsDragging(false)
-            hold(result)
-            onDragEnd(result)
-          }}
-        >
-          <BoardView
-            isLoading={isLoading}
-            // A column resize fights snapping the same way a card drag does.
-            isDragging={isDragging || isResizing}
-            footer={<SyncIndicator />}
-            header={
-              <DeckHeader
-                boardId={dashboard.id}
-                title={dashboard.title}
-                onRename={onRenameDashboard}
-                onDelete={onDeleteDashboard}
-                columns={orderedColumns}
-                onReorderColumns={onReorderColumns}
-                sort={sort}
-                onChangeSort={onChangeSort}
-                view={view}
-                onChangeView={onChangeView}
-                onAddCard={
-                  orderedColumns[0]
-                    ? () => onAddAndOpenCard(orderedColumns[0].id)
-                    : undefined
-                }
-              />
+    <ResizeStateProvider value={setIsResizing}>
+      <BoardView
+        isLoading={isLoading}
+        // A column resize fights snapping the same way a card drag does.
+        isDragging={isDragging || isResizing}
+        footer={<SyncIndicator />}
+        header={
+          <DeckHeader
+            boardId={dashboard.id}
+            title={dashboard.title}
+            onRename={onRenameDashboard}
+            onDelete={onDeleteDashboard}
+            columns={orderedColumns}
+            onReorderColumns={onReorderColumns}
+            sort={sort}
+            onChangeSort={onChangeSort}
+            view={view}
+            onChangeView={onChangeView}
+            onAddCard={
+              orderedColumns[0]
+                ? () => onAddAndOpenCard(orderedColumns[0].id)
+                : undefined
             }
-          >
-            {view === "rows" ? (
-              <DeckRowsView board={board} title={dashboard.title} />
-            ) : (
-              <>
-                {grouped.map(({ column, cards }) => {
-                  const ordered = place(sortCards(cards, sort), column.id)
-                  const showBody = !column.collapsed
-                  return (
-                    <Column
-                      key={column.id}
-                      id={column.id}
-                      title={column.title}
-                      color={column.color}
+          />
+        }
+      >
+        {view === "rows" ? (
+          <DeckRowsView board={board} title={dashboard.title} />
+        ) : (
+          <>
+            {grouped.map(({ column, cards }) => {
+              const ordered = place(sortCards(cards, sort), column.id)
+              const showBody = !column.collapsed
+              return (
+                <Column
+                  key={column.id}
+                  id={column.id}
+                  title={column.title}
+                  color={column.color}
+                  showBody={showBody}
+                  onToggleBody={() => onToggleBody(column.id, showBody)}
+                  onAddCard={() => onAddCard(column.id)}
+                  onRename={(title) => onRenameColumn(column.id, title)}
+                  onChangeColor={(color) =>
+                    onChangeColumnColor(column.id, color)
+                  }
+                  done={column.done}
+                  onChangeDone={(done) => onChangeColumnDone(column.id, done)}
+                  onDelete={() => onDeleteColumn(column.id)}
+                >
+                  {ordered.map((card, index) => (
+                    <DraggableCard
+                      key={card.id}
+                      card={card}
+                      column={column}
+                      index={index}
                       showBody={showBody}
-                      onToggleBody={() => onToggleBody(column.id, showBody)}
-                      onAddCard={() => onAddCard(column.id)}
-                      onRename={(title) => onRenameColumn(column.id, title)}
-                      onChangeColor={(color) =>
-                        onChangeColumnColor(column.id, color)
-                      }
-                      done={column.done}
-                      onChangeDone={(done) =>
-                        onChangeColumnDone(column.id, done)
-                      }
-                      onDelete={() => onDeleteColumn(column.id)}
-                    >
-                      {ordered.map((card, index) => (
-                        <DraggableCard
-                          key={card.id}
-                          card={card}
-                          column={column}
-                          index={index}
-                          showBody={showBody}
-                          onPatch={onPatchCard}
-                          onDropSettled={release}
-                        />
-                      ))}
-                    </Column>
-                  )
-                })}
-                <AddColumn onAdd={onAddColumn} />
-              </>
-            )}
-          </BoardView>
-        </DragDropContext>
-      </ResizeStateProvider>
-    </DragStateProvider>
+                      onPatch={onPatchCard}
+                      onDropSettled={release}
+                    />
+                  ))}
+                </Column>
+              )
+            })}
+            <AddColumn onAdd={onAddColumn} />
+          </>
+        )}
+      </BoardView>
+    </ResizeStateProvider>
   )
 }

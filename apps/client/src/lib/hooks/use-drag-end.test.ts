@@ -45,7 +45,7 @@ describe("useDragEnd", () => {
         card("c", "todo", { position: "a2" }),
       ]
       const moveCard = vi.fn()
-      const handleDragEnd = useDragEnd(board(cards), moveCard, [])
+      const handleDragEnd = useDragEnd(board(cards), moveCard, [], vi.fn())
 
       handleDragEnd(
         drop({
@@ -66,7 +66,7 @@ describe("useDragEnd", () => {
         card("y", "doing", { position: "a1" }),
       ]
       const moveCard = vi.fn()
-      const handleDragEnd = useDragEnd(board(cards), moveCard, [])
+      const handleDragEnd = useDragEnd(board(cards), moveCard, [], vi.fn())
 
       handleDragEnd(
         drop({
@@ -93,7 +93,12 @@ describe("useDragEnd", () => {
         card("c", "todo", { position: "a3", priority: 25 }),
       ]
       const moveCard = vi.fn()
-      const handleDragEnd = useDragEnd(board(cards), moveCard, ["priority"])
+      const handleDragEnd = useDragEnd(
+        board(cards),
+        moveCard,
+        ["priority"],
+        vi.fn()
+      )
 
       handleDragEnd(
         drop({
@@ -113,7 +118,12 @@ describe("useDragEnd", () => {
         card("bottom", "doing", { position: "a1", priority: 25 }),
       ]
       const moveCard = vi.fn()
-      const handleDragEnd = useDragEnd(board(cards), moveCard, ["priority"])
+      const handleDragEnd = useDragEnd(
+        board(cards),
+        moveCard,
+        ["priority"],
+        vi.fn()
+      )
 
       for (const destIndex of [0, 1, 2]) {
         handleDragEnd(
@@ -132,6 +142,135 @@ describe("useDragEnd", () => {
         expect(call[0][0].position).toBe("Zz")
         expect(call[0][0].position < "a0").toBe(true)
       }
+    })
+  })
+
+  describe("across boards", () => {
+    /** A card let go over a sidebar row: no destination, a board underneath. */
+    const overSidebar = drop({
+      source: { droppableId: "todo", index: 0 },
+      destination: null,
+    })
+
+    it("a card let go over another board's row moves to that board", () => {
+      const cards = [card("moved", "todo", { position: "a0" })]
+      const moveCard = vi.fn()
+      const moveCardToBoard = vi.fn()
+      const handleDragEnd = useDragEnd(
+        board(cards),
+        moveCard,
+        [],
+        moveCardToBoard
+      )
+
+      handleDragEnd(overSidebar, "other-board")
+
+      expect(moveCardToBoard).toHaveBeenCalledWith({
+        id: "moved",
+        boardId: "other-board",
+      })
+      // The destination board's columns aren't loaded here, so there is no
+      // position to mint: the landing column is picked where the move runs.
+      expect(moveCard).not.toHaveBeenCalled()
+    })
+
+    it("takes the board under the pointer, not the first one", () => {
+      const cards = [card("moved", "todo", { position: "a0" })]
+      const moveCardToBoard = vi.fn()
+      const handleDragEnd = useDragEnd(
+        board(cards),
+        vi.fn(),
+        [],
+        moveCardToBoard
+      )
+
+      handleDragEnd(overSidebar, "third-board")
+
+      expect(moveCardToBoard).toHaveBeenCalledWith({
+        id: "moved",
+        boardId: "third-board",
+      })
+    })
+
+    it("wins over a column destination, so a drop on a row never also reorders", () => {
+      const cards = [
+        card("moved", "todo", { position: "a0" }),
+        card("x", "doing", { position: "a0" }),
+      ]
+      const moveCard = vi.fn()
+      const moveCardToBoard = vi.fn()
+      const handleDragEnd = useDragEnd(
+        board(cards),
+        moveCard,
+        [],
+        moveCardToBoard
+      )
+
+      handleDragEnd(
+        drop({
+          source: { droppableId: "todo", index: 0 },
+          destination: { droppableId: "doing", index: 1 },
+        }),
+        "other-board"
+      )
+
+      expect(moveCardToBoard).toHaveBeenCalledWith({
+        id: "moved",
+        boardId: "other-board",
+      })
+      expect(moveCard).not.toHaveBeenCalled()
+    })
+
+    it("ignores a board drop for a card this board doesn't hold", () => {
+      const moveCardToBoard = vi.fn()
+      const handleDragEnd = useDragEnd(board([]), vi.fn(), [], moveCardToBoard)
+
+      handleDragEnd(overSidebar, "other-board")
+
+      expect(moveCardToBoard).not.toHaveBeenCalled()
+    })
+
+    it("does nothing when the card is let go over no board and no column", () => {
+      const cards = [card("moved", "todo", { position: "a0" })]
+      const moveCard = vi.fn()
+      const moveCardToBoard = vi.fn()
+      const handleDragEnd = useDragEnd(
+        board(cards),
+        moveCard,
+        [],
+        moveCardToBoard
+      )
+
+      handleDragEnd(overSidebar, null)
+
+      expect(moveCardToBoard).not.toHaveBeenCalled()
+      expect(moveCard).not.toHaveBeenCalled()
+    })
+
+    it("still treats a column drop as a column drop", () => {
+      const cards = [
+        card("moved", "todo", { position: "a0" }),
+        card("x", "doing", { position: "a0" }),
+      ]
+      const moveCard = vi.fn()
+      const moveCardToBoard = vi.fn()
+      const handleDragEnd = useDragEnd(
+        board(cards),
+        moveCard,
+        [],
+        moveCardToBoard
+      )
+
+      handleDragEnd(
+        drop({
+          source: { droppableId: "todo", index: 0 },
+          destination: { droppableId: "doing", index: 1 },
+        }),
+        null
+      )
+
+      expect(moveCardToBoard).not.toHaveBeenCalled()
+      expect(moved(moveCard)?.columnId).toBe("doing")
     })
   })
 })

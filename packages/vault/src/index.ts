@@ -1,6 +1,4 @@
-export { CardFile } from "./card-file"
 export type { CardPatch } from "./card-file"
-export { ColumnFolder } from "./column-folder"
-export type { VaultFile, VaultFs } from "./column-folder"
+export type { VaultFs } from "./column-folder"
 export { Vault } from "./vault"
 export type { VaultBoard, VaultOptions } from "./vault"

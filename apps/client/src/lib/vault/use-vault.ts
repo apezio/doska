@@ -9,7 +9,7 @@ import {
 } from "@doska/core/operations"
 import { Vault, type VaultBoard } from "@doska/vault"
 import { useQueryClient } from "@tanstack/react-query"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { isDesktop } from "../platform"
 import { tauriFs } from "./tauri-fs"
 
@@ -52,18 +52,19 @@ export function useVault(boardId: string) {
     isDesktop() ? localStorage.getItem(pathKey(boardId)) : null
   )
   const [error, setError] = useState<string | null>(null)
-  const stop = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     if (!path) return
 
     let live = true
+    let unwatch: (() => void) | null = null
     const vault = new Vault({
       fs: tauriFs,
       board: boardOps(boardId),
       root: path,
       onError: (cause) => setError(message(cause)),
       onBoardChange: () => {
+        setError(null)
         qc.invalidateQueries({ queryKey: keys.boards })
         qc.invalidateQueries({ queryKey: keys.cards })
         qc.invalidateQueries({ queryKey: keys.cardCols })
@@ -78,14 +79,18 @@ export function useVault(boardId: string) {
     const off = qc.getQueryCache().subscribe((event) => {
       if (event.type !== "updated" || event.action.type !== "success") return
       if (event.query.queryKey[0] !== keys.boards[0]) return
-      vault.sync().catch((cause: unknown) => setError(message(cause)))
+      vault
+        .sync()
+        .then(() => setError(null))
+        .catch((cause: unknown) => setError(message(cause)))
     })
 
     void vault
       .watch()
-      .then((unwatch) => {
-        if (live) stop.current = unwatch
-        else unwatch()
+      .then((stopWatch) => {
+        if (!live) return stopWatch()
+        unwatch = stopWatch
+        setError(null)
       })
       // A remembered folder can stop being readable between launches: it was
       // moved, or the scope grant behind it was lost. Either way, unmount.
@@ -99,8 +104,7 @@ export function useVault(boardId: string) {
     return () => {
       live = false
       off()
-      stop.current?.()
-      stop.current = null
+      unwatch?.()
     }
   }, [boardId, path, qc])
 

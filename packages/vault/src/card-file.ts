@@ -19,6 +19,13 @@ function text(value: unknown): string {
   return value === null || value === undefined ? "" : String(value).trim()
 }
 
+function numberOf(value: unknown): number | null {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null
+  if (typeof value !== "string" || value.trim() === "") return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 function attachmentsOf(value: unknown): Attachment[] {
   return Array.isArray(value) ? (value as Attachment[]) : []
 }
@@ -33,7 +40,7 @@ export class CardFile {
   readonly id: string
   /** The card's human-readable number. The board hands it out, so a file can
    * only ever report it. */
-  readonly number: string
+  readonly number: number | null
   readonly title: string
   readonly body: string
   readonly deadline: string
@@ -47,7 +54,7 @@ export class CardFile {
 
   constructor(fields: {
     id?: string
-    number?: string
+    number?: number | null
     title?: string
     body?: string
     deadline?: string
@@ -56,7 +63,7 @@ export class CardFile {
     extra?: Record<string, unknown>
   }) {
     this.id = fields.id ?? ""
-    this.number = fields.number ?? ""
+    this.number = fields.number ?? null
     this.title = fields.title ?? ""
     this.body = clean(fields.body ?? "")
     this.deadline = fields.deadline ?? ""
@@ -70,7 +77,7 @@ export class CardFile {
   static fromCard(card: Card, extra: Record<string, unknown> = {}): CardFile {
     return new CardFile({
       id: card.id,
-      number: card.number === null ? "" : String(card.number),
+      number: card.number,
       title: card.title,
       body: card.body,
       deadline: card.deadline ?? "",
@@ -109,7 +116,7 @@ export class CardFile {
 
     return new CardFile({
       id: text(front.id),
-      number: text(front.number),
+      number: numberOf(front.number),
       title: text(front.title),
       body: lines.slice(close + 1).join("\n"),
       deadline: text(front.deadline),
@@ -121,8 +128,7 @@ export class CardFile {
 
   get text(): string {
     const front: Record<string, unknown> = { id: this.id }
-    // A number, not a string, or YAML quotes it and the file reads oddly.
-    if (this.number) front.number = Number(this.number)
+    if (this.number !== null) front.number = this.number
     front.title = this.title
     if (this.deadline) front.deadline = this.deadline
     if (this.priority) front.priority = this.priority

@@ -73,10 +73,6 @@ export class ColumnFolder {
     this.path = `${root}/${snakeName(column.title) || column.id}`
   }
 
-  async ensure(): Promise<void> {
-    await this.fs.mkdir(this.path)
-  }
-
   async list(): Promise<VaultFile[]> {
     const names = await this.fs.readDir(this.path)
     if (!names) return []

@@ -90,7 +90,7 @@ describe("CardFile", () => {
     const parsed = CardFile.parse(CardFile.fromCard(card).text)
 
     expect(CardFile.fromCard(card).text).toContain("number: 12\n")
-    expect(parsed.number).toBe("12")
+    expect(parsed.number).toBe(12)
     expect(parsed.attachments).toEqual(card.attachments)
     expect(parsed.patchFor(card)).toBeNull()
   })

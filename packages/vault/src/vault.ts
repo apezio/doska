@@ -115,7 +115,7 @@ export class Vault {
       (column) => new ColumnFolder(this.fs, this.root, column)
     )
     await this.fs.mkdir(`${this.root}/${TRASH}`)
-    for (const folder of folders) await folder.ensure()
+    for (const folder of folders) await this.fs.mkdir(folder.path)
 
     const cards = new Map(board.cards.map((card) => [card.id, card]))
 
@@ -146,11 +146,11 @@ export class Vault {
     const wrote = new Map<string, number>()
     for (const { path } of this.written.values()) {
       const dir = dirOf(path)
-      wrote.set(dir, (wrote.get(dir) ?? 0) + 1)
+      if (empty.has(dir)) wrote.set(dir, (wrote.get(dir) ?? 0) + 1)
     }
     const wiped = new Set<string>()
-    for (const dir of empty) {
-      if ((wrote.get(dir) ?? 0) > 1) wiped.add(dir)
+    for (const [dir, count] of wrote) {
+      if (count > 1) wiped.add(dir)
     }
 
     const byColumn = new Map(folders.map((f) => [f.columnId, f]))
@@ -197,8 +197,7 @@ export class Vault {
   }
 
   private serialize(): string {
-    const ids = [...this.written.keys()].sort()
-    const entries = ids.map((id) => [id, this.written.get(id)] as const)
+    const entries = [...this.written].sort(([a], [b]) => a.localeCompare(b))
     return JSON.stringify(Object.fromEntries(entries), null, 2)
   }
 

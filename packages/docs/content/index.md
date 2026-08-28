@@ -54,8 +54,8 @@ Drop a card onto a board in the sidebar and it moves there, to the top of that
 board's first column.
 
 The sidebar's **Cards** tab lists the open cards across every board,  the first
-two columns of each, in priority order, ten at a time. Clicking one opens it on
-its board.
+two columns of each, in priority order. It shows the ten most important and
+counts the rest; clicking one opens it on its board.
 
 On a board, drag a column's right edge to resize it. The width is remembered on
 that device.

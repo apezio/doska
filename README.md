@@ -39,8 +39,9 @@
 ## What's new
 
 - **Cards tab in the sidebar**: the open cards from every board — the first two
-  columns of each — in priority order, ten at a time. A row carries its
-  column's color, and clicking it opens that card on its board.
+  columns of each — the ten most important, with the rest counted below. A
+  row carries its column's color, and clicking it opens that card on its
+  board.
 - **Priority is a number** from 0 to 100, higher first, 0 for none. It sits in
   the card's title row and is edited in place; cards written on the old
   high / medium / low scale read 75 / 50 / 25.

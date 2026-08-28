@@ -3,7 +3,7 @@ title: Desktop and mobile
 nav: Desktop & mobile
 description: "The Doska macOS app, installing the client as a PWA"
 order: 6
-updated: "2026-08-27"
+updated: "2026-08-12"
 ---
 
 The same client runs in three places: a browser tab, a phone home screen, and a
@@ -11,10 +11,9 @@ Tauri macOS app.
 
 ## macOS app
 
-This fork publishes no desktop build. The app is built upstream, and the latest
-one is on
-[romenkova/doska's Releases](https://github.com/romenkova/doska/releases/latest).
-It wraps the client with [Tauri](https://tauri.app) and auto-updates.
+Download the latest build from
+[Releases](https://github.com/romenkova/doska/releases/latest). It wraps the client
+with [Tauri](https://tauri.app) and auto-updates.
 
 Builds are signed with a Developer ID certificate and notarized by Apple.
 

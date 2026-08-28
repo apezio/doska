@@ -1,6 +1,6 @@
 import type { Card, Column, Dashboard } from "./types"
 
-const REPO = "https://github.com/apezio/doska"
+const REPO = "https://github.com/romenkova/doska"
 
 /**
  * The board a fresh install opens on — the same tour the landing page tells,
@@ -127,7 +127,7 @@ After 14 days it's permanently deleted, on your device and on your server.`,
     deletedAt: null,
     title: "Self-host in one line",
     body: `\`\`\`
-curl -fsSL https://raw.githubusercontent.com/apezio/doska/main/install.sh -o install.sh && sh install.sh
+curl -fsSL https://raw.githubusercontent.com/romenkova/doska/main/install.sh -o install.sh && sh install.sh
 \`\`\`
 
 Comes with an install script.

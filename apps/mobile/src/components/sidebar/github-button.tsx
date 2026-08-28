@@ -2,7 +2,7 @@ import ExternalLink from "lucide-react-native/icons/external-link"
 import { Linking } from "react-native"
 import { SidebarButton } from "./sidebar-button"
 
-const REPO = "https://github.com/apezio/doska"
+const REPO = "https://github.com/romenkova/doska"
 
 /** Sidebar entry linking to the project repository. */
 export function GitHubButton() {

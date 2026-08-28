@@ -11,9 +11,6 @@ name: Release Desktop
 #   APPLE_API_KEY                       App Store Connect key id, e.g. ABC123DEF4
 #   APPLE_API_ISSUER                    the issuer uuid from the same Keys page
 #   APPLE_API_KEY_P8                    base64 of the AuthKey_<id>.p8 file
-#
-# This fork holds none of them, so the job only runs where the repo variable
-# RELEASE_DESKTOP is set to `true`; the Release itself is cut by images.yml.
 
 on:
   push:
@@ -26,7 +23,6 @@ permissions:
 
 jobs:
   release:
-    if: vars.RELEASE_DESKTOP == 'true'
     strategy:
       fail-fast: false
       matrix:

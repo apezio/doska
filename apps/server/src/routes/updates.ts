@@ -9,7 +9,7 @@ import { env } from "../env"
 //
 // BASE_URL: this server's public origin, used to rewrite asset URLs back to us.
 
-const repo = "apezio/doska"
+const repo = "romenkova/doska"
 const publicBase = env.baseUrl ?? ""
 
 type GhAsset = { name: string; url: string; browser_download_url: string }

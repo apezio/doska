@@ -3,7 +3,7 @@ title: Development
 nav: Development
 description: "Run the Doska monorepo locally: requirements, commands, repository layout, and the self-host smoke tests."
 order: 8
-updated: "2026-08-27"
+updated: "2026-08-07"
 ---
 
 Doska is a pnpm + Turborepo monorepo. Requires **Node 22+** and **pnpm 11+**
@@ -66,5 +66,5 @@ pnpm selfhost:down         # tear it all down, volumes included
 
 ## Contributing
 
-Issues and pull requests: [github.com/apezio/doska](https://github.com/apezio/doska).
-Security reports go through [SECURITY.md](https://github.com/apezio/doska/blob/main/SECURITY.md).
+Issues and pull requests: [github.com/romenkova/doska](https://github.com/romenkova/doska).
+Security reports go through [SECURITY.md](https://github.com/romenkova/doska/blob/main/SECURITY.md).

@@ -2,7 +2,7 @@ import { Button, buttonVariants, cn } from "@doska/ui-kit"
 import { Component, type ErrorInfo, type ReactNode } from "react"
 import { isDesktop } from "@/lib/platform"
 
-const ISSUE_URL = "https://github.com/apezio/doska/issues/new"
+const ISSUE_URL = "https://github.com/romenkova/doska/issues/new"
 
 /** GitHub drops the prefill past roughly 8k of URL, so the stack gets a budget. */
 const STACK_BUDGET = 4000

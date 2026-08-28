@@ -3,7 +3,7 @@ title: Environment variables
 nav: Environment
 description: "Every variable a self-hosted Doska reads from .env: what it does, and whether it is required."
 order: 1
-updated: "2026-08-27"
+updated: "2026-08-09"
 ---
 
 `AUTH_LOGIN`, `AUTH_PASSWORD` and `AUTH_SECRET` are required: the server has no
@@ -33,6 +33,3 @@ it.
 `DOCKER_IMAGE_TAG` also decides what the desktop app runs: it follows whatever
 version the server it syncs with runs, so `beta` here puts the connected desktop
 app on beta too.
-
-The `beta` channel has nothing to resolve on this fork until a `v*-beta.N` tag
-is cut, so leave it on `latest` until one is.

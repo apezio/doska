@@ -1,6 +1,6 @@
 import type { DroppableProvidedProps } from "@hello-pangea/dnd"
 import type { ReactNode, Ref } from "react"
-import { Button, cn } from "@doska/ui-kit"
+import { Button, cn, Hint } from "@doska/ui-kit"
 import { Check, FoldVertical, Plus, UnfoldVertical } from "lucide-react"
 import { ColumnFrame } from "./column-frame"
 import { ColumnSwatch } from "./column-swatch"
@@ -71,17 +71,21 @@ export function ColumnView({
           )}
         </div>
         <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            aria-pressed={showBody}
-            aria-label={
-              showBody ? `Hide body in ${title}` : `Show body in ${title}`
-            }
-            onClick={onToggleBody}
+          <Hint
+            label={showBody ? `Hide body in ${title}` : `Show body in ${title}`}
           >
-            {showBody ? <FoldVertical /> : <UnfoldVertical />}
-          </Button>
+            <Button
+              variant="ghost"
+              size="icon-lg"
+              aria-pressed={showBody}
+              aria-label={
+                showBody ? `Hide body in ${title}` : `Show body in ${title}`
+              }
+              onClick={onToggleBody}
+            >
+              {showBody ? <FoldVertical /> : <UnfoldVertical />}
+            </Button>
+          </Hint>
           {menu}
         </div>
       </div>
@@ -94,14 +98,16 @@ export function ColumnView({
         )}
       >
         {onAddCard && (
-          <Button
-            variant="muted"
-            onClick={onAddCard}
-            aria-label={`Add card to ${title}`}
-            className="mb-3 w-full"
-          >
-            <Plus />
-          </Button>
+          <Hint label={`Add card to ${title}`}>
+            <Button
+              variant="muted"
+              onClick={onAddCard}
+              aria-label={`Add card to ${title}`}
+              className="mb-3 w-full"
+            >
+              <Plus />
+            </Button>
+          </Hint>
         )}
         <div ref={listRef} {...listProps} className="flex flex-1 flex-col">
           {children}

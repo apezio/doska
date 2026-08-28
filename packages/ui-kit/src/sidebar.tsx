@@ -15,7 +15,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "./sheet"
-import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip"
+import { Hint, Tooltip, TooltipContent, TooltipTrigger } from "./tooltip"
+import { isMac, shortcutLabel } from "./lib/platform"
 import {
   useCallback,
   useEffect,
@@ -160,20 +161,32 @@ function SidebarTrigger({
   const { toggleSidebar } = useSidebar()
 
   return (
-    <Button
-      data-slot="sidebar-trigger"
-      variant="ghost"
-      size="icon-sm"
-      className={className}
-      onClick={(e) => {
-        onClick?.(e)
-        toggleSidebar()
-      }}
-      {...props}
+    <Hint
+      label={
+        <>
+          Toggle sidebar{" "}
+          <span className="opacity-60">
+            {shortcutLabel(SIDEBAR_KEYBOARD_SHORTCUT.toUpperCase())}
+          </span>
+        </>
+      }
     >
-      <PanelLeftIcon />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
+      <Button
+        data-slot="sidebar-trigger"
+        variant="ghost"
+        size="icon-sm"
+        className={className}
+        aria-keyshortcuts={isMac() ? "Meta+B" : "Control+B"}
+        onClick={(e) => {
+          onClick?.(e)
+          toggleSidebar()
+        }}
+        {...props}
+      >
+        <PanelLeftIcon />
+        <span className="sr-only">Toggle Sidebar</span>
+      </Button>
+    </Hint>
   )
 }
 

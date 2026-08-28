@@ -1,4 +1,4 @@
-import { Button, InvisibleInput } from "@doska/ui-kit"
+import { Button, Hint, InvisibleInput } from "@doska/ui-kit"
 import { Plus } from "lucide-react"
 import { PageHeader } from "../../app/page-header"
 import { BoardActionsMenu } from "./board-actions-menu"
@@ -46,15 +46,17 @@ export function DeckHeader({
 
       <div className="ml-auto flex items-center gap-1">
         {onAddCard && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Add card"
-            className="text-muted-foreground"
-            onClick={onAddCard}
-          >
-            <Plus />
-          </Button>
+          <Hint label="Add card">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Add card"
+              className="text-muted-foreground"
+              onClick={onAddCard}
+            >
+              <Plus />
+            </Button>
+          </Hint>
         )}
         <SearchButton boardId={boardId} />
         <RowViewButton view={view} onChangeView={onChangeView} />

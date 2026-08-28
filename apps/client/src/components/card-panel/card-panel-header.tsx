@@ -1,4 +1,4 @@
-import { Button, cn, useIsMobile } from "@doska/ui-kit"
+import { Button, cn, Hint, useIsMobile } from "@doska/ui-kit"
 import { Eye, PencilLine, X } from "lucide-react"
 import type { ReactNode } from "react"
 import { hasOverlayTitleBar } from "@/lib/platform"
@@ -38,14 +38,16 @@ export function CardPanelHeader({
       )}
     >
       <div className="flex min-w-0 items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Close card"
-          onClick={onClose}
-        >
-          <X />
-        </Button>
+        <Hint label="Close card">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Close card"
+            onClick={onClose}
+          >
+            <X />
+          </Button>
+        </Hint>
         {/* The chips shrink themselves on wider screens; here they have to
             match the header buttons instead. */}
         <div className="flex min-w-0 items-center gap-4 [&_svg]:size-4!">
@@ -55,14 +57,16 @@ export function CardPanelHeader({
       <div className="flex items-center justify-end gap-2">
         {actions}
         {onTogglePreivew && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={isPreview ? "Edit" : "Preview"}
-            onClick={onTogglePreivew}
-          >
-            {isPreview ? <PencilLine /> : <Eye />}
-          </Button>
+          <Hint label={isPreview ? "Edit" : "Preview"}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={isPreview ? "Edit" : "Preview"}
+              onClick={onTogglePreivew}
+            >
+              {isPreview ? <PencilLine /> : <Eye />}
+            </Button>
+          </Hint>
         )}
         {menu}
       </div>

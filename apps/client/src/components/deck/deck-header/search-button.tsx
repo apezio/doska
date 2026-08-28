@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { Button } from "@doska/ui-kit"
+import { Button, Hint, isMac, shortcutLabel } from "@doska/ui-kit"
 import { Search } from "lucide-react"
 import { SearchModal } from "../../search"
 import { useSearchShortcut } from "@/lib/hooks"
@@ -11,20 +11,26 @@ export function SearchButton({ boardId }: { boardId: string }) {
 
   return (
     <>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label="Search cards"
-        className="text-muted-foreground"
-        onClick={() => setOpen(true)}
+      <Hint
+        label={
+          <>
+            Search cards{" "}
+            <span className="opacity-60">{shortcutLabel("K")}</span>
+          </>
+        }
       >
-        <Search />
-      </Button>
-      <SearchModal
-        open={open}
-        onOpenChange={setOpen}
-        boardId={boardId}
-      />
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Search cards"
+          aria-keyshortcuts={isMac() ? "Meta+K" : "Control+K"}
+          className="text-muted-foreground"
+          onClick={() => setOpen(true)}
+        >
+          <Search />
+        </Button>
+      </Hint>
+      <SearchModal open={open} onOpenChange={setOpen} boardId={boardId} />
     </>
   )
 }

@@ -1,6 +1,7 @@
 import "@/lib/adapters/install" // must stay first
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
+import { TooltipProvider } from "@doska/ui-kit"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { MotionConfig } from "motion/react"
 import { Toaster } from "react-hot-toast"
@@ -36,7 +37,9 @@ if (isPublicLink) {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
-            <PublicRouter />
+            <TooltipProvider delay={500}>
+              <PublicRouter />
+            </TooltipProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </ErrorBoundary>
@@ -58,20 +61,22 @@ if (isPublicLink) {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
-            <LoginPromptProvider>
-              <MotionConfig reducedMotion="user">
-                <Router />
-              </MotionConfig>
-              <Toaster
-                position="bottom-center"
-                gutter={8}
-                reverseOrder={false}
-              />
-              <UndoToaster />
-              <UpdateToast />
-              <OfflineToast />
-              <WindowDragRegion />
-            </LoginPromptProvider>
+            <TooltipProvider delay={500}>
+              <LoginPromptProvider>
+                <MotionConfig reducedMotion="user">
+                  <Router />
+                </MotionConfig>
+                <Toaster
+                  position="bottom-center"
+                  gutter={8}
+                  reverseOrder={false}
+                />
+                <UndoToaster />
+                <UpdateToast />
+                <OfflineToast />
+                <WindowDragRegion />
+              </LoginPromptProvider>
+            </TooltipProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </ErrorBoundary>

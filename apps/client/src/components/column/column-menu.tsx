@@ -1,5 +1,6 @@
 import {
   Button,
+  Hint,
   Menu,
   MenuContent,
   MenuItem,
@@ -29,17 +30,19 @@ export function ColumnMenu({
 }: IProps) {
   return (
     <Menu>
-      <MenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            aria-label={`${title} actions`}
-          />
-        }
-      >
-        <MoreHorizontal />
-      </MenuTrigger>
+      <Hint label={`${title} actions`}>
+        <MenuTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-lg"
+              aria-label={`${title} actions`}
+            />
+          }
+        >
+          <MoreHorizontal />
+        </MenuTrigger>
+      </Hint>
       <MenuContent>
         <ColumnColorSubmenu color={color} onChange={onChangeColor} />
         <MenuItem onClick={() => onChangeDone(!done)}>

@@ -1,4 +1,4 @@
-import { CardContent, cn } from "@doska/ui-kit"
+import { CardContent, cn, Hint } from "@doska/ui-kit"
 import { Loader2, Paperclip, X } from "lucide-react"
 import type { Attachment } from "@doska/core/types"
 
@@ -48,17 +48,19 @@ export function AttachmentList({
               </span>
             </div>
             {onRemove && (
-              <button
-                type="button"
-                aria-label="Remove attachment"
-                onClick={() => onRemove(att)}
-                className={cn(
-                  "mt-0.5 ml-2 shrink-0 rounded p-1 text-muted-foreground",
-                  "hover:text-destructive"
-                )}
-              >
-                <X className="size-4" />
-              </button>
+              <Hint label="Remove attachment" side="left">
+                <button
+                  type="button"
+                  aria-label="Remove attachment"
+                  onClick={() => onRemove(att)}
+                  className={cn(
+                    "mt-0.5 ml-2 shrink-0 rounded p-1 text-muted-foreground",
+                    "hover:text-destructive"
+                  )}
+                >
+                  <X className="size-4" />
+                </button>
+              </Hint>
             )}
           </div>
         ))}

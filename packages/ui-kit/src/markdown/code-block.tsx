@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Check, Copy } from "lucide-react"
 import { cn } from "../lib/cn"
+import { Hint } from "../tooltip"
 
 export function MdCodeBlock({
   value,
@@ -32,28 +33,29 @@ export function MdCodeBlock({
           {value}
         </code>
       </pre>
-      <button
-        type="button"
-        onClick={copy}
-        aria-label="Copy code"
-        title="Copy code"
-        className={cn(
-          "absolute top-1.5 right-1.5 inline-flex items-center gap-1 rounded-md border border-border bg-background/80 px-1.5 py-1",
-          "font-sans text-[0.6875rem] text-muted-foreground hover:text-foreground",
-          "transition-opacity focus-visible:opacity-100",
-          // Stays visible while confirming, so the copy is not missed.
-          copied
-            ? "border-primary/60 text-foreground opacity-100"
-            : "opacity-0 group-hover/code:opacity-100"
-        )}
-      >
-        {copied ? (
-          <Check className="size-3.5" />
-        ) : (
-          <Copy className="size-3.5" />
-        )}
-        {copied && <span aria-live="polite">Copied</span>}
-      </button>
+      <Hint label="Copy code" side="left">
+        <button
+          type="button"
+          onClick={copy}
+          aria-label="Copy code"
+          className={cn(
+            "absolute top-1.5 right-1.5 inline-flex items-center gap-1 rounded-md border border-border bg-background/80 px-1.5 py-1",
+            "font-sans text-[0.6875rem] text-muted-foreground hover:text-foreground",
+            "transition-opacity focus-visible:opacity-100",
+            // Stays visible while confirming, so the copy is not missed.
+            copied
+              ? "border-primary/60 text-foreground opacity-100"
+              : "opacity-0 group-hover/code:opacity-100"
+          )}
+        >
+          {copied ? (
+            <Check className="size-3.5" />
+          ) : (
+            <Copy className="size-3.5" />
+          )}
+          {copied && <span aria-live="polite">Copied</span>}
+        </button>
+      </Hint>
     </div>
   )
 }

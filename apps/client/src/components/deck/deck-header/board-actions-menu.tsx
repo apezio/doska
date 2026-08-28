@@ -1,6 +1,7 @@
 import { useState } from "react"
 import {
   Button,
+  Hint,
   Menu,
   MenuContent,
   MenuItem,
@@ -36,18 +37,20 @@ export function BoardActionsMenu({
   return (
     <>
       <Menu>
-        <MenuTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Board actions"
-              className="text-muted-foreground"
-            />
-          }
-        >
-          <MoreHorizontal />
-        </MenuTrigger>
+        <Hint label="Board actions">
+          <MenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Board actions"
+                className="text-muted-foreground"
+              />
+            }
+          >
+            <MoreHorizontal />
+          </MenuTrigger>
+        </Hint>
         <MenuContent>
           <SortSub sort={sort} onChangeSort={onChangeSort} />
           <MenuItem

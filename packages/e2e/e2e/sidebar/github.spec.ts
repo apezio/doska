@@ -10,7 +10,7 @@ test.describe("GitHub link", () => {
     const link = page.getByRole("link", { name: "GitHub" })
     await expect(link).toHaveAttribute(
       "href",
-      "https://github.com/romenkova/doska"
+      "https://github.com/apezio/doska"
     )
     await expect(link).toHaveAttribute("target", "_blank")
     await expect(link).toHaveAttribute("rel", /noreferrer/)

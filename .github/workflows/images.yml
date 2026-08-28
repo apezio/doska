@@ -6,6 +6,9 @@ name: Publish Images
 # Tags published per release (v* tag): the immutable version (e.g. 0.4.0) plus a
 # moving channel tag — `latest` for clean semver, `beta` for prerelease tags
 # (v*-beta.N). The git tag is the single source of truth for the version.
+#
+# On a v* tag it also creates the GitHub Release for that tag, once the images
+# are pushed: install.sh reads /releases/latest to decide what to install.
 on:
   push:
     tags:
@@ -75,3 +78,22 @@ jobs:
           build-args: |
             APP_VERSION=${{ steps.version.outputs.value }}
           cache-from: type=gha,scope=selfhost-${{ matrix.name }}
+
+  release:
+    # install.sh resolves /releases/latest to decide what to install, so the
+    # Release must exist — and only once the images it points at are pushed.
+    needs: publish
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release view "$TAG" > /dev/null 2>&1 && { echo "release $TAG exists"; exit 0; }
+          gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes \
+            ${{ contains(github.ref_name, '-') && '--prerelease' || '' }}

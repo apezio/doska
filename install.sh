@@ -7,7 +7,7 @@
 # (see backup.sh), and it refuses to write a fresh .env on top of one — new
 # secrets wouldn't match the old data.
 #
-#   curl -fsSL https://raw.githubusercontent.com/romenkova/doska/main/install.sh -o install.sh && sh install.sh
+#   curl -fsSL https://raw.githubusercontent.com/apezio/doska/main/install.sh -o install.sh && sh install.sh
 #
 # Unattended: every question can be answered up front by exporting the variable
 # it writes, and --yes stops it asking anything.
@@ -16,7 +16,7 @@
 #     sh install.sh --yes
 set -eu
 
-REPO="romenkova/doska"
+REPO="apezio/doska"
 # Where the compose file and backup helper come from. Empty means "work it out
 # from the release being installed" (see source_ref);
 RAW="${DOSKA_RAW:-}"

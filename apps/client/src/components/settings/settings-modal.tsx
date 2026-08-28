@@ -38,7 +38,7 @@ export function SettingsModal({ open, onOpenChange, onOpenAccounts }: IProps) {
               <SettingsRow
                 icon={<FaGithub className="size-4" />}
                 label="GitHub"
-                href="https://github.com/romenkova/doska"
+                href="https://github.com/apezio/doska"
               />
             </div>
           </SettingsSection>

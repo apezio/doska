@@ -4,8 +4,8 @@
 # file, then upgrade to this checkout's compose file and assert the data survived.
 #
 # Build the :ci images first:
-#   docker build -f apps/server/Dockerfile -t ghcr.io/romenkova/doska-server:ci .
-#   docker build -f apps/client/Dockerfile -t ghcr.io/romenkova/doska-web:ci .
+#   docker build -f apps/server/Dockerfile -t ghcr.io/apezio/doska-server:ci .
+#   docker build -f apps/client/Dockerfile -t ghcr.io/apezio/doska-web:ci .
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 

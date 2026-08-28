@@ -3,7 +3,7 @@ title: Backups
 nav: Backups
 description: "Dump a self-hosted Doska's database and attachments with backup.sh, and restore them into an empty stack."
 order: 4
-updated: "2026-08-07"
+updated: "2026-08-27"
 ---
 
 Backup works with database and files in the local folder, if you have s3 setup and/or managed separate database, this guide **doesn't apply**.
@@ -18,7 +18,7 @@ Run `backup.sh` from your Doska directory any time:
 first:
 
 ```sh
-curl -O https://raw.githubusercontent.com/romenkova/doska/main/backup.sh
+curl -O https://raw.githubusercontent.com/apezio/doska/main/backup.sh
 chmod +x backup.sh
 ```
 

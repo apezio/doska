@@ -23,7 +23,6 @@
 <p align="center">
   <strong><a href="https://app.doska.sh/d/welcome">Open demo</a></strong> ·
   <a href="https://doska.sh/docs">Documentation</a> ·
-  <a href="https://github.com/apezio/doska/releases/latest">Download for macOS</a> ·
   <a href="https://app.doska.sh/p/2af2848df270cb5b8a4e73e7a362b19b">Roadmap</a> ·
   <a href="https://doska.sh/docs/mcp">MCP</a>
 </p>
@@ -129,9 +128,10 @@ first. The app then offers the matching build and installs it on relaunch.
 
 ## Desktop app
 
-Download the latest macOS build from
-[Releases](https://github.com/apezio/doska/releases/latest). It wraps the same
-client (with Tauri), is signed and notarized, and auto-updates.
+This fork publishes no desktop build — its releases carry the self-host images
+only. The signed, notarized macOS app that wraps the same client (with Tauri)
+comes from upstream
+[romenkova/doska](https://github.com/romenkova/doska/releases/latest).
 [doska.sh/docs/desktop](https://doska.sh/docs/desktop).
 
 ## MCP

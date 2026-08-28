@@ -362,7 +362,7 @@ CASE_RAW=""
 case_name="a pinned version fetches that version's compose file"
 printf '\n%s\n' "$case_name"
 run pinned AUTH_PASSWORD=x DOCKER_IMAGE_TAG=0.17.0 -- --yes --no-start
-fetched_from pinned "/romenkova/doska/v0.17.0/docker-compose.selfhost.yml" &&
+fetched_from pinned "/apezio/doska/v0.17.0/docker-compose.selfhost.yml" &&
   pass "fetched from v0.17.0" ||
   fail "wrong source: $(cat "$WORK/pinned/curl.log")"
 grep -q "v0.17.0 stack definition" "$WORK/pinned/out.log" && pass "says which release it used" ||
@@ -377,7 +377,7 @@ fetched_from pinnedv "/doska/v0.17.0/docker-compose" && pass "no doubled v" ||
 case_name="the latest channel resolves to the newest release"
 printf '\n%s\n' "$case_name"
 run chanlatest AUTH_PASSWORD=x -- --yes --no-start
-fetched_from chanlatest "api.github.com/repos/romenkova/doska/releases/latest" &&
+fetched_from chanlatest "api.github.com/repos/apezio/doska/releases/latest" &&
   pass "asked the API which release is latest" ||
   fail "did not resolve the channel: $(cat "$WORK/chanlatest/curl.log")"
 fetched_from chanlatest "/doska/v0.18.0/docker-compose" && pass "fetched from that release" ||
@@ -440,6 +440,17 @@ run ratelimitbare AUTH_PASSWORD=x CURL_API_FAIL=22 -- --yes --no-start
 [ "$(exit_code ratelimitbare)" != 0 ] && pass "refused to install without a compose file" ||
   fail "installed with no stack definition"
 unset CASE_RAW
+
+# ---------------------------------------------------------------------------
+# This fork installs its own release: install.sh resolves apezio/doska, and the
+# compose file it ships names ghcr.io/apezio images. A half-done repoint would
+# still pass every case above while quietly installing upstream's release, so no
+# case may have fetched anything from romenkova/doska.
+case_name="nothing is fetched from the upstream repo"
+printf '\n%s\n' "$case_name"
+strays=$(grep -h romenkova "$WORK"/*/curl.log 2> /dev/null | sort -u | tr '\n' ' ')
+[ -z "$strays" ] && pass "every fetch went to apezio/doska" ||
+  fail "still fetching from upstream: $strays"
 
 # ---------------------------------------------------------------------------
 printf '\n'

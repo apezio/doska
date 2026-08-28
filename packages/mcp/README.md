@@ -31,13 +31,13 @@ an access token from there on. Same URL works for Claude Desktop and claude.ai.
 | `create_column`, `delete_column` | Delete takes the column's cards with it                                                |
 | `update_column`                  | Title, color, collapsed, or which column counts as done                                |
 | `move_column`                    | Reorder: to either end, or next to another column                                      |
-| `create_card`                    | Add a card to a column — title, Markdown body, optional deadline and priority          |
-| `update_card`                    | Edit title, body, deadline, or priority; or `append` to the body without rewriting it  |
+| `create_card`                    | Add a card to a column — title, Markdown body, optional deadline and priority 0–100    |
+| `update_card`                    | Edit title, body, deadline, priority 0–100; or `append` instead of rewriting the body  |
 | `move_card`                      | To another column, to an end of one, or directly above a named card                    |
 | `set_card_done`                  | Into the board's done column, or back out to the leftmost open one                     |
 | `check_task`                     | Tick or untick one task-list checkbox by index, leaving the rest of the body untouched |
 | `delete_card`                    | Delete a card                                                                          |
-| `search_cards`                   | Across every board, by text, deadline range, priority, or column                       |
+| `search_cards`                   | Across every board, by text, deadline range, `priorityMin` / `priorityMax`, or column  |
 | `list_upcoming`                  | The app's upcoming view: overdue first, then today, then out to 60 days                |
 
 Every tool addresses records by their opaque id. A card also comes back with a
@@ -50,6 +50,10 @@ written in,
 which is `[[card]]` links, `==highlight==` and the `-cut-` line on
 top of GFM. None of that is inferable from a tool schema, and a client that
 doesn't read it will write bodies that render wrong.
+
+A card's priority is an integer 0–100, higher is more important, `0` for none —
+pass `0` or `null` to clear it. Cards written on the old high / medium / low
+scale read 75 / 50 / 25.
 
 Deletes are tombstones, the same as in the app: they propagate to your other
 devices rather than letting a peer resurrect the record on its next sync.

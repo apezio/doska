@@ -36,17 +36,40 @@
 
 </div>
 
+## What's new
+
+- **Cards tab in the sidebar**: the open cards from every board — the first two
+  columns of each — in priority order, ten at a time. A row carries its
+  column's color, and clicking it opens that card on its board.
+- **Priority is a number** from 0 to 100, higher first, 0 for none. It sits in
+  the card's title row and is edited in place; cards written on the old
+  high / medium / low scale read 75 / 50 / 25.
+- **Resizable columns**: drag a column's right edge. Each width is remembered
+  on that device and restored next time.
+- **Drag a card onto another board**: drop it on a board in the sidebar and it
+  moves there, to the top of that board's first column.
+- **Boards nest and reorder**: drag a sidebar row between rows to reorder it,
+  or onto a row to nest it underneath. Nesting is organizational only — the
+  board's columns and cards are untouched.
+- **A card's notes preview** on the board is one compact line.
+- **Tooltips on the icon-only controls** — the board header, the column
+  headers, the card panel, attachments — naming what each does, and the
+  keyboard shortcut where there is one.
+
 ## Features
 
 ### Cards
 
-- **Multiple boards**, each with draggable columns. 
+- **Multiple boards**, each with draggable columns you can resize, and boards
+  themselves nest and reorder in the sidebar.
 - Cards are **GitHub-flavored Markdown**. A slash menu and inline suggestions for formatting.
 - **Attach files** by dropping them on a card or pasting from the clipboard.
 - **Cards link to cards**: type `[[` and pick one. The reference
   carries that card's live title and column color.
 - **Deadlines**: set one and the card shows a chip that shifts color as the date
   nears, turning red once it's overdue.
+- **Priority**: a number from 0 to 100 on a card, edited in its title row, and a
+  board can be sorted by it.
 - An **Upcoming** view gathers cards from every board by deadline: overdue ones
   first, then grouped by day.
 

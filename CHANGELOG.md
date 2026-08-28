@@ -1,5 +1,36 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- A **Cards** tab in the sidebar, beside Dashboards: the open cards of every
+  board — the first column and the second of each — in priority order, capped
+  at ten with an "and N more" line. A row is tinted with its column's color and
+  opens that card on its board.
+- Columns can be resized: drag a column's right edge, or nudge the handle with
+  the arrow keys. The width is kept per column on that device, between 240 and
+  720px, and full-width columns on a phone are unaffected.
+- A card dropped on a board in the sidebar moves to that board, landing at the
+  top of its first column.
+- Boards reorder and nest in the sidebar: drop a row between rows to reorder,
+  or onto a row to nest it underneath. Nesting only changes the sidebar; a
+  board's columns and cards stay as they are, and the parent syncs on the
+  dashboard-list channel like any other field.
+- Hover tooltips naming the icon-only controls in the board header, the column
+  headers, the card panel header and attachments, with the keyboard shortcut
+  where there is one.
+
+### Changed
+
+- Priority is an integer 0–100 instead of high / medium / low: higher is more
+  important, 0 is none, and it is edited in place in the card's title row.
+  Existing cards migrate as they are read — high / medium / low become
+  75 / 50 / 25, anything unset becomes 0. Over MCP, `create_card` and
+  `update_card` take that integer, and `search_cards` filters with
+  `priorityMin` / `priorityMax` in place of `priority`.
+- A card's notes preview on the board is a single compact line.
+
 ## [0.20.0] - 2026-08-22
 
 ### Added

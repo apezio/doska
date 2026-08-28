@@ -3,7 +3,7 @@ title: MCP
 nav: MCP
 description: "Connect Claude Code, Claude Desktop or claude.ai to your Doska server so an agent can read and edit your boards."
 order: 5
-updated: "2026-08-09"
+updated: "2026-08-27"
 ---
 
 Your server exposes the board as MCP tools, so an agent can read and edit it.
@@ -43,20 +43,21 @@ See [Accounts](/docs/accounts).
 | `create_column`, `delete_column` | Delete takes the column's cards with it                                                |
 | `update_column`                  | Title, color, collapsed, or which column counts as done                                |
 | `move_column`                    | Reorder: to either end, or next to another column                                      |
-| `create_card`                    | Add a card to a column,  title, Markdown body, optional `YYYY-MM-DD` deadline          |
-| `update_card`                    | Edit title, body, or deadline; or `append` to the body without rewriting it            |
+| `create_card`                    | Add a card,  title, Markdown body, optional `YYYY-MM-DD` deadline and priority 0–100   |
+| `update_card`                    | Edit title, body, deadline, priority 0–100; or `append` instead of rewriting the body  |
 | `move_card`                      | To another column, to an end of one, or directly above a named card                    |
 | `set_card_done`                  | Into the board's done column, or back out to the leftmost open one                     |
 | `check_task`                     | Tick or untick one task-list checkbox by index, leaving the rest of the body untouched |
 | `delete_card`                    | Delete a card                                                                          |
-| `search_cards`                   | Across every board, by text, deadline range, or column                                 |
+| `search_cards`                   | Across every board, by text, deadline range, `priorityMin` / `priorityMax`, or column  |
 | `list_upcoming`                  | The app's upcoming view: overdue first, then today, then out to 60 days                |
 
 ## What the agent is told
 
 The server ships `instructions` alongside the tools: the board's own concepts, 
-the done column, deadlines,  and the Markdown dialect card bodies are written
-in. 
+the done column, deadlines, priority,  and the Markdown dialect card bodies are
+written in. Priority there is an integer 0–100, higher is more important, `0`
+for none; cards written on the old high / medium / low scale read 75 / 50 / 25.
 
 ## Limits
 

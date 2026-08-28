@@ -3,7 +3,7 @@ title: Documentation
 nav: Overview
 description: "Doska is a local-first Kanban board with first-class Markdown support."
 order: 1
-updated: "2026-08-09"
+updated: "2026-08-27"
 ---
 
 Doska is a Kanban board where the cards are Markdown. It runs in your browser
@@ -40,6 +40,25 @@ A card body is GitHub-flavored Markdown, edited in place, with a few additions t
 Cards take deadlines (a plain `YYYY-MM-DD` date) and file attachments, and an
 **Upcoming** view gathers cards from every board by deadline,  overdue first,
 then grouped by day.
+
+A card also carries a priority: a number from 0 to 100, higher is more
+important, 0 for none. Click it in the card's title row and type a new one.
+
+## Organizing boards
+
+The sidebar holds the boards as a tree. Drag a row between rows to reorder it,
+or onto a row to nest it underneath; nesting is only how the list is arranged,
+the board's own columns and cards don't change.
+
+Drop a card onto a board in the sidebar and it moves there, to the top of that
+board's first column.
+
+The sidebar's **Cards** tab lists the open cards across every board,  the first
+two columns of each, in priority order, ten at a time. Clicking one opens it on
+its board.
+
+On a board, drag a column's right edge to resize it. The width is remembered on
+that device.
 
 ## Where to go next
 

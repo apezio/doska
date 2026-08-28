@@ -3,7 +3,7 @@ title: Sync
 nav: Sync
 description: "How Doska keeps devices in sync"
 order: 7
-updated: "2026-08-09"
+updated: "2026-08-27"
 ---
 
 Doska is local-first. Every device holds a full copy of your boards and reads
@@ -18,10 +18,14 @@ signed out, sync simply doesn't run and the app stays local.
 Sync is two independent engines:
 
 - **The dashboard list**,  your boards and their metadata. Account-level, so it
-  is always active.
+  is always active. A board's place in the sidebar tree,  its parent and its
+  position,  rides this channel and merges last-writer-wins like every other
+  field.
 - **The board channel**,  the columns and cards of the open board, plus any
   board you are watching in a cross-board view, plus any board holding edits
   that haven't reached the server yet.
+
+How wide a column is dragged is kept on that device only, and never syncs.
 
 ## One reconcile
 

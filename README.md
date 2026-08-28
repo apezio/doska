@@ -15,15 +15,15 @@
 <p></p>
 
 <p align="center">
-  <a href="https://github.com/romenkova/doska/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/romenkova/doska?color=9585ff&label=release"></a>
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/romenkova/doska?color=7b8199"></a>
+  <a href="https://github.com/apezio/doska/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/apezio/doska?color=9585ff&label=release"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/apezio/doska?color=7b8199"></a>
 </p>
 <p></p>
 
 <p align="center">
   <strong><a href="https://app.doska.sh/d/welcome">Open demo</a></strong> ·
   <a href="https://doska.sh/docs">Documentation</a> ·
-  <a href="https://github.com/romenkova/doska/releases/latest">Download for macOS</a> ·
+  <a href="https://github.com/apezio/doska/releases/latest">Download for macOS</a> ·
   <a href="https://app.doska.sh/p/2af2848df270cb5b8a4e73e7a362b19b">Roadmap</a> ·
   <a href="https://doska.sh/docs/mcp">MCP</a>
 </p>
@@ -102,7 +102,7 @@ Without one they live only in the browser: fine for trying it out, not for
 anything you want to keep.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/romenkova/doska/main/install.sh -o install.sh && sh install.sh
+curl -fsSL https://raw.githubusercontent.com/apezio/doska/main/install.sh -o install.sh && sh install.sh
 ```
 
 Then open `http://<your-host>:8080` and sign in with the credentials you gave it.
@@ -120,7 +120,7 @@ The script changes between releases, run full command. It keeps your existing `.
 takes a backup of the database and files before redeploying over them.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/romenkova/doska/main/install.sh -o install.sh && sh install.sh
+curl -fsSL https://raw.githubusercontent.com/apezio/doska/main/install.sh -o install.sh && sh install.sh
 ```
 
 The desktop app follows whatever version its server runs, so update the server
@@ -129,7 +129,7 @@ first. The app then offers the matching build and installs it on relaunch.
 ## Desktop app
 
 Download the latest macOS build from
-[Releases](https://github.com/romenkova/doska/releases/latest). It wraps the same
+[Releases](https://github.com/apezio/doska/releases/latest). It wraps the same
 client (with Tauri), is signed and notarized, and auto-updates.
 [doska.sh/docs/desktop](https://doska.sh/docs/desktop).
 

@@ -1,4 +1,4 @@
-import { Modal, ModalContent, ModalTitle } from "@doska/ui-kit"
+import { Hint, Modal, ModalContent, ModalTitle } from "@doska/ui-kit"
 import { Download, X } from "lucide-react"
 import { useState } from "react"
 import type { Attachment } from "@doska/core/types"
@@ -72,22 +72,26 @@ function ViewerContent({
         <ModalTitle className="line-clamp-1 flex-1">
           {attachment.name}
         </ModalTitle>
-        <button
-          type="button"
-          aria-label="Download"
-          onClick={() => void download()}
-          className="rounded p-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
-        >
-          <Download className="size-4" />
-        </button>
-        <button
-          type="button"
-          aria-label="Close"
-          onClick={onClose}
-          className="rounded p-1 text-muted-foreground hover:text-foreground"
-        >
-          <X className="size-4" />
-        </button>
+        <Hint label="Download">
+          <button
+            type="button"
+            aria-label="Download"
+            onClick={() => void download()}
+            className="rounded p-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
+          >
+            <Download className="size-4" />
+          </button>
+        </Hint>
+        <Hint label="Close">
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="rounded p-1 text-muted-foreground hover:text-foreground"
+          >
+            <X className="size-4" />
+          </button>
+        </Hint>
       </div>
       {error && (
         <div className="shrink-0 border-b px-3 py-2 text-sm text-destructive">

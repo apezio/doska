@@ -8,6 +8,8 @@ export function isDesktop(): boolean {
  * so whatever sits there has to leave room for them (macOS `titleBarStyle: Overlay`).
  */
 export function hasOverlayTitleBar(): boolean {
+  // Deliberately not ui-kit's `isMac`: this module is in the runtime-install
+  // import chain (see adapters/install.ts) and must stay a barrel-free leaf.
   return isDesktop() && navigator.userAgent.includes("Mac")
 }
 

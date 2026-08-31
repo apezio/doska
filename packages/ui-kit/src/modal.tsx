@@ -2,6 +2,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { X } from "lucide-react"
 import { Button } from "./button"
 import { cn } from "./lib/cn"
+import { Hint } from "./tooltip"
 
 function Modal({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="modal" {...props} />
@@ -90,9 +91,17 @@ function ModalHeader({
     >
       <ModalTitle>{children}</ModalTitle>
       {onClose && (
-        <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}>
-          <X />
-        </Button>
+        <Hint label="Close">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Close"
+            onClick={onClose}
+          >
+            <X />
+          </Button>
+        </Hint>
       )}
     </div>
   )

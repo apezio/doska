@@ -2,6 +2,7 @@ import {
   Button,
   ContextMenu,
   ContextMenuTrigger,
+  Hint,
   Menu,
   MenuTrigger,
   useIsMobile,
@@ -21,18 +22,20 @@ export function CardMenu({ cardId, onEdit }: IProps) {
 
   return (
     <Menu actionsRef={actionsRef}>
-      <MenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Card actions"
-            onClick={(e) => e.stopPropagation()}
-          />
-        }
-      >
-        <MoreHorizontal />
-      </MenuTrigger>
+      <Hint label="Card actions">
+        <MenuTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Card actions"
+              onClick={(e) => e.stopPropagation()}
+            />
+          }
+        >
+          <MoreHorizontal />
+        </MenuTrigger>
+      </Hint>
       <CardMenuItems
         cardId={cardId}
         onEdit={onEdit}

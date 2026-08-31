@@ -1,5 +1,6 @@
 import {
   Button,
+  Hint,
   Menu,
   MenuContent,
   MenuItem,
@@ -38,13 +39,15 @@ export function CardPanelMenu({
 
   return (
     <Menu actionsRef={actionsRef}>
-      <MenuTrigger
-        render={
-          <Button variant="ghost" size="icon-sm" aria-label="Card actions" />
-        }
-      >
-        <MoreHorizontal />
-      </MenuTrigger>
+      <Hint label="Card actions">
+        <MenuTrigger
+          render={
+            <Button variant="ghost" size="icon-sm" aria-label="Card actions" />
+          }
+        >
+          <MoreHorizontal />
+        </MenuTrigger>
+      </Hint>
       <MenuContent align="end">
         {isPreview && (
           <MenuItem onClick={onEdit}>

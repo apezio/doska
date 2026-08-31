@@ -5,6 +5,7 @@ import {
   AvatarFallback,
   Button,
   cn,
+  Hint,
   SidebarMenu,
   SidebarMenuItem,
 } from "@doska/ui-kit"
@@ -44,28 +45,30 @@ export function SidebarAccount() {
             </span>
           </div>
           {authed && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Sign out"
-              title="Sign out"
-              className="ml-auto text-muted-foreground"
-              onClick={() => logout()}
-            >
-              <LogOut />
-            </Button>
+            <Hint label="Sign out">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Sign out"
+                className="ml-auto text-muted-foreground"
+                onClick={() => logout()}
+              >
+                <LogOut />
+              </Button>
+            </Hint>
           )}
           {!authed && !pending && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Sign in to sync"
-              title="Sign in to sync"
-              className="ml-auto text-muted-foreground"
-              onClick={openLogin}
-            >
-              <LogIn />
-            </Button>
+            <Hint label="Sign in to sync">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Sign in to sync"
+                className="ml-auto text-muted-foreground"
+                onClick={openLogin}
+              >
+                <LogIn />
+              </Button>
+            </Hint>
           )}
         </div>
       </SidebarMenuItem>

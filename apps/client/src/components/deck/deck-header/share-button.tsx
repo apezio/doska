@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Button } from "@doska/ui-kit"
+import { Button, Hint } from "@doska/ui-kit"
 import { Globe, UserLock, Users } from "lucide-react"
 import { useBoardMembers, usePublicBoardStatus } from "@doska/core/queries"
 import { ShareModal } from "../share/share-modal"
@@ -28,15 +28,17 @@ export function ShareButton({ boardId, title }: IProps) {
 
   return (
     <>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label={`Share: ${label}`}
-        className="text-muted-foreground"
-        onClick={() => setOpen(true)}
-      >
-        <Icon />
-      </Button>
+      <Hint label={`Share: ${label}`}>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={`Share: ${label}`}
+          className="text-muted-foreground"
+          onClick={() => setOpen(true)}
+        >
+          <Icon />
+        </Button>
+      </Hint>
       <ShareModal
         open={open}
         onOpenChange={setOpen}

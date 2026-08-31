@@ -1,4 +1,4 @@
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@doska/ui-kit"
+import { Button, Hint } from "@doska/ui-kit"
 import { LoaderCircle, Paperclip } from "lucide-react"
 import { useRef } from "react"
 import { useUploads } from "@/providers/attachment-upload/attachment-upload-context"
@@ -28,6 +28,8 @@ export function AddAttachmentButton() {
     </Button>
   )
 
+  // Why the upload cannot happen beats naming a control the icon already
+  // hints at.
   const hint = !enabled ? disabledReason : (error ?? null)
 
   return (
@@ -39,14 +41,7 @@ export function AddAttachmentButton() {
         hidden
         onChange={(e) => void onFiles(e.target.files)}
       />
-      {hint ? (
-        <Tooltip>
-          <TooltipTrigger render={button} />
-          <TooltipContent>{hint}</TooltipContent>
-        </Tooltip>
-      ) : (
-        button
-      )}
+      <Hint label={hint || "Attach"}>{button}</Hint>
     </>
   )
 }

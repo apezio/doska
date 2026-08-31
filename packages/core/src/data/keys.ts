@@ -15,6 +15,8 @@ export const keys = {
   /** Under the digest prefix: it goes stale on exactly the same writes. */
   openCards: ["digest", "open-cards"] as const,
   cardDeck: (id: string) => ["card-deck", id] as const,
+  /** The bare key is the invalidation prefix for every card's column. */
+  cardCols: ["card-col"] as const,
   cardCol: (id: string) => ["card-col", id] as const,
   session: ["session"] as const,
   accounts: ["accounts"] as const,

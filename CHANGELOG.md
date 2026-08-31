@@ -28,6 +28,15 @@
 - Hover tooltips naming the icon-only controls in the board header, the column
   headers, the card panel header and attachments, with the keyboard shortcut
   where there is one.
+- Folder sync on desktop: a board mirrors to a folder.
+- Attachments mirror into `_files`.
+- Deleted cards land in `_trash`.
+- Deleting a column takes its folder with it, its cards' files going to `_trash`.
+- A folder dropped into the root becomes a column, cards and all.
+- Pointing an empty board at a folder fills it: a column per folder, a card per file.
+- Any folder syncs into any board, whichever board wrote it. One board at a
+  time.
+- Folder names read back as display titles: `in_progress` is In progress.
 
 ### Changed
 
@@ -38,6 +47,12 @@
   `update_card` take that integer, and `search_cards` filters with
   `priorityMin` / `priorityMax` in place of `priority`.
 - A card's notes preview on the board is a single compact line.
+
+### Fixed
+
+- The user id on a device is now stamped per sync server, so pointing the app
+  at a second server no longer looks like a different person and wipes the
+  local store.
 
 ## [0.20.0] - 2026-08-22
 

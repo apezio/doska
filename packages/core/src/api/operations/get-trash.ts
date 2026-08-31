@@ -90,12 +90,8 @@ export async function getTrash(): Promise<TrashEntry[]> {
       !live(board)
     )
       continue
-    if (
-      !card.title.trim() &&
-      !card.body.trim() &&
-      card.attachments.length === 0
-    )
-      continue
+    const files = card.attachments ?? []
+    if (!card.title.trim() && !card.body.trim() && files.length === 0) continue
     entries.push({
       kind: "cards",
       id: card.id,

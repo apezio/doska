@@ -1,4 +1,4 @@
-import { Markdown, cn } from "@doska/ui-kit"
+import { Markdown, cn, useIsMobile } from "@doska/ui-kit"
 import { useState } from "react"
 import { MarkdownTextarea } from "../markdown"
 import { CardPaneLayout } from "./card-pane-layout"
@@ -10,14 +10,22 @@ import { CardAttachments } from "../card/attachments/card-attachments"
 import { AddAttachmentButton } from "../card/attachments/add-attachment-button"
 import { AttachmentDropZone } from "../card/attachments/attachment-drop-zone"
 import { AttachmentUploadProvider } from "@/providers/attachment-upload/attachment-upload-provider"
+import { UndoRedoButtons, type UndoRedoProps } from "./undo-redo-buttons"
+import type { EditorFieldProps } from "./use-card-history"
+import type { EditSource } from "./text-history"
 
 interface IProps {
   cardId: string
   title: string
   body: string
   isPreview: boolean
+  /** Wires each field into the card's shared undo history. */
+  titleProps: EditorFieldProps
+  bodyProps: EditorFieldProps
+  /** Drives the visible undo/redo controls. */
+  history: UndoRedoProps
   onChangeTitle: (value: string) => void
-  onChangeBody: (value: string) => void
+  onChangeBody: (value: string, source: EditSource) => void
   onTogglePreview: () => void
   /** Fired by clicking the read-only preview. */
   onEdit: () => void
@@ -43,6 +51,9 @@ export function CardEditor({
   title,
   body,
   isPreview,
+  titleProps,
+  bodyProps,
+  history,
   onChangeTitle,
   onChangeBody,
   onTogglePreview,
@@ -53,6 +64,9 @@ export function CardEditor({
 }: IProps) {
   // State, not a ref: the slash button renders into this node once it mounts.
   const [overlay, setOverlay] = useState<HTMLDivElement | null>(null)
+  // A phone's header is already clipping the card's meta to fit what it has;
+  // two more buttons go in the "⋯" menu instead.
+  const isMobile = useIsMobile()
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -68,11 +82,17 @@ export function CardEditor({
                   isPreview={isPreview}
                   onClose={onClose}
                   onTogglePreivew={onTogglePreview}
-                  actions={<AddAttachmentButton />}
+                  actions={
+                    <>
+                      {!isMobile && <UndoRedoButtons {...history} />}
+                      <AddAttachmentButton />
+                    </>
+                  }
                   menu={
                     <CardPanelMenu
                       cardId={cardId}
                       isPreview={isPreview}
+                      history={isMobile ? history : undefined}
                       onEdit={onEdit}
                       onReveal={onReveal}
                       onDelete={onDelete}
@@ -98,6 +118,7 @@ export function CardEditor({
               }
               title={
                 <MarkdownTextarea
+                  {...titleProps}
                   renderPreview={Markdown}
                   autoFocus
                   value={title}
@@ -115,6 +136,7 @@ export function CardEditor({
                   cardId={cardId}
                   body={body}
                   isPreview={isPreview}
+                  editorProps={bodyProps}
                   onChangeBody={onChangeBody}
                   overlayContainer={overlay}
                 />

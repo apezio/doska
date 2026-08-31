@@ -7,16 +7,26 @@ import {
   MenuTrigger,
   type MenuActions,
 } from "@doska/ui-kit"
-import { LocateFixed, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import {
+  LocateFixed,
+  MoreHorizontal,
+  Pencil,
+  Redo2,
+  Trash2,
+  Undo2,
+} from "lucide-react"
 import { useRef } from "react"
 import { CopyIdItem } from "../card/menu/copy-id-item"
 import { DeadlineSub } from "../card/menu/deadline-sub"
 import { MoveToColumnSub } from "../card/menu/move-to-column-sub"
 import { PrioritySub } from "../card/menu/priority-sub"
+import type { UndoRedoProps } from "./undo-redo-buttons"
 
 interface IProps {
   cardId: string
   isPreview: boolean
+  /** Undo/redo, given only where the header has no room for their buttons. */
+  history?: UndoRedoProps
   onEdit: () => void
   onReveal: () => void
   onDelete: () => void
@@ -30,6 +40,7 @@ interface IProps {
 export function CardPanelMenu({
   cardId,
   isPreview,
+  history,
   onEdit,
   onReveal,
   onDelete,
@@ -46,6 +57,19 @@ export function CardPanelMenu({
         <MoreHorizontal />
       </MenuTrigger>
       <MenuContent align="end">
+        {history && (
+          <>
+            <MenuItem onClick={history.onUndo} disabled={!history.canUndo}>
+              <Undo2 />
+              Undo
+            </MenuItem>
+            <MenuItem onClick={history.onRedo} disabled={!history.canRedo}>
+              <Redo2 />
+              Redo
+            </MenuItem>
+            <MenuSeparator />
+          </>
+        )}
         {isPreview && (
           <MenuItem onClick={onEdit}>
             <Pencil />

@@ -4,6 +4,14 @@
 
 ### Added
 
+- Undo and redo in the card editor, on ⌘Z / ⌘⇧Z and as buttons in the card
+  header — in the "⋯" menu on a phone, where the header has no room for them.
+  It covers typing as well as everything the editor writes for you: slash
+  commands, `[[` references, list continuation, cut line, pasted files, and
+  ticking a task box in the preview. The caret goes back where it was, typing
+  is grouped into whole words and lines rather than single keystrokes, and each
+  card keeps its own history for as long as it is open.
+
 - Folder sync on desktop: a board mirrors to a folder.
 - Attachments mirror into `_files`.
 - Deleted cards land in `_trash`.

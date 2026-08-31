@@ -9,6 +9,8 @@ import { useUploads } from "@/providers/attachment-upload/attachment-upload-cont
 import { CardMarkdown } from "../card/card-markdown"
 import { Markdown } from "@doska/ui-kit"
 import { MarkdownTextarea } from "../markdown"
+import type { EditorFieldProps } from "./use-card-history"
+import type { EditSource } from "./text-history"
 
 const PREVIEW_MARKERS = [cut]
 
@@ -16,7 +18,9 @@ interface IProps {
   cardId: string
   body: string
   isPreview: boolean
-  onChangeBody: (value: string) => void
+  onChangeBody: (value: string, source: EditSource) => void
+  /** Wires the body into the card's shared undo history. */
+  editorProps: EditorFieldProps
   /** Non-scrolling pane element the mobile slash button anchors to. */
   overlayContainer?: HTMLElement | null
 }
@@ -27,6 +31,7 @@ export function CardBodyEditor({
   body,
   isPreview,
   onChangeBody,
+  editorProps,
   overlayContainer,
 }: IProps) {
   const { id: deckId } = useDeck()
@@ -51,11 +56,12 @@ export function CardBodyEditor({
   return (
     <CardMarkdown cardId={cardId}>
       <MarkdownTextarea
+        {...editorProps}
         renderPreview={Markdown}
         value={body}
-        onChange={(e) => onChangeBody(e.target.value)}
-        onChangeValue={onChangeBody}
-        onToggleTask={onChangeBody}
+        onChange={(e) => onChangeBody(e.target.value, "typing")}
+        onChangeValue={(value) => onChangeBody(value, "command")}
+        onToggleTask={(value) => onChangeBody(value, "command")}
         slashMenu
         highlight
         slashCommands={slashCommands}

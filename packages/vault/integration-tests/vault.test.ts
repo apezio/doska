@@ -175,6 +175,39 @@ describe("Vault on disk", () => {
     expect(await names("_trash")).toEqual(["ship_it.md"])
   })
 
+  it("renames the folder when the column is renamed on the board", async () => {
+    const id = await board.createCard(TODO.id)
+    await board.updateCard(id, { title: "Ship it" })
+    await vault.sync()
+
+    await board.renameColumn(TODO.id, "Later")
+    await vault.sync()
+
+    expect((await names()).sort()).toEqual([
+      "_meta.json",
+      "_trash",
+      "done",
+      "later",
+    ])
+    expect(await read("later", "ship_it.md")).toContain(`id: ${id}`)
+    expect(await board.cards()).toHaveLength(1)
+  })
+
+  it("renames the column when the folder is renamed on disk", async () => {
+    const id = await board.createCard(TODO.id)
+    await board.updateCard(id, { title: "Ship it" })
+    await vault.sync()
+
+    await rename(path("to_do"), path("Later"))
+    await vault.sync()
+
+    const { columns } = await board.load()
+    expect(columns.find((column) => column.id === TODO.id)?.title).toBe("Later")
+    expect(await names("Later")).toEqual(["ship_it.md"])
+    expect((await board.cards())[0]?.columnId).toBe(TODO.id)
+    expect(changes).toBe(1)
+  })
+
   it("settles: a second pass over an untouched folder writes nothing", async () => {
     const id = await board.createCard(TODO.id)
     await board.updateCard(id, { title: "Ship it", body: "soon" })

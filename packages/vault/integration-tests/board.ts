@@ -94,6 +94,7 @@ export async function installBoard(columns: Column[]): Promise<TestBoard> {
     deleteCard,
     getBoard,
     moveCardToColumn,
+    renameColumn,
     restore,
     updateCard,
   } = await import("@doska/core/operations")
@@ -103,6 +104,7 @@ export async function installBoard(columns: Column[]): Promise<TestBoard> {
     createCard,
     updateCard,
     moveCardToColumn,
+    renameColumn,
     deleteCard: (id) => deleteCard(BOARD_ID, id),
     restoreCard: (id) => restore("cards", id),
     cards: async () => (await getBoard(BOARD_ID)).cards,

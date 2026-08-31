@@ -1,7 +1,8 @@
 import type { Card, Column } from "@doska/contract"
 import { CardFile, type CardPatch } from "./card-file"
 import { FILES, fileNameOf } from "./card-format"
-import { ColumnFolder, type VaultFile, type VaultFs } from "./column-folder"
+import type { ColumnFolder, VaultFile, VaultFs } from "./column-folder"
+import { Folders } from "./folders"
 import { Trash } from "./trash"
 import { dirOf, stemOf } from "./utils"
 import { Written } from "./written"
@@ -18,6 +19,7 @@ export interface VaultBoard {
   createCard(columnId: string): Promise<string>
   updateCard(id: string, patch: CardPatch): Promise<void>
   moveCardToColumn(id: string, columnId: string): Promise<void>
+  renameColumn(id: string, title: string): Promise<void>
   deleteCard(id: string): Promise<void>
   restoreCard(id: string): Promise<void>
 }
@@ -53,6 +55,7 @@ export class Vault {
   private readonly onError?: (error: unknown) => void
 
   private readonly written: Written
+  private readonly folders: Folders
   private readonly trash: Trash
 
   private running = false
@@ -73,6 +76,7 @@ export class Vault {
     this.onBoardChange = onBoardChange
     this.onError = onError
     this.written = new Written(fs, root)
+    this.folders = new Folders(fs, root, this.written)
     this.trash = new Trash(fs, root, this.written, (id) => board.deleteCard(id))
   }
 
@@ -105,17 +109,23 @@ export class Vault {
     await this.written.load()
 
     const board = await this.board.load()
-    const folders = board.columns.map(
-      (column) => new ColumnFolder(this.fs, this.root, column)
+    const { folders, retitled } = await this.folders.resolve(
+      board.columns,
+      board.cards
     )
     await this.fs.mkdir(this.trash.path)
     for (const folder of folders) await this.fs.mkdir(folder.path)
+
+    for (const [id, title] of retitled) {
+      await this.board.renameColumn(id, title)
+    }
+    let changed = retitled.size > 0
 
     const cards = new Map(board.cards.map((card) => [card.id, card]))
     await this.mirrorFiles(board.cards)
 
     const inTrash = new Set<string>()
-    let changed = await this.trash.sweep(cards, inTrash)
+    if (await this.trash.sweep(cards, inTrash)) changed = true
 
     const { files, empty, adopted } = await this.index(folders)
     if (adopted) changed = true

@@ -5,6 +5,7 @@ import {
   deleteCard,
   getBoard,
   moveCardToColumn,
+  renameColumn,
   restore,
   updateCard,
 } from "@doska/core/operations"
@@ -43,6 +44,7 @@ function boardOps(boardId: string): VaultBoard {
     createCard,
     updateCard,
     moveCardToColumn,
+    renameColumn,
     deleteCard: (id) => deleteCard(boardId, id),
     restoreCard: (id) => restore("cards", id),
   }

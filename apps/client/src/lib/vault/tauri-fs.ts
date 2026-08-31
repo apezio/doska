@@ -1,11 +1,9 @@
 import type { VaultFs } from "@doska/vault"
 
-/** Long enough that saving a file in an editor lands as one change, not three. */
 const DEBOUNCE_MS = 400
 
 /**
- * The vault's filesystem on the desktop. Everything is imported lazily so the
- * web build never pulls the Tauri plugin in.
+ * The vault's filesystem on the desktop.
  */
 export const tauriFs: VaultFs = {
   async read(path) {
@@ -44,6 +42,13 @@ export const tauriFs: VaultFs = {
     if (!(await exists(path))) return null
     const entries = await readDir(path)
     return entries.filter((e) => !e.isDirectory).map((e) => e.name)
+  },
+
+  async readDirs(path) {
+    const { exists, readDir } = await import("@tauri-apps/plugin-fs")
+    if (!(await exists(path))) return null
+    const entries = await readDir(path)
+    return entries.filter((e) => e.isDirectory).map((e) => e.name)
   },
 
   async watch(path, listener) {

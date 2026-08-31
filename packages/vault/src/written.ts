@@ -1,11 +1,32 @@
 import type { VaultFs } from "./column-folder"
+import { dirOf } from "./utils"
 
 const META = "_meta.json"
+
+/** The entries of one `_meta.json` section, whatever else is in the file. */
+function section(value: unknown): [string, Record<string, unknown>][] {
+  if (typeof value !== "object" || value === null) return []
+  return Object.entries(value).filter(
+    ([, entry]) => typeof entry === "object" && entry !== null
+  )
+}
+
+function sorted<T>(map: Map<string, T>): Record<string, T> {
+  return Object.fromEntries([...map].sort(([a], [b]) => a.localeCompare(b)))
+}
 
 /** A file the vault wrote, as it wrote it. */
 export interface WrittenFile {
   path: string
   text: string
+}
+
+/** A column's folder, as the vault last left it. */
+export interface WrittenFolder {
+  /** The folder's name under the root, not its full path. */
+  name: string
+  /** The column's title when that name was chosen. */
+  title: string
 }
 
 /**
@@ -16,6 +37,7 @@ export class Written {
   private readonly fs: VaultFs
   private readonly path: string
   private readonly entries = new Map<string, WrittenFile>()
+  private readonly folders = new Map<string, WrittenFolder>()
   /** The last `_meta.json` on disk, so an unchanged pass doesn't rewrite it. */
   private saved = ""
   private loaded = false
@@ -49,6 +71,30 @@ export class Written {
     this.entries.delete(id)
   }
 
+  folder(columnId: string): WrittenFolder | undefined {
+    return this.folders.get(columnId)
+  }
+
+  setFolder(columnId: string, folder: WrittenFolder): void {
+    this.folders.set(columnId, folder)
+  }
+
+  /** Forgets the folders of columns that are gone from the board. */
+  keepFolders(columnIds: Set<string>): void {
+    for (const id of [...this.folders.keys()]) {
+      if (!columnIds.has(id)) this.folders.delete(id)
+    }
+  }
+
+  /** Follows a folder that moved: every file recorded under it moves with it. */
+  reroot(from: string, to: string): void {
+    for (const [id, entry] of this.entries) {
+      if (dirOf(entry.path) !== from) continue
+      const name = entry.path.slice(from.length)
+      this.entries.set(id, { path: `${to}${name}`, text: entry.text })
+    }
+  }
+
   async load(): Promise<void> {
     if (this.loaded) return
     this.loaded = true
@@ -63,16 +109,20 @@ export class Written {
       return
     }
     if (typeof parsed !== "object" || parsed === null) return
+    const meta = parsed as { cards?: unknown; columns?: unknown }
 
-    for (const [id, value] of Object.entries(
-      parsed as Record<string, unknown>
-    )) {
-      if (typeof value !== "object" || value === null) continue
-      const entry = value as { path?: unknown; text?: unknown }
+    for (const [id, entry] of section(meta.cards)) {
       if (typeof entry.path !== "string" || typeof entry.text !== "string") {
         continue
       }
       this.entries.set(id, { path: entry.path, text: entry.text })
+    }
+
+    for (const [id, entry] of section(meta.columns)) {
+      if (typeof entry.name !== "string" || typeof entry.title !== "string") {
+        continue
+      }
+      this.folders.set(id, { name: entry.name, title: entry.title })
     }
     this.saved = this.serialize()
   }
@@ -85,7 +135,10 @@ export class Written {
   }
 
   private serialize(): string {
-    const entries = [...this.entries].sort(([a], [b]) => a.localeCompare(b))
-    return JSON.stringify(Object.fromEntries(entries), null, 2)
+    return JSON.stringify(
+      { cards: sorted(this.entries), columns: sorted(this.folders) },
+      null,
+      2
+    )
   }
 }

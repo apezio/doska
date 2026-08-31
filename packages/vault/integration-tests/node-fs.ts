@@ -47,6 +47,12 @@ export function nodeFs(): VaultFs {
       return entries.filter((e) => !e.isDirectory()).map((e) => e.name)
     },
 
+    async readDirs(path) {
+      const entries = await missing(readdir(path, { withFileTypes: true }))
+      if (entries === null) return null
+      return entries.filter((e) => e.isDirectory()).map((e) => e.name)
+    },
+
     watch(path, listener) {
       const watcher = watch(path, { recursive: true }, () => listener())
       return Promise.resolve(() => watcher.close())

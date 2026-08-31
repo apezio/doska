@@ -2,7 +2,7 @@ import type { Card, Column } from "@doska/contract"
 import type { VaultFs } from "../src/column-folder"
 import type { VaultBoard, VaultFiles } from "../src/vault"
 
-/** Files keyed by path; folders are implied by the paths under them. */
+/** Files keyed by path, folders by their own. Renaming one moves both. */
 export class MemoryFs implements VaultFs {
   readonly files = new Map<string, string>()
   private readonly dirs = new Set<string>()
@@ -33,6 +33,14 @@ export class MemoryFs implements VaultFs {
       this.files.delete(from)
       this.files.set(to, content)
     }
+    if (this.dirs.delete(from)) {
+      this.dirs.add(to)
+      for (const [path, text] of [...this.files]) {
+        if (!path.startsWith(`${from}/`)) continue
+        this.files.delete(path)
+        this.files.set(`${to}${path.slice(from.length)}`, text)
+      }
+    }
     return Promise.resolve()
   }
 
@@ -48,6 +56,17 @@ export class MemoryFs implements VaultFs {
       if (file.startsWith(`${path}/`)) names.push(file.slice(path.length + 1))
     }
     return Promise.resolve(names.filter((name) => !name.includes("/")))
+  }
+
+  readDirs(path: string) {
+    if (!this.dirs.has(path)) return Promise.resolve(null)
+    const names: string[] = []
+    for (const dir of this.dirs) {
+      if (!dir.startsWith(`${path}/`)) continue
+      const name = dir.slice(path.length + 1)
+      if (!name.includes("/")) names.push(name)
+    }
+    return Promise.resolve(names)
   }
 
   watch(_path: string, listener: () => void) {
@@ -121,7 +140,11 @@ export class FakeBoard implements VaultBoard {
   private readonly cols: Column[]
 
   constructor(cols: Column[]) {
-    this.cols = cols
+    this.cols = cols.map((col) => ({ ...col }))
+  }
+
+  column(id: string): Column | undefined {
+    return this.cols.find((col) => col.id === id)
   }
 
   add(card: Card) {
@@ -145,6 +168,12 @@ export class FakeBoard implements VaultBoard {
   updateCard(id: string, patch: Partial<Card>) {
     const card = this.cardsById.get(id)
     if (card) this.cardsById.set(id, { ...card, ...patch })
+    return Promise.resolve()
+  }
+
+  renameColumn(id: string, title: string) {
+    const column = this.column(id)
+    if (column) column.title = title
     return Promise.resolve()
   }
 

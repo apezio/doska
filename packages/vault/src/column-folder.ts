@@ -12,6 +12,7 @@ export interface VaultFs {
   rename(from: string, to: string): Promise<void>
   remove(path: string): Promise<void>
   readDir(path: string): Promise<string[] | null>
+  readDirs(path: string): Promise<string[] | null>
   watch(path: string, listener: () => void): Promise<() => void>
 }
 
@@ -44,10 +45,10 @@ export class ColumnFolder {
   /** Names handed out this pass, so two cards can't claim the same file. */
   private readonly used = new Set<string>()
 
-  constructor(fs: VaultFs, root: string, column: Column) {
+  constructor(fs: VaultFs, column: Column, path: string) {
     this.fs = fs
     this.columnId = column.id
-    this.path = `${root}/${snakeName(column.title) || column.id}`
+    this.path = path
   }
 
   async list(): Promise<VaultFile[]> {

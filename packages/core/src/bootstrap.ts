@@ -1,6 +1,6 @@
 import { fetchSession, onSessionExpired, SIGNED_OUT } from "./api/auth"
 import { seed } from "./api/db/db"
-import { reconcileIdentity } from "./api/identity"
+import { migrateUserKey, reconcileIdentity } from "./api/identity"
 import { purgeExpired } from "./api/operations"
 import { seedClock, startBackgroundSync } from "./api/sync"
 import { keys } from "./data/keys"
@@ -22,6 +22,10 @@ export async function bootstrapClient(syncIntervalMs?: number): Promise<void> {
   // Restore the high-water mark before any stamp is issued, or a local edit can
   // be timestamped below one already handed out and lose LWW silently.
   await seedClock()
+
+  // Before the session, and so before any sign-in can move the server URL out
+  // from under the id this stamps.
+  await migrateUserKey()
 
   // Whose data is on this device, settled before the first reconcile can run
   const session = await fetchSession().catch(() => null)

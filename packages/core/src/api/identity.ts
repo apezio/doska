@@ -2,11 +2,45 @@ import { runtime } from "../runtime"
 import { clearLastBoard } from "../data/last-board"
 import { DASHBOARDS, META_STORE, STORES } from "./constants"
 import { live } from "./operations/live"
+import { getServerUrl } from "./server"
 import { sync } from "./sync"
 import type { Dashboard } from "../types"
 
-/** Whose data the local store currently holds */
+/** Whose data the local store currently holds, per sync server */
 const USER_KEY = "deck:user-id"
+
+/** Same server typed two ways is one scope, so drop what doesn't identify it. */
+function serverScope(): string {
+  return getServerUrl()
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/+$/, "")
+}
+
+function userKey(): string {
+  const server = serverScope()
+  return server ? `${USER_KEY}:${server}` : USER_KEY
+}
+
+function stampedUser(): Promise<string | undefined> {
+  return runtime().db.get<string>(META_STORE, userKey())
+}
+
+/**
+ * Moves the unscoped id an older build left behind onto the server it was
+ * stamped against.
+ */
+export async function migrateUserKey(): Promise<void> {
+  const key = userKey()
+  if (key === USER_KEY) return
+
+  const legacy = await runtime().db.get<string>(META_STORE, USER_KEY)
+  if (legacy === undefined) return
+  await runtime().db.delete(META_STORE, USER_KEY)
+
+  const scoped = await runtime().db.get<string>(META_STORE, key)
+  if (scoped === undefined) await runtime().db.set(META_STORE, key, legacy)
+}
 
 /** Every pull cursor is `cursor:<scope>` — see the drivers. `;` is `:` plus one,
  * so an exclusive upper bound there is the prefix range. */
@@ -25,11 +59,11 @@ export async function reconcileIdentity(
   // Signing out leaves the data alone: it is still the same person's.
   if (userId === null) return false
 
-  const previous = await runtime().db.get<string>(META_STORE, USER_KEY)
+  const previous = await stampedUser()
   if (previous === userId) return false
 
   if (previous !== undefined) await wipe()
-  await runtime().db.set(META_STORE, USER_KEY, userId)
+  await runtime().db.set(META_STORE, userKey(), userId)
   return previous !== undefined
 }
 
@@ -55,7 +89,7 @@ export const UNCLAIMED_BOARDS_WARNING =
  * Whether this device holds board work that no account has claimed yet
  */
 export async function hasUnclaimedLocalBoards(): Promise<boolean> {
-  const known = await runtime().db.get<string>(META_STORE, USER_KEY)
+  const known = await stampedUser()
   if (known !== undefined) return false
 
   const boards = await runtime().db.getAll<Dashboard>(DASHBOARDS)

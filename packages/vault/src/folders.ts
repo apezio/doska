@@ -1,6 +1,6 @@
 import type { Card, Column } from "@doska/contract"
 import { cardFiles, claim, ColumnFolder, type VaultFs } from "./column-folder"
-import { snakeName } from "./utils"
+import { snakeName, titleOf } from "./utils"
 import type { Written } from "./written"
 
 /** `_trash`, `_files` and anything hidden: not a column's folder. */
@@ -43,9 +43,13 @@ export class Folders {
     this.createColumn = createColumn
   }
 
-  async resolve(columns: Column[], cards: Card[]): Promise<Resolved> {
+  async resolve(
+    columns: Column[],
+    cards: Card[],
+    dropped: Set<string>
+  ): Promise<Resolved> {
     const live = new Set(columns.map((column) => column.id))
-    const gone = this.gone(live)
+    const gone = this.gone(dropped)
     const { chosen, taken, created } = await this.match(columns, cards, gone)
 
     const folders: ColumnFolder[] = []
@@ -57,8 +61,8 @@ export class Folders {
       let title = column.title
 
       if (was && was.name !== name) {
-        title = name
-        retitled.set(column.id, name)
+        title = titleOf(name)
+        retitled.set(column.id, title)
       } else if (was && was.title !== title) {
         name = await this.rename(at, column, taken)
       }
@@ -73,13 +77,12 @@ export class Folders {
   }
 
   /**
-   * The folders whose column the board dropped. They are on their way out, so
-   * no live column may be matched to one.
+   * The folders whose column the board deleted.
    */
-  private gone(live: Set<string>): Set<string> {
+  private gone(dropped: Set<string>): Set<string> {
     const names = new Set<string>()
     for (const [id, folder] of this.written.columnFolders()) {
-      if (!live.has(id)) names.add(folder.name)
+      if (dropped.has(id)) names.add(folder.name)
     }
     return names
   }
@@ -146,8 +149,8 @@ export class Folders {
 
     let created = 0
     for (const name of [...free]) {
-      const id = await this.createColumn(name)
-      chosen.set({ id, title: name }, name)
+      const title = titleOf(name)
+      chosen.set({ id: await this.createColumn(title), title }, name)
       created++
     }
 

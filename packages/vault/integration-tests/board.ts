@@ -94,6 +94,7 @@ export async function installBoard(columns: Column[]): Promise<TestBoard> {
     deleteCard,
     createColumn,
     getBoard,
+    getDeletedIds,
     moveCardToColumn,
     renameColumn,
     restore,
@@ -108,7 +109,8 @@ export async function installBoard(columns: Column[]): Promise<TestBoard> {
     moveCardToColumn,
     renameColumn,
     deleteCard: (id) => deleteCard(BOARD_ID, id),
-    restoreCard: (id) => restore("cards", id),
+    restoreCard: (id: string) => restore("cards", id),
+    deleted: () => getDeletedIds(BOARD_ID),
     cards: async () => (await getBoard(BOARD_ID)).cards,
   }
 }

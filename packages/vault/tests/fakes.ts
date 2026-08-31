@@ -136,7 +136,8 @@ export function makeColumn(id: string, title: string): Column {
 export class FakeBoard implements VaultBoard {
   readonly cardsById = new Map<string, Card>()
   readonly trashed = new Map<string, Card>()
-  readonly deleted: string[] = []
+  readonly deleteCalls: string[] = []
+  readonly droppedCols: string[] = []
 
   private readonly cols: Column[]
 
@@ -161,6 +162,13 @@ export class FakeBoard implements VaultBoard {
     return Promise.resolve({
       columns: this.cols,
       cards: [...this.cardsById.values()],
+    })
+  }
+
+  deleted() {
+    return Promise.resolve({
+      columns: [...this.droppedCols],
+      cards: [...this.trashed.keys()],
     })
   }
 
@@ -197,7 +205,7 @@ export class FakeBoard implements VaultBoard {
   deleteCard(id: string) {
     const card = this.cardsById.get(id)
     if (card) this.trashed.set(id, card)
-    this.deleted.push(id)
+    this.deleteCalls.push(id)
     this.cardsById.delete(id)
     return Promise.resolve()
   }
@@ -210,6 +218,7 @@ export class FakeBoard implements VaultBoard {
   deleteColumn(id: string) {
     const at = this.cols.findIndex((col) => col.id === id)
     if (at !== -1) this.cols.splice(at, 1)
+    this.droppedCols.push(id)
     for (const card of [...this.cardsById.values()]) {
       if (card.columnId === id) void this.deleteCard(card.id)
     }
@@ -218,6 +227,8 @@ export class FakeBoard implements VaultBoard {
   /** Brings a column back with the cards its delete took, the way restore does. */
   restoreColumn(column: Column) {
     this.cols.push({ ...column })
+    const at = this.droppedCols.indexOf(column.id)
+    if (at !== -1) this.droppedCols.splice(at, 1)
     for (const [id, card] of [...this.trashed]) {
       if (card.columnId !== column.id) continue
       this.trashed.delete(id)

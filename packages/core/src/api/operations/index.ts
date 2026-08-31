@@ -1,5 +1,7 @@
 export { getDashboards } from "./get-dashboards"
 export { getBoard } from "./get-board"
+export { getDeletedIds } from "./get-deleted-ids"
+export type { DeletedIds } from "./get-deleted-ids"
 export {
   boardDigest,
   getDigest,

@@ -121,7 +121,7 @@ describe("Vault", () => {
     const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
     await vault.sync()
 
-    board.cardsById.delete(card.id)
+    await board.deleteCard(card.id)
     await vault.sync()
 
     expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(false)
@@ -135,7 +135,7 @@ describe("Vault", () => {
     await fs.rename(`${ROOT}/to_do/ship_it.md`, `${ROOT}/_trash/ship_it.md`)
     await vault.sync()
 
-    expect(board.deleted).toEqual([card.id])
+    expect(board.deleteCalls).toEqual([card.id])
     expect(changes).toBe(1)
   })
 
@@ -164,12 +164,12 @@ describe("Vault", () => {
   it("keeps a trashed file's own name apart from one already there", async () => {
     const first = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
     await vault.sync()
-    board.cardsById.delete(first.id)
+    await board.deleteCard(first.id)
     await vault.sync()
 
     const second = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
     await vault.sync()
-    board.cardsById.delete(second.id)
+    await board.deleteCard(second.id)
     await vault.sync()
 
     expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(true)
@@ -321,7 +321,7 @@ describe("Vault", () => {
     await fs.mkdir(`${ROOT}/later`)
     await vault.sync()
 
-    expect(board.columns().map((col) => col.title)).toContain("later")
+    expect(board.columns().map((col) => col.title)).toContain("Later")
     expect(changes).toBe(1)
   })
 
@@ -340,7 +340,7 @@ describe("Vault", () => {
 
     const back = board.cardsById.get(card.id)
     expect(back?.title).toBe("Ship it")
-    expect(board.column(back!.columnId)?.title).toBe("to_do")
+    expect(board.column(back!.columnId)?.title).toBe("To do")
 
     await vault.sync()
     expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(false)
@@ -354,6 +354,58 @@ describe("Vault", () => {
     await vault.sync()
 
     expect(board.columns()).toHaveLength(2)
+  })
+
+  it("fills an empty board from the folder it is pointed at", async () => {
+    const theirTodo = makeColumn("col-their-todo", "To do")
+    const theirDone = makeColumn("col-their-done", "Done")
+    const other = new FakeBoard([theirTodo, theirDone])
+    other.add(makeCard({ columnId: theirTodo.id, title: "Ship it", body: "soon" }))
+    other.add(makeCard({ columnId: theirDone.id, title: "Shipped" }))
+    await new Vault({ fs, board: other, root: ROOT }).sync()
+
+    const empty = new FakeBoard([])
+    await new Vault({ fs, board: empty, root: ROOT }).sync()
+
+    expect(empty.columns().map((col) => col.title)).toEqual(["To do", "Done"])
+    const cards = [...empty.cardsById.values()]
+    expect(cards.map((card) => card.title).sort()).toEqual([
+      "Ship it",
+      "Shipped",
+    ])
+    const shipIt = cards.find((card) => card.title === "Ship it")
+    expect(shipIt?.body).toBe("soon")
+    expect(empty.column(shipIt!.columnId)?.title).toBe("To do")
+    expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(false)
+  })
+
+  it("fills an empty board from a folder tree made by hand", async () => {
+    await fs.mkdir(`${ROOT}/in_progress`)
+    await fs.write(`${ROOT}/in_progress/ship_it.md`, "soon\n")
+
+    const empty = new FakeBoard([])
+    await new Vault({ fs, board: empty, root: ROOT }).sync()
+
+    expect(empty.columns().map((col) => col.title)).toEqual(["In progress"])
+    const card = [...empty.cardsById.values()][0]
+    expect(card.title).toBe("Ship it")
+    expect(card.body).toBe("soon")
+  })
+
+  it("replicates a folder another board mirrored into this one", async () => {
+    const theirs = makeColumn("col-their-todo", "To do")
+    const other = new FakeBoard([theirs])
+    other.add(makeCard({ columnId: theirs.id, title: "Ship it" }))
+    await new Vault({ fs, board: other, root: ROOT }).sync()
+
+    await vault.sync()
+
+    const copied = [...board.cardsById.values()].find(
+      (card) => card.title === "Ship it"
+    )
+    expect(copied).toBeDefined()
+    expect(copied!.columnId).toBe(TODO.id)
+    expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(false)
   })
 
   it("brings the card back when its file is dragged out of the trash", async () => {
@@ -446,7 +498,7 @@ describe("Vault", () => {
     expect(fs.files.has(`${ROOT}/to_do/my_notes.md`)).toBe(true)
     expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(false)
     expect(board.cardsById.get(card.id)?.title).toBe("Ship it")
-    expect(board.deleted).toEqual([])
+    expect(board.deleteCalls).toEqual([])
   })
 
   it("cuts a long title down to a filename", async () => {
@@ -555,7 +607,7 @@ describe("Vault restore", () => {
     await vault.sync()
 
     expect(board.cardsById.has(card.id)).toBe(true)
-    expect(board.deleted).toEqual([card.id])
+    expect(board.deleteCalls).toEqual([card.id])
   })
 
   it("restores into the column the card was moved to while deleted", async () => {

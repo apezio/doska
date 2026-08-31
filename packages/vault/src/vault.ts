@@ -9,7 +9,7 @@ import {
 } from "./column-folder"
 import { Folders } from "./folders"
 import { Trash } from "./trash"
-import { dirOf, stemOf } from "./utils"
+import { dirOf, stemOf, titleOf } from "./utils"
 import { Written } from "./written"
 
 /** A card file on disk, with the folder it was found in. */
@@ -28,6 +28,7 @@ export interface VaultBoard {
   renameColumn(id: string, title: string): Promise<void>
   deleteCard(id: string): Promise<void>
   restoreCard(id: string): Promise<void>
+  deleted(): Promise<{ columns: string[]; cards: string[] }>
 }
 
 /** The attachment bytes behind a card's keys. The vault only ever reads. */
@@ -117,9 +118,11 @@ export class Vault {
     await this.written.load()
 
     const board = await this.board.load()
+    const dropped = await this.board.deleted()
     const { folders, retitled, gone, created } = await this.folders.resolve(
       board.columns,
-      board.cards
+      board.cards,
+      new Set(dropped.columns)
     )
     await this.fs.mkdir(this.trash.path)
     for (const folder of folders) await this.fs.mkdir(folder.path)
@@ -144,7 +147,8 @@ export class Vault {
     if (await this.syncCards(cards, files, wiped, byColumn, inTrash)) {
       changed = true
     }
-    if (await this.syncOrphans(cards, files, inTrash)) changed = true
+    const deleted = new Set(dropped.cards)
+    if (await this.syncOrphans(cards, files, deleted, inTrash)) changed = true
 
     await this.written.save()
     if (changed) this.onBoardChange?.()
@@ -249,11 +253,19 @@ export class Vault {
   private async syncOrphans(
     cards: Map<string, Card>,
     files: Map<string, Found>,
+    deleted: Set<string>,
     inTrash: Set<string>
   ): Promise<boolean> {
     let changed = false
     for (const [id, { file, folder }] of files) {
       if (cards.has(id)) continue
+
+      // A card this board never had
+      if (!deleted.has(id)) {
+        await this.adopt(file, folder)
+        changed = true
+        continue
+      }
 
       // The vault didn't put this file here, so the user did: it came back out
       // of the trash. The card comes back with it, into the folder it landed in.
@@ -299,7 +311,7 @@ export class Vault {
     const id = await this.board.createCard(folder.columnId)
     const card = new CardFile({
       id,
-      title: file.card.title || stemOf(file.path),
+      title: file.card.title || titleOf(stemOf(file.path)),
       body: file.card.body,
       deadline: file.card.deadline,
       priority: file.card.priority,

@@ -141,7 +141,10 @@ export class Written {
 
   private serialize(): string {
     return JSON.stringify(
-      { cards: sorted(this.entries), columns: sorted(this.folders) },
+      {
+        cards: sorted(this.entries),
+        columns: sorted(this.folders),
+      },
       null,
       2
     )

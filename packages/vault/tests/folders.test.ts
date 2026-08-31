@@ -52,6 +52,17 @@ describe("column folders", () => {
     expect(changes).toBe(1)
   })
 
+  it("reads a snake_case folder name back as a display title", async () => {
+    board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    await fs.rename(`${ROOT}/to_do`, `${ROOT}/in_progress`)
+    await vault.sync()
+
+    expect(board.column(TODO.id)?.title).toBe("In progress")
+    expect(await fs.readDirs(ROOT)).toContain("in_progress")
+  })
+
   it("keeps the renamed folder put on the next pass", async () => {
     board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
     await vault.sync()

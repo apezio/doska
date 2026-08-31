@@ -5,6 +5,7 @@ import {
   createColumn,
   deleteCard,
   getBoard,
+  getDeletedIds,
   moveCardToColumn,
   renameColumn,
   restore,
@@ -49,6 +50,7 @@ function boardOps(boardId: string): VaultBoard {
     renameColumn,
     deleteCard: (id) => deleteCard(boardId, id),
     restoreCard: (id) => restore("cards", id),
+    deleted: () => getDeletedIds(boardId),
   }
 }
 

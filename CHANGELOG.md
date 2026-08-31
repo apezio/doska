@@ -4,6 +4,14 @@
 
 ### Added
 
+- Undo and redo in the card editor, on ⌘Z / ⌘⇧Z and as buttons in the card
+  header — in the "⋯" menu on a phone, where the header has no room for them.
+  It covers typing as well as everything the editor writes for you: slash
+  commands, `[[` references, list continuation, cut line, pasted files, and
+  ticking a task box in the preview. The caret goes back where it was, typing
+  is grouped into whole words and lines rather than single keystrokes, and each
+  card keeps its own history for as long as it is open.
+
 - A **Cards** tab in the sidebar, beside Dashboards: the open cards of every
   board — the first column and the second of each — in priority order, capped
   at ten with an "and N more" line. A row is tinted with its column's color and

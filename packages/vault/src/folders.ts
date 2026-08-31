@@ -1,17 +1,25 @@
 import type { Card, Column } from "@doska/contract"
-import { CardFile } from "./card-file"
-import { claim, ColumnFolder, type VaultFs } from "./column-folder"
+import { cardFiles, claim, ColumnFolder, type VaultFs } from "./column-folder"
 import { snakeName } from "./utils"
 import type { Written } from "./written"
 
 /** `_trash`, `_files` and anything hidden: not a column's folder. */
 const OWNED = /^[._]/
 
+interface Named {
+  id: string
+  title: string
+}
+
 /** A column and the folder it lives in, once the two agree on a name. */
 export interface Resolved {
   folders: ColumnFolder[]
   /** The columns the board has to rename, because their folders were. */
   retitled: Map<string, string>
+  /** The folders of columns the board no longer has, by name under the root. */
+  gone: Set<string>
+  /** How many columns were made out of folders nobody had claimed. */
+  created: number
 }
 
 /**
@@ -21,15 +29,24 @@ export class Folders {
   private readonly fs: VaultFs
   private readonly root: string
   private readonly written: Written
+  private readonly createColumn: (title: string) => Promise<string>
 
-  constructor(fs: VaultFs, root: string, written: Written) {
+  constructor(
+    fs: VaultFs,
+    root: string,
+    written: Written,
+    createColumn: (title: string) => Promise<string>
+  ) {
     this.fs = fs
     this.root = root
     this.written = written
+    this.createColumn = createColumn
   }
 
   async resolve(columns: Column[], cards: Card[]): Promise<Resolved> {
-    const { chosen, taken } = await this.match(columns, cards)
+    const live = new Set(columns.map((column) => column.id))
+    const gone = this.gone(live)
+    const { chosen, taken, created } = await this.match(columns, cards, gone)
 
     const folders: ColumnFolder[] = []
     const retitled = new Map<string, string>()
@@ -47,11 +64,24 @@ export class Folders {
       }
 
       this.written.setFolder(column.id, { name, title })
-      folders.push(new ColumnFolder(this.fs, column, `${this.root}/${name}`))
+      folders.push(new ColumnFolder(this.fs, column.id, `${this.root}/${name}`))
+      live.add(column.id)
     }
 
-    this.written.keepFolders(new Set(columns.map((column) => column.id)))
-    return { folders, retitled }
+    this.written.keepFolders(live)
+    return { folders, retitled, gone, created }
+  }
+
+  /**
+   * The folders whose column the board dropped. They are on their way out, so
+   * no live column may be matched to one.
+   */
+  private gone(live: Set<string>): Set<string> {
+    const names = new Set<string>()
+    for (const [id, folder] of this.written.columnFolders()) {
+      if (!live.has(id)) names.add(folder.name)
+    }
+    return names
   }
 
   /**
@@ -61,15 +91,22 @@ export class Folders {
    */
   private async match(
     columns: Column[],
-    cards: Card[]
-  ): Promise<{ chosen: Map<Column, string>; taken: Set<string> }> {
+    cards: Card[],
+    gone: Set<string>
+  ): Promise<{
+    chosen: Map<Named, string>
+    taken: Set<string>
+    created: number
+  }> {
     const names = (await this.fs.readDirs(this.root)) ?? []
-    const free = new Set(names.filter((name) => !OWNED.test(name)))
+    const free = new Set(
+      names.filter((name) => !OWNED.test(name) && !gone.has(name))
+    )
     const taken = new Set(names.map((name) => name.toLowerCase()))
 
-    const chosen = new Map<Column, string>()
-    const waiting = new Set(columns)
-    const take = (column: Column, name: string) => {
+    const chosen = new Map<Named, string>()
+    const waiting = new Set<Named>(columns)
+    const take = (column: Named, name: string) => {
       chosen.set(column, name)
       waiting.delete(column)
       free.delete(name)
@@ -83,7 +120,7 @@ export class Folders {
 
     // Renamed on disk: a renamed folder keeps its files, so the ids in them
     // say which column it is.
-    const byId = new Map(columns.map((column) => [column.id, column]))
+    const byId = new Map<string, Named>(columns.map((c) => [c.id, c]))
     const owners = new Map(cards.map((card) => [card.id, card.columnId]))
     for (const name of [...free]) {
       const owner = await this.ownerOf(name, owners)
@@ -107,13 +144,20 @@ export class Folders {
       take(column, free.has(wanted) ? wanted : claim(wanted, taken))
     }
 
-    return { chosen, taken }
+    let created = 0
+    for (const name of [...free]) {
+      const id = await this.createColumn(name)
+      chosen.set({ id, title: name }, name)
+      created++
+    }
+
+    return { chosen, taken, created }
   }
 
   /** Moves a folder to match its column's new title, files and all. */
   private async rename(
     from: string,
-    column: Column,
+    column: Named,
     taken: Set<string>
   ): Promise<string> {
     const wanted = snakeName(column.title) || column.id
@@ -132,11 +176,8 @@ export class Folders {
     owners: Map<string, string>
   ): Promise<string | null> {
     const path = `${this.root}/${folder}`
-    for (const name of (await this.fs.readDir(path)) ?? []) {
-      if (!name.endsWith(".md") || name.startsWith(".")) continue
-      const text = await this.fs.read(`${path}/${name}`)
-      if (text === null) continue
-      const owner = owners.get(CardFile.parse(text).id)
+    for (const file of (await cardFiles(this.fs, path)) ?? []) {
+      const owner = owners.get(file.card.id)
       if (owner) return owner
     }
     return null

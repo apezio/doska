@@ -92,6 +92,7 @@ export async function installBoard(columns: Column[]): Promise<TestBoard> {
   const {
     createCard,
     deleteCard,
+    createColumn,
     getBoard,
     moveCardToColumn,
     renameColumn,
@@ -102,6 +103,7 @@ export async function installBoard(columns: Column[]): Promise<TestBoard> {
   return {
     load: () => getBoard(BOARD_ID),
     createCard,
+    createColumn: (title: string) => createColumn(BOARD_ID, title),
     updateCard,
     moveCardToColumn,
     renameColumn,

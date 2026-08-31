@@ -79,6 +79,11 @@ export class Written {
     this.folders.set(columnId, folder)
   }
 
+  /** Every column's folder, as the vault last left it. */
+  columnFolders(): IterableIterator<[string, WrittenFolder]> {
+    return this.folders.entries()
+  }
+
   /** Forgets the folders of columns that are gone from the board. */
   keepFolders(columnIds: Set<string>): void {
     for (const id of [...this.folders.keys()]) {

@@ -2,6 +2,7 @@ import { activeStorage } from "@doska/core/attachments"
 import { keys } from "@doska/core/keys"
 import {
   createCard,
+  createColumn,
   deleteCard,
   getBoard,
   moveCardToColumn,
@@ -42,6 +43,7 @@ function boardOps(boardId: string): VaultBoard {
   return {
     load: () => getBoard(boardId),
     createCard,
+    createColumn: (title) => createColumn(boardId, title),
     updateCard,
     moveCardToColumn,
     renameColumn,

@@ -1,6 +1,5 @@
 import type { Card } from "@doska/contract"
-import { CardFile } from "./card-file"
-import { claim, type VaultFs } from "./column-folder"
+import { cardFiles, claim, type VaultFs } from "./column-folder"
 import { dirOf, stemOf } from "./utils"
 import type { Written } from "./written"
 
@@ -66,32 +65,27 @@ export class Trash {
    * changed.
    */
   async sweep(cards: Map<string, Card>, taken: Set<string>): Promise<boolean> {
-    const names = await this.fs.readDir(this.path)
-    if (!names) return false
+    const files = await cardFiles(this.fs, this.path)
+    if (files === null) return false
 
     let changed = false
     const present = new Set<string>()
-    for (const name of names) {
-      if (!name.endsWith(".md")) continue
-      taken.add(stemOf(name).toLowerCase())
-      const path = `${this.path}/${name}`
+    for (const { path, text, card } of files) {
+      taken.add(stemOf(path).toLowerCase())
       present.add(path)
-      const text = await this.fs.read(path)
-      if (text === null) continue
-      const id = CardFile.parse(text).id
-      if (!id || !cards.has(id)) continue
+      if (!card.id || !cards.has(card.id)) continue
 
       // The card is live and the vault is what trashed its file
-      if (this.written.get(id)?.path === path) {
+      if (this.written.get(card.id)?.path === path) {
         await this.fs.remove(path)
         present.delete(path)
-        this.written.delete(id)
+        this.written.delete(card.id)
         continue
       }
 
-      await this.deleteCard(id)
-      cards.delete(id)
-      this.written.set(id, { path, text })
+      await this.deleteCard(card.id)
+      cards.delete(card.id)
+      this.written.set(card.id, { path, text })
       changed = true
     }
 

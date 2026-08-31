@@ -1,4 +1,3 @@
-import type { Column } from "@doska/contract"
 import { CardFile } from "./card-file"
 import { snakeName, stemOf } from "./utils"
 
@@ -24,6 +23,29 @@ export interface VaultFile {
 }
 
 /**
+ * The card files in a folder, parsed. `null` when the folder isn't there, the
+ * way `readDir` reports it. Dotfiles and anything that isn't Markdown are not
+ * the vault's to read.
+ */
+export async function cardFiles(
+  fs: VaultFs,
+  dir: string
+): Promise<VaultFile[] | null> {
+  const names = await fs.readDir(dir)
+  if (names === null) return null
+
+  const files: VaultFile[] = []
+  for (const name of names) {
+    if (!name.endsWith(".md") || name.startsWith(".")) continue
+    const path = `${dir}/${name}`
+    const text = await fs.read(path)
+    if (text === null) continue
+    files.push({ path, text, card: CardFile.parse(text) })
+  }
+  return files
+}
+
+/**
  * Takes `name`, or `name_2` when it's taken, and marks it used. Compared
  * case-insensitively: APFS would collide on "Inbox" and "inbox".
  */
@@ -45,25 +67,15 @@ export class ColumnFolder {
   /** Names handed out this pass, so two cards can't claim the same file. */
   private readonly used = new Set<string>()
 
-  constructor(fs: VaultFs, column: Column, path: string) {
+  constructor(fs: VaultFs, columnId: string, path: string) {
     this.fs = fs
-    this.columnId = column.id
+    this.columnId = columnId
     this.path = path
   }
 
   async list(): Promise<VaultFile[]> {
-    const names = await this.fs.readDir(this.path)
-    if (!names) return []
-
-    const files: VaultFile[] = []
-    for (const name of names) {
-      if (!name.endsWith(".md") || name.startsWith(".")) continue
-      const path = `${this.path}/${name}`
-      const text = await this.fs.read(path)
-      if (text === null) continue
-      this.used.add(stemOf(name).toLowerCase())
-      files.push({ path, text, card: CardFile.parse(text) })
-    }
+    const files = (await cardFiles(this.fs, this.path)) ?? []
+    for (const file of files) this.used.add(stemOf(file.path).toLowerCase())
     return files
   }
 

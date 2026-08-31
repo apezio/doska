@@ -7,6 +7,8 @@
 - Folder sync on desktop: a board mirrors to a folder.
 - Attachments mirror into `_files`.
 - Deleted cards land in `_trash`.
+- Deleting a column takes its folder with it, its cards' files going to `_trash`.
+- A folder dropped into the root becomes a column, cards and all.
 
 ### Fixed
 

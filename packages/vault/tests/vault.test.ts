@@ -252,6 +252,110 @@ describe("Vault", () => {
     expect(board.cardsById.has(card.id)).toBe(false)
   })
 
+  it("removes the folder of a column deleted in the app", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    board.deleteColumn(TODO.id)
+    await vault.sync()
+
+    expect(await fs.readDir(`${ROOT}/to_do`)).toBeNull()
+    expect(fs.files.get(`${ROOT}/_trash/ship_it.md`)).toContain(
+      `id: ${card.id}`
+    )
+  })
+
+  it("keeps a deleted column's folder when it holds something else", async () => {
+    board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+    await fs.write(`${ROOT}/to_do/notes.txt`, "mine")
+
+    board.deleteColumn(TODO.id)
+    await vault.sync()
+
+    expect(fs.files.get(`${ROOT}/to_do/notes.txt`)).toBe("mine")
+  })
+
+  it("does not hand a deleted column's folder to another column", async () => {
+    board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+
+    board.deleteColumn(DONE.id)
+    board.deleteColumn(TODO.id)
+    const added = makeColumn("col-new", "Later")
+    board.addColumn(added)
+    await vault.sync()
+
+    expect(await fs.readDir(`${ROOT}/to_do`)).toBeNull()
+    expect(await fs.readDir(`${ROOT}/later`)).toEqual([])
+  })
+
+  it("writes a restored column's cards back into a fresh folder", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+    board.deleteColumn(TODO.id)
+    await vault.sync()
+
+    board.restoreColumn(TODO)
+    await vault.sync()
+
+    expect(board.cardsById.has(card.id)).toBe(true)
+    expect(fs.files.get(`${ROOT}/to_do/ship_it.md`)).toContain(`id: ${card.id}`)
+    expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(false)
+  })
+
+  it("brings a retired column's card back when its file leaves the trash", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+    board.deleteColumn(TODO.id)
+    await vault.sync()
+
+    await fs.rename(`${ROOT}/_trash/ship_it.md`, `${ROOT}/done/ship_it.md`)
+    await vault.sync()
+
+    expect(board.cardsById.get(card.id)?.columnId).toBe(DONE.id)
+  })
+
+  it("makes a column out of a folder dropped into the root", async () => {
+    await vault.sync()
+    await fs.mkdir(`${ROOT}/later`)
+    await vault.sync()
+
+    expect(board.columns().map((col) => col.title)).toContain("later")
+    expect(changes).toBe(1)
+  })
+
+  it("brings a retired column back when its folder is put back", async () => {
+    const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+    const saved = fs.files.get(`${ROOT}/to_do/ship_it.md`)!
+
+    board.deleteColumn(TODO.id)
+    await vault.sync()
+    expect(await fs.readDir(`${ROOT}/to_do`)).toBeNull()
+
+    await fs.mkdir(`${ROOT}/to_do`)
+    await fs.write(`${ROOT}/to_do/ship_it.md`, saved)
+    await vault.sync()
+
+    const back = board.cardsById.get(card.id)
+    expect(back?.title).toBe("Ship it")
+    expect(board.column(back!.columnId)?.title).toBe("to_do")
+
+    await vault.sync()
+    expect(fs.files.has(`${ROOT}/_trash/ship_it.md`)).toBe(false)
+    expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(true)
+  })
+
+  it("leaves _trash and _files out of the columns", async () => {
+    board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
+    await vault.sync()
+    await fs.mkdir(`${ROOT}/_files`)
+    await vault.sync()
+
+    expect(board.columns()).toHaveLength(2)
+  })
+
   it("brings the card back when its file is dragged out of the trash", async () => {
     const card = board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
     await vault.sync()

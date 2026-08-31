@@ -46,6 +46,7 @@ export class MemoryFs implements VaultFs {
 
   remove(path: string) {
     this.files.delete(path)
+    this.dirs.delete(path)
     return Promise.resolve()
   }
 
@@ -143,6 +144,10 @@ export class FakeBoard implements VaultBoard {
     this.cols = cols.map((col) => ({ ...col }))
   }
 
+  columns(): Column[] {
+    return this.cols
+  }
+
   column(id: string): Column | undefined {
     return this.cols.find((col) => col.id === id)
   }
@@ -157,6 +162,12 @@ export class FakeBoard implements VaultBoard {
       columns: this.cols,
       cards: [...this.cardsById.values()],
     })
+  }
+
+  createColumn(title: string) {
+    const column = makeColumn(`col-${++seq}`, title)
+    this.cols.push(column)
+    return Promise.resolve(column.id)
   }
 
   createCard(columnId: string) {
@@ -189,6 +200,29 @@ export class FakeBoard implements VaultBoard {
     this.deleted.push(id)
     this.cardsById.delete(id)
     return Promise.resolve()
+  }
+
+  addColumn(column: Column) {
+    this.cols.push({ ...column })
+  }
+
+  /** Drops a column and its cards, the way the board's delete does. */
+  deleteColumn(id: string) {
+    const at = this.cols.findIndex((col) => col.id === id)
+    if (at !== -1) this.cols.splice(at, 1)
+    for (const card of [...this.cardsById.values()]) {
+      if (card.columnId === id) void this.deleteCard(card.id)
+    }
+  }
+
+  /** Brings a column back with the cards its delete took, the way restore does. */
+  restoreColumn(column: Column) {
+    this.cols.push({ ...column })
+    for (const [id, card] of [...this.trashed]) {
+      if (card.columnId !== column.id) continue
+      this.trashed.delete(id)
+      this.cardsById.set(id, card)
+    }
   }
 
   restoreCard(id: string) {

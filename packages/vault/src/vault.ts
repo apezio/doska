@@ -1,7 +1,12 @@
 import type { Card, Column } from "@doska/contract"
 import { CardFile, type CardPatch } from "./card-file"
 import { FILES, fileNameOf } from "./card-format"
-import type { ColumnFolder, VaultFile, VaultFs } from "./column-folder"
+import {
+  cardFiles,
+  type ColumnFolder,
+  type VaultFile,
+  type VaultFs,
+} from "./column-folder"
 import { Folders } from "./folders"
 import { Trash } from "./trash"
 import { dirOf, stemOf } from "./utils"
@@ -17,6 +22,7 @@ interface Found {
 export interface VaultBoard {
   load(): Promise<{ columns: Column[]; cards: Card[] }>
   createCard(columnId: string): Promise<string>
+  createColumn(title: string): Promise<string>
   updateCard(id: string, patch: CardPatch): Promise<void>
   moveCardToColumn(id: string, columnId: string): Promise<void>
   renameColumn(id: string, title: string): Promise<void>
@@ -76,7 +82,9 @@ export class Vault {
     this.onBoardChange = onBoardChange
     this.onError = onError
     this.written = new Written(fs, root)
-    this.folders = new Folders(fs, root, this.written)
+    this.folders = new Folders(fs, root, this.written, (title) =>
+      board.createColumn(title)
+    )
     this.trash = new Trash(fs, root, this.written, (id) => board.deleteCard(id))
   }
 
@@ -109,7 +117,7 @@ export class Vault {
     await this.written.load()
 
     const board = await this.board.load()
-    const { folders, retitled } = await this.folders.resolve(
+    const { folders, retitled, gone, created } = await this.folders.resolve(
       board.columns,
       board.cards
     )
@@ -119,13 +127,14 @@ export class Vault {
     for (const [id, title] of retitled) {
       await this.board.renameColumn(id, title)
     }
-    let changed = retitled.size > 0
+    let changed = retitled.size > 0 || created > 0
 
     const cards = new Map(board.cards.map((card) => [card.id, card]))
     await this.mirrorFiles(board.cards)
 
     const inTrash = new Set<string>()
     if (await this.trash.sweep(cards, inTrash)) changed = true
+    await this.retire(gone, inTrash)
 
     const { files, empty, adopted } = await this.index(folders)
     if (adopted) changed = true
@@ -139,6 +148,28 @@ export class Vault {
 
     await this.written.save()
     if (changed) this.onBoardChange?.()
+  }
+
+  /**
+   * The folders of columns the board dropped. Their cards went with the column,
+   * so their files go to the trash and the folder goes with them. Anything the
+   * vault didn't put there keeps the folder alive.
+   */
+  private async retire(gone: Set<string>, inTrash: Set<string>): Promise<void> {
+    for (const name of gone) {
+      const path = `${this.root}/${name}`
+      for (const file of (await cardFiles(this.fs, path)) ?? []) {
+        if (!file.card.id) continue
+        await this.trash.take(file.card.id, file, inTrash)
+      }
+      if (await this.isEmpty(path)) await this.fs.remove(path)
+    }
+  }
+
+  private async isEmpty(path: string): Promise<boolean> {
+    const files = (await this.fs.readDir(path)) ?? []
+    const dirs = (await this.fs.readDirs(path)) ?? []
+    return files.length === 0 && dirs.length === 0
   }
 
   /** Every card file on disk, by id. Whatever isn't a card yet becomes one. */

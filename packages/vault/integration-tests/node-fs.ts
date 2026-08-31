@@ -38,7 +38,7 @@ export function nodeFs(): VaultFs {
     rename,
 
     async remove(path) {
-      await rm(path, { force: true })
+      await rm(path, { force: true, recursive: true })
     },
 
     async readDir(path) {

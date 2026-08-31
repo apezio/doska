@@ -6,9 +6,6 @@ import { releasesLatest, repoApi } from "./links"
 
 type GhRelease = { assets?: { name: string; browser_download_url: string }[] }
 
-/**
- * Direct download URL for the newest stable release's .dmg
- */
 function useLatestDmg(): string | null {
   const [url, setUrl] = useState<string | null>(null)
 

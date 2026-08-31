@@ -22,7 +22,6 @@
   --color-docs-nav: var(--docs-nav);
 }
 
-/* The terminal's cursor blink — the only motion in the card. */
 @theme {
   --animate-terminal-blink: terminal-blink 1s steps(1) infinite;
 
@@ -43,14 +42,17 @@
 
 :root {
   --radius: 0.625rem;
+
+  --background: #f1f2f6;
   --dots: #676d7f40;
-  --terminal: #ffffff;
-  --terminal-foreground: #343c54;
-  --terminal-muted: #7b8199;
-  --terminal-border: #e4e5ea;
-  --terminal-accent: #725cff;
-  --terminal-ok: #3f8f76;
-  /* Code blocks stay dark in both themes, so these are not theme-flipped. */
+
+  --terminal: #1d2230;
+  --terminal-foreground: #e6e8ee;
+  --terminal-muted: #e6e8ee73;
+  --terminal-border: #ffffff14;
+  --terminal-accent: #9585ff;
+  --terminal-ok: #66ae96;
+
   --code: #1d2230;
   --code-foreground: #e6e8ee;
   --code-border: #ffffff1a;
@@ -61,17 +63,34 @@
 }
 
 .dark:root {
+  --background: #1e2432;
   --dots: #ffffff26;
-  --terminal: #1d2230;
-  --terminal-foreground: #e6e8ee;
-  --terminal-muted: #e6e8ee73;
-  --terminal-border: #ffffff14;
-  --terminal-accent: #9585ff;
-  --terminal-ok: #66ae96;
   --inline-code: #343c54;
   --inline-code-foreground: #f7f7f8;
   --inline-code-border: #ffffff1f;
   --docs-nav: #999da9;
+}
+
+.dark-surface {
+  --background: #232939;
+  --foreground: #f7f7f8;
+  --card: #282e3f;
+  --card-foreground: #f7f7f8;
+  --popover: #2d3447;
+  --popover-foreground: #f7f7f8;
+  --primary: #9585ff;
+  --primary-foreground: #f7f7f8;
+  --secondary: #343c54;
+  --secondary-foreground: #f7f7f8;
+  --muted: #343c54;
+  --muted-foreground: #9299b0;
+  --accent: #343c54;
+  --accent-foreground: #f7f7f8;
+  --destructive: #ff5656;
+  --border: #ffffff14;
+  --input: #ffffff1f;
+  --ring: #9585ff;
+  color: var(--foreground);
 }
 
 .docs-prose h2 {
@@ -99,7 +118,7 @@
 .docs-prose hr {
   margin-block: 2.5rem;
 }
-/* Wide tables scroll on their own rather than widening the page. */
+
 .docs-prose table {
   display: block;
   max-width: 100%;
@@ -116,7 +135,7 @@
   border-color: var(--code-border);
   color: var(--code-foreground);
 }
-/* The copy button sits on the dark block, so it cannot follow the page theme. */
+
 .docs-prose [aria-label="Copy code"] {
   background-color: #ffffff14;
   border-color: var(--code-border);

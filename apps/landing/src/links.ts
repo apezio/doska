@@ -1,4 +1,3 @@
-/** Dev points at the local client, so the CTA opens the board you're editing. */
 const appOrigin = import.meta.env.DEV
   ? "http://localhost:5173"
   : "https://app.doska.sh"

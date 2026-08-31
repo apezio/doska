@@ -1,11 +1,5 @@
-import { app, repo, roadmap } from "./links"
+import { app, repo } from "./links"
 
-/**
- * The page's copy, written the way a real card body is written — the same
- * markdown the app parses, rendered through the app's own renderer. Nothing
- * here is markup: if a construct renders wrong on the landing page, it renders
- * wrong in the app.
- */
 export const cards = {
   markdown: `GitHub-flavored Markdown:\\
 **bold**, \`code\`, [links](${repo}), ==highlights==.\\
@@ -29,8 +23,20 @@ both live, so a rename or a move updates every mention:
 
 [[CARD-3]]`,
 
+  search: `\`⌘\`+\`K\` searches the open board: card titles, bodies and the names
+of files attached to them. Each hit brings the line it matched on, and Enter
+opens the card.`,
+
+  views: `Columns by default. One toggle in the header swaps the board for a
+single list of rows, grouped by date.`,
+
   localFirst: `Boards live in the browser. Reads and writes hit your device, not
 the network: fast, and offline.`,
+
+  vault: `Point a board at a folder in the desktop app and it mirrors there: one
+folder per column, one Markdown file per card. Edits go both ways, so a card
+you write in your editor lands on the board, and deleted cards wait in
+\`_trash\`.`,
 
   sync: `Point it at a server you run and boards reach every device, every couple
 of seconds or on \`⌘\`+\`S\`.`,
@@ -39,8 +45,7 @@ of seconds or on \`⌘\`+\`S\`.`,
 off. A shared board syncs to everyone on it.`,
 
   publicLink: `Publish a board to a read-only link: no account, nothing kept in
-the visitor's browser. Turn it off and the link is dead.\\
-[This project's roadmap](${roadmap}) is one of them.`,
+the visitor's browser. Turn it off and the link is dead.`,
 
   accounts: `The admin adds accounts, sets passwords, deactivates. Nobody signs
 themselves up.`,
@@ -60,7 +65,6 @@ auto-updates.`,
 tasks, move things.`,
 }
 
-/** What the demo's `[[CARD-3]]` resolves to — the app reads this off the card. */
 export const cardRefs: Record<
   string,
   { title: string; column: string; color: string }

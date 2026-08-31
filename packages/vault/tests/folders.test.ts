@@ -3,6 +3,7 @@ import { Vault } from "../src/vault"
 import { FakeBoard, makeCard, makeColumn, MemoryFs } from "./fakes"
 
 const ROOT = "/vault"
+const BOARD = "board-1"
 const TODO = makeColumn("col-todo", "To do")
 const DONE = makeColumn("col-done", "Done")
 
@@ -20,6 +21,7 @@ describe("column folders", () => {
     vault = new Vault({
       fs,
       board,
+      boardId: BOARD,
       root: ROOT,
       onBoardChange: () => changes++,
     })
@@ -81,7 +83,7 @@ describe("column folders", () => {
 
   it("follows an empty folder someone renamed", async () => {
     board = new FakeBoard([TODO])
-    vault = new Vault({ fs, board, root: ROOT })
+    vault = new Vault({ fs, board, boardId: BOARD, root: ROOT })
     await vault.sync()
 
     await fs.rename(`${ROOT}/to_do`, `${ROOT}/Later`)
@@ -108,7 +110,7 @@ describe("column folders", () => {
 
     // A fresh clone: the files are there, the vault remembers nothing.
     fs.files.delete(`${ROOT}/_meta.json`)
-    await new Vault({ fs, board, root: ROOT }).sync()
+    await new Vault({ fs, board, boardId: BOARD, root: ROOT }).sync()
 
     expect(await fs.readDirs(ROOT)).not.toContain("to_do_2")
     expect(fs.files.get(`${ROOT}/to_do/ship_it.md`)).toContain(`id: ${card.id}`)
@@ -117,7 +119,7 @@ describe("column folders", () => {
   it("gives two columns with one snake name separate folders", async () => {
     const dash = makeColumn("col-dash", "To-do")
     board = new FakeBoard([TODO, dash])
-    vault = new Vault({ fs, board, root: ROOT })
+    vault = new Vault({ fs, board, boardId: BOARD, root: ROOT })
     board.add(makeCard({ columnId: TODO.id, title: "Ship it" }))
     board.add(makeCard({ columnId: dash.id, title: "Ship more" }))
     await vault.sync()

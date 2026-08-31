@@ -3,6 +3,7 @@ import { Vault } from "../src/vault"
 import { FakeBoard, FakeFiles, makeCard, makeColumn, MemoryFs } from "./fakes"
 
 const ROOT = "/vault"
+const BOARD = "board-1"
 const TODO = makeColumn("col-todo", "To do")
 const DONE = makeColumn("col-done", "Done")
 
@@ -20,6 +21,7 @@ describe("Vault", () => {
     vault = new Vault({
       fs,
       board,
+      boardId: BOARD,
       root: ROOT,
       onBoardChange: () => changes++,
     })
@@ -149,7 +151,7 @@ describe("Vault", () => {
 
     // A restart: it reads back what it wrote from `_meta.json`, so the edit
     // reads as an edit and not as a whole new file.
-    await new Vault({ fs, board, root: ROOT }).sync()
+    await new Vault({ fs, board, boardId: BOARD, root: ROOT }).sync()
 
     expect(board.cardsById.get(card.id)?.body).toBe("written while away")
   })
@@ -193,6 +195,7 @@ describe("Vault", () => {
       board: Object.assign(board, {
         load: () => Promise.reject(new Error("board is busy")),
       }),
+      boardId: BOARD,
       root: ROOT,
       onError: (error) => errors.push(error),
     })
@@ -362,10 +365,12 @@ describe("Vault", () => {
     const other = new FakeBoard([theirTodo, theirDone])
     other.add(makeCard({ columnId: theirTodo.id, title: "Ship it", body: "soon" }))
     other.add(makeCard({ columnId: theirDone.id, title: "Shipped" }))
-    await new Vault({ fs, board: other, root: ROOT }).sync()
+    await new Vault({ fs, board: other, boardId: "board-2", root: ROOT }).sync()
 
     const empty = new FakeBoard([])
-    await new Vault({ fs, board: empty, root: ROOT }).sync()
+    const mine = new Vault({ fs, board: empty, boardId: BOARD, root: ROOT })
+    await mine.claim()
+    await mine.sync()
 
     expect(empty.columns().map((col) => col.title)).toEqual(["To do", "Done"])
     const cards = [...empty.cardsById.values()]
@@ -384,7 +389,7 @@ describe("Vault", () => {
     await fs.write(`${ROOT}/in_progress/ship_it.md`, "soon\n")
 
     const empty = new FakeBoard([])
-    await new Vault({ fs, board: empty, root: ROOT }).sync()
+    await new Vault({ fs, board: empty, boardId: BOARD, root: ROOT }).sync()
 
     expect(empty.columns().map((col) => col.title)).toEqual(["In progress"])
     const card = [...empty.cardsById.values()][0]
@@ -396,8 +401,9 @@ describe("Vault", () => {
     const theirs = makeColumn("col-their-todo", "To do")
     const other = new FakeBoard([theirs])
     other.add(makeCard({ columnId: theirs.id, title: "Ship it" }))
-    await new Vault({ fs, board: other, root: ROOT }).sync()
+    await new Vault({ fs, board: other, boardId: "board-2", root: ROOT }).sync()
 
+    await vault.claim()
     await vault.sync()
 
     const copied = [...board.cardsById.values()].find(
@@ -427,7 +433,7 @@ describe("Vault", () => {
     await vault.sync()
 
     // A restart: same folder, same board, a vault that remembers nothing.
-    const next = new Vault({ fs, board, root: ROOT })
+    const next = new Vault({ fs, board, boardId: BOARD, root: ROOT })
     fs.files.delete(`${ROOT}/to_do/ship_it.md`)
     await next.sync()
 
@@ -543,7 +549,7 @@ describe("Vault", () => {
     fs.files.delete(`${ROOT}/to_do/ship_it.md`)
     // Nothing is known to have been written, so the file reads as missing
     // rather than as deleted: the card keeps it.
-    await new Vault({ fs, board, root: ROOT }).sync()
+    await new Vault({ fs, board, boardId: BOARD, root: ROOT }).sync()
 
     expect(board.cardsById.has(card.id)).toBe(true)
     expect(fs.files.has(`${ROOT}/to_do/ship_it.md`)).toBe(true)
@@ -556,11 +562,28 @@ describe("Vault", () => {
     expect(await fs.readDir(`${ROOT}/_files`)).toBeNull()
   })
 
+  it("refuses a folder another board is mirroring", async () => {
+    const other = new FakeBoard([makeColumn("col-their-todo", "To do")])
+    await new Vault({ fs, board: other, boardId: "board-2", root: ROOT }).sync()
+
+    await expect(vault.sync()).rejects.toThrow(/another board/)
+  })
+
+  it("takes a folder over once the board claims it", async () => {
+    const other = new FakeBoard([makeColumn("col-their-todo", "To do")])
+    const theirs = new Vault({ fs, board: other, boardId: "board-2", root: ROOT })
+    await theirs.sync()
+
+    await vault.claim()
+    await vault.sync()
+    await expect(theirs.sync()).rejects.toThrow(/another board/)
+  })
+
   it("names a folder after its column when the title has no letters", async () => {
     const odd = makeColumn("col-odd", "***")
     const only = new FakeBoard([odd])
     only.add(makeCard({ columnId: odd.id, title: "Ship it" }))
-    await new Vault({ fs, board: only, root: ROOT }).sync()
+    await new Vault({ fs, board: only, boardId: BOARD, root: ROOT }).sync()
 
     expect(fs.files.has(`${ROOT}/${odd.id}/ship_it.md`)).toBe(true)
   })
@@ -575,7 +598,7 @@ describe("Vault restore", () => {
     fs = new MemoryFs()
     void fs.mkdir(ROOT)
     board = new FakeBoard([TODO, DONE])
-    vault = new Vault({ fs, board, root: ROOT })
+    vault = new Vault({ fs, board, boardId: BOARD, root: ROOT })
   })
 
   it("writes the file back when the card is restored in the app", async () => {
@@ -669,7 +692,7 @@ describe("Vault attachments", () => {
     void fs.mkdir(ROOT)
     board = new FakeBoard([TODO, DONE])
     files = new FakeFiles()
-    vault = new Vault({ fs, board, files, root: ROOT })
+    vault = new Vault({ fs, board, boardId: BOARD, files, root: ROOT })
   })
 
   it("mirrors a card's attachments into _files, once", async () => {

@@ -15,6 +15,13 @@ function sorted<T>(map: Map<string, T>): Record<string, T> {
   return Object.fromEntries([...map].sort(([a], [b]) => a.localeCompare(b)))
 }
 
+/** `_meta.json` as it comes off disk, before any of it is trusted. */
+interface Meta {
+  board?: unknown
+  cards?: unknown
+  columns?: unknown
+}
+
 /** A file the vault wrote, as it wrote it. */
 export interface WrittenFile {
   path: string
@@ -36,15 +43,27 @@ export interface WrittenFolder {
 export class Written {
   private readonly fs: VaultFs
   private readonly path: string
+  private readonly boardId: string
+  private held: string | null = null
   private readonly entries = new Map<string, WrittenFile>()
   private readonly folders = new Map<string, WrittenFolder>()
   /** The last `_meta.json` on disk, so an unchanged pass doesn't rewrite it. */
   private saved = ""
   private loaded = false
 
-  constructor(fs: VaultFs, root: string) {
+  constructor(fs: VaultFs, root: string, boardId: string) {
     this.fs = fs
     this.path = `${root}/${META}`
+    this.boardId = boardId
+  }
+
+  async owner(): Promise<string | null> {
+    const meta = await this.read()
+    return typeof meta?.board === "string" ? meta.board : null
+  }
+
+  claim(): void {
+    this.held = this.boardId
   }
 
   [Symbol.iterator](): IterableIterator<[string, WrittenFile]> {
@@ -104,17 +123,9 @@ export class Written {
     if (this.loaded) return
     this.loaded = true
 
-    const text = await this.fs.read(this.path)
-    if (text === null) return
-
-    let parsed: unknown
-    try {
-      parsed = JSON.parse(text)
-    } catch {
-      return
-    }
-    if (typeof parsed !== "object" || parsed === null) return
-    const meta = parsed as { cards?: unknown; columns?: unknown }
+    const meta = await this.read()
+    if (meta === null) return
+    this.held = typeof meta.board === "string" ? meta.board : this.boardId
 
     for (const [id, entry] of section(meta.cards)) {
       if (typeof entry.path !== "string" || typeof entry.text !== "string") {
@@ -139,9 +150,24 @@ export class Written {
     await this.fs.write(this.path, text)
   }
 
+  private async read(): Promise<Meta | null> {
+    const text = await this.fs.read(this.path)
+    if (text === null) return null
+
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      return null
+    }
+    if (typeof parsed !== "object" || parsed === null) return null
+    return parsed as Meta
+  }
+
   private serialize(): string {
     return JSON.stringify(
       {
+        board: this.held ?? this.boardId,
         cards: sorted(this.entries),
         columns: sorted(this.folders),
       },

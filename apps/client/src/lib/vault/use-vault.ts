@@ -17,7 +17,19 @@ import { useCallback, useEffect, useState } from "react"
 import { isDesktop } from "../platform"
 import { tauriFs } from "./tauri-fs"
 
-const pathKey = (boardId: string) => `deck:vault:${boardId}`
+const PATHS = "deck:vault:"
+const pathKey = (boardId: string) => `${PATHS}${boardId}`
+
+/** The other board already mirroring `path` on this device, if there is one. */
+function holder(path: string, boardId: string): string | null {
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (!key?.startsWith(PATHS)) continue
+    const id = key.slice(PATHS.length)
+    if (id !== boardId && localStorage.getItem(key) === path) return id
+  }
+  return null
+}
 
 /**
  * Rust-side, because the fs plugin can't
@@ -83,6 +95,7 @@ export function useVault(boardId: string) {
     const vault = new Vault({
       fs: tauriFs,
       board: boardOps(boardId),
+      boardId,
       files: vaultFiles,
       root: path,
       onError: (cause) => setError(message(cause)),
@@ -126,8 +139,25 @@ export function useVault(boardId: string) {
     const picked = await open({ directory: true, recursive: true })
     if (typeof picked !== "string") return
 
+    if (holder(picked, boardId)) {
+      setError("That folder already mirrors another board.")
+      return
+    }
+
     setError(null)
     await ignore(picked).catch((cause: unknown) => setError(message(cause)))
+    // Takes the folder from whatever board held it: picking it is deliberate.
+    try {
+      await new Vault({
+        fs: tauriFs,
+        board: boardOps(boardId),
+        boardId,
+        root: picked,
+      }).claim()
+    } catch (cause) {
+      setError(message(cause))
+      return
+    }
     localStorage.setItem(pathKey(boardId), picked)
     setPath(picked)
   }, [boardId])

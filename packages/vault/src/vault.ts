@@ -39,6 +39,8 @@ export interface VaultFiles {
 export interface VaultOptions {
   fs: VaultFs
   board: VaultBoard
+  /** Whose board this is. A folder is mirrored by one board at a time. */
+  boardId: string
   /** Mirrors attachments into `_files` */
   files?: VaultFiles
   /** The folder the board lives in. */
@@ -56,6 +58,7 @@ export interface VaultOptions {
 export class Vault {
   private readonly fs: VaultFs
   private readonly board: VaultBoard
+  private readonly boardId: string
   private readonly files?: VaultFiles
   private readonly root: string
   private readonly onBoardChange?: () => void
@@ -71,6 +74,7 @@ export class Vault {
   constructor({
     fs,
     board,
+    boardId,
     files,
     root,
     onBoardChange,
@@ -78,15 +82,26 @@ export class Vault {
   }: VaultOptions) {
     this.fs = fs
     this.board = board
+    this.boardId = boardId
     this.files = files
     this.root = root
     this.onBoardChange = onBoardChange
     this.onError = onError
-    this.written = new Written(fs, root)
+    this.written = new Written(fs, root, boardId)
     this.folders = new Folders(fs, root, this.written, (title) =>
       board.createColumn(title)
     )
     this.trash = new Trash(fs, root, this.written, (id) => board.deleteCard(id))
+  }
+
+  /**
+   * Takes the folder for this board, whoever mirrored it before. The board the
+   * folder is taken from stops on its next pass.
+   */
+  async claim(): Promise<void> {
+    await this.written.load()
+    this.written.claim()
+    await this.written.save()
   }
 
   async watch(): Promise<() => void> {
@@ -114,6 +129,13 @@ export class Vault {
 
   private async pass(): Promise<void> {
     if ((await this.fs.readDir(this.root)) === null) return
+
+    // Two boards mirroring one folder each adopt what the other wrote, and
+    // every adoption gives the other something new to adopt.
+    const owner = await this.written.owner()
+    if (owner !== null && owner !== this.boardId) {
+      throw new Error(`This folder is mirrored by another board (${owner}).`)
+    }
 
     await this.written.load()
 

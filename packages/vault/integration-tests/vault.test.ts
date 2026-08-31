@@ -10,7 +10,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { Vault } from "../src/vault"
-import { installBoard, makeColumn, type TestBoard } from "./board"
+import { BOARD_ID, installBoard, makeColumn, type TestBoard } from "./board"
 import { nodeFs } from "./node-fs"
 
 const TODO = makeColumn("col-todo", "To do", "a0")
@@ -34,6 +34,7 @@ describe("Vault on disk", () => {
     vault = new Vault({
       fs: nodeFs(),
       board,
+      boardId: BOARD_ID,
       root,
       onBoardChange: () => changes++,
     })
@@ -169,7 +170,7 @@ describe("Vault on disk", () => {
 
     await rm(path("to_do", "ship_it.md"))
     // A fresh vault knows only `_meta.json`, which is where the deletion shows.
-    await new Vault({ fs: nodeFs(), board, root }).sync()
+    await new Vault({ fs: nodeFs(), board, boardId: BOARD_ID, root }).sync()
 
     expect(await board.cards()).toEqual([])
     expect(await names("_trash")).toEqual(["ship_it.md"])

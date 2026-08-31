@@ -153,6 +153,37 @@ Never `git checkout main` to do it. The canonical checkout is what the one
 preview serves from, and a branch switch there can move the tree backwards
 under a running Vite — see the white page in the hooks section above.
 
+## Upstreaming a feature to romenkova/doska
+
+Contributing a feature back is **not** the release flow above. `working` and
+`main` stay out of it entirely, and nothing is rebased.
+
+The fork branch is many commits ahead of upstream with unrelated features, so a
+PR is built by porting **one** feature onto a branch cut from `upstream/main` —
+never by rebasing the fork branch, never by pushing the fork branch itself. The
+development branch must finish at exactly the SHA it started at.
+
+Run it with `/upstream-pr <feature>` (a commit, a range, or plain English); the
+skill lives in `~/.claude/skills/upstream-pr/` and drives
+`upstream-pr.sh record | analyze | start | verify | e2e | finish | restore`.
+
+Two things worth knowing before touching it by hand:
+
+- **Fork-only dependencies are adapted, not dragged in.** `analyze` lists
+  workspace imports that upstream has no export for. Each one is a signal to use
+  upstream's own idiom — not to bring along the fork commit that introduced it.
+  (The undo/redo PR hit exactly this: the fork's `Hint` wrapper became upstream's
+  plain `Tooltip`/`TooltipTrigger`/`TooltipContent`.)
+- **The rails still hold.** The misswork guard permits precisely two extra
+  operations for this workflow, and only while you are on its `pr/<name>` branch
+  with valid state: pushing that branch to `origin` with the full refspec, and
+  checking out the branch `record` saved. Force-push, any other branch, any extra
+  flag, and any push to `upstream` all still block. Go through `finish` and
+  `restore`; never hand-roll those two commands and never widen the exception.
+
+`origin` is `apezio/doska` (the fork, public). `upstream` is `romenkova/doska`.
+Only ever push to `origin`.
+
 ## Never
 
 - Never start a preview anywhere but the canonical checkout, and never bind
@@ -160,6 +191,8 @@ under a running Vite — see the white page in the hooks section above.
 - Never `pnpm install` through a worktree's symlinked `node_modules`.
 - Never develop in the main worktree, and never push `working`.
 - Never mix two unrelated unfinished features in one worktree.
+- Never push to `upstream`, and never rebase the fork branch to build a PR —
+  port the feature onto `upstream/main` instead.
 - Never commit, push, merge, deploy, or modify `working` or `main` unless
   explicitly asked, with the phrase.
 - Never overwrite or discard someone else's uncommitted work.

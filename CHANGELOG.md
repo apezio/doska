@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Folder sync on desktop: a board mirrors to a folder.
+- Attachments mirror into `_files`.
+- Deleted cards land in `_trash`.
+
+### Fixed
+
+- The user id on a device is now stamped per sync server, so pointing the app
+  at a second server no longer looks like a different person and wipes the
+  local store. 
+
 ## [0.20.0] - 2026-08-22
 
 ### Added

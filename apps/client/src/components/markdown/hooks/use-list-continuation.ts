@@ -1,4 +1,5 @@
 import { continueList } from "@doska/markdown"
+import { applyEdit } from "../edit-text"
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react"
 
 interface Options {
@@ -29,8 +30,8 @@ export function useListContinuation(
       if (!next) return
 
       e.preventDefault()
-      onChangeValue(next.value)
       pendingCaret.current = next.caret
+      if (!applyEdit(textarea, next.value)) onChangeValue(next.value)
     },
     [ref, onChangeValue]
   )

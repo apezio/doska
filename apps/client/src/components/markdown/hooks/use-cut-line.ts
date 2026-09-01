@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react"
+import { applyEdit } from "../edit-text"
 
 interface Options {
   value: string
@@ -58,7 +59,7 @@ export function useCutLine(
       )
       void navigator.clipboard?.writeText(clipboard)
       pendingCaret.current = caret
-      onChangeValue(next)
+      if (!applyEdit(textarea, next)) onChangeValue(next)
     },
     [ref, onChangeValue]
   )

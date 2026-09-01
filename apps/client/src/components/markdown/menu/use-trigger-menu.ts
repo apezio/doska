@@ -6,6 +6,7 @@ import {
   useState,
 } from "react"
 import { isLineStart } from "@doska/markdown"
+import { replaceRange } from "../edit-text"
 import { getCaretCoords } from "./caret-position"
 import type { MenuItem } from "./menu-item"
 
@@ -80,10 +81,11 @@ export function useTriggerMenu<T extends MenuItem>(
     (start: number, end: number, { text, caretOffset }: Insertion) => {
       const textarea = ref.current
       if (!textarea) return
-      const next =
-        textarea.value.slice(0, start) + text + textarea.value.slice(end)
       pendingCaret.current = start + caretOffset
-      onChangeValue(next)
+      if (replaceRange(textarea, start, end, text)) return
+
+      const { value } = textarea
+      onChangeValue(value.slice(0, start) + text + value.slice(end))
     },
     [ref, onChangeValue]
   )

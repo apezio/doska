@@ -56,50 +56,39 @@
   headers, the card panel, attachments — naming what each does, and the
   keyboard shortcut where there is one.
 
-## Features
+## Why?
 
-### Cards
+I wanted a Kanban board that works natively with Markdown and fits my way of working:
 
-- **Multiple boards**, each with draggable columns you can resize, and boards
-  themselves nest and reorder in the sidebar.
-- Cards are **GitHub-flavored Markdown**. A slash menu and inline suggestions for formatting.
-- **Attach files** by dropping them on a card or pasting from the clipboard.
-- **Cards link to cards**: type `[[` and pick one. The reference
-  carries that card's live title and column color.
-- **Deadlines**: set one and the card shows a chip that shifts color as the date
-  nears, turning red once it's overdue.
-- **Priority**: a number from 0 to 100 on a card, edited in its title row, and a
-  board can be sorted by it.
-- An **Upcoming** view gathers cards from every board by deadline: overdue ones
-  first, then grouped by day.
+- **Personal projects**: sync a board to a folder inside the project, so the cards are Markdown files.
+- **Editing on the go**: spin up a sync server with Docker Compose, and have my data on my phone, or just in the browser.
+- **Sharing with family and friends**: account management, and public links for boards.
+- **MCP**: let agents sort my cards and point out what I am missing.
 
-### Where it lives
+## Where the data lives
 
-- **Local-first** storage: reads and writes hit the browser, not the
-  network, so the UI is instant and works offline.
-- **Opt-in sync**: give it a server you control and boards replicate across your
-  devices in the background. How it works:
-  [doska.sh/docs/sync](https://doska.sh/docs/sync).
-- **Deleting is reversible**. everything waits in the trash for 14 days.
-- **More than one account per server.** The admin adds accounts, sets passwords and deactivates; Each account's boards are its own:
-  [doska.sh/docs/accounts](https://doska.sh/docs/accounts).
-- **Share a board** with other accounts on your server, and the board syncs to everyone on it.
-- **Publish a board** to a read-only link:
-  [doska.sh/docs/public-sharing](https://doska.sh/docs/public-sharing).
+Any of these, simultaneously, or not: local folder on the disk, sync server, browser persisted memory.
 
-### Run it
+Browser persisted memory (it's IndexedDB) is quick, and makes Doska fast. It also survives reloads, and feels ok offline.
 
-- Runs **in the browser**, installs as a **PWA**, or ships as a **Tauri macOS app**.
-- **One-line self-host installer** that generates the secrets and brings the
-  stack up.
-- Boards are exposed over [**MCP**](#mcp), so an agent can read and edit them.
-- **Dark and light themes.**
+But I do recommend using local file storage (desktop app only) or a sync server for permanent storage. Doska will still hit browser storage first, and keep being quick, but on top of that it will sync to a destination too.
 
-## Self-hosting
+A sync server makes it possible to have other users, public boards, and sync across devices.
 
-Run your own server to keep your boards for real and sync them across devices.
-Without one they live only in the browser: fine for trying it out, not for
-anything you want to keep.
+Local folder sync lets you sync to a folder and then back it up manually with the tool of your choice.
+
+Both can be used simultaneously.
+
+## On making it comfortable to use
+
+- **Markdown editor**: syntax highlighting, a slash menu, attachments, and cards that cross-reference each other.
+- **List view**: a to-do list of every card sorted by date, where ticking the checkbox marks the card done.
+- **Deadlines and priorities**: both sortable, and deadlines are what make the list view more useful.
+- **Search**: not much to tell, it just searches.
+
+## Self-hosting guide
+
+A script that sets up the environment: it asks for the variables it needs, backs up an existing setup if it finds one, and starts an instance.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/apezio/doska/main/install.sh -o install.sh && sh install.sh
@@ -110,23 +99,26 @@ Then open `http://<your-host>:8080` and sign in with the credentials you gave it
 Setting it up by hand, every environment variable, HTTPS, attachments and
 backups: [doska.sh/docs/self-hosting](https://doska.sh/docs/self-hosting).
 
-> Browser storage isn't permanent. The app asks the browser not to evict it, but
-> that's best-effort: the browser can still clear it, and "clear site data"
-> always will. 
+Parts:
+
+- Sync server
+- Web interface server
+- Database: pass a database URL, or the bundled Postgres is used.
+- File storage: pass S3 credentials, or files are stored on the server.
 
 ## Updating
 
-The script changes between releases, run full command. It keeps your existing `.env` and
-takes a backup of the database and files before redeploying over them.
+The same script updates an existing install, and the useful part is that it takes a backup first. You can also do it by hand, by re-running the images from the latest tag.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/apezio/doska/main/install.sh -o install.sh && sh install.sh
 ```
 
 The desktop app follows whatever version its server runs, so update the server
-first. The app then offers the matching build and installs it on relaunch.
+first. The app's settings modal then has a button to check for updates and
+install them.
 
-## Desktop app
+## Desktop app (macOS-only for now)
 
 Download the latest macOS build from
 [Releases](https://github.com/apezio/doska/releases/latest). It wraps the same
@@ -135,8 +127,7 @@ client (with Tauri), is signed and notarized, and auto-updates.
 
 ## MCP
 
-The server exposes your boards to an MCP client (Claude Code, Claude Desktop,
-claude.ai) at `/mcp`, so an agent can create cards, tick off task lists and move
+The server exposes your boards to an MCP client at `/mcp`, so an agent can create cards, tick off task lists and move
 things between columns:
 
 ```sh

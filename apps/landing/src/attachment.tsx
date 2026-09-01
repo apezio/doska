@@ -1,10 +1,5 @@
 import { Paperclip } from "lucide-react"
 
-/**
- * Stands in for an attached screenshot — the same box a real one gets from
- * `MdImage`, so the layout matches without shipping the image. Spans, not
- * divs: it renders inside the paragraph the image ref sat in.
- */
 export function AttachmentPlaceholder({ alt }: { alt: string }) {
   return (
     <>

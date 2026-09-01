@@ -52,5 +52,10 @@ plan
 
 .selfhost-prev-compose.yml
 
+# Upstream's scratch folder for the folder-sync demo. Anchored to the repo root:
+# a bare `board` would also swallow new files under apps/mobile/.../board/ and
+# packages/e2e/e2e/board/, which this fork actively adds to.
+/board
+
 # Box-specific dev-preview overrides (WEB_HOST etc); never committed
 scripts/dev-preview.local.sh

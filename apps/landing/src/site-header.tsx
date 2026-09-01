@@ -1,7 +1,8 @@
 import { Button } from "@doska/ui-kit"
 import { SiGithub } from "react-icons/si"
-import { repo, roadmap } from "./links"
+import { repo } from "./links"
 import { ThemeToggle } from "./theme-toggle"
+import { BookOpenText } from "lucide-react"
 
 export function SiteHeader() {
   return (
@@ -12,33 +13,25 @@ export function SiteHeader() {
           <span className="hidden sm:inline">Doska</span>
         </a>
         <nav className="flex items-center gap-0.5">
-          <ThemeToggle />
           <Button
             variant="ghost"
             nativeButton={false}
-            className="h-9 gap-2 px-3 sm:px-4 plausible-event-name=Nav+Roadmap"
-            render={<a href={roadmap} target="_blank" rel="noreferrer" />}
-          >
-            Roadmap
-          </Button>
-          <Button
-            variant="ghost"
-            nativeButton={false}
-            className="h-9 gap-2 px-3 sm:px-4 plausible-event-name=Nav+Docs"
+            className="plausible-event-name=Nav+Docs h-9 gap-2 px-3 sm:px-4"
             render={<a href="/docs" target="_blank" rel="noreferrer" />}
           >
+            <BookOpenText className="size-4" />
             Docs
           </Button>
           <Button
             variant="ghost"
+            size="icon-lg"
             nativeButton={false}
-            className="h-9 gap-2 px-3 sm:px-4 plausible-event-name=Nav+GitHub"
+            className="plausible-event-name=Nav+GitHub h-9 gap-2 px-3 sm:px-4"
             render={<a href={repo} target="_blank" rel="noreferrer" />}
           >
-            <SiGithub className="size-4" />
-            {/* Three labels plus the toggle overrun a narrow phone. */}
-            <span className="hidden sm:inline">GitHub</span>
+            <SiGithub className="size-4.5" />
           </Button>
+          <ThemeToggle />
         </nav>
       </div>
     </header>

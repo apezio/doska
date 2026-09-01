@@ -4,25 +4,24 @@ import type { ReactNode } from "react"
 export function Column({
   title,
   color,
-  count,
+  className,
   children,
 }: {
   title: string
   color: string
-  count: number
+  className?: string
   children: ReactNode
 }) {
   return (
-    <section className="flex w-[90vw] max-w-90 shrink-0 flex-col">
+    <section
+      className={cn("flex w-[90vw] max-w-90 shrink-0 flex-col", className)}
+    >
       <div className="mb-3 flex items-center gap-2 px-1 text-sm text-muted-foreground uppercase">
         <span
           className="size-2.5 rounded-full"
           style={{ background: `oklch(0.72 0.14 ${columnHue(color)})` }}
         />
         <h2 className="font-heading font-bold">{title}</h2>
-        <span className="ml-auto rounded-full bg-muted px-1.5 text-[11px] font-medium">
-          {count}
-        </span>
       </div>
       <div
         className={cn(

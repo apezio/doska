@@ -1,7 +1,6 @@
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { docs, type DocPage } from "./pages"
 
-/** Foot of a page: the neighbours in `docs`, which is reading order. */
 export function DocsSteps({ current }: { current: DocPage }) {
   const at = docs.indexOf(current)
   const previous = docs[at - 1]

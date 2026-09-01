@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from "react"
+import { replaceRange } from "../edit-text"
 
 interface Options {
   value: string
@@ -38,10 +39,12 @@ export function usePasteFiles(
     const end = e.currentTarget.selectionEnd
     void onPasteFiles(files).then((snippet) => {
       if (!snippet) return
-      const current = ref.current?.value ?? value
-      const next = current.slice(0, start) + snippet + current.slice(end)
+      const textarea = ref.current
       pendingCaret.current = start + snippet.length
-      onChangeValue(next)
+      if (textarea && replaceRange(textarea, start, end, snippet)) return
+
+      const current = textarea?.value ?? value
+      onChangeValue(current.slice(0, start) + snippet + current.slice(end))
     })
   }
 }

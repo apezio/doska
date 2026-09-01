@@ -12,7 +12,6 @@ import { useCutLine } from "./hooks/use-cut-line"
 import { useListContinuation } from "./hooks/use-list-continuation"
 import { usePasteFiles } from "./hooks/use-paste-files"
 import { useCaretScroll } from "./hooks/use-caret-scroll"
-import { useNoNativeHistory } from "./hooks/use-no-native-history"
 import { SlashMenu } from "./slash-menu/slash-menu"
 import { WikilinkMenu } from "./wikilink-menu"
 
@@ -50,11 +49,6 @@ interface IProps extends React.ComponentProps<"textarea"> {
   onPasteFiles?: (files: File[]) => Promise<string | null>
   containerClassName?: string
   /**
-   * Lets the caller reach the textarea — to restore a caret, say. Given one,
-   * this is the ref the internal hooks use too, so there is only ever one.
-   */
-  inputRef?: React.RefObject<HTMLTextAreaElement | null>
-  /**
    * Where the mobile slash button renders. Must be a non-scrolling ancestor, or
    * the button scrolls away with the text.
    */
@@ -76,16 +70,12 @@ export function MarkdownTextarea({
   wikilinks,
   onPasteFiles,
   containerClassName,
-  inputRef,
   overlayContainer,
   ...props
 }: IProps) {
   const value = typeof props.value === "string" ? props.value : ""
   const { body } = useMarkers(value, markers, "preview")
-  const ownRef = useRef<HTMLTextAreaElement>(null)
-  const textareaRef = inputRef ?? ownRef
-
-  useNoNativeHistory(textareaRef, !isPreview)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useCutLine(textareaRef, {
     value,

@@ -253,9 +253,17 @@ to rediscover it, or mistake it for the preview.
 | db | postgres on `127.0.0.1:5432` |
 | version | tagged releases; it tracks `main` and lags `working` on purpose |
 
-Its `origin` is `github.com/romenkova/doska`, **not** the `apezio/doska` that
-this checkout pushes to. Deploying is the operator's call and their
-procedure — never build into `/opt/doska`, never restart `doska-server`.
+It deploys **`apezio/doska`** — this fork — from the `main` this checkout
+pushes, not upstream `romenkova/doska`. (Checked 2026-09-01 by fetching the live
+bundle: it carries fork-only features, e.g. the Cards tab and the card-header
+priority number, which exist nowhere upstream. Re-check the same way rather than
+assuming — `sudo -u doska git -C /opt/doska/repo remote -v` needs a password and
+so is not available to an agent session.)
+
+So the box only moves when `main` moves *and* someone deploys: `main` lags
+`working` on purpose, and `origin/main` lags local `main` until it is pushed.
+Deploying is the operator's call and their procedure — never build into
+`/opt/doska`, never restart `doska-server`.
 
 ## Repo facts worth knowing
 

@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@doska/ui-kit"
-import { Globe, GripVertical, Users } from "lucide-react"
+import { Globe, Users } from "lucide-react"
 import { type Dashboard } from "@doska/core/types"
 import {
   flattenDashboards,
@@ -115,6 +115,7 @@ export function DashboardsList({
                       key={dashboard.id}
                       draggableId={dashboard.id}
                       index={index}
+                      disableInteractiveElementBlocking
                     >
                       {(dragProvided, snapshot) => (
                         <SidebarMenuItem
@@ -127,7 +128,7 @@ export function DashboardsList({
                             paddingLeft: depth * INDENT_PX,
                           }}
                           className={cn(
-                            "group/dashboard-row rounded-md",
+                            "rounded-md",
                             snapshot.isDragging && "opacity-80",
                             // The row a drag is hovering over: dropping here
                             // nests the dragged board underneath it.
@@ -153,10 +154,6 @@ export function DashboardsList({
                               onSelectDashboard(dashboard)
                             }}
                           >
-                            <GripVertical
-                              aria-hidden
-                              className="text-muted-foreground/40 group-hover/dashboard-row:text-muted-foreground"
-                            />
                             <span className="truncate">{dashboard.title}</span>
                             <span className="ml-auto flex items-center gap-1">
                               {published.has(dashboard.id) && (

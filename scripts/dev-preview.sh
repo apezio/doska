@@ -420,7 +420,8 @@ check() {
     local n; n="$(echo "$dirty" | wc -l)"
     echo "$dirty" | head -n 10 | sed 's/^/            /'
     [ "$n" -gt 10 ] && echo "            … $((n - 10)) more"
-    echo "           $(git diff HEAD --shortstat)"
+    local stat; stat="$(git diff HEAD --shortstat)"
+    [ -n "$stat" ] && echo "           $stat"
   else
     echo "state:    clean"
   fi

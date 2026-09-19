@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# One call for lint + typecheck + test. The full output goes to a log on disk;
+# the terminal gets turbo's summary on success, the failing task's tail on
+# failure. `--force` bypasses turbo's cache — only when a fresh run is the point.
+set -u
+case "${1:-}" in
+  "") force="" ;;
+  --force) force="--force" ;;
+  *) echo "usage: $0 [--force]"; exit 2 ;;
+esac
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT" || exit 1
+# shellcheck disable=SC1090
+[ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh" >/dev/null 2>&1
+if [ "$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)" -lt 22 ]; then
+  echo "check: Node 22+ is required (see .nvmrc), found $(node -v 2>/dev/null || echo none)"; exit 2
+fi
+
+LOG="/tmp/doska-check-$(id -u)/$(basename "$ROOT")/check.log"
+mkdir -p "$(dirname "$LOG")"
+turbo() { CI=true NO_COLOR=1 FORCE_COLOR=0 corepack pnpm exec turbo run "$@" --filter=!desktop $force; }
+# Two passes, not one: alongside lint and typecheck the server's integration
+# tests starve and time out in their `beforeAll` hooks.
+{ turbo lint typecheck && turbo test; } > "$LOG" 2>&1
+rc=$?
+
+if [ "$rc" -eq 0 ]; then
+  grep -E '^ *(Tasks|Cached|Time):' "$LOG"
+else
+  # turbo names failures as `pkg#task`; their log lines are prefixed `pkg:task:`.
+  failed="$(grep -oE '^ *Failed: +.*|^ +[^ ]+#[a-z]+$' "$LOG" | grep -oE '[^ ]+#[a-z]+' | sort -u)"
+  for t in $failed; do
+    echo "FAILED: $t"
+    grep -F "${t/\#/:}: " "$LOG" | tail -n 40
+  done
+  [ -n "$failed" ] || tail -n 40 "$LOG"
+fi
+echo "log: $LOG"
+exit "$rc"

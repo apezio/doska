@@ -56,7 +56,7 @@ goes to `origin`, and `apezio/doska` is public.
 
 A feature worker develops in its mission worktree
 (`~/missclaude-worktrees/<mission>`, branch `claude/<mission>`). It verifies
-its work with `pnpm test`, `pnpm type-check` and `pnpm lint` there. It does
+its work with `scripts/check` (lint + typecheck + test in one call) there. It does
 **not** run a preview: `scripts/dev-preview.sh start` refuses in a worktree, and
 `scripts/dev-preview.sh url` prints the one URL the operator will look at once
 the feature is integrated.
@@ -113,8 +113,7 @@ Approval is any of "looks good", "approved", "ship it", or equivalent. Then:
 1. Commit **only that feature's files** — explicit paths, never `git add .`
    or `-A`. Nothing unrelated rides along. The hook needs the typed phrase
    `YES COMMIT` first.
-2. Run the relevant tests (`pnpm test` for the touched package; `pnpm lint` and
-   `pnpm type-check` when the change is broad).
+2. Run `scripts/check` — turbo's cache makes the untouched packages free.
 3. Say **"ready for integrator"** and stop. Getting the commit into `working` is
    the integrator session's job, not yours — never merge it yourself.
 
@@ -233,9 +232,11 @@ Deploying is the operator's call and their procedure — never build into
 - `pnpm` needs `CI=true` in an agent shell, or it aborts with
   `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` when it wants to purge
   `node_modules`. `pnpm` itself comes from `corepack` after `. ~/.nvm/nvm.sh`.
-- turbo caches test results across worktrees — a green `pnpm test` may be
-  `FULL TURBO` from another tree. Use `pnpm test --force` when the run is the
-  evidence for a claim.
+- `scripts/check` runs lint, typecheck and test, prints only turbo's summary
+  (or the failing task's tail) and keeps the full log under `/tmp/doska-check-*`;
+  it sources nvm itself. turbo's cache is shared across worktrees and a hit is
+  valid — it hashes the inputs — so `FULL TURBO` is a real green. Use
+  `scripts/check --force` only when a fresh run is itself the point.
 - Two remotes are in play, and `apezio/doska` is **public**. Keep it that way:
   no host addresses and no absolute paths in tracked files — they belong in
   `scripts/dev-preview.local.sh`. Re-read a diff for them before any push.

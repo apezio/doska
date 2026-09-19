@@ -8,6 +8,8 @@ delete process.env.DB_FILE
 delete process.env.BASE_URL
 delete process.env.S3_BUCKET
 
+// Per-request logs are ~97% of the suite's output; LOG_LEVEL=debug brings them back.
+process.env.LOG_LEVEL ??= "warn"
 process.env.AUTH_SECRET ??= "test-secret"
 process.env.AUTH_LOGIN ??= "tester"
 process.env.AUTH_PASSWORD ??= "test-password"

@@ -31,8 +31,7 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # The integration checkout and the staging branch. CANONICAL_ROOT is the ONLY
-# place a preview runs from; it is also where every worktree's node_modules
-# symlinks to, and it holds the box-local config below. CANONICAL_BRANCH is what
+# place a preview runs from, and it holds the box-local config below. CANONICAL_BRANCH is what
 # `check` measures a mission against. The integration checkout is by definition
 # the repo's main worktree, which git reports first; deriving it keeps this
 # script path-free.

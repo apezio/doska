@@ -61,13 +61,20 @@ its work with `pnpm test`, `pnpm type-check` and `pnpm lint` there. It does
 `scripts/dev-preview.sh url` prints the one URL the operator will look at once
 the feature is integrated.
 
-**Never `pnpm install` in a worktree.** Its `node_modules` (root and per
-package) are symlinks into the canonical checkout, which the live preview is
-running on; an install through them rewrites the preview's modules from under
-it. `scripts/guard-install.sh` (root `pnpm:devPreinstall`) refuses such an
-install. If your branch genuinely changes dependencies, replace the symlinks
-with a private install in your worktree — the guard prints the two commands —
-and say so at hand-off; the canonical install happens once, on integration.
+**A fresh worktree has no `node_modules`.** Give it a private install before
+the first `pnpm` command (hardlinks from the pnpm store — seconds, not a
+download):
+
+```
+. ~/.nvm/nvm.sh && CI=true corepack pnpm install --frozen-lockfile
+```
+
+**Never symlink a worktree's `node_modules` into the canonical checkout.** Any
+`pnpm` run (even `pnpm test`) checks dependency state first and starts an
+install *through* the symlinks, emptying the canonical checkout's modules —
+the ones the preview runs on — before `scripts/guard-install.sh` (root
+`pnpm:devPreinstall`) can refuse. If your branch changes dependencies, say so
+at hand-off; the canonical install happens once, on integration.
 
 The preview keeps itself in step with git in the canonical checkout: a
 `post-merge` hook reloads it after an integration, and `post-checkout` and
@@ -155,82 +162,31 @@ under a running Vite — see the white page in the hooks section above.
 
 ## Upstreaming a feature to romenkova/doska
 
-Contributing a feature back is **not** the release flow above. `working` and
-`main` stay out of it entirely, and nothing is rebased.
-
-The fork branch is many commits ahead of upstream with unrelated features, so a
-PR is built by porting **one** feature onto a branch cut from `upstream/main` —
-never by rebasing the fork branch, never by pushing the fork branch itself. The
-development branch must finish at exactly the SHA it started at.
-
-Run it with `/upstream-pr <feature>` (a commit, a range, or plain English); the
-skill lives in `~/.claude/skills/upstream-pr/` and drives
-`upstream-pr.sh record | analyze | start | verify | e2e | finish | restore`.
-
-Two things worth knowing before touching it by hand:
-
-- **Fork-only dependencies are adapted, not dragged in.** `analyze` lists
-  workspace imports that upstream has no export for. Each one is a signal to use
-  upstream's own idiom — not to bring along the fork commit that introduced it.
-  (The undo/redo PR hit exactly this: the fork's `Hint` wrapper became upstream's
-  plain `Tooltip`/`TooltipTrigger`/`TooltipContent`.)
-- **The rails still hold.** The misswork guard permits precisely two extra
-  operations for this workflow, and only while you are on its `pr/<name>` branch
-  with valid state: pushing that branch to `origin` with the full refspec, and
-  checking out the branch `record` saved. Force-push, any other branch, any extra
-  flag, and any push to `upstream` all still block. Go through `finish` and
-  `restore`; never hand-roll those two commands and never widen the exception.
+Not the release flow above: `working` and `main` stay out of it, nothing is
+rebased, and the development branch finishes at exactly the SHA it started at.
+A PR is built by porting **one** feature onto a branch cut from `upstream/main`.
+Run it with `/upstream-pr <feature>` (a commit, a range, or plain English) — the
+skill in `~/.claude/skills/upstream-pr/` holds the procedure and the two guard
+carve-outs; never hand-roll its `finish` / `restore` steps.
 
 `origin` is `apezio/doska` (the fork, public). `upstream` is `romenkova/doska`.
 Only ever push to `origin`.
 
 ## Syncing the fork from romenkova/doska
 
-The other direction: bringing upstream's commits into the fork. That is a
-mission like any other — its own worktree, its own `claude/<mission>` branch,
-handed off and shipped the normal way — except that the work itself *is* a
-merge:
-
-```
-git fetch upstream
-git merge upstream/main        # onto claude/<mission>, in your own worktree
-```
-
-The misswork guard blocks `git merge` for feature workers, and no phrase unlocks
-it, so this is the third and last carve-out — narrower than the two
-`/upstream-pr` ones, and re-derived from git rather than taken on trust. It
-allows exactly `git merge <ref>` where:
-
-- the ref is a real remote-tracking branch (`refs/remotes/upstream/...`) of a
-  remote literally named `upstream` whose URL is **not** origin's;
-- `HEAD` is a `claude/<mission>` branch in this worktree — never `working`,
-  never `main`, never a local branch;
-- exactly one ref, and the only flags allowed are ones that affect how this
-  merge is recorded (`--no-ff`, `--no-commit`, `--no-edit`, `--stat`, …) — no
-  strategy, signing or message options.
-
-`--abort`, `--quit` and `--continue` are allowed on their own while a merge this
-rule started is in progress, so a conflicted sync is resolvable in place.
-Everything else still blocks: merging `working`, `main`, a local branch or
-another remote, and merging into anything but a mission branch. Do not ask the
-operator to hand-run the merge, and do not widen the exception.
-
-Resolve conflicts on the mission branch, verify with `pnpm test` /
-`type-check` / `lint`, hand off for review, and ship it like any feature — the
-merge commit reaches `working` through the ordinary ff-only integration, since
-the mission branch was cut from `working` to begin with. If the sync moved
-dependencies or migrations, say so at hand-off: the integrator's `reload` is
-what re-installs and restarts the one preview.
+Bringing upstream's commits into the fork is a mission like any other, except
+the work *is* `git merge upstream/main` on your `claude/<mission>` branch — the
+one `git merge` the guard allows a feature worker. Read `docs/FORK_SYNC.md`
+before starting; do not ask the operator to hand-run the merge.
 
 ## Never
 
-- Never start a preview anywhere but the canonical checkout, and never bind
-  5173/3000/5432 (not ours) or 5175+/3102+/5435+ (nobody's).
-- Never `pnpm install` through a worktree's symlinked `node_modules`.
+- Never start a preview anywhere but the canonical checkout, and never bind a
+  port outside the table above.
+- Never symlink a worktree's `node_modules` into the canonical checkout.
 - Never develop in the main worktree, and never push `working`.
 - Never mix two unrelated unfinished features in one worktree.
-- Never push to `upstream`, and never rebase the fork branch to build a PR —
-  port the feature onto `upstream/main` instead.
+- Never push to `upstream`.
 - Never commit, push, merge, deploy, or modify `working` or `main` unless
   explicitly asked, with the phrase.
 - Never overwrite or discard someone else's uncommitted work.
@@ -270,9 +226,8 @@ Deploying is the operator's call and their procedure — never build into
 - pnpm workspace + turbo; Node 22 (`.nvmrc`) — if the system `node` is older,
   `NODE_BIN` in `scripts/dev-preview.local.sh` names a Node 22 bin dir the
   script puts first on `PATH`.
-- `node_modules` in every worktree symlinks into the main worktree, so paths
-  resolved via `__dirname` through `node_modules` land in the **main checkout**,
-  not the worktree. Absolute paths only in dev config.
+- Each worktree has its own private `node_modules` (see above) — never shared
+  with the canonical checkout.
 - The stock `pnpm dev` is unusable on this box: it hardcodes the API proxy to
   :3000 and the PGlite socket to :5432, both owned by staging.
 - `pnpm` needs `CI=true` in an agent shell, or it aborts with

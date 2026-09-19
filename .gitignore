@@ -59,3 +59,6 @@ plan
 
 # Box-specific dev-preview overrides (WEB_HOST etc); never committed
 scripts/dev-preview.local.sh
+
+# Playwright MCP screenshots (the only path its server will write)
+.playwright-mcp/

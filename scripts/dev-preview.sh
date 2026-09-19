@@ -161,7 +161,7 @@ CFG
 
 # --- lifecycle ---------------------------------------------------------------
 
-port_up() { (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null; }
+port_up() { (exec 3<>"/dev/tcp/${2:-127.0.0.1}/$1") 2>/dev/null; }
 
 # The one preview runs from the canonical checkout, full stop. A mission
 # worktree that wants to see its work integrates it into `working`.
@@ -313,8 +313,18 @@ start() {
   setsid node_modules/.bin/vite --config "$CFGDIR/vite.config.dev.ts" >> "$LOG" 2>&1 &
   echo $! >> "$PIDFILE"
 
-  sleep 8
+  for _ in $(seq 1 60); do
+    port_up "$API_PORT" && port_up "$WEB_PORT" "$WEB_HOST" && break; sleep 0.5
+  done
   status
+  local down=""
+  port_up "$PG_PORT" || down="$down db"
+  port_up "$API_PORT" || down="$down api"
+  port_up "$WEB_PORT" "$WEB_HOST" || down="$down web"
+  [ -z "$down" ] && return 0
+  echo "start: DOWN after 30s:$down — last log lines ($LOG):"
+  tail -n 15 "$LOG"
+  return 1
 }
 
 stop() {
@@ -381,8 +391,10 @@ running() {
 status() {
   printf 'db  (%s):        %s\n' "$PG_PORT" "$(port_up "$PG_PORT" && echo up || echo DOWN)"
   printf 'api (%s):        %s\n' "$API_PORT" "$(curl -s -m 3 "http://127.0.0.1:$API_PORT/api/version" || echo DOWN)"
-  printf 'web (%s:%s): %s\n' "$WEB_HOST" "$WEB_PORT" \
-    "$(curl -sk -m 3 -o /dev/null -w '%{http_code}' "https://$WEB_HOST:$WEB_PORT/" || echo DOWN)"
+  local code
+  code="$(curl -sk -m 3 -o /dev/null -w '%{http_code}' "https://$WEB_HOST:$WEB_PORT/")"
+  [ "$code" = "000" ] && code="DOWN (http 000)"
+  printf 'web (%s:%s): %s\n' "$WEB_HOST" "$WEB_PORT" "$code"
   printf 'url:               %s\n' "https://$WEB_HOST:$WEB_PORT/"
 }
 
@@ -405,7 +417,10 @@ check() {
   if [ -n "$dirty" ]; then
     verdict=DIRTY
     echo "state:    DIRTY — unfinished work lives here, do NOT overwrite it:"
-    echo "$dirty" | sed 's/^/            /'
+    local n; n="$(echo "$dirty" | wc -l)"
+    echo "$dirty" | head -n 10 | sed 's/^/            /'
+    [ "$n" -gt 10 ] && echo "            … $((n - 10)) more"
+    echo "           $(git diff HEAD --shortstat)"
   else
     echo "state:    clean"
   fi
@@ -423,7 +438,9 @@ case "${1:-status}" in
   reload) reload ;;
   status) status ;;
   check) check ;;
-  logs) assert_canonical; tail -f "$LOG" ;;
+  logs)
+    assert_canonical
+    if [ "${2:-}" = "--tail" ]; then tail -n "${3:-50}" "$LOG"; else tail -f "$LOG"; fi ;;
   url) echo "https://$WEB_HOST:$WEB_PORT/" ;;
-  *) echo "usage: $0 start|stop|restart|reload|status|check|logs|url"; exit 1 ;;
+  *) echo "usage: $0 start|stop|restart|reload|status|check|logs [--tail N]|url"; exit 1 ;;
 esac

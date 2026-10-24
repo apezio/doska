@@ -325,7 +325,7 @@ describe("projects", () => {
   })
 
   test("session register upserts by worktree and carries an open URL only when configured", async () => {
-    const { id } = await owner.projects.create({ name: "P" })
+    const { id } = await owner.projects.create({ name: "Routing" })
     const first = await owner.projects.sessionRegister({
       projectId: id,
       worktree: "/work/routing",
@@ -350,11 +350,33 @@ describe("projects", () => {
     expect(sessions).toHaveLength(1)
     expect(sessions[0].openUrl).toBeNull()
 
-    process.env.MISS_CLAUDE_URL = "https://miss.invalid/"
-    ;({ sessions } = await owner.projects.get({ id }))
+    process.env.MISS_CLAUDE_URL =
+      "https://dev.invalid:4200/, https://jump.invalid:4200"
+    let spawnUrls
+    ;({ sessions, spawnUrls } = await owner.projects.get({ id }))
     expect(sessions[0].openUrl).toBe(
-      "https://miss.invalid/open?worktree=%2Fwork%2Frouting&session=s-2"
+      "https://dev.invalid:4200/open?worktree=%2Fwork%2Frouting&mission=routing&session=s-2"
     )
+    // The mission is named after the project, past names already in use.
+    expect(spawnUrls).toEqual([
+      {
+        label: "dev",
+        url: `https://dev.invalid:4200/spawn?name=routing-2&doska_project=${id}`,
+      },
+      {
+        label: "jump",
+        url: `https://jump.invalid:4200/spawn?name=routing-2&doska_project=${id}`,
+      },
+    ])
+
+    // A session that names its own dashboard opens there.
+    await owner.projects.sessionRegister({
+      projectId: id,
+      worktree: "/work/routing",
+      dashboardUrl: "https://jump.invalid:4200/",
+    })
+    ;({ sessions } = await owner.projects.get({ id }))
+    expect(sessions[0].openUrl).toMatch(/^https:\/\/jump\.invalid:4200\/open\?/)
 
     const [summary] = await owner.projects.list()
     expect(summary).toMatchObject({ sessionCount: 1, activeSessions: 1 })

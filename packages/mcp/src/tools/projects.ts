@@ -176,6 +176,10 @@ export function registerProjectTools(
         branch: z.string().optional(),
         repo_id: z.string().optional(),
         claude_session_id: z.string().optional(),
+        dashboard_url: z
+          .string()
+          .optional()
+          .describe("The Miss Claude dashboard this session runs under"),
         project_id: projectId.optional(),
       },
     },
@@ -185,6 +189,7 @@ export function registerProjectTools(
       branch,
       repo_id,
       claude_session_id,
+      dashboard_url,
       project_id,
     }) => {
       const ids = new Set<string>()
@@ -208,6 +213,7 @@ export function registerProjectTools(
           branch,
           repoId: repo_id,
           claudeSessionId: claude_session_id,
+          dashboardUrl: dashboard_url,
           lastEvent: "start",
         })
         const detail = await store.getProject(id)
@@ -491,6 +497,10 @@ export function registerProjectTools(
         branch: z.string().optional(),
         repo_id: z.string().optional(),
         claude_session_id: z.string().optional(),
+        dashboard_url: z
+          .string()
+          .optional()
+          .describe("The Miss Claude dashboard this session runs under"),
         workstream_id: workstreamId.optional(),
       },
     },
@@ -498,6 +508,7 @@ export function registerProjectTools(
       project_id,
       repo_id,
       claude_session_id,
+      dashboard_url,
       workstream_id,
       ...input
     }) =>
@@ -507,6 +518,7 @@ export function registerProjectTools(
           projectId: project_id,
           repoId: repo_id,
           claudeSessionId: claude_session_id,
+          dashboardUrl: dashboard_url,
           workstreamId: workstream_id,
         })
       )

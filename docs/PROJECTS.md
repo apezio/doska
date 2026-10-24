@@ -9,32 +9,51 @@ activity history, so a replaced plan or summary is never lost. Projects live at
 `/projects` in the web app and are readable and writable over MCP, so you and
 any number of Claude sessions see and update the same picture.
 
-## Open Session
+## Sessions on several machines
 
 Each session on a project is keyed by its **worktree** (an absolute path on the
-machine the session runs on) and remembers the latest Claude session id.
-When `MISS_CLAUDE_URL` is configured, the server gives every session an "Open
-session" link:
+machine the session runs on) and remembers the latest Claude session id and
+the **Miss Claude dashboard** it runs under (`dashboard_url`, passed to
+`session_start`). Miss Claude can run on more than one machine; Doska handles
+each session on its own one.
+
+**Open session.** The server gives every session a link to its own dashboard,
+or to the first one in `MISS_CLAUDE_URL` when the session never named one:
 
 ```
-$MISS_CLAUDE_URL/open?worktree=<worktree>&session=<claude session id>
+<dashboard>/open?worktree=<worktree>&mission=<mission>&session=<claude session id>
 ```
 
-The client never builds this URL; when the variable is unset the link is
-simply absent. Miss Claude resolves the link to a mission — first by the
-mission's worktree, then by the Claude session id its console is (or was)
-writing — and redirects to that mission's dashboard, where the console is
-attached, or started and the session resumed. Add `&view=chat` to land on the
-chat view instead. The link sits behind Miss Claude's own login.
+Miss Claude resolves the link to a mission — by name, by its worktree, then by
+the Claude session id its console is (or was) writing — and redirects to that
+mission's dashboard, where the console is attached, or started and the session
+resumed. Add `&view=chat` to land on the chat view instead. The link sits
+behind Miss Claude's own login, so it must use the hostname you log in on.
+
+**Start session.** The Sessions section has one button per configured
+dashboard ("Start on dev", "Start on jump"). It opens that dashboard's spawn
+form with the mission name and the project filled in:
+
+```
+<dashboard>/spawn?name=<mission>&doska_project=<project id>
+```
+
+The mission is named after the project, skipping names its sessions already
+use. The new console's Claude joins the project itself, through
+`session_start` with that `project_id`.
+
+The client never builds either URL; with no dashboard configured both are
+absent.
 
 ## Configuration
 
-**Server.** Set `MISS_CLAUDE_URL` to the origin your browser reaches Miss
-Claude on, without a trailing slash:
+**Server.** Set `MISS_CLAUDE_URL` to the dashboards your browser reaches Miss
+Claude on, comma-separated, the default first, without trailing slashes:
 
 - dev preview: in `scripts/dev-preview.local.sh` (gitignored), e.g.
-  `MISS_CLAUDE_URL=https://<miss-claude-host>:<port>`. `scripts/dev-preview.sh`
-  copies it into the generated `apps/server/.env` on every start.
+  `MISS_CLAUDE_URL=https://<host-a>:<port>,https://<host-b>:<port>`.
+  `scripts/dev-preview.sh` copies it into the generated `apps/server/.env` on
+  every start.
 - a deployment: in that server's environment / `.env`.
 
 Never commit a real host: the repo is public.
@@ -52,8 +71,9 @@ the account it signed in as.
 
 Miss Claude's dev consoles run a SessionStart hook
 (`scripts/doska-project-context.py` in Miss Claude) that injects a short
-`== DOSKA PROJECTS ==` block: the worktree, mission, branch, repo id and Claude
-session id. It fires at startup and again after `/clear`, `/compact` and resume.
+`== DOSKA PROJECTS ==` block: the worktree, mission, branch, repo id, Claude
+session id, its own dashboard URL and, for a mission started from a project,
+that project's id. It fires at startup and again after `/clear`, `/compact` and resume.
 If the Doska MCP tools are available, Claude calls `session_start` with those
 values: every project with a session on this worktree is touched and its
 context brief returned, which Claude treats as the shared state for its work.

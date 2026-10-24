@@ -141,6 +141,13 @@
       "when": 1792865670465,
       "tag": "0019_projects",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792883124266,
+      "tag": "0020_session_dashboard",
+      "breakpoints": true
     }
   ]
 }

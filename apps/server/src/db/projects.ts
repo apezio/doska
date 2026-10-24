@@ -263,13 +263,50 @@ export async function listProjects(userId: string): Promise<ProjectSummary[]> {
   return summaries.sort((a, b) => b.lastActivityAt - a.lastActivityAt)
 }
 
-/** Null when this server has no Miss Claude to send the browser to. */
+/** MISS_CLAUDE_URL: the Miss Claude dashboards, comma-separated, default first. */
+function missClaudeDashboards(): string[] {
+  return (process.env.MISS_CLAUDE_URL ?? "")
+    .split(",")
+    .map((u) => u.trim().replace(/\/+$/, ""))
+    .filter(Boolean)
+}
+
+/** Null when the session has no dashboard and this server knows none either. */
 function openUrl(session: ProjectSession): string | null {
-  const base = process.env.MISS_CLAUDE_URL?.replace(/\/+$/, "")
+  const base =
+    session.dashboardUrl.replace(/\/+$/, "") || missClaudeDashboards()[0]
   if (!base) return null
   const query = new URLSearchParams({ worktree: session.worktree })
+  if (session.mission) query.set("mission", session.mission)
   if (session.claudeSessionId) query.set("session", session.claudeSessionId)
   return `${base}/open?${query}`
+}
+
+/**
+ * A link per dashboard to start a mission on this project. The mission is
+ * named after the project, skipping names its sessions already use; the
+ * started session joins the project itself through `session_start`.
+ */
+function spawnUrls(
+  project: Pick<Project, "id" | "name">,
+  sessions: ProjectSession[]
+): { label: string; url: string }[] {
+  const base =
+    project.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "session"
+  const taken = new Set(sessions.map((s) => s.mission))
+  let name = base
+  for (let n = 2; taken.has(name); n++) name = `${base}-${n}`
+  const query = new URLSearchParams({ name, doska_project: project.id })
+  return missClaudeDashboards().map((url) => {
+    const host = new URL(url).hostname
+    return {
+      label: /^[\d.:[\]]+$/.test(host) ? host : host.split(".")[0],
+      url: `${url}/spawn?${query}`,
+    }
+  })
 }
 
 async function resolveCards(
@@ -371,6 +408,7 @@ export async function getProject(
     sessions: sessions
       .sort((a, b) => (b.lastActivityAt ?? 0) - (a.lastActivityAt ?? 0))
       .map((s) => ({ ...s, openUrl: openUrl(s) })),
+    spawnUrls: spawnUrls(project, sessions),
     events,
   }
 }
@@ -906,6 +944,7 @@ export async function registerSession(
       branch: input.branch,
       repoId: input.repoId,
       claudeSessionId: input.claudeSessionId,
+      dashboardUrl: input.dashboardUrl,
       lastEvent: input.lastEvent,
     }
     const [cur] = await tx

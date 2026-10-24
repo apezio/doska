@@ -252,6 +252,7 @@ export const contract = {
           branch: z.string().optional(),
           repoId: z.string().optional(),
           claudeSessionId: z.string().optional(),
+          dashboardUrl: z.string().optional(),
           workstreamId: z.string().optional(),
           lastEvent: z.string().optional(),
           sessionId,

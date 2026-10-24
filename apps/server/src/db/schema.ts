@@ -251,6 +251,7 @@ export const projectSessions = pgTable(
     branch: text("branch").notNull().default(""),
     repoId: text("repo_id").notNull().default(""),
     claudeSessionId: text("claude_session_id").notNull().default(""),
+    dashboardUrl: text("dashboard_url").notNull().default(""),
     lastEvent: text("last_event").notNull().default(""),
     lastActivityAt: bigint("last_activity_at", { mode: "number" }),
     createdAt: bigint("created_at", { mode: "number" }).notNull(),

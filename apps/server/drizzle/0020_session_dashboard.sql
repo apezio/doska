@@ -1,0 +1,1 @@
+ALTER TABLE "project_sessions" ADD COLUMN "dashboard_url" text DEFAULT '' NOT NULL;

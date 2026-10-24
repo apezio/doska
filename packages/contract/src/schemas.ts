@@ -260,6 +260,8 @@ export const ProjectSessionSchema = z.object({
   branch: z.string(),
   repoId: z.string(),
   claudeSessionId: z.string(),
+  /** The Miss Claude dashboard the session runs under; "" = the default one. */
+  dashboardUrl: z.string(),
   lastEvent: z.string(),
   lastActivityAt: z.number().nullable(),
   createdAt: z.number(),
@@ -326,6 +328,8 @@ export const ProjectDetailSchema = z.object({
   decisions: z.array(ProjectDecisionSchema),
   cards: z.array(LinkedCardSchema),
   sessions: z.array(ProjectSessionDetailSchema),
+  /** One per configured Miss Claude dashboard; empty when there is none. */
+  spawnUrls: z.array(z.object({ label: z.string(), url: z.string() })),
   /** Newest first, at most 100. */
   events: z.array(ProjectEventSchema),
 })

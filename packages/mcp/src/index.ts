@@ -4,13 +4,19 @@ import { INSTRUCTIONS } from "./guide"
 import { registerBoardTools } from "./tools/boards"
 import { registerCardTools } from "./tools/cards"
 import { registerColumnTools } from "./tools/columns"
+import { registerProjectTools } from "./tools/projects"
 import { registerSearchTools } from "./tools/search"
-import type { BoardStore } from "./store"
+import type { BoardStore, ProjectStore } from "./store"
 
-export type { BoardStore } from "./store"
+export {
+  ConflictError,
+  type BoardStore,
+  type ProjectInput,
+  type ProjectStore,
+} from "./store"
 
 export function createBoardServer(
-  store: BoardStore,
+  store: BoardStore & ProjectStore,
   version: string
 ): McpServer {
   const server = new McpServer(
@@ -25,5 +31,6 @@ export function createBoardServer(
   registerColumnTools(server, board)
   registerCardTools(server, board)
   registerSearchTools(server, board)
+  registerProjectTools(server, store)
   return server
 }

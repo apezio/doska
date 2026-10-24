@@ -39,6 +39,20 @@ an access token from there on. Same URL works for Claude Desktop and claude.ai.
 | `delete_card`                    | Delete a card                                                                          |
 | `search_cards`                   | Across every board, by text, deadline range, `priorityMin` / `priorityMax`, or column  |
 | `list_upcoming`                  | The app's upcoming view: overdue first, then today, then out to 60 days                |
+| `list_projects`                  | Every project with status, one-line summary and counts                                 |
+| `get_project`                    | One project in full: workstreams, decisions, cards, sessions, last 100 events          |
+| `get_project_context`            | A short plain-text brief of a project — what a session reads first                     |
+| `session_start`                  | Projects this worktree is registered on, each with its brief and `session_id`          |
+| `create_project`                 | New project: name, optional description, status, summary                               |
+| `update_project`                 | Patch name, description, status or summary (`if_version`)                              |
+| `create_workstream`              | Add a workstream: plan, steps, dependencies; its plan starts proposed                  |
+| `update_workstream`              | Patch a workstream (`if_version`, `message` for why the plan changed)                  |
+| `set_step`                       | Tick or untick one step by id or exact text                                            |
+| `add_decision`                   | Raise a decision or blocker for the operator                                           |
+| `resolve_decision`               | Close one with the operator's resolution                                               |
+| `link_card`, `unlink_card`       | Link a board card to the project, optionally under a workstream                        |
+| `register_session`               | Join a project as the session in a worktree, or refresh it                             |
+| `record_progress`                | Checkpoint: log a note, optionally summary, workstream status and steps                |
 
 Every tool addresses records by their opaque id. A card also comes back with a
 `cardId` number, but that exists only so one card body can link to another as
@@ -54,6 +68,11 @@ doesn't read it will write bodies that render wrong.
 A card's priority is an integer 0–100, higher is more important, `0` for none —
 pass `0` or `null` to clear it. Cards written on the old high / medium / low
 scale read 75 / 50 / 25.
+
+Project tools take snake_case arguments (`project_id`, `if_version`). A write
+with a stale `if_version` is refused with the record's current version and
+value, so the agent can merge. Pass `session_id` (from `session_start` or
+`register_session`) on writes so the activity log shows which session made them.
 
 Deletes are tombstones, the same as in the app: they propagate to your other
 devices rather than letting a peer resurrect the record on its next sync.

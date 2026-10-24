@@ -24,6 +24,9 @@ export const keys = {
   ownedBoards: (userId: string) =>
     ["accounts", "owned-boards", userId] as const,
   members: (boardId: string) => ["members", boardId] as const,
+  /** The bare key is the invalidation prefix for the list and every project. */
+  projects: ["projects"] as const,
+  project: (id: string) => ["projects", id] as const,
   /** The board's public share link. Not under `board`, which is the local
    * record: this one only ever comes from the server. */
   publicStatus: (boardId: string) => ["public-status", boardId] as const,

@@ -36,6 +36,7 @@ export function useLogout() {
     onSuccess: () => {
       qc.setQueryData(keys.session, authApi.SIGNED_OUT)
       qc.removeQueries({ queryKey: keys.accounts })
+      qc.removeQueries({ queryKey: keys.projects })
     },
   })
 }

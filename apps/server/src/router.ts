@@ -8,6 +8,23 @@ import {
 } from "./db/accounts"
 import { assertBoardAccess, assertBoardOwner, boardAccess } from "./db/access"
 import {
+  addNote,
+  createDecision,
+  createProject,
+  createWorkstream,
+  getProject,
+  linkCard,
+  listProjects,
+  registerSession,
+  removeProject,
+  removeSession,
+  removeWorkstream,
+  unlinkCard,
+  updateDecision,
+  updateProject,
+  updateWorkstream,
+} from "./db/projects"
+import {
   listPublishedBoards,
   publicToken,
   publishBoard,
@@ -146,5 +163,52 @@ export const router = os.router({
       await revokeAllMemberships(input.userId)
       await deleteAccount(input.userId)
     }),
+  },
+  projects: {
+    list: os.projects.list.handler(({ context }) =>
+      listProjects(context.userId)
+    ),
+    get: os.projects.get.handler(({ input, context }) =>
+      getProject(context.userId, input)
+    ),
+    create: os.projects.create.handler(({ input, context }) =>
+      createProject(context.userId, input)
+    ),
+    update: os.projects.update.handler(({ input, context }) =>
+      updateProject(context.userId, input)
+    ),
+    remove: os.projects.remove.handler(({ input, context }) =>
+      removeProject(context.userId, input)
+    ),
+    workstreamCreate: os.projects.workstreamCreate.handler(
+      ({ input, context }) => createWorkstream(context.userId, input)
+    ),
+    workstreamUpdate: os.projects.workstreamUpdate.handler(
+      ({ input, context }) => updateWorkstream(context.userId, input)
+    ),
+    workstreamRemove: os.projects.workstreamRemove.handler(
+      ({ input, context }) => removeWorkstream(context.userId, input)
+    ),
+    decisionCreate: os.projects.decisionCreate.handler(({ input, context }) =>
+      createDecision(context.userId, input)
+    ),
+    decisionUpdate: os.projects.decisionUpdate.handler(({ input, context }) =>
+      updateDecision(context.userId, input)
+    ),
+    cardLink: os.projects.cardLink.handler(({ input, context }) =>
+      linkCard(context.userId, input)
+    ),
+    cardUnlink: os.projects.cardUnlink.handler(({ input, context }) =>
+      unlinkCard(context.userId, input)
+    ),
+    sessionRegister: os.projects.sessionRegister.handler(({ input, context }) =>
+      registerSession(context.userId, input)
+    ),
+    sessionRemove: os.projects.sessionRemove.handler(({ input, context }) =>
+      removeSession(context.userId, input)
+    ),
+    noteAdd: os.projects.noteAdd.handler(({ input, context }) =>
+      addNote(context.userId, input)
+    ),
   },
 })

@@ -4,6 +4,7 @@ import { publicBoardToken, publishedBoards } from "../api/boards"
 import { fetchSession } from "../api/auth"
 import { fetchPublicBoard } from "../api/public"
 import { listDirectory, listMembers, listSharedBoards } from "../api/members"
+import { getProject, isGone, listProjects } from "../api/projects"
 import {
   hasUnclaimedLocalBoards,
   UNCLAIMED_BOARDS_WARNING,
@@ -114,6 +115,25 @@ export function useDirectory(enabled: boolean) {
     queryKey: keys.directory,
     queryFn: listDirectory,
     enabled,
+  })
+}
+
+/** The account's projects with their roll-up counts. Online only, like the
+ * roster: `enabled` keeps a signed-out session from asking. */
+export function useProjects(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.projects,
+    queryFn: listProjects,
+    enabled,
+  })
+}
+
+export function useProject(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.project(id),
+    queryFn: () => getProject(id),
+    enabled,
+    retry: (count, err) => !isGone(err) && count < 2,
   })
 }
 

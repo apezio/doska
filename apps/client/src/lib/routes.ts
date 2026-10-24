@@ -8,6 +8,13 @@ export const routes = {
   digest: () => "/digest",
   /** Deleted boards, columns and cards, restorable until they age out. */
   trash: () => "/trash",
+  /** Projects: workstreams, decisions and the sessions working on them. Online
+   * only — they live on the account, not on this device. */
+  projects: () => "/projects",
+  project: {
+    pattern: "/projects/:id",
+    to: (id: string) => `/projects/${id}`,
+  },
   /** Top-level deck route — one per dashboard. */
   deck: {
     pattern: "/d/:id",

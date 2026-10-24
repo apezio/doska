@@ -180,6 +180,8 @@ export function toolJson(result: ToolResult): any {
 /** Clears the sync tables; leaves the auth tables (and thus the session) intact. */
 export async function resetTables(): Promise<void> {
   await getDB().execute(
-    sql`TRUNCATE cards, columns, dashboards, board_members, counters RESTART IDENTITY`
+    sql`TRUNCATE cards, columns, dashboards, board_members, counters,
+      projects, workstreams, project_decisions, project_cards,
+      project_sessions, project_events RESTART IDENTITY`
   )
 }

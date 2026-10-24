@@ -22,6 +22,7 @@
     "./board-view": "./src/data/board-view.ts",
     "./mutations": "./src/data/mutations/index.ts",
     "./operations": "./src/api/operations/index.ts",
+    "./projects": "./src/data/projects.ts",
     "./public": "./src/api/public.ts",
     "./queries": "./src/data/queries.ts",
     "./query-client": "./src/query-client.ts",

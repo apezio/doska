@@ -49,6 +49,18 @@ Card bodies: GitHub-flavored Markdown, plus these
   and an image embedded as ![alt](attachment:<key>) renders inline, but
   uploading goes through the app, not this server.
 
+Projects
+- A project is shared memory across sessions: a goal, workstreams with plans and
+  steps, open decisions and blockers, linked cards, and the sessions working on
+  it. Start with session_start (your working directory) or get_project_context,
+  and write back what the next session needs to know.
+- Proposed is not approved, and approved is not done. Never set a plan_state of
+  approved or a status of done unless the operator confirmed it; raise a
+  decision with add_decision instead of deciding yourself.
+- Use record_progress at checkpoints and handoffs, not after every message.
+- Pass if_version when you edit something you read earlier: a refused write
+  returns the current value, so merge it rather than overwrite.
+
 Writes sync to every device the account is signed in on, and deletes are
 tombstones — they propagate rather than being undone by another device's next
 sync. There is no undo, so confirm before deleting a column or a board.`

@@ -4,9 +4,27 @@ import {
   ChangeSchema,
   DashboardChangeSchema,
   DirectoryUserSchema,
+  DecisionKindSchema,
+  DecisionStatusSchema,
   MemberRoleSchema,
   MemberSchema,
+  PlanStateSchema,
+  ProjectDecisionSchema,
+  ProjectDetailSchema,
+  ProjectEventSchema,
+  ProjectSchema,
+  ProjectSessionSchema,
+  ProjectStatusSchema,
+  ProjectSummarySchema,
+  StepInputSchema,
+  WorkstreamSchema,
+  WorkstreamStatusSchema,
 } from "./schemas"
+
+const ok = z.object({ ok: z.literal(true) })
+
+/** The `project_sessions.id` a write came from, for the activity log. */
+const sessionId = z.string().optional()
 
 /**
  * The sync contract. Two channels, each push-then-pull with a `since` cursor:
@@ -113,5 +131,143 @@ export const contract = {
      * is already deactivated and owns no live board
      */
     remove: oc.input(z.object({ userId: z.string() })).output(z.void()),
+  },
+  /**
+   * Request/response like `members`, owner-only (admins too). Writes are
+   * patches: only the fields present are written. `ifVersion` turns a stale
+   * write into a `CONFLICT` whose `data.current` is the record as it stands.
+   */
+  projects: {
+    list: oc.output(z.array(ProjectSummarySchema)),
+    get: oc.input(z.object({ id: z.string() })).output(ProjectDetailSchema),
+    create: oc
+      .input(
+        z.object({
+          name: z.string().min(1),
+          description: z.string().optional(),
+          status: ProjectStatusSchema.optional(),
+          summary: z.string().optional(),
+          sessionId,
+        })
+      )
+      .output(ProjectSchema),
+    update: oc
+      .input(
+        z.object({
+          id: z.string(),
+          ifVersion: z.number().int().optional(),
+          name: z.string().min(1).optional(),
+          description: z.string().optional(),
+          status: ProjectStatusSchema.optional(),
+          summary: z.string().optional(),
+          /** Why — recorded on the activity event. */
+          message: z.string().optional(),
+          sessionId,
+        })
+      )
+      .output(ProjectSchema),
+    remove: oc.input(z.object({ id: z.string(), sessionId })).output(ok),
+    workstreamCreate: oc
+      .input(
+        z.object({
+          projectId: z.string(),
+          name: z.string().min(1),
+          status: WorkstreamStatusSchema.optional(),
+          plan: z.string().optional(),
+          planState: PlanStateSchema.optional(),
+          steps: z.array(StepInputSchema).optional(),
+          dependsOn: z.array(z.string()).optional(),
+          note: z.string().optional(),
+          sessionId,
+        })
+      )
+      .output(WorkstreamSchema),
+    workstreamUpdate: oc
+      .input(
+        z.object({
+          id: z.string(),
+          ifVersion: z.number().int().optional(),
+          name: z.string().min(1).optional(),
+          status: WorkstreamStatusSchema.optional(),
+          plan: z.string().optional(),
+          planState: PlanStateSchema.optional(),
+          steps: z.array(StepInputSchema).optional(),
+          dependsOn: z.array(z.string()).optional(),
+          note: z.string().optional(),
+          position: z.number().int().optional(),
+          message: z.string().optional(),
+          sessionId,
+        })
+      )
+      .output(WorkstreamSchema),
+    workstreamRemove: oc
+      .input(z.object({ id: z.string(), sessionId }))
+      .output(ok),
+    decisionCreate: oc
+      .input(
+        z.object({
+          projectId: z.string(),
+          workstreamId: z.string().optional(),
+          kind: DecisionKindSchema,
+          title: z.string().min(1),
+          body: z.string().optional(),
+          sessionId,
+        })
+      )
+      .output(ProjectDecisionSchema),
+    decisionUpdate: oc
+      .input(
+        z.object({
+          id: z.string(),
+          title: z.string().min(1).optional(),
+          body: z.string().optional(),
+          status: DecisionStatusSchema.optional(),
+          resolution: z.string().optional(),
+          sessionId,
+        })
+      )
+      .output(ProjectDecisionSchema),
+    cardLink: oc
+      .input(
+        z.object({
+          projectId: z.string(),
+          boardId: z.string(),
+          cardId: z.string(),
+          workstreamId: z.string().optional(),
+          sessionId,
+        })
+      )
+      .output(ok),
+    cardUnlink: oc
+      .input(z.object({ projectId: z.string(), cardId: z.string(), sessionId }))
+      .output(ok),
+    /** Upserts on (projectId, worktree) and stamps `lastActivityAt`. */
+    sessionRegister: oc
+      .input(
+        z.object({
+          projectId: z.string(),
+          worktree: z.string().min(1),
+          label: z.string().optional(),
+          mission: z.string().optional(),
+          branch: z.string().optional(),
+          repoId: z.string().optional(),
+          claudeSessionId: z.string().optional(),
+          workstreamId: z.string().optional(),
+          lastEvent: z.string().optional(),
+          sessionId,
+        })
+      )
+      .output(ProjectSessionSchema),
+    sessionRemove: oc.input(z.object({ id: z.string(), sessionId })).output(ok),
+    noteAdd: oc
+      .input(
+        z.object({
+          projectId: z.string(),
+          workstreamId: z.string().optional(),
+          message: z.string().min(1),
+          sessionId,
+        })
+      )
+      .output(ProjectEventSchema),
   },
 }

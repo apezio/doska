@@ -1,4 +1,15 @@
-import type { Attachment, MemberRole } from "@doska/contract"
+import type {
+  Attachment,
+  DecisionKind,
+  DecisionStatus,
+  MemberRole,
+  PlanState,
+  ProjectActor,
+  ProjectEventKind,
+  ProjectStatus,
+  Step,
+  WorkstreamStatus,
+} from "@doska/contract"
 import {
   bigint,
   boolean,
@@ -8,6 +19,7 @@ import {
   pgTable,
   primaryKey,
   text,
+  uniqueIndex,
 } from "drizzle-orm/pg-core"
 
 // Auth is better-auth's, schema and all; it lives beside ours so that one
@@ -136,4 +148,136 @@ export const boardMembers = pgTable(
     primaryKey({ columns: [t.boardId, t.userId] }),
     index("board_members_user_seq").on(t.userId, t.seq),
   ]
+)
+
+/**
+ * Projects: online-only RPC records (no `seq`, no sync channel), owned by the
+ * account that created them. Ids are `<kind>-<12 hex>` minted by the server,
+ * times are server epoch ms. `version` is the optimistic-concurrency counter
+ * behind `ifVersion`; decisions, cards, sessions and events are rows of their
+ * own (append or upsert), so they need none.
+ */
+export const projects = pgTable(
+  "projects",
+  {
+    id: text("id").primaryKey(),
+    ownerId: text("owner_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    status: text("status").$type<ProjectStatus>().notNull().default("active"),
+    summary: text("summary").notNull().default(""),
+    summaryUpdatedAt: bigint("summary_updated_at", { mode: "number" }),
+    version: integer("version").notNull().default(1),
+    createdAt: bigint("created_at", { mode: "number" }).notNull(),
+    updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
+    deletedAt: bigint("deleted_at", { mode: "number" }),
+  },
+  (t) => [index("projects_owner").on(t.ownerId)]
+)
+
+export const workstreams = pgTable(
+  "workstreams",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id").notNull(),
+    name: text("name").notNull(),
+    status: text("status")
+      .$type<WorkstreamStatus>()
+      .notNull()
+      .default("planned"),
+    plan: text("plan").notNull().default(""),
+    planState: text("plan_state")
+      .$type<PlanState>()
+      .notNull()
+      .default("proposed"),
+    steps: jsonb("steps").$type<Step[]>().notNull().default([]),
+    dependsOn: jsonb("depends_on").$type<string[]>().notNull().default([]),
+    note: text("note").notNull().default(""),
+    position: integer("position").notNull().default(0),
+    version: integer("version").notNull().default(1),
+    createdAt: bigint("created_at", { mode: "number" }).notNull(),
+    updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
+    deletedAt: bigint("deleted_at", { mode: "number" }),
+  },
+  (t) => [index("workstreams_project").on(t.projectId)]
+)
+
+/** Decisions and blockers — one table, `kind` tells them apart. */
+export const projectDecisions = pgTable(
+  "project_decisions",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id").notNull(),
+    workstreamId: text("workstream_id"),
+    kind: text("kind").$type<DecisionKind>().notNull(),
+    title: text("title").notNull(),
+    body: text("body").notNull().default(""),
+    status: text("status").$type<DecisionStatus>().notNull().default("open"),
+    resolution: text("resolution").notNull().default(""),
+    createdAt: bigint("created_at", { mode: "number" }).notNull(),
+    resolvedAt: bigint("resolved_at", { mode: "number" }),
+    deletedAt: bigint("deleted_at", { mode: "number" }),
+    sessionId: text("session_id"),
+  },
+  (t) => [index("project_decisions_project").on(t.projectId)]
+)
+
+/** A link only: title, number and done are read from the card itself. */
+export const projectCards = pgTable(
+  "project_cards",
+  {
+    projectId: text("project_id").notNull(),
+    boardId: text("board_id").notNull(),
+    cardId: text("card_id").notNull(),
+    workstreamId: text("workstream_id"),
+    createdAt: bigint("created_at", { mode: "number" }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.projectId, t.cardId] })]
+)
+
+/**
+ * Miss Claude sessions. The worktree is the stable key — a mission's Claude
+ * session id changes on every restart, so it is only a hint.
+ */
+export const projectSessions = pgTable(
+  "project_sessions",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id").notNull(),
+    workstreamId: text("workstream_id"),
+    label: text("label").notNull().default(""),
+    mission: text("mission").notNull().default(""),
+    worktree: text("worktree").notNull(),
+    branch: text("branch").notNull().default(""),
+    repoId: text("repo_id").notNull().default(""),
+    claudeSessionId: text("claude_session_id").notNull().default(""),
+    lastEvent: text("last_event").notNull().default(""),
+    lastActivityAt: bigint("last_activity_at", { mode: "number" }),
+    createdAt: bigint("created_at", { mode: "number" }).notNull(),
+    updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
+    deletedAt: bigint("deleted_at", { mode: "number" }),
+  },
+  (t) => [
+    uniqueIndex("project_sessions_project_worktree").on(
+      t.projectId,
+      t.worktree
+    ),
+  ]
+)
+
+/** Append-only activity, and the history of what each write replaced. */
+export const projectEvents = pgTable(
+  "project_events",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id").notNull(),
+    workstreamId: text("workstream_id"),
+    kind: text("kind").$type<ProjectEventKind>().notNull(),
+    message: text("message").notNull(),
+    before: jsonb("before").$type<Record<string, unknown>>(),
+    sessionId: text("session_id"),
+    actor: text("actor").$type<ProjectActor>().notNull(),
+    createdAt: bigint("created_at", { mode: "number" }).notNull(),
+  },
+  (t) => [index("project_events_project_created").on(t.projectId, t.createdAt)]
 )

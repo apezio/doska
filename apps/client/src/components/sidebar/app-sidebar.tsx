@@ -38,6 +38,9 @@ export function AppSidebar() {
   const activeDashboardId = useParams().id ?? ""
   const isDigestActive = base === routes.digest()
   const isTrashActive = location === routes.trash()
+  const isProjectsActive =
+    location === routes.projects() ||
+    location.startsWith(`${routes.projects()}/`)
 
   return (
     <Sidebar>
@@ -57,6 +60,15 @@ export function AppSidebar() {
                 onClick={() => navigate(`~${routes.digest()}`)}
               >
                 <span>Upcoming</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={isProjectsActive}
+                tooltip="Projects"
+                onClick={() => navigate(`~${routes.projects()}`)}
+              >
+                <span>Projects</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

@@ -119,6 +119,11 @@ AUTH_SECRET=dev-only-secret-not-for-production
 AUTH_TRUSTED_ORIGINS=https://$WEB_HOST:$WEB_PORT,https://localhost:$WEB_PORT
 AUTH_RATE_LIMIT=off
 ENV
+  # Base URL for Projects' "Open session" links; box-specific, so it is set in
+  # dev-preview.local.sh (or the environment), never here.
+  if [ -n "${MISS_CLAUDE_URL:-}" ]; then
+    echo "MISS_CLAUDE_URL=$MISS_CLAUDE_URL" >> "$ROOT/apps/server/.env"
+  fi
 }
 
 write_vite_config() {

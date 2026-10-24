@@ -6,6 +6,7 @@ import { Section } from "../shared/section"
 import { useProjectWrite } from "../shared/use-project-write"
 import { useProjectCtx } from "./project-context"
 import { SessionCard } from "./session-card"
+import { sessionDefaults } from "./session-defaults"
 
 /** The Claude sessions working on the project, most recently active first. */
 export function SessionsSection() {
@@ -51,14 +52,12 @@ export function SessionsSection() {
 }
 
 function AddSession({ onDone }: { onDone: () => void }) {
-  const { projectId, workstreams } = useProjectCtx()
-  const [fields, setFields] = useState({
+  const { detail, projectId, workstreams } = useProjectCtx()
+  const [fields, setFields] = useState(() => ({
     label: "",
-    worktree: "",
-    mission: "",
-    branch: "",
+    ...sessionDefaults(detail.project.name, detail.sessions),
     workstreamId: "",
-  })
+  }))
   const { mutate: register, isPending } = useProjectWrite(
     "sessionRegister",
     projectId

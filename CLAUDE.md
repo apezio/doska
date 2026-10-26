@@ -13,7 +13,7 @@ mission worktree            ──YES COMMIT──▶  claude/<mission>
                                               working      ← several finished features, together
                                                 │  ← THE dev preview: https://<WEB_HOST>:5174/
                                                 │
-                                                │ YES RELEASE (separate, gated)
+                                                │ release + deploy (the rest of YES SHIP)
                                                 ▼
                                               main  ──▶ deployed ──▶ doska.forked.net
 ```
@@ -141,23 +141,25 @@ refuses to start anywhere else) and does not write feature code.
 
 Several finished features can sit in `working` at once — that is what it is for.
 
-## Promoting to main (separate, gated)
+## Releasing and deploying: part of YES SHIP
 
-Manual testing happens on `working`, on the one preview. Only after that,
-and only on the typed phrase `YES RELEASE`, does the integrator fast-forward `main` to
-`working` and push `main` to `origin` — a distinct action from integrating, and
-never bundled into one. `main` is what the staging deploy below tracks.
+One `YES SHIP` covers the whole path (operator, 2026-10-26). After integrating,
+`scripts/miss-ship.py` runs the steps recorded for this repo in
+`~/.miss-claude/ship.json`, in order, and stops at the first failure:
 
-Release **without moving the working tree**:
+1. **release:** `git push . working:main`, a fast-forward of `main` to
+   `working` that never checks `main` out.
+2. **push:** `main` to `origin`. `working` stays local.
+3. **deploy:** `~/.miss-claude/deploy-doska.sh` backs up the database, the
+   built client and the env file, fast-forwards the staging checkout to the
+   fork's `main`, builds the client and restarts `doska-server`. Migrations run
+   at server start.
+4. **verify:** `doska-server` is active and the site answers.
 
-```
-git branch -f main working    # main is not checked out here, so this is the ff
-git push origin main
-```
-
-Never `git checkout main` to do it. The canonical checkout is what the one
-preview serves from, and a branch switch there can move the tree backwards
-under a running Vite — see the white page in the hooks section above.
+Never release or deploy by hand, and never `git checkout main` in the canonical
+checkout: it is what the one preview serves from, and a branch switch there can
+move the tree backwards under a running Vite (see the white page in the hooks
+section above).
 
 ## Upstreaming a feature to romenkova/doska
 
@@ -196,7 +198,7 @@ before starting; do not ask the operator to hand-run the merge.
 
 ## The staging deploy
 
-Separate from the preview, and **not yours to touch** — listed so no session has
+Separate from the preview, and moved only by YES SHIP's deploy step — listed so no session has
 to rediscover it, or mistake it for the preview.
 
 | | |
@@ -206,7 +208,7 @@ to rediscover it, or mistake it for the preview.
 | web | nginx serves the built `apps/client/dist`; `:8080` plain, `:443` TLS |
 | api | `doska-server.service` (systemd) on `127.0.0.1:3000` |
 | db | postgres on `127.0.0.1:5432` |
-| version | tagged releases; it tracks `main` and lags `working` on purpose |
+| version | `main`, deployed by every YES SHIP |
 
 It deploys **`apezio/doska`** — this fork — from the `main` this checkout
 pushes, not upstream `romenkova/doska`. (Checked 2026-09-01 by fetching the live
@@ -215,10 +217,8 @@ priority number, which exist nowhere upstream. Re-check the same way rather than
 assuming — `sudo -u doska git -C /opt/doska/repo remote -v` needs a password and
 so is not available to an agent session.)
 
-So the box only moves when `main` moves *and* someone deploys: `main` lags
-`working` on purpose, and `origin/main` lags local `main` until it is pushed.
-Deploying is the operator's call and their procedure — never build into
-`/opt/doska`, never restart `doska-server`.
+The box moves only when a YES SHIP deploys: never build into `/opt/doska` or
+restart `doska-server` by hand.
 
 ## Repo facts worth knowing
 

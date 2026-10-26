@@ -328,8 +328,10 @@ export const ProjectDetailSchema = z.object({
   decisions: z.array(ProjectDecisionSchema),
   cards: z.array(LinkedCardSchema),
   sessions: z.array(ProjectSessionDetailSchema),
-  /** One per configured Miss Claude dashboard; empty when there is none. */
-  spawnUrls: z.array(z.object({ label: z.string(), url: z.string() })),
+  /** The configured Miss Claude dashboards, default first; may be empty. */
+  dashboards: z.array(
+    z.object({ label: z.string(), url: z.string(), spawnUrl: z.string() })
+  ),
   /** Newest first, at most 100. */
   events: z.array(ProjectEventSchema),
 })

@@ -10,7 +10,7 @@ export function SessionsSection() {
   const sessions = [...detail.sessions].sort(
     (a, b) => (b.lastActivityAt ?? 0) - (a.lastActivityAt ?? 0)
   )
-  const spawns = detail.spawnUrls
+  const spawns = detail.dashboards
 
   return (
     <Section
@@ -21,7 +21,7 @@ export function SessionsSection() {
         spawns.map((s) => (
           <a
             key={s.url}
-            href={s.url}
+            href={s.spawnUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={cn(

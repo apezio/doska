@@ -271,26 +271,31 @@ function missClaudeDashboards(): string[] {
     .filter(Boolean)
 }
 
-/** Null when the session has no dashboard and this server knows none either. */
+/**
+ * Null when the session has no dashboard and this server knows none either.
+ * A known mission links straight to its page, which every Miss Claude serves;
+ * otherwise `/open` resolves the worktree or Claude session id to one.
+ */
 function openUrl(session: ProjectSession): string | null {
   const base =
     session.dashboardUrl.replace(/\/+$/, "") || missClaudeDashboards()[0]
   if (!base) return null
+  if (session.mission)
+    return `${base}/m/${encodeURIComponent(session.mission)}/dashboard`
   const query = new URLSearchParams({ worktree: session.worktree })
-  if (session.mission) query.set("mission", session.mission)
   if (session.claudeSessionId) query.set("session", session.claudeSessionId)
   return `${base}/open?${query}`
 }
 
 /**
- * A link per dashboard to start a mission on this project. The mission is
- * named after the project, skipping names its sessions already use; the
- * started session joins the project itself through `session_start`.
+ * Each dashboard, with a link to start a mission on this project there. The
+ * mission is named after the project, skipping names its sessions already
+ * use; the started session joins the project itself through `session_start`.
  */
-function spawnUrls(
+function dashboardsFor(
   project: Pick<Project, "id" | "name">,
   sessions: ProjectSession[]
-): { label: string; url: string }[] {
+): ProjectDetail["dashboards"] {
   const base =
     project.name
       .toLowerCase()
@@ -304,7 +309,8 @@ function spawnUrls(
     const host = new URL(url).hostname
     return {
       label: /^[\d.:[\]]+$/.test(host) ? host : host.split(".")[0],
-      url: `${url}/spawn?${query}`,
+      url,
+      spawnUrl: `${url}/spawn?${query}`,
     }
   })
 }
@@ -408,7 +414,7 @@ export async function getProject(
     sessions: sessions
       .sort((a, b) => (b.lastActivityAt ?? 0) - (a.lastActivityAt ?? 0))
       .map((s) => ({ ...s, openUrl: openUrl(s) })),
-    spawnUrls: spawnUrls(project, sessions),
+    dashboards: dashboardsFor(project, sessions),
     events,
   }
 }

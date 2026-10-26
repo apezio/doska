@@ -72,9 +72,49 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
             ? `${s.lastEvent ? `${s.lastEvent}, ` : ""}${timeAgo(s.lastActivityAt)}`
             : "No activity yet"}
         </span>
+        <DashboardPicker session={s} />
         <OpenSession url={s.openUrl} />
       </div>
     </li>
+  )
+}
+
+/** Which Miss Claude the session runs under, when there is more than one. */
+function DashboardPicker({ session: s }: { session: ProjectSessionDetail }) {
+  const { detail, projectId } = useProjectCtx()
+  const { mutate: register } = useProjectWrite("sessionRegister", projectId)
+  const { dashboards } = detail
+  if (dashboards.length < 2) return null
+  const current = s.dashboardUrl.replace(/\/+$/, "") || dashboards[0].url
+
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Runs on"
+      className="flex shrink-0 gap-0.5 rounded-lg bg-muted p-0.5"
+    >
+      {dashboards.map((d) => (
+        <button
+          key={d.url}
+          type="button"
+          role="radio"
+          aria-checked={current === d.url}
+          onClick={() =>
+            current !== d.url &&
+            register({ projectId, worktree: s.worktree, dashboardUrl: d.url })
+          }
+          className={cn(
+            "h-6 rounded-md px-2.5 text-xs font-semibold transition-colors outline-none",
+            "focus-visible:ring-3 focus-visible:ring-ring/50",
+            current === d.url
+              ? "bg-card text-foreground shadow-e1"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {d.label}
+        </button>
+      ))}
+    </div>
   )
 }
 

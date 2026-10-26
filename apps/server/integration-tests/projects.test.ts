@@ -352,34 +352,44 @@ describe("projects", () => {
 
     process.env.MISS_CLAUDE_URL =
       "https://dev.invalid:4200/, https://jump.invalid:4200"
-    let spawnUrls
-    ;({ sessions, spawnUrls } = await owner.projects.get({ id }))
+    let dashboards
+    ;({ sessions, dashboards } = await owner.projects.get({ id }))
+    // A known mission links straight to its page on the default dashboard.
     expect(sessions[0].openUrl).toBe(
-      "https://dev.invalid:4200/open?worktree=%2Fwork%2Frouting&mission=routing&session=s-2"
+      "https://dev.invalid:4200/m/routing/dashboard"
     )
     // The mission is named after the project, past names already in use.
-    expect(spawnUrls).toEqual([
-      {
-        label: "dev",
-        url: `https://dev.invalid:4200/spawn?name=routing-2&doska_project=${id}`,
-      },
-      {
-        label: "jump",
-        url: `https://jump.invalid:4200/spawn?name=routing-2&doska_project=${id}`,
-      },
-    ])
+    expect(dashboards).toEqual(
+      ["dev", "jump"].map((label) => ({
+        label,
+        url: `https://${label}.invalid:4200`,
+        spawnUrl: `https://${label}.invalid:4200/spawn?name=routing-2&doska_project=${id}`,
+      }))
+    )
 
     // A session that names its own dashboard opens there.
     await owner.projects.sessionRegister({
       projectId: id,
       worktree: "/work/routing",
-      dashboardUrl: "https://jump.invalid:4200/",
+      dashboardUrl: "https://jump.invalid:4200",
     })
     ;({ sessions } = await owner.projects.get({ id }))
-    expect(sessions[0].openUrl).toMatch(/^https:\/\/jump\.invalid:4200\/open\?/)
+    expect(sessions[0].openUrl).toBe(
+      "https://jump.invalid:4200/m/routing/dashboard"
+    )
 
     const [summary] = await owner.projects.list()
     expect(summary).toMatchObject({ sessionCount: 1, activeSessions: 1 })
+
+    // Without a mission, Miss Claude resolves the worktree and session id.
+    await owner.projects.sessionRegister({
+      projectId: id,
+      worktree: "/work/ops",
+    })
+    ;({ sessions } = await owner.projects.get({ id }))
+    expect(sessions.find((s) => s.worktree === "/work/ops")?.openUrl).toBe(
+      "https://dev.invalid:4200/open?worktree=%2Fwork%2Fops"
+    )
   })
 
   test("another account cannot read or write someone else's project", async () => {

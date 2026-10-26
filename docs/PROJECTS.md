@@ -18,17 +18,24 @@ the **Miss Claude dashboard** it runs under (`dashboard_url`, passed to
 each session on its own one.
 
 **Open session.** The server gives every session a link to its own dashboard,
-or to the first one in `MISS_CLAUDE_URL` when the session never named one:
+or to the first one in `MISS_CLAUDE_URL` when the session never named one. A
+session that knows its mission links straight to that mission's page:
 
 ```
-<dashboard>/open?worktree=<worktree>&mission=<mission>&session=<claude session id>
+<dashboard>/m/<mission>/dashboard
 ```
 
-Miss Claude resolves the link to a mission — by name, by its worktree, then by
-the Claude session id its console is (or was) writing — and redirects to that
-mission's dashboard, where the console is attached, or started and the session
-resumed. Add `&view=chat` to land on the chat view instead. The link sits
-behind Miss Claude's own login, so it must use the hostname you log in on.
+Without a mission it goes through Miss Claude's resolver, which matches the
+mission's worktree, then the Claude session id its console is (or was)
+writing:
+
+```
+<dashboard>/open?worktree=<worktree>&session=<claude session id>
+```
+
+Either sits behind Miss Claude's own login, so the dashboard must be the
+hostname you log in on. With more than one dashboard configured, each session
+card has a switch ("dev | jump") that sets the session's dashboard by hand.
 
 **Start session.** The Sessions section has one button per configured
 dashboard ("Start on dev", "Start on jump"). It opens that dashboard's spawn

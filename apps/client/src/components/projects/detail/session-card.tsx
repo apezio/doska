@@ -72,49 +72,23 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
             ? `${s.lastEvent ? `${s.lastEvent}, ` : ""}${timeAgo(s.lastActivityAt)}`
             : "No activity yet"}
         </span>
-        <DashboardPicker session={s} />
+        <RunsOn session={s} />
         <OpenSession url={s.openUrl} />
       </div>
     </li>
   )
 }
 
-/** Which Miss Claude the session runs under, when there is more than one. */
-function DashboardPicker({ session: s }: { session: ProjectSessionDetail }) {
-  const { detail, projectId } = useProjectCtx()
-  const { mutate: register } = useProjectWrite("sessionRegister", projectId)
-  const { dashboards } = detail
-  if (dashboards.length < 2) return null
-  const current = s.dashboardUrl.replace(/\/+$/, "") || dashboards[0].url
-
+/** Which Miss Claude the session runs under, as the session reported it. */
+function RunsOn({ session: s }: { session: ProjectSessionDetail }) {
+  const { detail } = useProjectCtx()
+  const url = s.dashboardUrl.replace(/\/+$/, "")
+  if (!url || detail.dashboards.length < 2) return null
+  const label =
+    detail.dashboards.find((d) => d.url === url)?.label ??
+    new URL(url).hostname.split(".")[0]
   return (
-    <div
-      role="radiogroup"
-      aria-label="Runs on"
-      className="flex shrink-0 gap-0.5 rounded-lg bg-muted p-0.5"
-    >
-      {dashboards.map((d) => (
-        <button
-          key={d.url}
-          type="button"
-          role="radio"
-          aria-checked={current === d.url}
-          onClick={() =>
-            current !== d.url &&
-            register({ projectId, worktree: s.worktree, dashboardUrl: d.url })
-          }
-          className={cn(
-            "h-6 rounded-md px-2.5 text-xs font-semibold transition-colors outline-none",
-            "focus-visible:ring-3 focus-visible:ring-ring/50",
-            current === d.url
-              ? "bg-card text-foreground shadow-e1"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          {d.label}
-        </button>
-      ))}
-    </div>
+    <span className="shrink-0 text-xs text-muted-foreground">on {label}</span>
   )
 }
 

@@ -35,7 +35,7 @@ writing:
 
 Either sits behind Miss Claude's own login, so the dashboard must be the
 hostname you log in on. With more than one dashboard configured, each session
-card has a switch ("dev | jump") that sets the session's dashboard by hand.
+card says which one the session runs on ("on jump").
 
 **Start session.** The Sessions section has one button per configured
 dashboard ("Start on dev", "Start on jump"). It opens that dashboard's spawn

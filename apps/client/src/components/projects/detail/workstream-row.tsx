@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react"
 import {
   ChevronRight,
   CircleCheck,
+  GripVertical,
   Hourglass,
   ListChecks,
   Trash2,
@@ -16,6 +17,7 @@ import { WORKSTREAM_STATUS } from "../shared/status"
 import { StatusMenu } from "../shared/status-menu"
 import { useProjectWrite } from "../shared/use-project-write"
 import { DependencyPicker } from "./dependency-picker"
+import { endDrag, setDrag } from "./drag"
 import { LinkedCardRow } from "./linked-card-row"
 import { useProjectCtx } from "./project-context"
 import { SessionCard } from "./session-card"
@@ -41,12 +43,24 @@ export function WorkstreamRow({ ws }: { ws: Workstream }) {
     <li
       id={`ws-${ws.id}`}
       className={cn(
-        "scroll-mt-4 rounded-xl bg-card shadow-e1 ring-1 ring-foreground/10 transition-shadow",
+        "group/ws scroll-mt-4 rounded-xl bg-card shadow-e1 ring-1 ring-foreground/10 transition-shadow",
         open && "shadow-e2"
       )}
     >
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-3 py-2.5">
         <div className="flex min-w-0 flex-1 basis-48 items-center gap-1.5">
+          <span
+            draggable
+            onDragStart={(e) =>
+              setDrag(e, { kind: "workstream", id: ws.id, name: ws.name })
+            }
+            onDragEnd={endDrag}
+            aria-label="Drag workstream"
+            title="Drag onto a session"
+            className="flex shrink-0 cursor-grab text-muted-foreground md:opacity-0 md:group-hover/ws:opacity-100"
+          >
+            <GripVertical className="size-3.5" />
+          </span>
           <button
             type="button"
             aria-expanded={open}
@@ -134,7 +148,7 @@ export function WorkstreamRow({ ws }: { ws: Workstream }) {
         </div>
 
         {ws.note && !open && (
-          <p className="w-full truncate pl-6.5 text-sm text-muted-foreground">
+          <p className="w-full truncate pl-11.5 text-sm text-muted-foreground">
             {ws.note}
           </p>
         )}

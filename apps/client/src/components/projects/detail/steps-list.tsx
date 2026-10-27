@@ -1,8 +1,9 @@
 import { useState } from "react"
 import type { Step, Workstream } from "@doska/contract"
-import { X } from "lucide-react"
+import { GripVertical, X } from "lucide-react"
 import { Button, Checkbox, cn, Hint, InvisibleInput } from "@doska/ui-kit"
 import { useProjectWrite } from "../shared/use-project-write"
+import { endDrag, setDrag } from "./drag"
 import { useProjectCtx } from "./project-context"
 
 /** The workstream's checklist. Every edit writes the whole list against the
@@ -32,6 +33,23 @@ export function StepsList({ ws }: { ws: Workstream }) {
             key={step.id}
             className="group/step -mx-1.5 flex min-h-8 items-center gap-1 rounded-md px-1.5 hover:bg-muted/50"
           >
+            <span
+              draggable
+              onDragStart={(e) =>
+                setDrag(e, {
+                  kind: "step",
+                  workstreamId: ws.id,
+                  workstreamName: ws.name,
+                  text: step.text,
+                })
+              }
+              onDragEnd={endDrag}
+              aria-label="Drag step"
+              title="Drag onto a session"
+              className="flex shrink-0 cursor-grab text-muted-foreground md:opacity-0 md:group-hover/step:opacity-100"
+            >
+              <GripVertical className="size-3.5" />
+            </span>
             <Checkbox
               aria-label={step.done ? "Mark not done" : "Mark done"}
               checked={step.done}
@@ -63,7 +81,7 @@ export function StepsList({ ws }: { ws: Workstream }) {
         ))}
       </ul>
       <form
-        className="-mx-1.5 flex min-h-8 items-center gap-1 px-1.5"
+        className="-mx-1.5 flex min-h-8 items-center gap-1 pr-1.5 pl-6"
         onSubmit={(e) => {
           e.preventDefault()
           const text = draft.trim()

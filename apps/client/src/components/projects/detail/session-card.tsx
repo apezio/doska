@@ -7,7 +7,7 @@ import { Button, buttonVariants, cn, Hint, Textarea } from "@doska/ui-kit"
 import { LiveDot } from "../shared/live-dot"
 import { useProjectWrite } from "../shared/use-project-write"
 import { WsChip } from "../shared/ws-chip"
-import { LINKED_CARD_MIME, type LinkedCardDrag } from "./linked-card-row"
+import { dragKind, readDrag } from "./drag"
 import { useProjectCtx } from "./project-context"
 
 const basename = (path: string) =>
@@ -23,6 +23,7 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
   const { projectId, workstreamById, chatSessionId, openChat } = useProjectCtx()
   const { mutate: remove } = useProjectWrite("sessionRemove", projectId)
   const { mutate: link } = useProjectWrite("cardLink", projectId)
+  const { mutate: register } = useProjectWrite("sessionRegister", projectId)
   const frame = useRef<HTMLIFrameElement>(null)
   const [over, setOver] = useState(false)
   const [prompt, setPrompt] = useState<string | null>(null)
@@ -41,7 +42,9 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
   return (
     <li
       onDragOver={(e) => {
-        if (!e.dataTransfer.types.includes(LINKED_CARD_MIME)) return
+        const kind = dragKind(e)
+        // A step only becomes a prompt, so a session without a chat refuses it.
+        if (!kind || (kind === "step" && !s.chatUrl)) return
         e.preventDefault()
         e.dataTransfer.dropEffect = "link"
         setOver(true)
@@ -51,22 +54,34 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
         setOver(false)
       }}
       onDrop={(e) => {
-        const raw = e.dataTransfer.getData(LINKED_CARD_MIME)
-        if (!raw) return
+        const drag = readDrag(e)
+        if (!drag) return
         e.preventDefault()
         setOver(false)
-        const card = JSON.parse(raw) as LinkedCardDrag
-        link({
-          projectId,
-          boardId: card.boardId,
-          cardId: card.cardId,
-          // Upserts: keep the card's workstream when the session has none.
-          workstreamId: s.workstreamId ?? card.workstreamId ?? undefined,
-        })
+        let say: string
+        switch (drag.kind) {
+          case "card": {
+            link({
+              projectId,
+              boardId: drag.boardId,
+              cardId: drag.cardId,
+              // Upserts: keep the card's workstream when the session has none.
+              workstreamId: s.workstreamId ?? drag.workstreamId ?? undefined,
+            })
+            const id = cardDisplayId(drag.number)
+            say = `Please pick up card ${id ? `#${id}: ` : ""}"${drag.title}"`
+            break
+          }
+          case "workstream":
+            register({ projectId, worktree: s.worktree, workstreamId: drag.id })
+            say = `Please work on workstream "${drag.name}".`
+            break
+          case "step":
+            say = `Please do this step of workstream "${drag.workstreamName}": ${drag.text}`
+        }
         // Without a chat there is nowhere to send the prompt.
         if (!s.chatUrl) return
-        const id = cardDisplayId(card.number)
-        setPrompt(`Please pick up card ${id ? `#${id}: ` : ""}"${card.title}"`)
+        setPrompt(say)
       }}
       className={cn(
         "group/session flex flex-col gap-2 rounded-xl bg-card p-3 shadow-e1 ring-1 ring-foreground/10",

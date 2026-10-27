@@ -1,4 +1,5 @@
-import type { ProjectDetail, Step } from "@doska/contract"
+import type { ProjectDetail, ProjectSession, Step } from "@doska/contract"
+import { claimLive } from "@doska/contract"
 
 const MAX_DECISIONS = 8
 const MAX_WORKSTREAMS = 12
@@ -24,12 +25,28 @@ function more(lines: string[], total: number, shown: number, what: string) {
   if (total > shown) lines.push(`- …and ${total - shown} more ${what}`)
 }
 
-function nextStep(steps: Step[]): string {
+/** Who holds the step right now, as the agent should read it before starting. */
+function claimOn(step: Step, sessions: ProjectSession[], now: number): string {
+  const holder = sessions.find(
+    (s) => s.stepId === step.id && claimLive(s.lastActivityAt, now)
+  )
+  return holder
+    ? `claimed: ${holder.label}, ${ago(holder.lastActivityAt, now)}`
+    : "free"
+}
+
+function nextStep(
+  steps: Step[],
+  sessions: ProjectSession[],
+  now: number
+): string {
   if (steps.length === 0) return ""
   const done = steps.filter((s) => s.done).length
   const next = steps.find((s) => !s.done)
   const count = `(${done}/${steps.length} steps)`
-  return next ? ` next: ${clip(next.text, 80)} ${count}` : ` ${count}`
+  return next
+    ? ` next: ${clip(next.text, 80)} (${claimOn(next, sessions, now)}) ${count}`
+    : ` ${count}`
 }
 
 /** The session reading the brief, so answers to its own decisions lead it. */
@@ -101,7 +118,7 @@ export function projectContext(
   for (const w of workstreams.slice(0, MAX_WORKSTREAMS)) {
     const after = w.dependsOn.map((id) => nameOf.get(id) ?? id)
     lines.push(
-      `- ${w.name} [${w.status}, plan ${w.planState}]${nextStep(w.steps)}` +
+      `- ${w.name} [${w.status}, plan ${w.planState}]${nextStep(w.steps, sessions, now)}` +
         `${after.length ? ` after: ${after.join(", ")}` : ""}` +
         ` (id ${w.id}, v${w.version})`
     )

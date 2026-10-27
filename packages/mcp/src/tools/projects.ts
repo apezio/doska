@@ -493,7 +493,9 @@ export function registerProjectTools(
         "that session if it already joined. Returns the session; its id is " +
         "the session_id other tools take. `workstream_id` and `step_id` say " +
         "what the session works on; a new workstream without a step_id " +
-        "clears the step.",
+        "clears the step. Naming a step claims it: refused while another " +
+        "session active in the last 30 minutes holds it — then work on " +
+        "another step or stop. Claim a step before working on it.",
       inputSchema: {
         project_id: projectId,
         worktree: z.string().min(1).describe("Absolute working directory"),

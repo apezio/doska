@@ -42,6 +42,7 @@ import type {
   StepInput,
   Workstream,
 } from "@doska/contract"
+import { claimLive } from "@doska/contract"
 import type { InferContractRouterInputs } from "@orpc/contract"
 import { ORPCError } from "@orpc/server"
 import { and, asc, desc, eq, inArray, isNull, max } from "drizzle-orm"
@@ -979,6 +980,32 @@ export async function registerSession(
       )
       .for("update")
 
+    // A step is claimed by one live session at a time. Live = active within
+    // STEP_CLAIM_MS; a session that went quiet no longer holds its step.
+    if (input.stepId && input.stepId !== cur?.stepId) {
+      const holders = await tx
+        .select()
+        .from(projectSessions)
+        .where(
+          and(
+            eq(projectSessions.projectId, project.id),
+            eq(projectSessions.stepId, input.stepId),
+            isNull(projectSessions.deletedAt)
+          )
+        )
+      const holder = holders.find(
+        (s) => s.worktree !== input.worktree && claimLive(s.lastActivityAt, at)
+      )
+      if (holder)
+        throw new ORPCError("CONFLICT", {
+          message:
+            `Step ${input.stepId} is claimed by session "${holder.label}" ` +
+            `(active ${Math.floor((at - (holder.lastActivityAt ?? at)) / 60_000)}m ago). ` +
+            "Work on another step or stop.",
+          data: { current: holder },
+        })
+    }
+
     // Only the session itself (via MCP) proves it is alive; a row the operator
     // adds by hand is a pointer, not activity.
     const active = actor === "mcp" || input.lastEvent !== undefined
@@ -988,12 +1015,19 @@ export async function registerSession(
       // A step belongs to its workstream: moving to another drops it unless a
       // step is named. `session_start` sends no label, so a session still named
       // after its mission follows that mission through a rename in Miss Claude.
+      // A new Claude session in the same worktree starts unclaimed: the step
+      // the previous one held is not its own.
+      const fresh =
+        input.lastEvent === "start" &&
+        !!input.claudeSessionId &&
+        input.claudeSessionId !== cur.claudeSessionId
       const { patch } = diff(cur, {
         ...fields,
-        stepId:
-          fields.stepId !== undefined ||
-          fields.workstreamId === undefined ||
-          fields.workstreamId === cur.workstreamId
+        stepId: fresh
+          ? null
+          : fields.stepId !== undefined ||
+              fields.workstreamId === undefined ||
+              fields.workstreamId === cur.workstreamId
             ? fields.stepId
             : null,
         label:

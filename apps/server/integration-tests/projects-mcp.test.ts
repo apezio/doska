@@ -91,7 +91,7 @@ describe("projects over MCP", () => {
     const brief: string = started.projects[0].context
     expect(brief).toContain("Project: Mission Control [active]")
     expect(brief).toContain(
-      "- API [planned, plan proposed] next: Schema (0/2 steps)"
+      "- API [planned, plan proposed] next: Schema (free) (0/2 steps)"
     )
     expect(brief).toContain("- UI [planned, plan proposed] next: List page")
     expect(brief).toContain("after: API")
@@ -107,6 +107,75 @@ describe("projects over MCP", () => {
     })
     expect(started.projects).toHaveLength(1)
     expect(started.projects[0].context).toContain("fresh-mission")
+  })
+
+  test("a step is claimed by one live session at a time", async () => {
+    const { project, api } = await seed()
+    const schema = api.steps[0].id
+    await json("register_session", {
+      project_id: project.id,
+      worktree: "/w/one",
+      label: "one",
+      workstream_id: api.id,
+      step_id: schema,
+    })
+    expect(await context(project.id)).toContain(
+      "next: Schema (claimed: one, just now)"
+    )
+
+    const refused = await call("register_session", {
+      project_id: project.id,
+      worktree: "/w/two",
+      label: "two",
+      workstream_id: api.id,
+      step_id: schema,
+    })
+    expect(refused.isError).toBe(true)
+    expect(refused.content[0].text).toContain('claimed by session "one"')
+
+    // Re-claiming your own step, and the other step, both go through.
+    await json("register_session", {
+      project_id: project.id,
+      worktree: "/w/one",
+      step_id: schema,
+    })
+    await json("register_session", {
+      project_id: project.id,
+      worktree: "/w/two",
+      workstream_id: api.id,
+      step_id: api.steps[1].id,
+    })
+  })
+
+  test("a new Claude session in a worktree starts unclaimed", async () => {
+    const { project, api } = await seed()
+    const schema = api.steps[0].id
+    await json("register_session", {
+      project_id: project.id,
+      worktree: "/w/one",
+      claude_session_id: "first",
+      workstream_id: api.id,
+      step_id: schema,
+    })
+    // The same Claude session coming back keeps its claim.
+    const same = await json("session_start", {
+      worktree: "/w/one",
+      claude_session_id: "first",
+    })
+    expect(same.projects[0].context).toContain("Schema (claimed:")
+
+    const next = await json("session_start", {
+      worktree: "/w/one",
+      claude_session_id: "second",
+    })
+    expect(next.projects[0].context).toContain("Schema (free)")
+    const other = await json("register_session", {
+      project_id: project.id,
+      worktree: "/w/two",
+      workstream_id: api.id,
+      step_id: schema,
+    })
+    expect(other.stepId).toBe(schema)
   })
 
   test("two sessions updating different workstreams both land", async () => {
@@ -151,7 +220,7 @@ describe("projects over MCP", () => {
 
     expect(brief).toContain("Summary: API underway, UI drafted")
     expect(brief).toContain(
-      "- API [active, plan proposed] next: Router (1/2 steps)"
+      "- API [active, plan proposed] next: Router (free) (1/2 steps)"
     )
     expect(brief).toContain("- UI [planned, plan proposed] (1/1 steps)")
     expect(brief).toContain("note: waiting on API")

@@ -3,7 +3,7 @@ import type { ProjectSessionDetail } from "@doska/contract"
 import { cardDisplayId } from "@doska/contract"
 import { isLive, timeAgo } from "@doska/core/projects"
 import { GitBranch, Maximize2, SquareArrowOutUpRight, X } from "lucide-react"
-import { Button, buttonVariants, cn, Hint, Textarea } from "@doska/ui-kit"
+import { Button, buttonVariants, cn, Hint } from "@doska/ui-kit"
 import { LiveDot } from "../shared/live-dot"
 import { useProjectWrite } from "../shared/use-project-write"
 import { WsChip } from "../shared/ws-chip"
@@ -26,7 +26,6 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
   const { mutate: register } = useProjectWrite("sessionRegister", projectId)
   const frame = useRef<HTMLIFrameElement>(null)
   const [over, setOver] = useState(false)
-  const [prompt, setPrompt] = useState<string | null>(null)
   const ws =
     showWorkstream && s.workstreamId ? workstreamById.get(s.workstreamId) : null
   const live = isLive(s.lastActivityAt)
@@ -36,7 +35,6 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
     if (win && s.chatUrl)
       win.postMessage({ type: "chat-send", text }, new URL(s.chatUrl).origin)
     else openChat(s.id, text)
-    setPrompt(null)
   }
 
   return (
@@ -80,8 +78,7 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
             say = `Please do this step of workstream "${drag.workstreamName}": ${drag.text}`
         }
         // Without a chat there is nowhere to send the prompt.
-        if (!s.chatUrl) return
-        setPrompt(say)
+        if (s.chatUrl) send(say)
       }}
       className={cn(
         "group/session flex flex-col gap-2 rounded-xl bg-card p-3 shadow-e1 ring-1 ring-foreground/10",
@@ -129,7 +126,7 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
         {ws && <WsChip name={ws.name} />}
       </div>
 
-      {/* Unmounted while the Sheet shows this session, so only one copy polls. */}
+      {/* Unmounted while the chat panel shows this session, so only one copy polls. */}
       {s.chatUrl && chatSessionId !== s.id && (
         <iframe
           ref={frame}
@@ -140,25 +137,6 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
           loading="lazy"
           className="h-64 w-full rounded-lg border-0 bg-background [[data-card-drag]_&]:pointer-events-none"
         />
-      )}
-
-      {prompt !== null && (
-        <div className="flex flex-col gap-2">
-          <Textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            rows={3}
-            className="text-sm"
-          />
-          <div className="flex justify-end gap-2">
-            <Button size="sm" variant="ghost" onClick={() => setPrompt(null)}>
-              Just link
-            </Button>
-            <Button size="sm" onClick={() => send(prompt)}>
-              Send
-            </Button>
-          </div>
-        </div>
       )}
 
       <div className="flex items-center gap-2">

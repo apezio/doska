@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react"
 import { TriangleAlert, UserRound } from "lucide-react"
-import { Button } from "@doska/ui-kit"
+import { Button, cn } from "@doska/ui-kit"
 import { useProject } from "@doska/core/queries"
 import { isGone } from "@doska/core/projects"
 import { useAuth } from "@/lib/hooks"
@@ -21,10 +21,13 @@ import { WorkstreamsSection } from "./workstreams-section"
 
 /** Tailwind's `lg`: wide enough for a side column beside the workstreams. */
 const WIDE = 1024
+/** The docked chat's `w-md`, which the body loses while it is open. */
+const CHAT_WIDTH = 448
 
 export function ProjectView({ projectId }: { projectId: string }) {
   const { authed } = useAuth()
   const { data, error, refetch } = useProject(projectId, authed === true)
+  const wide = useMinWidth(WIDE)
 
   const [openIds, setOpenIds] = useState<ReadonlySet<string>>(new Set())
   const setOpen = useCallback((id: string, open: boolean) => {
@@ -64,18 +67,25 @@ export function ProjectView({ projectId }: { projectId: string }) {
     [data, authed, projectId, openIds, setOpen, chat, openChat]
   )
 
-  if (ctx)
+  if (ctx) {
+    const docked =
+      wide &&
+      !!ctx.chatSessionId &&
+      !!ctx.sessionById.get(ctx.chatSessionId)?.chatUrl
     return (
       <ProjectContext value={ctx}>
-        <div className="flex h-full min-h-0 flex-col">
-          <ProjectHeader />
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <ProjectBody />
+        <div className="flex h-full min-h-0">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <ProjectHeader />
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <ProjectBody docked={docked} />
+            </div>
           </div>
+          <SessionChat docked={docked} />
         </div>
-        <SessionChat />
       </ProjectContext>
     )
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -110,12 +120,17 @@ export function ProjectView({ projectId }: { projectId: string }) {
   )
 }
 
-function ProjectBody() {
-  const wide = useMinWidth(WIDE)
+function ProjectBody({ docked }: { docked: boolean }) {
+  const wide = useMinWidth(docked ? WIDE + CHAT_WIDTH : WIDE)
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 pt-6 pb-20 md:px-6">
       <SummarySection />
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12">
+      <div
+        className={cn(
+          "grid gap-10",
+          wide && "grid-cols-[minmax(0,1fr)_22rem] gap-12"
+        )}
+      >
         <div className="flex min-w-0 flex-col gap-10">
           {!wide && <AttentionSection />}
           <WorkstreamsSection />

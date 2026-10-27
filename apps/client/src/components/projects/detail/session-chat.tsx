@@ -14,9 +14,11 @@ import { useProjectCtx } from "./project-context"
  * The session's Miss Claude chat, framed from its dashboard: reading and
  * typing go straight to the console. Signed in there only when Doska and
  * that dashboard are same-site; otherwise the frame shows its login.
+ * `chatSay` is posted in as typed text; Miss Claude drops it unless its
+ * CHAT_EMBED_ORIGINS lists this origin.
  */
 export function SessionChat() {
-  const { chatSessionId, openChat, sessionById } = useProjectCtx()
+  const { chatSessionId, chatSay, openChat, sessionById } = useProjectCtx()
   const session = chatSessionId ? sessionById.get(chatSessionId) : undefined
   const close = () => openChat(null)
 
@@ -59,6 +61,14 @@ export function SessionChat() {
               src={session.chatUrl}
               title={`Chat with ${session.label || session.mission}`}
               allow="microphone"
+              onLoad={(e) => {
+                if (!chatSay) return
+                e.currentTarget.contentWindow?.postMessage(
+                  { type: "chat-send", text: chatSay },
+                  new URL(session.chatUrl!).origin
+                )
+                openChat(session.id)
+              }}
               className="min-h-0 w-full flex-1 border-0 bg-background"
             />
           </>

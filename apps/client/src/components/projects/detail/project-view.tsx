@@ -36,7 +36,12 @@ export function ProjectView({ projectId }: { projectId: string }) {
       return next
     })
   }, [])
-  const [chatSessionId, openChat] = useState<string | null>(null)
+  const [chat, setChat] = useState<{ sessionId: string; say?: string }>()
+  const openChat = useCallback(
+    (sessionId: string | null, say?: string) =>
+      setChat(sessionId ? { sessionId, say } : undefined),
+    []
+  )
 
   const ctx = useMemo<ProjectCtx | null>(
     () =>
@@ -51,11 +56,12 @@ export function ProjectView({ projectId }: { projectId: string }) {
             sessionById: new Map(data.sessions.map((s) => [s.id, s])),
             openIds,
             setOpen,
-            chatSessionId,
+            chatSessionId: chat?.sessionId ?? null,
+            chatSay: chat?.say,
             openChat,
           }
         : null,
-    [data, authed, projectId, openIds, setOpen, chatSessionId]
+    [data, authed, projectId, openIds, setOpen, chat, openChat]
   )
 
   if (ctx)

@@ -17,7 +17,9 @@ export interface ProjectCtx {
   setOpen: (id: string, open: boolean) => void
   /** The session whose Miss Claude chat is showing, if any. */
   chatSessionId: string | null
-  openChat: (sessionId: string | null) => void
+  /** Text to send into that chat once it loads, then cleared. */
+  chatSay: string | undefined
+  openChat: (sessionId: string | null, say?: string) => void
 }
 
 export const ProjectContext = createContext<ProjectCtx | null>(null)

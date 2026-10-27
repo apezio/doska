@@ -35,7 +35,7 @@ export function ResolveModal({ item, onClose }: IProps) {
   }
 
   // The session that asked hears on its next Doska call; a live one may be
-  // waiting on the answer, so its chat opens to tell it now.
+  // waiting on the answer, so its chat opens and is told now.
   const resolve = (decision: ProjectDecision, text: string) =>
     update(
       { id: decision.id, status: "resolved", resolution: text.trim() },
@@ -45,7 +45,12 @@ export function ResolveModal({ item, onClose }: IProps) {
           const asker = decision.sessionId
             ? sessionById.get(decision.sessionId)
             : undefined
-          if (asker?.chatUrl && isLive(asker.lastActivityAt)) openChat(asker.id)
+          if (asker?.chatUrl && isLive(asker.lastActivityAt))
+            openChat(
+              asker.id,
+              `[Doska] ${decision.kind === "blocker" ? "Blocker" : "Decision"} ` +
+                `resolved: ${decision.title} → ${text.trim()}`
+            )
         },
       }
     )

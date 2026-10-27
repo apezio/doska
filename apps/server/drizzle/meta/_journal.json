@@ -148,6 +148,13 @@
       "when": 1792883124266,
       "tag": "0020_session_dashboard",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793086075577,
+      "tag": "0021_session_step",
+      "breakpoints": true
     }
   ]
 }

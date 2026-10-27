@@ -491,7 +491,9 @@ export function registerProjectTools(
       description:
         "Join a project as the session working in `worktree`, or refresh " +
         "that session if it already joined. Returns the session; its id is " +
-        "the session_id other tools take.",
+        "the session_id other tools take. `workstream_id` and `step_id` say " +
+        "what the session works on; a new workstream without a step_id " +
+        "clears the step.",
       inputSchema: {
         project_id: projectId,
         worktree: z.string().min(1).describe("Absolute working directory"),
@@ -508,6 +510,10 @@ export function registerProjectTools(
           .optional()
           .describe("The Miss Claude dashboard this session runs under"),
         workstream_id: workstreamId.optional(),
+        step_id: z
+          .string()
+          .optional()
+          .describe("A step of that workstream (step-…)"),
       },
     },
     async ({
@@ -516,6 +522,7 @@ export function registerProjectTools(
       claude_session_id,
       dashboard_url,
       workstream_id,
+      step_id,
       ...input
     }) =>
       reply(
@@ -526,6 +533,7 @@ export function registerProjectTools(
           claudeSessionId: claude_session_id,
           dashboardUrl: dashboard_url,
           workstreamId: workstream_id,
+          stepId: step_id,
         })
       )
   )

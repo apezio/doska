@@ -2,33 +2,41 @@ import { useRef, useState } from "react"
 import type { ProjectSessionDetail } from "@doska/contract"
 import { cardDisplayId } from "@doska/contract"
 import { isLive, timeAgo } from "@doska/core/projects"
-import { GitBranch, Maximize2, SquareArrowOutUpRight, X } from "lucide-react"
+import {
+  ChevronRight,
+  GitBranch,
+  Maximize2,
+  SquareArrowOutUpRight,
+  X,
+} from "lucide-react"
 import { Button, buttonVariants, cn, Hint } from "@doska/ui-kit"
 import { LiveDot } from "../shared/live-dot"
 import { useProjectWrite } from "../shared/use-project-write"
-import { WsChip } from "../shared/ws-chip"
 import { ChatFrame } from "./chat-frame"
 import { dragKind, readDrag } from "./drag"
-import { useProjectCtx } from "./project-context"
-
-const basename = (path: string) =>
-  path.replace(/\/+$/, "").split("/").pop() || path
+import { hoverProps, sessionLit, useLinkHover } from "./link-hover"
+import {
+  basename,
+  revealWorkstream,
+  sessionName,
+  useProjectCtx,
+} from "./project-context"
 
 interface IProps {
   session: ProjectSessionDetail
-  /** Off inside a workstream, where the chip would name the parent. */
+  /** Off inside a workstream, where naming it again would only repeat the
+   * parent. That copy also draws no connector line: it sits by its item. */
   showWorkstream?: boolean
 }
 
 export function SessionCard({ session: s, showWorkstream = true }: IProps) {
-  const { projectId, workstreamById, chatSessionId, openChat } = useProjectCtx()
+  const { projectId, chatSessionId, openChat } = useProjectCtx()
+  const { hover, setHover } = useLinkHover()
   const { mutate: remove } = useProjectWrite("sessionRemove", projectId)
   const { mutate: link } = useProjectWrite("cardLink", projectId)
   const { mutate: register } = useProjectWrite("sessionRegister", projectId)
   const frame = useRef<HTMLIFrameElement>(null)
   const [over, setOver] = useState(false)
-  const ws =
-    showWorkstream && s.workstreamId ? workstreamById.get(s.workstreamId) : null
   const live = isLive(s.lastActivityAt)
 
   const send = (text: string) => {
@@ -42,8 +50,7 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
     <li
       onDragOver={(e) => {
         const kind = dragKind(e)
-        // A step only becomes a prompt, so a session without a chat refuses it.
-        if (!kind || (kind === "step" && !s.chatUrl)) return
+        if (!kind) return
         e.preventDefault()
         e.dataTransfer.dropEffect = "link"
         setOver(true)
@@ -72,17 +79,31 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
             break
           }
           case "workstream":
-            register({ projectId, worktree: s.worktree, workstreamId: drag.id })
+            register({
+              projectId,
+              worktree: s.worktree,
+              workstreamId: drag.id,
+              stepId: null,
+            })
             say = `Please work on workstream "${drag.name}".`
             break
           case "step":
+            register({
+              projectId,
+              worktree: s.worktree,
+              workstreamId: drag.workstreamId,
+              stepId: drag.stepId,
+            })
             say = `Please do this step of workstream "${drag.workstreamName}": ${drag.text}`
         }
         // Without a chat there is nowhere to send the prompt.
         if (s.chatUrl) send(say)
       }}
+      {...hoverProps(setHover, { session: s.id })}
+      data-link-session={showWorkstream ? s.id : undefined}
       className={cn(
-        "group/session flex flex-col gap-2 rounded-xl bg-card p-3 shadow-e1 ring-1 ring-foreground/10",
+        "group/session flex flex-col gap-2 rounded-xl bg-card p-3 shadow-e1 ring-1 ring-foreground/10 transition-shadow",
+        sessionLit(hover, s) && "ring-2 ring-primary/50",
         over && "ring-2 ring-primary"
       )}
     >
@@ -90,7 +111,7 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <p className="flex items-center gap-2 text-sm font-semibold">
             {live && <LiveDot />}
-            <span className="truncate">{s.label || basename(s.worktree)}</span>
+            <span className="truncate">{sessionName(s)}</span>
           </p>
           {s.mission && s.mission !== basename(s.worktree) && (
             <p className="truncate text-xs text-muted-foreground">
@@ -124,7 +145,7 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
             )}
           </span>
         </span>
-        {ws && <WsChip name={ws.name} />}
+        <WorkingOn session={s} showWorkstream={showWorkstream} />
       </div>
 
       {/* Unmounted while the chat panel shows this session, so only one copy polls. */}
@@ -163,6 +184,48 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
         <OpenSession url={s.openUrl} />
       </div>
     </li>
+  )
+}
+
+/** The workstream, and step, the session works on. */
+function WorkingOn({
+  session: s,
+  showWorkstream,
+}: {
+  session: ProjectSessionDetail
+  showWorkstream: boolean
+}) {
+  const ctx = useProjectCtx()
+  const ws = s.workstreamId ? ctx.workstreamById.get(s.workstreamId) : null
+  const step = ws?.steps.find((st) => st.id === s.stepId)
+  if (!ws || (!showWorkstream && !step)) return null
+  const stepText = step && <span className="truncate">{step.text}</span>
+  if (!showWorkstream)
+    return (
+      <span className="inline-flex max-w-full min-w-0 rounded-md border px-1.5 py-px">
+        {stepText}
+      </span>
+    )
+  return (
+    <button
+      type="button"
+      title={step ? `${ws.name} › ${step.text}` : ws.name}
+      onClick={() => revealWorkstream(ctx, ws.id)}
+      className={cn(
+        "inline-flex max-w-full min-w-0 items-center gap-0.5 rounded-md border px-1.5 py-px text-left",
+        "outline-none hover:border-foreground/25 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+      )}
+    >
+      <span className={cn("truncate", step && "max-w-32 shrink-0")}>
+        {ws.name}
+      </span>
+      {step && (
+        <>
+          <ChevronRight className="size-3 shrink-0" />
+          {stepText}
+        </>
+      )}
+    </button>
   )
 }
 

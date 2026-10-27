@@ -378,9 +378,7 @@ describe("projects", () => {
     expect(sessions[0].openUrl).toBe(
       "https://dev.invalid:4200/m/routing/dashboard"
     )
-    expect(sessions[0].chatUrl).toBe(
-      "https://dev.invalid:4200/m/routing/card"
-    )
+    expect(sessions[0].chatUrl).toBe("https://dev.invalid:4200/m/routing/card")
     // The mission is named after the project, past names already in use.
     expect(dashboards).toEqual(
       ["dev", "jump"].map((label) => ({
@@ -415,6 +413,45 @@ describe("projects", () => {
     )
     // Chat needs the mission: Miss Claude has no resolver for it.
     expect(sessions.find((s) => s.worktree === "/work/ops")?.chatUrl).toBeNull()
+  })
+
+  test("a session's step is kept with its workstream and dropped when it moves on", async () => {
+    const { id } = await owner.projects.create({ name: "P" })
+    const routing = await owner.projects.workstreamCreate({
+      projectId: id,
+      name: "Routing",
+      steps: [{ text: "Peer" }, { text: "Announce" }],
+    })
+    const dns = await owner.projects.workstreamCreate({
+      projectId: id,
+      name: "DNS",
+    })
+    const [peer] = routing.steps
+    const register = (input: {
+      workstreamId?: string
+      stepId?: string | null
+    }) =>
+      owner.projects.sessionRegister({
+        projectId: id,
+        worktree: "/work/a",
+        ...input,
+      })
+
+    expect(
+      await register({ workstreamId: routing.id, stepId: peer.id })
+    ).toMatchObject({ workstreamId: routing.id, stepId: peer.id })
+    // A heartbeat, or the same workstream again, keeps the step.
+    expect((await register({})).stepId).toBe(peer.id)
+    expect((await register({ workstreamId: routing.id })).stepId).toBe(peer.id)
+    expect((await register({ stepId: null })).stepId).toBeNull()
+
+    await register({ stepId: peer.id })
+    expect(await register({ workstreamId: dns.id })).toMatchObject({
+      workstreamId: dns.id,
+      stepId: null,
+    })
+    const { sessions } = await owner.projects.get({ id })
+    expect(sessions[0].stepId).toBeNull()
   })
 
   test("another account cannot read or write someone else's project", async () => {

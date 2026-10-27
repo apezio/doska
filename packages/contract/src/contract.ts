@@ -254,6 +254,8 @@ export const contract = {
           claudeSessionId: z.string().optional(),
           dashboardUrl: z.string().optional(),
           workstreamId: z.string().optional(),
+          /** Null clears it; omitted, it is cleared only when the workstream changes. */
+          stepId: z.string().nullable().optional(),
           lastEvent: z.string().optional(),
           sessionId,
         })

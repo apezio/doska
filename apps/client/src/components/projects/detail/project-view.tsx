@@ -12,9 +12,11 @@ import { ActivitySection } from "./activity-section"
 import { BackLink } from "./back-link"
 import { AttentionSection } from "./attention-section"
 import { CardsSection } from "./cards-section"
+import { type LinkHover, LinkHoverContext } from "./link-hover"
 import { ProjectContext, type ProjectCtx } from "./project-context"
 import { ProjectHeader } from "./project-header"
 import { SessionChat } from "./session-chat"
+import { SessionLinks } from "./session-links"
 import { SessionsSection } from "./sessions-section"
 import { SummarySection } from "./summary-section"
 import { WorkstreamsSection } from "./workstreams-section"
@@ -39,6 +41,8 @@ export function ProjectView({ projectId }: { projectId: string }) {
       return next
     })
   }, [])
+  const [hover, setHover] = useState<LinkHover>(null)
+  const hoverCtx = useMemo(() => ({ hover, setHover }), [hover])
   const [chat, setChat] = useState<{ sessionId: string; say?: string }>()
   const openChat = useCallback(
     (sessionId: string | null, say?: string) =>
@@ -74,15 +78,17 @@ export function ProjectView({ projectId }: { projectId: string }) {
       !!ctx.sessionById.get(ctx.chatSessionId)?.chatUrl
     return (
       <ProjectContext value={ctx}>
-        <div className="flex h-full min-h-0">
-          <div className="flex min-w-0 flex-1 flex-col">
-            <ProjectHeader />
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              <ProjectBody docked={docked} />
+        <LinkHoverContext value={hoverCtx}>
+          <div className="flex h-full min-h-0">
+            <div className="flex min-w-0 flex-1 flex-col">
+              <ProjectHeader />
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <ProjectBody docked={docked} />
+              </div>
             </div>
+            <SessionChat docked={docked} />
           </div>
-          <SessionChat docked={docked} />
-        </div>
+        </LinkHoverContext>
       </ProjectContext>
     )
   }
@@ -123,26 +129,28 @@ export function ProjectView({ projectId }: { projectId: string }) {
 function ProjectBody({ docked }: { docked: boolean }) {
   const wide = useMinWidth(docked ? WIDE + CHAT_WIDTH : WIDE)
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 pt-6 pb-20 md:px-6">
+    <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 pt-6 pb-20 md:px-6">
       <SummarySection />
+      {/* Columns sized to their content, so the lines' observer sees them grow. */}
       <div
         className={cn(
-          "grid gap-10",
+          "grid items-start gap-10",
           wide && "grid-cols-[minmax(0,1fr)_22rem] gap-12"
         )}
       >
-        <div className="flex min-w-0 flex-col gap-10">
+        <div data-link-column className="flex min-w-0 flex-col gap-10">
           {!wide && <AttentionSection />}
           <WorkstreamsSection />
           <CardsSection />
           {!wide && <SessionsSection />}
         </div>
-        <div className="flex min-w-0 flex-col gap-10">
+        <div data-link-column className="flex min-w-0 flex-col gap-10">
           {wide && <AttentionSection />}
           {wide && <SessionsSection />}
           <ActivitySection />
         </div>
       </div>
+      {wide && <SessionLinks />}
     </div>
   )
 }

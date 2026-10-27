@@ -1,7 +1,7 @@
 import type { Workstream } from "@doska/contract"
 import { cn, Hint } from "@doska/ui-kit"
 import { WORKSTREAM_STATUS } from "../shared/status"
-import { useProjectCtx } from "./project-context"
+import { revealWorkstream, useProjectCtx } from "./project-context"
 
 const TRACK: Record<Workstream["status"], string> = {
   done: "bg-primary",
@@ -34,17 +34,11 @@ function fillOf(ws: Workstream): number {
  * its steps and coloured by its status. Each segment opens its workstream.
  */
 export function WorkstreamStrip() {
-  const { workstreams, setOpen } = useProjectCtx()
+  const ctx = useProjectCtx()
+  const { workstreams } = ctx
   if (workstreams.length === 0) return null
 
   const done = workstreams.filter((w) => w.status === "done").length
-
-  const reveal = (id: string) => {
-    setOpen(id, true)
-    document
-      .getElementById(`ws-${id}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" })
-  }
 
   return (
     <div className="flex flex-col gap-2">
@@ -60,7 +54,7 @@ export function WorkstreamStrip() {
               <button
                 type="button"
                 aria-label={label}
-                onClick={() => reveal(ws.id)}
+                onClick={() => revealWorkstream(ctx, ws.id)}
                 className={cn(
                   "group relative h-2.5 min-w-3 flex-1 overflow-hidden rounded-[3px]",
                   "outline-none focus-visible:ring-3 focus-visible:ring-ring/50",

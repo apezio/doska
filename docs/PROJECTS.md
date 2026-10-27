@@ -65,6 +65,16 @@ Claude's login page instead.
 The client never builds any of these URLs; with no dashboard configured they
 are absent.
 
+**What a session works on.** A session points at a workstream and, optionally,
+one of its steps (`workstream_id` / `step_id` on `register_session`). Naming a
+step stores it; naming a different workstream without a step clears the step;
+naming neither, or the same workstream again, keeps it. Dropping a workstream
+or a step on a session card sets them the same way (a workstream drop always
+clears the step). The session card shows "workstream › step"; the workstream
+and step rows show a badge per session on them, hovering either side
+highlights the other, and in the two-column layout a line joins each session
+to its item. Marking a step done leaves sessions on it untouched.
+
 **Answering decisions.** A decision whose body is a numbered list offers each
 item as a one-click answer. The session that raised it reads the answer under
 "Since your last call, the operator answered:" in its next `session_start` or

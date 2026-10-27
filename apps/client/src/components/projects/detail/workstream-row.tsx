@@ -18,16 +18,26 @@ import { StatusMenu } from "../shared/status-menu"
 import { useProjectWrite } from "../shared/use-project-write"
 import { DependencyPicker } from "./dependency-picker"
 import { endDrag, setDrag } from "./drag"
+import { hoverProps, itemLit, useLinkHover } from "./link-hover"
 import { LinkedCardRow } from "./linked-card-row"
 import { useProjectCtx } from "./project-context"
+import { SessionBadges } from "./session-badges"
 import { SessionCard } from "./session-card"
 import { StepsList } from "./steps-list"
 
 const EXPAND = { duration: 0.22, ease: [0.2, 0, 0, 1] } as const
 
 export function WorkstreamRow({ ws }: { ws: Workstream }) {
-  const { projectId, workstreams, workstreamById, openIds, setOpen } =
-    useProjectCtx()
+  const {
+    projectId,
+    detail,
+    workstreams,
+    workstreamById,
+    sessionById,
+    openIds,
+    setOpen,
+  } = useProjectCtx()
+  const { hover, setHover } = useLinkHover()
   const { mutate: update } = useProjectWrite("workstreamUpdate", projectId)
   const open = openIds.has(ws.id)
   const panelId = `ws-panel-${ws.id}`
@@ -38,16 +48,22 @@ export function WorkstreamRow({ ws }: { ws: Workstream }) {
   const after = ws.dependsOn
     .map((id) => workstreamById.get(id)?.name)
     .filter(Boolean)
+  const sessions = detail.sessions.filter((s) => s.workstreamId === ws.id)
 
   return (
     <li
       id={`ws-${ws.id}`}
       className={cn(
         "group/ws scroll-mt-4 rounded-xl bg-card shadow-e1 ring-1 ring-foreground/10 transition-shadow",
-        open && "shadow-e2"
+        open && "shadow-e2",
+        itemLit(hover, sessionById, ws.id) && "ring-2 ring-primary/50"
       )}
     >
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-3 py-2.5">
+      <div
+        {...hoverProps(setHover, { ws: ws.id })}
+        data-link-ws={ws.id}
+        className="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-3 py-2.5"
+      >
         <div className="flex min-w-0 flex-1 basis-48 items-center gap-1.5">
           <span
             draggable
@@ -105,6 +121,7 @@ export function WorkstreamRow({ ws }: { ws: Workstream }) {
         </div>
 
         <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
+          <SessionBadges sessions={sessions} parent={{ ws: ws.id }} />
           {waitingOn.length > 0 ? (
             <Meta
               className="text-amber-700 dark:text-amber-300"

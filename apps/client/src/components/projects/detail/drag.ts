@@ -8,7 +8,13 @@ export type ProjectDrag =
       workstreamId: string | null
     }
   | { kind: "workstream"; id: string; name: string }
-  | { kind: "step"; workstreamId: string; workstreamName: string; text: string }
+  | {
+      kind: "step"
+      workstreamId: string
+      workstreamName: string
+      stepId: string
+      text: string
+    }
 
 // One type per kind, because `dragover` may read the types but not the data.
 const DRAG_PREFIX = "application/x-doska-drag."

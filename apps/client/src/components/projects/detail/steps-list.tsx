@@ -4,13 +4,16 @@ import { GripVertical, X } from "lucide-react"
 import { Button, Checkbox, cn, Hint, InvisibleInput } from "@doska/ui-kit"
 import { useProjectWrite } from "../shared/use-project-write"
 import { endDrag, setDrag } from "./drag"
+import { hoverProps, itemLit, useLinkHover } from "./link-hover"
 import { useProjectCtx } from "./project-context"
+import { SessionBadges } from "./session-badges"
 
 /** The workstream's checklist. Every edit writes the whole list against the
  * version it was built from, so a step an agent ticked meanwhile is never
  * silently unticked — the write is refused and the list refetched instead. */
 export function StepsList({ ws }: { ws: Workstream }) {
-  const { projectId } = useProjectCtx()
+  const { projectId, detail, sessionById } = useProjectCtx()
+  const { hover, setHover } = useLinkHover()
   const { mutate: update } = useProjectWrite("workstreamUpdate", projectId)
   const [draft, setDraft] = useState("")
 
@@ -31,7 +34,13 @@ export function StepsList({ ws }: { ws: Workstream }) {
         {ws.steps.map((step) => (
           <li
             key={step.id}
-            className="group/step -mx-1.5 flex min-h-8 items-center gap-1 rounded-md px-1.5 hover:bg-muted/50"
+            {...hoverProps(setHover, { ws: ws.id, step: step.id })}
+            data-link-step={step.id}
+            className={cn(
+              "group/step -mx-1.5 flex min-h-8 items-center gap-1 rounded-md px-1.5 hover:bg-muted/50",
+              itemLit(hover, sessionById, ws.id, step.id) &&
+                "bg-primary/5 ring-1 ring-primary/50"
+            )}
           >
             <span
               draggable
@@ -40,6 +49,7 @@ export function StepsList({ ws }: { ws: Workstream }) {
                   kind: "step",
                   workstreamId: ws.id,
                   workstreamName: ws.name,
+                  stepId: step.id,
                   text: step.text,
                 })
               }
@@ -63,6 +73,10 @@ export function StepsList({ ws }: { ws: Workstream }) {
                 "min-w-0 flex-1 py-1 text-sm",
                 step.done && "text-muted-foreground line-through"
               )}
+            />
+            <SessionBadges
+              sessions={detail.sessions.filter((s) => s.stepId === step.id)}
+              parent={{ ws: ws.id, step: step.id }}
             />
             <Hint label="Remove step">
               <Button

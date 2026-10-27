@@ -1,0 +1,1 @@
+ALTER TABLE "project_sessions" ADD COLUMN "step_id" text;

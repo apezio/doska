@@ -245,6 +245,8 @@ export const projectSessions = pgTable(
     id: text("id").primaryKey(),
     projectId: text("project_id").notNull(),
     workstreamId: text("workstream_id"),
+    /** A step of that workstream (its `steps` JSON id); null = the whole workstream. */
+    stepId: text("step_id"),
     label: text("label").notNull().default(""),
     mission: text("mission").notNull().default(""),
     worktree: text("worktree").notNull(),

@@ -259,6 +259,8 @@ export const ProjectSessionSchema = z.object({
   id: z.string(),
   projectId: z.string(),
   workstreamId: z.string().nullable(),
+  /** A step of that workstream; null = the workstream as a whole. */
+  stepId: z.string().nullable(),
   label: z.string(),
   mission: z.string(),
   worktree: z.string(),

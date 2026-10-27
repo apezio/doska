@@ -959,6 +959,7 @@ export async function registerSession(
     const at = now()
     const fields = {
       workstreamId: input.workstreamId,
+      stepId: input.stepId,
       label: input.label,
       mission: input.mission,
       branch: input.branch,
@@ -984,10 +985,17 @@ export async function registerSession(
     let row: ProjectSession
     let message: string | undefined
     if (cur) {
-      // `session_start` sends no label, so a session still named after its
-      // mission follows that mission through a rename in Miss Claude.
+      // A step belongs to its workstream: moving to another drops it unless a
+      // step is named. `session_start` sends no label, so a session still named
+      // after its mission follows that mission through a rename in Miss Claude.
       const { patch } = diff(cur, {
         ...fields,
+        stepId:
+          fields.stepId !== undefined ||
+          fields.workstreamId === undefined ||
+          fields.workstreamId === cur.workstreamId
+            ? fields.stepId
+            : null,
         label:
           fields.label ??
           (cur.label === cur.mission ? input.mission : undefined),

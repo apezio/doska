@@ -127,7 +127,15 @@ export function projectContext(
   if (sessions.length) {
     lines.push("", "Sessions:")
     for (const s of sessions.slice(0, MAX_SESSIONS)) {
-      const parts = [s.label, s.mission, `last ${ago(s.lastActivityAt, now)}`]
+      const ws = workstreams.find((w) => w.id === s.workstreamId)
+      const step = ws?.steps.find((st) => st.id === s.stepId)
+      const on = ws && `on ${ws.name}${step ? ` › ${clip(step.text, 60)}` : ""}`
+      const parts = [
+        s.label,
+        s.mission,
+        on,
+        `last ${ago(s.lastActivityAt, now)}`,
+      ]
       lines.push(`- ${parts.filter(Boolean).join(" — ")} (id ${s.id})`)
     }
     more(lines, sessions.length, MAX_SESSIONS, "sessions")

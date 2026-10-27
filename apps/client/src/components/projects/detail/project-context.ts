@@ -30,6 +30,19 @@ export function useProjectCtx(): ProjectCtx {
   return ctx
 }
 
+export const basename = (path: string) =>
+  path.replace(/\/+$/, "").split("/").pop() || path
+
+export const sessionName = (s: ProjectSessionDetail) =>
+  s.label || basename(s.worktree)
+
+export function revealWorkstream(ctx: Pick<ProjectCtx, "setOpen">, id: string) {
+  ctx.setOpen(id, true)
+  document
+    .getElementById(`ws-${id}`)
+    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+}
+
 /** Who made a write, in the words the activity log uses. */
 export function actorLabel(
   ctx: ProjectCtx,

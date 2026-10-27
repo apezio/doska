@@ -379,7 +379,7 @@ describe("projects", () => {
       "https://dev.invalid:4200/m/routing/dashboard"
     )
     expect(sessions[0].chatUrl).toBe(
-      "https://dev.invalid:4200/m/routing/chat?embed=1"
+      "https://dev.invalid:4200/m/routing/card"
     )
     // The mission is named after the project, past names already in use.
     expect(dashboards).toEqual(

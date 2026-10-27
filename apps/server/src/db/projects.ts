@@ -291,13 +291,14 @@ function openUrl(session: ProjectSession): string | null {
 }
 
 /**
- * The mission's chat in Miss Claude's embed mode, for an iframe. Its login
- * cookie reaches the frame only when Doska and the dashboard are same-site.
+ * The mission's card page in Miss Claude, for an iframe: its titlebar and
+ * chat, which takes the same `chat-send` message. Its login cookie reaches the
+ * frame only when Doska and the dashboard are same-site.
  */
 function chatUrl(session: ProjectSession): string | null {
   const base = dashboardOf(session)
   if (!base || !session.mission) return null
-  return `${base}/m/${encodeURIComponent(session.mission)}/chat?embed=1`
+  return `${base}/m/${encodeURIComponent(session.mission)}/card`
 }
 
 /**

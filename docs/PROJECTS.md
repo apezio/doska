@@ -50,10 +50,11 @@ use. The new console's Claude joins the project itself, through
 `session_start` with that `project_id`.
 
 **Chat.** A session that knows its mission also gets a Chat button, which
-opens that mission's Miss Claude chat in a side panel, framed from
+opens that mission's Miss Claude card (titlebar and chat) in a side panel,
+framed at 80% from
 
 ```
-<dashboard>/m/<mission>/chat?embed=1
+<dashboard>/m/<mission>/card
 ```
 
 Reading and typing there go straight to the console. The frame carries Miss

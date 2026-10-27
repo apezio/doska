@@ -10,6 +10,7 @@ import {
   SheetContent,
   SheetTitle,
 } from "@doska/ui-kit"
+import { ChatFrame } from "./chat-frame"
 import { useProjectCtx } from "./project-context"
 
 const TITLE = "min-w-0 flex-1 truncate text-sm font-semibold"
@@ -109,13 +110,13 @@ function ChatPanel({
           </Button>
         </Hint>
       </div>
-      <iframe
+      <ChatFrame
         ref={frame}
         src={session.chatUrl!}
         title={`Chat with ${session.label || session.mission}`}
-        allow="microphone"
+        allow="microphone; autoplay"
         onLoad={() => setLoaded(true)}
-        className="min-h-0 w-full flex-1 border-0 bg-background"
+        className="min-h-0 w-full flex-1"
       />
     </>
   )

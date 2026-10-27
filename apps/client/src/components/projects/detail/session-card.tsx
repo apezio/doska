@@ -7,6 +7,7 @@ import { Button, buttonVariants, cn, Hint } from "@doska/ui-kit"
 import { LiveDot } from "../shared/live-dot"
 import { useProjectWrite } from "../shared/use-project-write"
 import { WsChip } from "../shared/ws-chip"
+import { ChatFrame } from "./chat-frame"
 import { dragKind, readDrag } from "./drag"
 import { useProjectCtx } from "./project-context"
 
@@ -128,14 +129,14 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
 
       {/* Unmounted while the chat panel shows this session, so only one copy polls. */}
       {s.chatUrl && chatSessionId !== s.id && (
-        <iframe
+        <ChatFrame
           ref={frame}
           key={s.chatUrl}
           src={s.chatUrl}
           title={`Chat with ${s.label || s.mission}`}
-          allow="microphone"
+          allow="microphone; autoplay"
           loading="lazy"
-          className="h-64 w-full rounded-lg border-0 bg-background [[data-card-drag]_&]:pointer-events-none"
+          className="h-72 w-full rounded-lg [[data-card-drag]_&]:pointer-events-none"
         />
       )}
 

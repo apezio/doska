@@ -1,15 +1,13 @@
+import { useRef, useState } from "react"
 import type { ProjectSessionDetail } from "@doska/contract"
+import { cardDisplayId } from "@doska/contract"
 import { isLive, timeAgo } from "@doska/core/projects"
-import {
-  GitBranch,
-  MessageSquare,
-  SquareArrowOutUpRight,
-  X,
-} from "lucide-react"
-import { Button, buttonVariants, cn, Hint } from "@doska/ui-kit"
+import { GitBranch, Maximize2, SquareArrowOutUpRight, X } from "lucide-react"
+import { Button, buttonVariants, cn, Hint, Textarea } from "@doska/ui-kit"
 import { LiveDot } from "../shared/live-dot"
 import { useProjectWrite } from "../shared/use-project-write"
 import { WsChip } from "../shared/ws-chip"
+import { LINKED_CARD_MIME, type LinkedCardDrag } from "./linked-card-row"
 import { useProjectCtx } from "./project-context"
 
 const basename = (path: string) =>
@@ -22,14 +20,59 @@ interface IProps {
 }
 
 export function SessionCard({ session: s, showWorkstream = true }: IProps) {
-  const { projectId, workstreamById, openChat } = useProjectCtx()
+  const { projectId, workstreamById, chatSessionId, openChat } = useProjectCtx()
   const { mutate: remove } = useProjectWrite("sessionRemove", projectId)
+  const { mutate: link } = useProjectWrite("cardLink", projectId)
+  const frame = useRef<HTMLIFrameElement>(null)
+  const [over, setOver] = useState(false)
+  const [prompt, setPrompt] = useState<string | null>(null)
   const ws =
     showWorkstream && s.workstreamId ? workstreamById.get(s.workstreamId) : null
   const live = isLive(s.lastActivityAt)
 
+  const send = (text: string) => {
+    const win = frame.current?.contentWindow
+    if (win && s.chatUrl)
+      win.postMessage({ type: "chat-send", text }, new URL(s.chatUrl).origin)
+    else openChat(s.id, text)
+    setPrompt(null)
+  }
+
   return (
-    <li className="group/session flex flex-col gap-2 rounded-xl bg-card p-3 shadow-e1 ring-1 ring-foreground/10">
+    <li
+      onDragOver={(e) => {
+        if (!e.dataTransfer.types.includes(LINKED_CARD_MIME)) return
+        e.preventDefault()
+        e.dataTransfer.dropEffect = "link"
+        setOver(true)
+      }}
+      onDragLeave={(e) => {
+        if (e.currentTarget.contains(e.relatedTarget as Node)) return
+        setOver(false)
+      }}
+      onDrop={(e) => {
+        const raw = e.dataTransfer.getData(LINKED_CARD_MIME)
+        if (!raw) return
+        e.preventDefault()
+        setOver(false)
+        const card = JSON.parse(raw) as LinkedCardDrag
+        link({
+          projectId,
+          boardId: card.boardId,
+          cardId: card.cardId,
+          // Upserts: keep the card's workstream when the session has none.
+          workstreamId: s.workstreamId ?? card.workstreamId ?? undefined,
+        })
+        // Without a chat there is nowhere to send the prompt.
+        if (!s.chatUrl) return
+        const id = cardDisplayId(card.number)
+        setPrompt(`Please pick up card ${id ? `#${id}: ` : ""}"${card.title}"`)
+      }}
+      className={cn(
+        "group/session flex flex-col gap-2 rounded-xl bg-card p-3 shadow-e1 ring-1 ring-foreground/10",
+        over && "ring-2 ring-primary"
+      )}
+    >
       <div className="flex items-start gap-2">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <p className="flex items-center gap-2 text-sm font-semibold">
@@ -71,6 +114,38 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
         {ws && <WsChip name={ws.name} />}
       </div>
 
+      {/* Unmounted while the Sheet shows this session, so only one copy polls. */}
+      {s.chatUrl && chatSessionId !== s.id && (
+        <iframe
+          ref={frame}
+          key={s.chatUrl}
+          src={s.chatUrl}
+          title={`Chat with ${s.label || s.mission}`}
+          allow="microphone"
+          loading="lazy"
+          className="h-64 w-full rounded-lg border-0 bg-background [[data-card-drag]_&]:pointer-events-none"
+        />
+      )}
+
+      {prompt !== null && (
+        <div className="flex flex-col gap-2">
+          <Textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            rows={3}
+            className="text-sm"
+          />
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setPrompt(null)}>
+              Just link
+            </Button>
+            <Button size="sm" onClick={() => send(prompt)}>
+              Send
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-2">
         <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
           {s.lastActivityAt
@@ -79,15 +154,17 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
         </span>
         <RunsOn session={s} />
         {s.chatUrl && (
-          <Button
-            size="sm"
-            variant="secondary"
-            className="shrink-0"
-            onClick={() => openChat(s.id)}
-          >
-            <MessageSquare />
-            Chat
-          </Button>
+          <Hint label="Expand chat">
+            <Button
+              size="icon-sm"
+              variant="secondary"
+              aria-label="Expand chat"
+              className="shrink-0"
+              onClick={() => openChat(s.id)}
+            >
+              <Maximize2 />
+            </Button>
+          </Hint>
         )}
         <OpenSession url={s.openUrl} />
       </div>

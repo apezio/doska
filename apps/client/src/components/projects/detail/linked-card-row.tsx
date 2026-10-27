@@ -8,6 +8,13 @@ import { useProjectWrite } from "../shared/use-project-write"
 import { WsChip } from "../shared/ws-chip"
 import { useProjectCtx } from "./project-context"
 
+export const LINKED_CARD_MIME = "application/x-doska-linked-card"
+
+export type LinkedCardDrag = Pick<
+  LinkedCard,
+  "cardId" | "boardId" | "number" | "title" | "workstreamId"
+>
+
 interface IProps {
   card: LinkedCard
   /** Name its workstream — off inside that workstream, where it is implied. */
@@ -25,7 +32,28 @@ export function LinkedCardRow({ card, showWorkstream }: IProps) {
   const openable = card.accessible && !card.deleted
 
   return (
-    <li className="group/card -mx-1.5 flex min-h-8 items-center gap-1 rounded-md px-1.5 hover:bg-muted/50">
+    <li
+      draggable={openable}
+      onDragStart={(e) => {
+        // The link inside is natively draggable even when the row is not.
+        if (!openable) return
+        const { cardId, boardId, number, title, workstreamId } = card
+        const drag: LinkedCardDrag = {
+          cardId,
+          boardId,
+          number,
+          title,
+          workstreamId,
+        }
+        e.dataTransfer.setData(LINKED_CARD_MIME, JSON.stringify(drag))
+        e.dataTransfer.effectAllowed = "link"
+        // Session cards hide their chat iframes from the pointer meanwhile:
+        // a cross-origin frame would swallow the drag before the card saw it.
+        document.body.dataset.cardDrag = ""
+      }}
+      onDragEnd={() => delete document.body.dataset.cardDrag}
+      className="group/card -mx-1.5 flex min-h-8 items-center gap-1 rounded-md px-1.5 hover:bg-muted/50"
+    >
       <Link
         href={`~${routes.deck.to(card.boardId)}${routes.card.to(card.cardId)}`}
         aria-disabled={!openable}

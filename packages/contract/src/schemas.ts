@@ -1,5 +1,10 @@
 import { z } from "zod"
-import { PRIORITY_MAX, PRIORITY_MIN, PRIORITY_NONE, toPriority } from "./priority"
+import {
+  PRIORITY_MAX,
+  PRIORITY_MIN,
+  PRIORITY_NONE,
+  toPriority,
+} from "./priority"
 
 /**
  * Entity schemas shared by client and server
@@ -269,9 +274,13 @@ export const ProjectSessionSchema = z.object({
   deletedAt: z.number().nullable(),
 })
 
-/** `openUrl` is built by the server; null when it has no Miss Claude URL. */
+/**
+ * Both URLs are built by the server; null when it has no Miss Claude URL, and
+ * `chatUrl` also when the session names no mission.
+ */
 export const ProjectSessionDetailSchema = ProjectSessionSchema.extend({
   openUrl: z.string().nullable(),
+  chatUrl: z.string().nullable(),
 })
 
 export const ProjectEventSchema = z.object({

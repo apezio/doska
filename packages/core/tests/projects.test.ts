@@ -1,6 +1,7 @@
 import type { ProjectSummary, Workstream } from "@doska/contract"
 import { describe, expect, it } from "vitest"
 import {
+  decisionOptions,
   groupProjects,
   pendingDependencies,
   timeAgo,
@@ -79,5 +80,18 @@ describe("timeAgo", () => {
     expect(timeAgo(now - 3 * 3_600_000, now)).toBe("3h ago")
     expect(timeAgo(now - 30 * 3_600_000, now)).toBe("yesterday")
     expect(timeAgo(now - 4 * 86_400_000, now)).toBe("4d ago")
+  })
+})
+
+describe("decisionOptions", () => {
+  it("reads a numbered list", () => {
+    expect(
+      decisionOptions("Which way?\n\n1. Private per session\n2) Project-wide\n")
+    ).toEqual(["Private per session", "Project-wide"])
+  })
+
+  it("offers nothing for a single item or plain bullets", () => {
+    expect(decisionOptions("1. Only this")).toEqual([])
+    expect(decisionOptions("- one\n- two")).toEqual([])
   })
 })

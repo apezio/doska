@@ -210,6 +210,44 @@ describe("projects over MCP", () => {
     expect(await context(project.id)).toContain("Needs attention: nothing open")
   })
 
+  test("a session's answered decision leads its next brief, once", async () => {
+    const { project } = await seed()
+    const [session] = (
+      await json("session_start", {
+        worktree: "/w/answers",
+        project_id: project.id,
+      })
+    ).projects
+    const decision = await json("add_decision", {
+      project_id: project.id,
+      kind: "decision",
+      title: "REST or RPC?",
+      session_id: session.session_id,
+    })
+    // Answered strictly after the session last spoke, not in the same ms.
+    await new Promise((r) => setTimeout(r, 5))
+    await json("resolve_decision", {
+      decision_id: decision.id,
+      resolution: "RPC\nfewer moving parts",
+    })
+
+    const progress = (sessionId?: string) =>
+      call("record_progress", {
+        project_id: project.id,
+        session_id: sessionId,
+        message: "checkpoint",
+      }).then((r) => r.content[0].text)
+
+    expect(await progress()).not.toContain("operator answered")
+    expect(await progress(session.session_id)).toContain(
+      "Since your last call, the operator answered:\n" +
+        `- Decision: REST or RPC? [${decision.id}] → RPC fewer moving parts`
+    )
+    expect(await progress(session.session_id)).not.toContain(
+      "operator answered"
+    )
+  })
+
   test("another user's token cannot read the project", async () => {
     const { project } = await seed()
     const result = await callTool(h, otherToken, "get_project", {

@@ -32,18 +32,49 @@ function nextStep(steps: Step[]): string {
   return next ? ` next: ${clip(next.text, 80)} ${count}` : ` ${count}`
 }
 
+/** The session reading the brief, so answers to its own decisions lead it. */
+export interface Reader {
+  sessionId: string
+  /** The session's activity before this call; null = never active. */
+  since: number | null
+}
+
 /**
  * The brief a session reads at its start: where the project stands and what
  * needs a human, in a few dozen lines. Ids ride along so the agent can write
- * back without a second read.
+ * back without a second read. With a `reader`, answers to that session's
+ * decisions lead, since a resolved decision drops out of Needs attention.
  */
-export function projectContext(detail: ProjectDetail, now: number): string {
+export function projectContext(
+  detail: ProjectDetail,
+  now: number,
+  reader?: Reader
+): string {
   const { project, workstreams, decisions, cards, sessions, events } = detail
   const nameOf = new Map(workstreams.map((w) => [w.id, w.name]))
   const lines: string[] = [
     `Project: ${project.name} [${project.status}] (id ${project.id}, v${project.version})`,
     `Summary: ${project.summary.trim() || "(none yet)"}`,
   ]
+
+  const answered = reader
+    ? decisions.filter(
+        (d) =>
+          d.sessionId === reader.sessionId &&
+          d.status === "resolved" &&
+          (d.resolvedAt ?? 0) > (reader.since ?? 0)
+      )
+    : []
+  if (answered.length) {
+    lines.push("", "Since your last call, the operator answered:")
+    for (const d of answered) {
+      const answer = d.resolution.trim().replace(/\s*\n\s*/g, " ")
+      lines.push(
+        `- ${d.kind === "blocker" ? "Blocker" : "Decision"}: ${clip(d.title)}` +
+          ` [${d.id}] → ${answer || "(resolved, no note)"}`
+      )
+    }
+  }
   const last = events[0]
   if (last)
     lines.push(

@@ -49,8 +49,26 @@ The mission is named after the project, skipping names its sessions already
 use. The new console's Claude joins the project itself, through
 `session_start` with that `project_id`.
 
-The client never builds either URL; with no dashboard configured both are
-absent.
+**Chat.** A session that knows its mission also gets a Chat button, which
+opens that mission's Miss Claude chat in a side panel, framed from
+
+```
+<dashboard>/m/<mission>/chat?embed=1
+```
+
+Reading and typing there go straight to the console. The frame carries Miss
+Claude's login only when Doska and the dashboard are the same site (say
+`doska.example.net` and `dev.example.net`); from anywhere else it shows Miss
+Claude's login page instead.
+
+The client never builds any of these URLs; with no dashboard configured they
+are absent.
+
+**Answering decisions.** A decision whose body is a numbered list offers each
+item as a one-click answer. The session that raised it reads the answer under
+"Since your last call, the operator answered:" in its next `session_start` or
+`record_progress` reply. If that session is live and has a chat, the chat opens
+so you can tell it now.
 
 ## Configuration
 

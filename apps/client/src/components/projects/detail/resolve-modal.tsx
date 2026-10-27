@@ -1,5 +1,6 @@
 import { useState } from "react"
 import type { ProjectDecision } from "@doska/contract"
+import { decisionOptions, isLive } from "@doska/core/projects"
 import {
   Button,
   Markdown,
@@ -19,18 +20,35 @@ interface IProps {
 
 /** Closes a decision or blocker with the answer, which the log keeps. */
 export function ResolveModal({ item, onClose }: IProps) {
-  const { projectId } = useProjectCtx()
+  const { projectId, sessionById, openChat } = useProjectCtx()
   const [resolution, setResolution] = useState("")
   const { mutate: update, isPending } = useProjectWrite(
     "decisionUpdate",
     projectId
   )
   const isDecision = item?.kind === "decision"
+  const options = item && isDecision ? decisionOptions(item.body) : []
 
   const close = () => {
     setResolution("")
     onClose()
   }
+
+  // The session that asked hears on its next Doska call; a live one may be
+  // waiting on the answer, so its chat opens to tell it now.
+  const resolve = (decision: ProjectDecision, text: string) =>
+    update(
+      { id: decision.id, status: "resolved", resolution: text.trim() },
+      {
+        onSuccess: () => {
+          close()
+          const asker = decision.sessionId
+            ? sessionById.get(decision.sessionId)
+            : undefined
+          if (asker?.chatUrl && isLive(asker.lastActivityAt)) openChat(asker.id)
+        },
+      }
+    )
 
   return (
     <Modal open={item !== null} onOpenChange={(open) => !open && close()}>
@@ -45,14 +63,7 @@ export function ResolveModal({ item, onClose }: IProps) {
                 className="flex flex-col gap-3"
                 onSubmit={(e) => {
                   e.preventDefault()
-                  update(
-                    {
-                      id: item.id,
-                      status: "resolved",
-                      resolution: resolution.trim(),
-                    },
-                    { onSuccess: close }
-                  )
+                  resolve(item, resolution)
                 }}
               >
                 <div className="flex flex-col gap-1">
@@ -63,13 +74,31 @@ export function ResolveModal({ item, onClose }: IProps) {
                     </Markdown>
                   )}
                 </div>
+                {options.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {options.map((option, i) => (
+                      <Button
+                        key={i}
+                        type="button"
+                        variant="secondary"
+                        disabled={isPending}
+                        onClick={() => resolve(item, `${i + 1}. ${option}`)}
+                      >
+                        <span className="text-muted-foreground">{i + 1}</span>
+                        {option}
+                      </Button>
+                    ))}
+                  </div>
+                )}
                 <Textarea
-                  autoFocus
+                  autoFocus={options.length === 0}
                   aria-label={isDecision ? "Decision" : "Resolution"}
                   placeholder={
-                    isDecision
-                      ? "What you decided, and why"
-                      : "What unblocked it"
+                    options.length
+                      ? "Or answer in words"
+                      : isDecision
+                        ? "What you decided, and why"
+                        : "What unblocked it"
                   }
                   value={resolution}
                   onChange={(e) => setResolution(e.target.value)}

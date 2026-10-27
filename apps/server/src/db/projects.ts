@@ -271,20 +271,33 @@ function missClaudeDashboards(): string[] {
     .filter(Boolean)
 }
 
+function dashboardOf(session: ProjectSession): string | undefined {
+  return session.dashboardUrl.replace(/\/+$/, "") || missClaudeDashboards()[0]
+}
+
 /**
  * Null when the session has no dashboard and this server knows none either.
  * A known mission links straight to its page, which every Miss Claude serves;
  * otherwise `/open` resolves the worktree or Claude session id to one.
  */
 function openUrl(session: ProjectSession): string | null {
-  const base =
-    session.dashboardUrl.replace(/\/+$/, "") || missClaudeDashboards()[0]
+  const base = dashboardOf(session)
   if (!base) return null
   if (session.mission)
     return `${base}/m/${encodeURIComponent(session.mission)}/dashboard`
   const query = new URLSearchParams({ worktree: session.worktree })
   if (session.claudeSessionId) query.set("session", session.claudeSessionId)
   return `${base}/open?${query}`
+}
+
+/**
+ * The mission's chat in Miss Claude's embed mode, for an iframe. Its login
+ * cookie reaches the frame only when Doska and the dashboard are same-site.
+ */
+function chatUrl(session: ProjectSession): string | null {
+  const base = dashboardOf(session)
+  if (!base || !session.mission) return null
+  return `${base}/m/${encodeURIComponent(session.mission)}/chat?embed=1`
 }
 
 /**
@@ -413,7 +426,7 @@ export async function getProject(
     cards: await resolveCards(userId, project.id),
     sessions: sessions
       .sort((a, b) => (b.lastActivityAt ?? 0) - (a.lastActivityAt ?? 0))
-      .map((s) => ({ ...s, openUrl: openUrl(s) })),
+      .map((s) => ({ ...s, openUrl: openUrl(s), chatUrl: chatUrl(s) })),
     dashboards: dashboardsFor(project, sessions),
     events,
   }

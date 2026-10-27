@@ -192,11 +192,14 @@ export function registerProjectTools(
       dashboard_url,
       project_id,
     }) => {
-      const ids = new Set<string>()
+      // Each project's session here, as it was before this call touches it.
+      const since = new Map<string, number | null>()
       for (const p of await store.listProjects()) {
         const detail = await store.getProject(p.id)
-        if (detail.sessions.some((s) => s.worktree === worktree)) ids.add(p.id)
+        const mine = detail.sessions.find((s) => s.worktree === worktree)
+        if (mine) since.set(p.id, mine.lastActivityAt)
       }
+      const ids = new Set(since.keys())
       if (project_id) ids.add(project_id)
       if (ids.size === 0)
         return reply({
@@ -221,7 +224,10 @@ export function registerProjectTools(
           id,
           name: detail.project.name,
           session_id: session.id,
-          context: projectContext(detail, Date.now()),
+          context: projectContext(detail, Date.now(), {
+            sessionId: session.id,
+            since: since.get(id) ?? null,
+          }),
         })
       }
       return reply({ projects })
@@ -601,7 +607,13 @@ export function registerProjectTools(
           lastEvent: "progress",
         })
 
-      return text(await contextOf(store, project_id))
+      return text(
+        projectContext(
+          await store.getProject(project_id),
+          Date.now(),
+          session && { sessionId: session.id, since: session.lastActivityAt }
+        )
+      )
     }
   )
 }

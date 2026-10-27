@@ -1,6 +1,11 @@
 import type { ProjectSessionDetail } from "@doska/contract"
 import { isLive, timeAgo } from "@doska/core/projects"
-import { GitBranch, SquareArrowOutUpRight, X } from "lucide-react"
+import {
+  GitBranch,
+  MessageSquare,
+  SquareArrowOutUpRight,
+  X,
+} from "lucide-react"
 import { Button, buttonVariants, cn, Hint } from "@doska/ui-kit"
 import { LiveDot } from "../shared/live-dot"
 import { useProjectWrite } from "../shared/use-project-write"
@@ -17,7 +22,7 @@ interface IProps {
 }
 
 export function SessionCard({ session: s, showWorkstream = true }: IProps) {
-  const { projectId, workstreamById } = useProjectCtx()
+  const { projectId, workstreamById, openChat } = useProjectCtx()
   const { mutate: remove } = useProjectWrite("sessionRemove", projectId)
   const ws =
     showWorkstream && s.workstreamId ? workstreamById.get(s.workstreamId) : null
@@ -73,6 +78,17 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
             : "No activity yet"}
         </span>
         <RunsOn session={s} />
+        {s.chatUrl && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="shrink-0"
+            onClick={() => openChat(s.id)}
+          >
+            <MessageSquare />
+            Chat
+          </Button>
+        )}
         <OpenSession url={s.openUrl} />
       </div>
     </li>

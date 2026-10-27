@@ -358,6 +358,9 @@ describe("projects", () => {
     expect(sessions[0].openUrl).toBe(
       "https://dev.invalid:4200/m/routing/dashboard"
     )
+    expect(sessions[0].chatUrl).toBe(
+      "https://dev.invalid:4200/m/routing/chat?embed=1"
+    )
     // The mission is named after the project, past names already in use.
     expect(dashboards).toEqual(
       ["dev", "jump"].map((label) => ({
@@ -390,6 +393,8 @@ describe("projects", () => {
     expect(sessions.find((s) => s.worktree === "/work/ops")?.openUrl).toBe(
       "https://dev.invalid:4200/open?worktree=%2Fwork%2Fops"
     )
+    // Chat needs the mission: Miss Claude has no resolver for it.
+    expect(sessions.find((s) => s.worktree === "/work/ops")?.chatUrl).toBeNull()
   })
 
   test("another account cannot read or write someone else's project", async () => {

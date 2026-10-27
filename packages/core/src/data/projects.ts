@@ -111,3 +111,15 @@ const LIVE_MS = DAY
 export function isLive(lastActivityAt: number | null, now = Date.now()) {
   return lastActivityAt !== null && now - lastActivityAt < LIVE_MS
 }
+
+/**
+ * The numbered choices in a decision's body ("1. REST" / "2) RPC"), offered
+ * as one-click answers. Fewer than two is not a choice.
+ */
+export function decisionOptions(body: string): string[] {
+  const options = body
+    .split("\n")
+    .map((line) => /^\s*\d+[.)]\s+(.+?)\s*$/.exec(line)?.[1])
+    .filter((text): text is string => !!text)
+  return options.length >= 2 ? options : []
+}

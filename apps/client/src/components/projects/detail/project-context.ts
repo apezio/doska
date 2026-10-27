@@ -15,6 +15,9 @@ export interface ProjectCtx {
   /** Workstreams shown expanded. */
   openIds: ReadonlySet<string>
   setOpen: (id: string, open: boolean) => void
+  /** The session whose Miss Claude chat is showing, if any. */
+  chatSessionId: string | null
+  openChat: (sessionId: string | null) => void
 }
 
 export const ProjectContext = createContext<ProjectCtx | null>(null)

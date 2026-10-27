@@ -14,6 +14,7 @@ import { AttentionSection } from "./attention-section"
 import { CardsSection } from "./cards-section"
 import { ProjectContext, type ProjectCtx } from "./project-context"
 import { ProjectHeader } from "./project-header"
+import { SessionChat } from "./session-chat"
 import { SessionsSection } from "./sessions-section"
 import { SummarySection } from "./summary-section"
 import { WorkstreamsSection } from "./workstreams-section"
@@ -35,6 +36,7 @@ export function ProjectView({ projectId }: { projectId: string }) {
       return next
     })
   }, [])
+  const [chatSessionId, openChat] = useState<string | null>(null)
 
   const ctx = useMemo<ProjectCtx | null>(
     () =>
@@ -49,9 +51,11 @@ export function ProjectView({ projectId }: { projectId: string }) {
             sessionById: new Map(data.sessions.map((s) => [s.id, s])),
             openIds,
             setOpen,
+            chatSessionId,
+            openChat,
           }
         : null,
-    [data, authed, projectId, openIds, setOpen]
+    [data, authed, projectId, openIds, setOpen, chatSessionId]
   )
 
   if (ctx)
@@ -63,6 +67,7 @@ export function ProjectView({ projectId }: { projectId: string }) {
             <ProjectBody />
           </div>
         </div>
+        <SessionChat />
       </ProjectContext>
     )
 

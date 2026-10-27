@@ -346,6 +346,26 @@ describe("projects", () => {
     expect(again).toMatchObject({ mission: "routing", claudeSessionId: "s-2" })
     expect(again.lastActivityAt).not.toBeNull()
 
+    // A mission renamed in Miss Claude renames a session named after it...
+    const renamed = await owner.projects.sessionRegister({
+      projectId: id,
+      worktree: "/work/routing",
+      mission: "bgp",
+    })
+    expect(renamed).toMatchObject({ mission: "bgp", label: "bgp" })
+    // ...but not one given a name of its own.
+    await owner.projects.sessionRegister({
+      projectId: id,
+      worktree: "/work/routing",
+      label: "Routing rework",
+    })
+    const kept = await owner.projects.sessionRegister({
+      projectId: id,
+      worktree: "/work/routing",
+      mission: "routing",
+    })
+    expect(kept).toMatchObject({ mission: "routing", label: "Routing rework" })
+
     let { sessions } = await owner.projects.get({ id })
     expect(sessions).toHaveLength(1)
     expect(sessions[0].openUrl).toBeNull()

@@ -983,7 +983,14 @@ export async function registerSession(
     let row: ProjectSession
     let message: string | undefined
     if (cur) {
-      const { patch } = diff(cur, fields)
+      // `session_start` sends no label, so a session still named after its
+      // mission follows that mission through a rename in Miss Claude.
+      const { patch } = diff(cur, {
+        ...fields,
+        label:
+          fields.label ??
+          (cur.label === cur.mission ? input.mission : undefined),
+      })
       ;[row] = await tx
         .update(projectSessions)
         .set({

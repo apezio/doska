@@ -194,6 +194,8 @@ export const workstreams = pgTable(
     dependsOn: jsonb("depends_on").$type<string[]>().notNull().default([]),
     note: text("note").notNull().default(""),
     position: integer("position").notNull().default(0),
+    /** Tucked away in the list; undone by unhiding, unlike deletedAt. */
+    hidden: boolean("hidden").notNull().default(false),
     version: integer("version").notNull().default(1),
     createdAt: bigint("created_at", { mode: "number" }).notNull(),
     updatedAt: bigint("updated_at", { mode: "number" }).notNull(),

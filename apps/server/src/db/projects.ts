@@ -685,6 +685,7 @@ export async function updateWorkstream(
       dependsOn: input.dependsOn,
       note: input.note,
       position: input.position,
+      hidden: input.hidden,
     })
     const base = {
       projectId: cur.projectId,
@@ -708,8 +709,9 @@ export async function updateWorkstream(
       .where(eq(workstreams.id, cur.id))
       .returning()
 
-    // A reorder alone is layout, not history.
+    // A reorder alone is layout, not history; a hide replaces nothing.
     delete before.position
+    delete before.hidden
     const parts: string[] = []
     if (patch.plan !== undefined) parts.push("Plan updated")
     if (patch.planState) parts.push(`Plan ${patch.planState}`)
@@ -723,6 +725,8 @@ export async function updateWorkstream(
       parts.push(patch.note ? `Note: ${patch.note}` : "Note cleared")
     if (patch.name) parts.push(`Renamed to "${patch.name}"`)
     if (patch.dependsOn) parts.push("Dependencies updated")
+    if (patch.hidden !== undefined)
+      parts.push(patch.hidden ? "Hidden" : "Unhidden")
     if (parts.length === 0 && !input.message) return row
 
     const kind: ProjectEventKind =

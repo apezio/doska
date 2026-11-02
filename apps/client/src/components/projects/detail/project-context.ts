@@ -38,9 +38,12 @@ export const sessionName = (s: ProjectSessionDetail) =>
 
 export function revealWorkstream(ctx: Pick<ProjectCtx, "setOpen">, id: string) {
   ctx.setOpen(id, true)
-  document
-    .getElementById(`ws-${id}`)
-    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+  // A row in the collapsed hidden group only mounts once setOpen renders.
+  requestAnimationFrame(() =>
+    document
+      .getElementById(`ws-${id}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+  )
 }
 
 /** Who made a write, in the words the activity log uses. */

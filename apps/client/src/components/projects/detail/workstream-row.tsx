@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from "motion/react"
 import {
   ChevronRight,
   CircleCheck,
+  Eye,
+  EyeOff,
   GripVertical,
   Hourglass,
   ListChecks,
@@ -244,7 +246,7 @@ function PlanChip({
 }
 
 function WorkstreamPanel({ ws }: { ws: Workstream }) {
-  const { projectId, detail } = useProjectCtx()
+  const { projectId, detail, setOpen } = useProjectCtx()
   const { mutate: update, mutateAsync: updateAsync } = useProjectWrite(
     "workstreamUpdate",
     projectId
@@ -325,23 +327,52 @@ function WorkstreamPanel({ ws }: { ws: Workstream }) {
         </Block>
       )}
 
-      <div className="flex justify-end">
-        <Button
-          size="sm"
-          variant="ghost"
-          className="text-muted-foreground hover:text-destructive"
-          onClick={() => setConfirming(true)}
-        >
-          <Trash2 />
-          Remove workstream
-        </Button>
+      <div className="flex justify-end gap-1">
+        {ws.hidden ? (
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground"
+              onClick={() => update({ id: ws.id, hidden: false })}
+            >
+              <Eye />
+              Unhide
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground hover:text-destructive"
+              onClick={() => setConfirming(true)}
+            >
+              <Trash2 />
+              Delete
+            </Button>
+          </>
+        ) : (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-muted-foreground"
+            // Collapse it too, or its open id holds the hidden group open.
+            onClick={() =>
+              update(
+                { id: ws.id, hidden: true },
+                { onSuccess: () => setOpen(ws.id, false) }
+              )
+            }
+          >
+            <EyeOff />
+            Hide workstream
+          </Button>
+        )}
       </div>
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Remove workstream?"
+        title="Delete workstream?"
         description={`"${ws.name}" and its plan and steps go away. Its cards and sessions stay on the project.`}
-        confirmLabel="Remove workstream"
+        confirmLabel="Delete workstream"
         onConfirm={() => remove({ id: ws.id })}
       />
     </div>

@@ -1,0 +1,1 @@
+ALTER TABLE "workstreams" ADD COLUMN "hidden" boolean DEFAULT false NOT NULL;

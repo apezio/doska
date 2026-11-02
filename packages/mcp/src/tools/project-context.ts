@@ -114,8 +114,10 @@ export function projectContext(
   }
   more(lines, open.length, MAX_DECISIONS, "open")
 
+  const shown = workstreams.filter((w) => !w.hidden)
+  const hidden = workstreams.length - shown.length
   lines.push("", workstreams.length ? "Workstreams:" : "Workstreams: none")
-  for (const w of workstreams.slice(0, MAX_WORKSTREAMS)) {
+  for (const w of shown.slice(0, MAX_WORKSTREAMS)) {
     const after = w.dependsOn.map((id) => nameOf.get(id) ?? id)
     lines.push(
       `- ${w.name} [${w.status}, plan ${w.planState}]${nextStep(w.steps, sessions, now)}` +
@@ -124,7 +126,11 @@ export function projectContext(
     )
     if (w.note.trim()) lines.push(`  note: ${clip(w.note)}`)
   }
-  more(lines, workstreams.length, MAX_WORKSTREAMS, "workstreams")
+  more(lines, shown.length, MAX_WORKSTREAMS, "workstreams")
+  if (hidden)
+    lines.push(
+      `- +${hidden} hidden ${hidden === 1 ? "workstream" : "workstreams"}`
+    )
 
   if (cards.length) {
     lines.push("", "Linked cards:")

@@ -75,6 +75,11 @@ and step rows show a badge per session on them, hovering either side
 highlights the other, and in the two-column layout a line joins each session
 to its item. Marking a step done leaves sessions on it untouched.
 
+**Hiding workstreams.** "Hide workstream" tucks one behind the "Show N hidden"
+toggle under the list and out of the progress strip and the context brief
+(which says "+N hidden workstreams"); "Unhide" brings it back. Only a hidden
+workstream can be deleted for good.
+
 **Answering decisions.** A decision whose body is a numbered list offers each
 item as a one-click answer. The session that raised it reads the answer under
 "Since your last call, the operator answered:" in its next `session_start` or

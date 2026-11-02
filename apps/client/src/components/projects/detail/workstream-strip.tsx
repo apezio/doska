@@ -35,7 +35,7 @@ function fillOf(ws: Workstream): number {
  */
 export function WorkstreamStrip() {
   const ctx = useProjectCtx()
-  const { workstreams } = ctx
+  const workstreams = ctx.workstreams.filter((w) => !w.hidden)
   if (workstreams.length === 0) return null
 
   const done = workstreams.filter((w) => w.status === "done").length

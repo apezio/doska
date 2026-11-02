@@ -195,6 +195,7 @@ export const contract = {
           dependsOn: z.array(z.string()).optional(),
           note: z.string().optional(),
           position: z.number().int().optional(),
+          hidden: z.boolean().optional(),
           message: z.string().optional(),
           sessionId,
         })

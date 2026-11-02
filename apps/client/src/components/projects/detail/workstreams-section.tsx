@@ -1,14 +1,24 @@
 import { useState } from "react"
-import { Plus } from "lucide-react"
-import { Button, Input } from "@doska/ui-kit"
+import { ChevronRight, Plus } from "lucide-react"
+import { Button, cn, Input } from "@doska/ui-kit"
 import { Section } from "../shared/section"
 import { useProjectWrite } from "../shared/use-project-write"
 import { useProjectCtx } from "./project-context"
 import { WorkstreamRow } from "./workstream-row"
 
 export function WorkstreamsSection() {
-  const { workstreams } = useProjectCtx()
+  const { workstreams, openIds, setOpen } = useProjectCtx()
   const [adding, setAdding] = useState(false)
+  const [showHidden, setShowHidden] = useState(false)
+  const shown = workstreams.filter((ws) => !ws.hidden)
+  const hidden = workstreams.filter((ws) => ws.hidden)
+  // An expanded hidden row keeps the group open, so reveal paths can land on it.
+  const hiddenOpen = showHidden || hidden.some((ws) => openIds.has(ws.id))
+
+  const toggleHidden = () => {
+    if (hiddenOpen) hidden.forEach((ws) => setOpen(ws.id, false))
+    setShowHidden(!hiddenOpen)
+  }
 
   return (
     <Section
@@ -38,11 +48,41 @@ export function WorkstreamsSection() {
           its own plan and steps, that one person or session can own.
         </button>
       ) : (
-        <ul className="flex flex-col gap-2">
-          {workstreams.map((ws) => (
-            <WorkstreamRow key={ws.id} ws={ws} />
-          ))}
-        </ul>
+        <>
+          {shown.length > 0 && (
+            <ul className="flex flex-col gap-2">
+              {shown.map((ws) => (
+                <WorkstreamRow key={ws.id} ws={ws} />
+              ))}
+            </ul>
+          )}
+          {hidden.length > 0 && (
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="self-start text-muted-foreground"
+                aria-expanded={hiddenOpen}
+                onClick={toggleHidden}
+              >
+                <ChevronRight
+                  className={cn(
+                    "transition-transform duration-200",
+                    hiddenOpen && "rotate-90"
+                  )}
+                />
+                {hiddenOpen ? "Hide hidden" : `Show ${hidden.length} hidden`}
+              </Button>
+              {hiddenOpen && (
+                <ul className="flex flex-col gap-2">
+                  {hidden.map((ws) => (
+                    <WorkstreamRow key={ws.id} ws={ws} />
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </>
       )}
       {adding && <AddWorkstream onDone={() => setAdding(false)} />}
     </Section>

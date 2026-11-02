@@ -4,6 +4,7 @@ import {
   callTool,
   mcpToken,
   resetTables,
+  rpcClient,
   startServer,
   toolJson,
   type Harness,
@@ -315,6 +316,16 @@ describe("projects over MCP", () => {
     expect(await progress(session.session_id)).not.toContain(
       "operator answered"
     )
+  })
+
+  test("a hidden workstream is left out of the brief, and counted", async () => {
+    const { project, ui } = await seed()
+    await rpcClient(h).projects.workstreamUpdate({ id: ui.id, hidden: true })
+
+    const brief = await context(project.id)
+    expect(brief).toContain("- API [")
+    expect(brief).not.toContain("- UI [")
+    expect(brief).toMatch(/^- \+1 hidden workstream$/m)
   })
 
   test("another user's token cannot read the project", async () => {

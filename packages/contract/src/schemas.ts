@@ -232,6 +232,8 @@ export const WorkstreamSchema = z.object({
   /** Short blocker / waiting-on note. */
   note: z.string(),
   position: z.number(),
+  /** Tucked away in the list until unhidden; not a delete. */
+  hidden: z.boolean(),
   version: z.number(),
   createdAt: z.number(),
   updatedAt: z.number(),

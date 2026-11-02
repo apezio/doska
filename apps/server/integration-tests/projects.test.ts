@@ -324,6 +324,31 @@ describe("projects", () => {
     expect(events[0].message).toContain("upstream offers a session")
   })
 
+  test("hiding a workstream is logged and undone by unhiding", async () => {
+    const { id } = await owner.projects.create({ name: "P" })
+    const ws = await owner.projects.workstreamCreate({
+      projectId: id,
+      name: "Routing",
+    })
+    expect(ws.hidden).toBe(false)
+
+    expect(
+      await owner.projects.workstreamUpdate({ id: ws.id, hidden: true })
+    ).toMatchObject({ hidden: true, version: ws.version + 1 })
+    let detail = await owner.projects.get({ id })
+    expect(detail.workstreams).toMatchObject([{ id: ws.id, hidden: true }])
+    expect(detail.events[0]).toMatchObject({
+      kind: "note",
+      workstreamId: ws.id,
+      message: "Routing: Hidden",
+    })
+
+    await owner.projects.workstreamUpdate({ id: ws.id, hidden: false })
+    detail = await owner.projects.get({ id })
+    expect(detail.workstreams[0].hidden).toBe(false)
+    expect(detail.events[0].message).toBe("Routing: Unhidden")
+  })
+
   test("session register upserts by worktree and carries an open URL only when configured", async () => {
     const { id } = await owner.projects.create({ name: "Routing" })
     const first = await owner.projects.sessionRegister({

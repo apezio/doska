@@ -179,8 +179,14 @@ export function WorkstreamRow({ ws }: { ws: Workstream }) {
             id={panelId}
             key="panel"
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            // Unclipped once open, so a linked card's `/` and `[[` menus can
+            // spill out.
+            animate={{
+              height: "auto",
+              opacity: 1,
+              transitionEnd: { overflow: "visible" },
+            }}
+            exit={{ height: 0, opacity: 0, overflow: "hidden" }}
             transition={EXPAND}
             className="overflow-hidden"
           >

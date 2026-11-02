@@ -13,14 +13,18 @@ export { groupCardsByColumn } from "./group-cards"
 export { initials } from "./initials"
 export { byPosition, keyBetween } from "./position"
 export {
+  ancestorIds,
   applyMove,
   flattenDashboards,
+  fullIndex,
   isSelfOrDescendant,
   moveToIndex,
   moveToParent,
   parentOf,
+  visibleRows,
   type DashboardMove,
   type DashboardRow,
+  type VisibleRow,
 } from "./dashboard-tree"
 export { isAuthed, subscribeAuthed } from "./is-authed"
 export {

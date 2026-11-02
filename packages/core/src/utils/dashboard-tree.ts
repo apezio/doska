@@ -53,6 +53,61 @@ export function flattenDashboards(dashboards: Dashboard[]): DashboardRow[] {
   return rows
 }
 
+/** A row the sidebar shows, and whether it has children to fold away. */
+export type VisibleRow = DashboardRow & { hasChildren: boolean }
+
+/**
+ * The rows left once every board in `collapsed` folds its subtree away: the
+ * collapsed board itself stays, everything below it goes. `rows` is
+ * {@link flattenDashboards}' output, where a board's children follow it one
+ * level deeper — so a row has children exactly when the next row is deeper.
+ */
+export function visibleRows(
+  rows: DashboardRow[],
+  collapsed: ReadonlySet<string>
+): VisibleRow[] {
+  const visible: VisibleRow[] = []
+  let hiddenBelow = Infinity
+  rows.forEach((row, i) => {
+    if (row.depth > hiddenBelow) return
+    hiddenBelow = collapsed.has(row.dashboard.id) ? row.depth : Infinity
+    visible.push({ ...row, hasChildren: (rows[i + 1]?.depth ?? 0) > row.depth })
+  })
+  return visible
+}
+
+/**
+ * Turns a drop slot in the visible list into the slot {@link moveToIndex}
+ * counts in the full one, both with the dragged board `id` taken out. The slot
+ * sits just before the visible row at `index`, so it maps to just before that
+ * same row in the full list; past the last visible row, past the last row.
+ */
+export function fullIndex(
+  rows: DashboardRow[],
+  visible: DashboardRow[],
+  id: string,
+  index: number
+): number {
+  const full = rows.filter((r) => r.dashboard.id !== id)
+  const next = visible.filter((r) => r.dashboard.id !== id)[index]
+  return next
+    ? full.findIndex((r) => r.dashboard.id === next.dashboard.id)
+    : full.length
+}
+
+/** The boards above `id` in `rows`, nearest first — the ones to unfold to show it. */
+export function ancestorIds(rows: DashboardRow[], id: string): string[] {
+  const at = rows.findIndex((r) => r.dashboard.id === id)
+  const ancestors: string[] = []
+  let depth = rows[at]?.depth ?? 0
+  for (let i = at - 1; i >= 0 && depth > 0; i--) {
+    if (rows[i].depth >= depth) continue
+    depth = rows[i].depth
+    ancestors.push(rows[i].dashboard.id)
+  }
+  return ancestors
+}
+
 /** True when `candidate` is `id` itself or sits anywhere below it. */
 export function isSelfOrDescendant(
   dashboards: Dashboard[],

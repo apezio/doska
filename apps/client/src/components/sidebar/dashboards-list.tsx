@@ -14,12 +14,21 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@doska/ui-kit"
-import { Globe, Users } from "lucide-react"
+import { useEffect, useRef } from "react"
+import { ChevronRight, Globe, Users } from "lucide-react"
+import {
+  expandDashboards,
+  toggleDashboardCollapsed,
+  useCollapsedDashboards,
+} from "@doska/core/dashboard-collapse"
 import { type Dashboard } from "@doska/core/types"
 import {
+  ancestorIds,
   flattenDashboards,
+  fullIndex,
   moveToIndex,
   moveToParent,
+  visibleRows,
   type DashboardMove,
 } from "@doska/core/utils"
 import {
@@ -61,10 +70,26 @@ export function DashboardsList({
   onChangeView,
 }: IProps) {
   const overBoard = useBoardUnderPointer()
+  const collapsed = useCollapsedDashboards()
+
+  // Unfold the open board's ancestors once per board opened — not on every
+  // list change, or a sync would undo a fold made while it stays open.
+  const revealed = useRef("")
+  useEffect(() => {
+    if (revealed.current === activeDashboardId) return
+    const all = flattenDashboards(dashboards)
+    if (!all.some((r) => r.dashboard.id === activeDashboardId)) return
+    revealed.current = activeDashboardId
+    expandDashboards(ancestorIds(all, activeDashboardId))
+  }, [activeDashboardId, dashboards])
+
   if (!dashboards.length) return null
   const shared = new Set(sharedIds)
   const published = new Set(publishedIds)
   const rows = flattenDashboards(dashboards)
+  const visible = visibleRows(rows, collapsed)
+  // The chevron gutter, kept only while some board has children to fold.
+  const nested = rows.some((r) => r.depth > 0)
 
   // One flat list: a drop between rows reorders (and picks the parent from the
   // neighbouring row), a drop *onto* a row — dnd's "combine" — nests under it.
@@ -78,7 +103,12 @@ export function DashboardsList({
     if (combine) {
       move = moveToParent(dashboards, draggableId, combine.draggableId)
     } else if (destination && destination.index !== source.index) {
-      move = moveToIndex(dashboards, draggableId, destination.index)
+      // Hidden rows are not in dnd's list, so its index needs translating.
+      move = moveToIndex(
+        dashboards,
+        draggableId,
+        fullIndex(rows, visible, draggableId, destination.index)
+      )
     }
     if (move) onMoveDashboard(move)
   }
@@ -110,7 +140,7 @@ export function DashboardsList({
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                 >
-                  {rows.map(({ dashboard, depth }, index) => (
+                  {visible.map(({ dashboard, depth, hasChildren }, index) => (
                     <Draggable
                       key={dashboard.id}
                       draggableId={dashboard.id}
@@ -136,6 +166,25 @@ export function DashboardsList({
                               "ring-2 ring-sidebar-ring ring-inset"
                           )}
                         >
+                          {hasChildren && (
+                            <button
+                              type="button"
+                              aria-label={`${collapsed.has(dashboard.id) ? "Expand" : "Collapse"} ${dashboard.title}`}
+                              aria-expanded={!collapsed.has(dashboard.id)}
+                              style={{ left: depth * INDENT_PX }}
+                              className="absolute top-1 flex size-6 items-center justify-center rounded-md text-muted-foreground ring-sidebar-ring outline-hidden hover:text-sidebar-foreground focus-visible:ring-2"
+                              onClick={() =>
+                                toggleDashboardCollapsed(dashboard.id)
+                              }
+                            >
+                              <ChevronRight
+                                className={cn(
+                                  "size-3.5 transition-transform",
+                                  !collapsed.has(dashboard.id) && "rotate-90"
+                                )}
+                              />
+                            </button>
+                          )}
                           <SidebarMenuButton
                             // A card dropped on this row moves to that board.
                             // The board drag context reads the row under the
@@ -145,6 +194,7 @@ export function DashboardsList({
                               [BOARD_DROP_ATTR]: dashboard.id,
                             })}
                             className={cn(
+                              nested && "pl-6",
                               overBoard === dashboard.id && "ring-2 ring-ring"
                             )}
                             isActive={dashboard.id === activeDashboardId}

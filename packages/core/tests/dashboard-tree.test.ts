@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest"
 import type { Dashboard } from "../src/types"
 import {
+  ancestorIds,
   applyMove,
   flattenDashboards,
+  fullIndex,
   isSelfOrDescendant,
   moveToIndex,
   moveToParent,
+  visibleRows,
 } from "../src/utils/dashboard-tree"
 
 function board(
@@ -158,6 +161,82 @@ describe("moveToIndex (drop between rows)", () => {
   it("refuses a slot inside the board's own subtree", () => {
     // A just before A2 would make A its own grandchild.
     expect(moveToIndex(tree, "A", 1)).toBeNull()
+  })
+})
+
+/** {@link tree} with one more level: A1a under A1. */
+const deep = [...tree, board("A1a", "a0", "A1")]
+
+describe("visibleRows", () => {
+  const visibleIds = (collapsed: string[]) =>
+    idsOf(visibleRows(flattenDashboards(deep), new Set(collapsed)))
+
+  it("shows every row when nothing is collapsed", () => {
+    expect(visibleIds([])).toEqual(idsOf(flattenDashboards(deep)))
+  })
+
+  it("hides a collapsed board's whole subtree but keeps the board", () => {
+    expect(visibleIds(["A"])).toEqual(["A", "B", "C", "  C1"])
+    expect(visibleIds(["A1"])).toEqual(["A", "  A1", "  A2", "B", "C", "  C1"])
+  })
+
+  it("keeps a collapsed descendant folded under a collapsed ancestor", () => {
+    expect(visibleIds(["A", "A1"])).toEqual(["A", "B", "C", "  C1"])
+  })
+
+  it("ignores a collapsed leaf", () => {
+    expect(visibleIds(["B", "C1"])).toEqual(idsOf(flattenDashboards(deep)))
+  })
+
+  it("marks the boards that have children, folded or not", () => {
+    const parents = visibleRows(flattenDashboards(deep), new Set(["A"]))
+      .filter((r) => r.hasChildren)
+      .map((r) => r.dashboard.id)
+    expect(parents).toEqual(["A", "C"])
+  })
+})
+
+describe("fullIndex (drop slot in the visible list)", () => {
+  const rows = flattenDashboards(tree)
+  // A collapsed: the sidebar shows [A, B, C, C1].
+  const visible = visibleRows(rows, new Set(["A"]))
+
+  it("is the same slot when nothing is hidden", () => {
+    const all = visibleRows(rows, new Set())
+    for (let i = 0; i <= 5; i++) expect(fullIndex(rows, all, "B", i)).toBe(i)
+  })
+
+  it("maps to the slot before the same row in the full list", () => {
+    // C above B: visible without C is [A, B, C1], slot 1 is before B; the
+    // full rows without C are [A, A1, A2, B, C1], where B sits at 3.
+    expect(fullIndex(rows, visible, "C", 1)).toBe(3)
+    const move = moveToIndex(tree, "C", 3)
+    expect(move).toMatchObject({ id: "C", parentId: null })
+    expect(move!.position > "a0" && move!.position < "a1").toBe(true)
+  })
+
+  it("keeps a board dropped right after a collapsed board out of its group", () => {
+    // B between A and C: visible without B is [A, C, C1], slot 1 is before C.
+    expect(fullIndex(rows, visible, "B", 1)).toBe(3)
+    expect(moveToIndex(tree, "B", 3)).toMatchObject({ id: "B", parentId: null })
+  })
+
+  it("maps the end of the visible list to the end of the full list", () => {
+    expect(fullIndex(rows, visible, "B", 3)).toBe(5)
+  })
+})
+
+describe("ancestorIds", () => {
+  const rows = flattenDashboards(deep)
+
+  it("lists every board above, nearest first", () => {
+    expect(ancestorIds(rows, "A1a")).toEqual(["A1", "A"])
+    expect(ancestorIds(rows, "C1")).toEqual(["C"])
+  })
+
+  it("is empty for a top-level or unknown board", () => {
+    expect(ancestorIds(rows, "B")).toEqual([])
+    expect(ancestorIds(rows, "nope")).toEqual([])
   })
 })
 

@@ -243,7 +243,12 @@ export function registerProjectTools(
         name: z.string().min(1),
         description: z.string().optional(),
         status: ProjectStatusSchema.optional(),
-        summary: z.string().optional().describe("Where things stand, briefly"),
+        summary: z
+          .string()
+          .optional()
+          .describe(
+            "Where things stand. First line: one plain sentence (the project list shows only that line). Then 'Done so far:' / 'Still open:' / 'Waiting on you:' / 'Next step:' blocks, one item per line, plain words",
+          ),
         session_id: sessionId,
       },
     },
@@ -298,7 +303,7 @@ export function registerProjectTools(
           .array(z.string())
           .optional()
           .describe("Ids of workstreams in this project that come first"),
-        note: z.string().optional().describe("Short blocker / waiting-on note"),
+        note: z.string().optional().describe("Short blocker / waiting-on note, one plain sentence"),
         session_id: sessionId,
       },
     },
@@ -559,7 +564,9 @@ export function registerProjectTools(
         summary: z
           .string()
           .optional()
-          .describe("Replaces the project summary: where things stand now"),
+          .describe(
+            "Replaces the project summary. First line: one plain sentence (the project list shows only that line). Then 'Done so far:' / 'Still open:' / 'Waiting on you:' / 'Next step:' blocks, one item per line, plain words",
+          ),
         workstream_status: workstreamStatus.optional(),
         steps_done: z
           .array(z.string())

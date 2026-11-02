@@ -60,6 +60,11 @@ Projects
 - Use record_progress at checkpoints and handoffs, not after every message.
 - Pass if_version when you edit something you read earlier: a refused write
   returns the current value, so merge it rather than overwrite.
+- The operator skims summaries, notes and plans. First line: one plain sentence
+  on where things stand (the project list shows only that line). Then short
+  labelled blocks, one item per line: "Done so far:", "Still open:",
+  "Waiting on you:", "Next step:". Plain words: spell out node names, acronyms
+  and shorthand. No comma-chained lists inside parentheses.
 
 Writes sync to every device the account is signed in on, and deletes are
 tombstones — they propagate rather than being undone by another device's next

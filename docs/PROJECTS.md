@@ -62,8 +62,12 @@ Claude's login only when Doska and the dashboard are the same site (say
 `doska.example.net` and `dev.example.net`); from anywhere else it shows Miss
 Claude's login page instead.
 
+The panel's enlarge button lets the chat cover the whole project, and the
+shrink button puts it back.
+
 The client never builds any of these URLs; with no dashboard configured they
-are absent.
+are absent. It only appends `theme=dark` or `theme=light`, Doska's current
+theme, so Miss Claude can draw the frame to match.
 
 **What a session works on.** A session points at a workstream and, optionally,
 one of its steps (`workstream_id` / `step_id` on `register_session`). Naming a

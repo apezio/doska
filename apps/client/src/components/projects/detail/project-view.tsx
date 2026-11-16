@@ -91,7 +91,8 @@ export function ProjectView({ projectId }: { projectId: string }) {
     return (
       <ProjectContext value={ctx}>
         <LinkHoverContext value={hoverCtx}>
-          <div className="flex h-full min-h-0">
+          {/* Relative: an enlarged docked chat covers this whole box. */}
+          <div className="relative flex h-full min-h-0">
             <div className="flex min-w-0 flex-1 flex-col">
               <ProjectHeader />
               <div className="min-h-0 flex-1 overflow-y-auto">

@@ -1,13 +1,14 @@
 /**
  * A summary as agents are told to write it: a lead sentence, then labelled
  * blocks. Split apart so the view can lead with what is left to do and fold
- * away what is already done.
+ * away what is parked or done.
  */
 export interface SummaryBlocks {
   lead: string
   next: string
   waiting: string
   open: string
+  deferred: string
   done: string
 }
 
@@ -18,17 +19,25 @@ const LABELS: Record<string, BlockKey> = {
   "next steps": "next",
   "waiting on you": "waiting",
   "still open": "open",
+  deferred: "deferred",
   "done so far": "done",
 }
 
 // "Label:", "**Label:**" or "**Label**:", optionally followed by the block's
 // only item on the same line.
 const HEADER =
-  /^\s*(?:\*\*|__)?(next steps?|waiting on you|still open|done so far)(?::(?:\*\*|__)?|(?:\*\*|__):)\s*(.*)$/i
+  /^\s*(?:\*\*|__)?(next steps?|waiting on you|still open|deferred|done so far)(?::(?:\*\*|__)?|(?:\*\*|__):)\s*(.*)$/i
 
 /** Null when the summary carries none of the labels: show it as written. */
 export function splitSummary(md: string): SummaryBlocks | null {
-  const out: SummaryBlocks = { lead: "", next: "", waiting: "", open: "", done: "" }
+  const out: SummaryBlocks = {
+    lead: "",
+    next: "",
+    waiting: "",
+    open: "",
+    deferred: "",
+    done: "",
+  }
   let key: keyof SummaryBlocks = "lead"
   let found = false
   const add = (line: string) => {

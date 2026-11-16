@@ -51,12 +51,11 @@ export function SummarySection() {
   )
 }
 
-/** What is left leads; what is done stays folded until asked for. */
+/** What is left leads; what is parked or done stays folded until asked for. */
 function SummaryView({ md }: { md: string }) {
   const s = splitSummary(md)
   if (!s) return <Markdown className={LEAD}>{md}</Markdown>
   const waiting = isEmptyBlock(s.waiting) ? "" : s.waiting
-  const doneCount = countItems(s.done)
 
   return (
     <div className="flex flex-col gap-4">
@@ -68,27 +67,34 @@ function SummaryView({ md }: { md: string }) {
         </Block>
       )}
       {s.open && <Block label="Still open">{s.open}</Block>}
-      {s.done && (
-        <details className="group/done">
-          <summary
-            className={cn(
-              "flex w-fit cursor-pointer list-none items-center gap-1",
-              "text-sm font-semibold text-muted-foreground hover:text-foreground",
-              "[&::-webkit-details-marker]:hidden"
-            )}
-          >
-            <ChevronRight className="size-4 transition-transform duration-200 group-open/done:rotate-90" />
-            Done so far
-            {doneCount > 0 && (
-              <span className="font-normal tabular-nums">· {doneCount}</span>
-            )}
-          </summary>
-          <Markdown className={cn(BODY, "mt-1.5 pl-5 text-muted-foreground")}>
-            {s.done}
-          </Markdown>
-        </details>
-      )}
+      {s.deferred && <Folded label="Deferred">{s.deferred}</Folded>}
+      {s.done && <Folded label="Done so far">{s.done}</Folded>}
     </div>
+  )
+}
+
+/** Closed until clicked: parked or finished work, out of the way. */
+function Folded({ label, children }: { label: string; children: string }) {
+  const count = countItems(children)
+  return (
+    <details className="group/fold">
+      <summary
+        className={cn(
+          "flex w-fit cursor-pointer list-none items-center gap-1",
+          "text-sm font-semibold text-muted-foreground hover:text-foreground",
+          "[&::-webkit-details-marker]:hidden"
+        )}
+      >
+        <ChevronRight className="size-4 transition-transform duration-200 group-open/fold:rotate-90" />
+        {label}
+        {count > 0 && (
+          <span className="font-normal tabular-nums">· {count}</span>
+        )}
+      </summary>
+      <Markdown className={cn(BODY, "mt-1.5 pl-5 text-muted-foreground")}>
+        {children}
+      </Markdown>
+    </details>
   )
 }
 

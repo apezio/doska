@@ -247,7 +247,7 @@ export function registerProjectTools(
           .string()
           .optional()
           .describe(
-            "Where things stand. First line: one plain sentence (the project list shows only that line). Then 'Next step:' / 'Waiting on you:' / 'Still open:' / 'Done so far:' blocks, one short line per item, plain words; file paths, emails and old values belong in the log, not here",
+            "Where things stand. First line: one plain sentence (the project list shows only that line). Then 'Next step:' / 'Waiting on you:' / 'Still open:' / 'Deferred:' (if any) / 'Done so far:' blocks, one short line per item, plain words; file paths, emails and old values belong in the log, not here",
           ),
         session_id: sessionId,
       },
@@ -565,7 +565,7 @@ export function registerProjectTools(
           .string()
           .optional()
           .describe(
-            "Replaces the project summary. First line: one plain sentence (the project list shows only that line). Then 'Next step:' / 'Waiting on you:' / 'Still open:' / 'Done so far:' blocks, one short line per item, plain words; file paths, emails and old values belong in the log, not here",
+            "Replaces the project summary. First line: one plain sentence (the project list shows only that line). Then 'Next step:' / 'Waiting on you:' / 'Still open:' / 'Deferred:' (if any) / 'Done so far:' blocks, one short line per item, plain words; file paths, emails and old values belong in the log, not here",
           ),
         workstream_status: workstreamStatus.optional(),
         steps_done: z

@@ -14,15 +14,19 @@ Still open:
 Waiting on you:
 - Nothing.
 
+Deferred:
+- Chat reactions.
+
 Next step: tracking review, between 2026-12-01 and 2026-12-30.`
 
 describe("splitSummary", () => {
-  it("splits the lead and the four labelled blocks", () => {
+  it("splits the lead and the labelled blocks", () => {
     expect(splitSummary(SUMMARY)).toEqual({
       lead: "No customer is linked to the old account any more.",
       done: "- The move is live.\n- Cards copied.",
       open: "- Renewals to watch.\n- Close the account in March.",
       waiting: "- Nothing.",
+      deferred: "- Chat reactions.",
       next: "tracking review, between 2026-12-01 and 2026-12-30.",
     })
   })

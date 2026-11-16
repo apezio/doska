@@ -24,6 +24,8 @@ interface IProps {
   askWhy?: boolean
   className?: string
   markdownClassName?: string
+  /** Replaces the plain markdown when not editing. */
+  view?: (value: string) => ReactNode
 }
 
 interface Draft {
@@ -49,6 +51,7 @@ export function MarkdownField({
   askWhy,
   className,
   markdownClassName,
+  view,
 }: IProps) {
   const [draft, setDraft] = useState<Draft | null>(null)
   const [saving, setSaving] = useState(false)
@@ -156,7 +159,11 @@ export function MarkdownField({
 
   return (
     <div className={cn("group/field relative", className)}>
-      <Markdown className={cn("pr-8", markdownClassName)}>{value}</Markdown>
+      {view ? (
+        <div className="pr-8">{view(value)}</div>
+      ) : (
+        <Markdown className={cn("pr-8", markdownClassName)}>{value}</Markdown>
+      )}
       <Hint label={`Edit ${label.toLowerCase()}`}>
         <Button
           variant="ghost"

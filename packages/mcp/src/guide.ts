@@ -62,8 +62,11 @@ Projects
   returns the current value, so merge it rather than overwrite.
 - The operator skims summaries, notes and plans. First line: one plain sentence
   on where things stand (the project list shows only that line). Then short
-  labelled blocks, one item per line: "Done so far:", "Still open:",
-  "Waiting on you:", "Next step:". Plain words: spell out node names, acronyms
+  labelled blocks in this order, one item per line: "Next step:",
+  "Waiting on you:", "Still open:", "Done so far:". The app folds "Done so
+  far" away, so keep it to the few results that still matter. One short line
+  per item: evidence such as file paths, emails and old values belongs in the
+  activity log, not the summary. Plain words: spell out node names, acronyms
   and shorthand. No comma-chained lists inside parentheses.
 
 Writes sync to every device the account is signed in on, and deletes are

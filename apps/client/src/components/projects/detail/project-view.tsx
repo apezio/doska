@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { TriangleAlert, UserRound } from "lucide-react"
 import { Button, cn } from "@doska/ui-kit"
 import { useProject } from "@doska/core/queries"
@@ -30,6 +30,18 @@ export function ProjectView({ projectId }: { projectId: string }) {
   const { authed } = useAuth()
   const { data, error, refetch } = useProject(projectId, authed === true)
   const wide = useMinWidth(WIDE)
+  const name = data?.project.name
+
+  useEffect(() => {
+    document.title = name ? `${name} · Doska` : "Doska"
+  }, [name])
+  // Other in-app pages don't set a title, so leaving must restore the default.
+  useEffect(
+    () => () => {
+      document.title = "Doska"
+    },
+    []
+  )
 
   const [openIds, setOpenIds] = useState<ReadonlySet<string>>(new Set())
   const setOpen = useCallback((id: string, open: boolean) => {

@@ -62,8 +62,9 @@ Claude's login only when Doska and the dashboard are the same site (say
 `doska.example.net` and `dev.example.net`); from anywhere else it shows Miss
 Claude's login page instead.
 
-The panel's enlarge button lets the chat cover the whole project, and the
-shrink button puts it back.
+A session card's expand button, above its chat, opens that chat over the
+whole window; its shrink button turns it into the side panel. The side
+panel's enlarge button goes the other way.
 
 The client never builds any of these URLs; with no dashboard configured they
 are absent. It only appends `theme=dark` or `theme=light`, Doska's current

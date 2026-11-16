@@ -23,31 +23,27 @@ const TITLE = "min-w-0 flex-1 truncate text-sm font-semibold"
  * CHAT_EMBED_ORIGINS lists this origin.
  *
  * `docked` puts it in a column beside the page, which stays usable; below
- * that width it falls back to a Sheet over the page. Enlarged, either one
- * covers the whole project; only classes change, so the frame keeps its
+ * that width it falls back to a Sheet over the page. `chatBig` makes either
+ * one cover the whole window; only classes change, so the frame keeps its
  * scroll and half-typed text.
  */
 export function SessionChat({ docked }: { docked: boolean }) {
-  const { chatSessionId, openChat, sessionById } = useProjectCtx()
+  const { chatSessionId, openChat, sessionById, chatBig } = useProjectCtx()
   const session = chatSessionId ? sessionById.get(chatSessionId) : undefined
   const name = session && (session.label || session.mission)
-  const [big, setBig] = useState(false)
-  const toggleBig = () => setBig((b) => !b)
 
   if (docked && session?.chatUrl)
     return (
       <aside
         className={cn(
-          "flex shrink-0 flex-col border-l bg-popover text-popover-foreground",
-          big ? "absolute inset-0 z-10 border-l-0" : "w-md"
+          "flex shrink-0 flex-col bg-popover text-popover-foreground",
+          chatBig ? "fixed inset-0 z-50" : "w-md border-l"
         )}
       >
         <ChatPanel
           key={session.chatUrl}
           session={session}
           title={<h2 className={TITLE}>{name}</h2>}
-          big={big}
-          onToggleBig={toggleBig}
         />
       </aside>
     )
@@ -60,7 +56,7 @@ export function SessionChat({ docked }: { docked: boolean }) {
       <SheetContent
         className={cn(
           "right-0 left-auto w-full gap-0 border-r-0 border-l data-ending-style:translate-x-10 data-starting-style:translate-x-10",
-          big ? "sm:max-w-none" : "sm:max-w-md"
+          chatBig ? "sm:max-w-none" : "sm:max-w-md"
         )}
       >
         {session?.chatUrl && (
@@ -68,8 +64,6 @@ export function SessionChat({ docked }: { docked: boolean }) {
             key={session.chatUrl}
             session={session}
             title={<SheetTitle className={TITLE}>{name}</SheetTitle>}
-            big={big}
-            onToggleBig={toggleBig}
           />
         )}
       </SheetContent>
@@ -80,15 +74,11 @@ export function SessionChat({ docked }: { docked: boolean }) {
 function ChatPanel({
   session,
   title,
-  big,
-  onToggleBig,
 }: {
   session: ProjectSessionDetail
   title: ReactNode
-  big: boolean
-  onToggleBig: () => void
 }) {
-  const { chatSay, openChat } = useProjectCtx()
+  const { chatSay, openChat, chatBig: big, setChatBig } = useProjectCtx()
   const frame = useRef<HTMLIFrameElement>(null)
   const [loaded, setLoaded] = useState(false)
 
@@ -128,7 +118,7 @@ function ChatPanel({
             size="icon-sm"
             aria-label={big ? "Shrink chat" : "Enlarge chat"}
             className="max-sm:hidden"
-            onClick={onToggleBig}
+            onClick={() => setChatBig(!big)}
           >
             {big ? <Minimize2 /> : <Maximize2 />}
           </Button>

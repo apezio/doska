@@ -20,6 +20,9 @@ export interface ProjectCtx {
   /** Text to send into that chat once it loads, then cleared. */
   chatSay: string | undefined
   openChat: (sessionId: string | null, say?: string) => void
+  /** The chat covers the whole window instead of a side panel. */
+  chatBig: boolean
+  setChatBig: (big: boolean) => void
 }
 
 export const ProjectContext = createContext<ProjectCtx | null>(null)

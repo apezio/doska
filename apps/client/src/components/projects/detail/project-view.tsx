@@ -56,11 +56,11 @@ export function ProjectView({ projectId }: { projectId: string }) {
   const [hover, setHover] = useState<LinkHover>(null)
   const hoverCtx = useMemo(() => ({ hover, setHover }), [hover])
   const [chat, setChat] = useState<{ sessionId: string; say?: string }>()
-  const openChat = useCallback(
-    (sessionId: string | null, say?: string) =>
-      setChat(sessionId ? { sessionId, say } : undefined),
-    []
-  )
+  const [chatBig, setChatBig] = useState(false)
+  const openChat = useCallback((sessionId: string | null, say?: string) => {
+    setChat(sessionId ? { sessionId, say } : undefined)
+    if (!sessionId) setChatBig(false)
+  }, [])
 
   const ctx = useMemo<ProjectCtx | null>(
     () =>
@@ -78,9 +78,11 @@ export function ProjectView({ projectId }: { projectId: string }) {
             chatSessionId: chat?.sessionId ?? null,
             chatSay: chat?.say,
             openChat,
+            chatBig,
+            setChatBig,
           }
         : null,
-    [data, authed, projectId, openIds, setOpen, chat, openChat]
+    [data, authed, projectId, openIds, setOpen, chat, openChat, chatBig]
   )
 
   if (ctx) {
@@ -91,8 +93,7 @@ export function ProjectView({ projectId }: { projectId: string }) {
     return (
       <ProjectContext value={ctx}>
         <LinkHoverContext value={hoverCtx}>
-          {/* Relative: an enlarged docked chat covers this whole box. */}
-          <div className="relative flex h-full min-h-0">
+          <div className="flex h-full min-h-0">
             <div className="flex min-w-0 flex-1 flex-col">
               <ProjectHeader />
               <div className="min-h-0 flex-1 overflow-y-auto">

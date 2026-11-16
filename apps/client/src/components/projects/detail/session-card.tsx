@@ -30,7 +30,7 @@ interface IProps {
 }
 
 export function SessionCard({ session: s, showWorkstream = true }: IProps) {
-  const { projectId, chatSessionId, openChat } = useProjectCtx()
+  const { projectId, chatSessionId, openChat, setChatBig } = useProjectCtx()
   const { hover, setHover } = useLinkHover()
   const { mutate: remove } = useProjectWrite("sessionRemove", projectId)
   const { mutate: link } = useProjectWrite("cardLink", projectId)
@@ -119,6 +119,22 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
             </p>
           )}
         </div>
+        {s.chatUrl && (
+          <Hint label="Expand chat">
+            <Button
+              size="icon-sm"
+              variant="secondary"
+              aria-label="Expand chat"
+              className="-mt-1 shrink-0"
+              onClick={() => {
+                openChat(s.id)
+                setChatBig(true)
+              }}
+            >
+              <Maximize2 />
+            </Button>
+          </Hint>
+        )}
         <Hint label="Remove session">
           <Button
             variant="ghost"
@@ -168,19 +184,6 @@ export function SessionCard({ session: s, showWorkstream = true }: IProps) {
             : "No activity yet"}
         </span>
         <RunsOn session={s} />
-        {s.chatUrl && (
-          <Hint label="Expand chat">
-            <Button
-              size="icon-sm"
-              variant="secondary"
-              aria-label="Expand chat"
-              className="shrink-0"
-              onClick={() => openChat(s.id)}
-            >
-              <Maximize2 />
-            </Button>
-          </Hint>
-        )}
         <OpenSession url={s.openUrl} />
       </div>
     </li>
